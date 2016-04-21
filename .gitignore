@@ -6,3 +6,6 @@ build
 npm-debug.log
 coverage
 target
+.classpath
+.project
+.settings
