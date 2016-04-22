@@ -282,38 +282,17 @@
                                                                ng-blur="updateEventDataValue(dhis2Event, eventGridColumn.id)" 
                                                                name="foo" 
                                                                ng-class="getInputNotifcationClass(eventGridColumn.id,false)"/>                                                    
-                                                </div>                                        
-                                                <div ng-switch-when="BOOLEAN">
-                                                    <label class="radio-inline">
-                                                        <input  type="radio"                                                                 
-                                                                ng-model="currentEvent[eventGridColumn.id]"                                                                
-                                                                ng-required={{eventGridColumn.compulsory}}
-                                                                ng-disabled="assignedFields[eventGridColumn.id]"
-                                                                input-field-id={{eventGridColumn.id}} 
-                                                                ng-change="saveDatavalue()" 
-                                                               value=""> 
-                                                        {{'no_value'| translate}}
-                                                    </label>
-                                                    <label class="radio-inline">
-                                                        <input  type="radio" 
-                                                                ng-model="currentEvent[eventGridColumn.id]"                                                                
-                                                                ng-required={{eventGridColumn.compulsory}}
-                                                                ng-disabled="assignedFields[eventGridColumn.id]"
-                                                                input-field-id={{eventGridColumn.id}} 
-                                                                ng-change="saveDatavalue()" 
-                                                               value="true"> 
-                                                        {{'yes'| translate}}
-                                                    </label>
-                                                    <label class="radio-inline">
-                                                        <input  type="radio" 
-                                                                ng-model="currentEvent[eventGridColumn.id]"                                                                
-                                                                ng-required={{eventGridColumn.compulsory}}
-                                                                ng-disabled="assignedFields[eventGridColumn.id]"
-                                                                input-field-id={{eventGridColumn.id}} 
-                                                                ng-change="saveDatavalue()" 
-                                                               value="false"> 
-                                                        {{'no'| translate}}
-                                                    </label>                                                    
+                                                </div>
+                                                <div ng-switch-when="BOOLEAN" class="form-control">
+                                                    <d2-radio-button
+                                                        dh-required="eventGridColumn.compulsory"
+                                                        dh-disabled="assignedFields[eventGridColumn.id]"
+                                                        dh-value="currentEvent[eventGridColumn.id]"
+                                                        dh-name="foo"
+                                                        dh-event="currentEvent.event"
+                                                        dh-click="saveDatavalueRadio(eventGridColumn, currentEvent, value)"
+                                                        dh-id="eventGridColumn.id">
+                                                    </d2-radio-button>
                                                 </div>
                                                 <div ng-switch-when="DATE">
                                                     <input type="text" 
@@ -379,6 +358,28 @@
                                                                 </span>                                                
                                                             </span>
                                                         </span>                
+                                                    </div>
+                                                </div>
+                                                <div ng-switch-when="COORDINATE">
+                                                    <div class="input-group">                            
+                                                        <input type="text"
+                                                            name="foo" 
+                                                            placeholder="{{'latitude_longitude_format' | translate}}"
+                                                            ng-class="getInputNotifcationClass(eventGridColumn.id,false)"
+                                                            d2-custom-coordinate-validator 
+                                                            ng-model="currentEvent[eventGridColumn.id]"
+                                                            ng-required={{eventGridColumn.compulsory}}
+                                                            ng-disabled="assignedFields[eventGridColumn.id]"
+                                                            ng-blur="updateEventDataValue(dhis2Event, eventGridColumn.id)" />
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-primary hideInPrint trim" 
+                                                                    type="button" 
+                                                                    title="{{'get_from_map'| translate}}"
+                                                                    ng-disabled="assignedFields[eventGridColumn.id]"
+                                                                    ng-click="showDataElementMap(currentEvent, eventGridColumn.id, 'UPDATE')">
+                                                                    <i class="fa fa-map-marker"></i>                             
+                                                            </button>
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <div ng-switch-default>

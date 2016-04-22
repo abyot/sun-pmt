@@ -68,9 +68,8 @@ trackerCapture.controller('TEIAddController',
     $scope.selectedRelationship = {};
     $scope.relationship = {};
     
-    var invalidTeis = [];
-    invalidTeis.push($scope.mainTei.trackedEntityInstance);
-    if($scope.mainTei.relationships){
+    var invalidTeis = $scope.addingRelationship ? [$scope.mainTei.trackedEntityInstance] : [];
+    if($scope.mainTei.relationships && $scope.addingRelationship){
         angular.forEach($scope.mainTei.relationships, function(rel){
             invalidTeis.push(rel.trackedEntityInstanceB);
         });
@@ -111,8 +110,16 @@ trackerCapture.controller('TEIAddController',
     else{        
         $scope.teiAddLabel = $scope.selectedAttribute && $scope.selectedAttribute.displayName ? $scope.selectedAttribute.displayName : $translate.instant('tracker_associate');
         $scope.addingTeiAssociate = true;
-        ProgramFactory.getProgramsByOu($scope.selectedOrgUnit, $scope.selectedProgram).then(function(response){
+        ProgramFactory.getProgramsByOu($scope.selectedOrgUnit, $scope.selectedProgram).then(function(response){            
             $scope.programs = response.programs;
+            if($scope.selectedAttribute && $scope.selectedAttribute.trackedEntity && $scope.selectedAttribute.trackedEntity.id){
+                $scope.programs = [];
+                angular.forEach(response.programs, function(pr){
+                    if( pr.trackedEntity && pr.trackedEntity.id === $scope.selectedAttribute.trackedEntity.id){
+                        $scope.programs.push( pr );
+                    }
+                });
+            }            
             $scope.selectedProgram = response.selectedProgram;
         });
         
@@ -250,18 +257,18 @@ trackerCapture.controller('TEIAddController',
             }
         }
         
-        if( $scope.addingTeiAssociate ){            
-            if(!$scope.selectedTrackedEntity){
+        if( $scope.addingTeiAssociate ){ 
+            if(!$scope.selectedTrackedEntity || !$scope.selectedTrackedEntity.id){
                 var dialogOptions = {
                     headerText: 'searching_error',
-                    bodyText: $translate.instant('no_enity_for_tracker_associate_attribute')
+                    bodyText: $translate.instant('no_entity_for_tracker_associate_attribute')
                 };
                 DialogService.showDialog({}, dialogOptions);
+                $scope.teiFetched = true;
                 return;
             }
-            else{
-                $scope.programUrl = $scope.programUrl ? $scope.programUrl + '&trackedEntity=' + $scope.selectedTrackedEntity.id : 'trackedEntity=' + $scope.selectedTrackedEntity.id;
-            }
+            
+            //$scope.programUrl = 'trackedEntity=' + $scope.selectedTrackedEntity.id;
         }
         
         $scope.fetchTei();
@@ -311,9 +318,8 @@ trackerCapture.controller('TEIAddController',
         AttributesFactory.getByProgram($scope.selectedProgramForRelative).then(function(atts){
             $scope.attributes = atts;
             $scope.attributes = AttributesFactory.generateAttributeFilters(atts);
-            $scope.gridColumns = $scope.generateGridColumns($scope.attributes);
+            $scope.gridColumns = TEIGridService.generateGridColumns($scope.attributes, null,false).columns;//$scope.generateGridColumns($scope.attributes);
         });
-        
         
         $scope.search( $scope.selectedSearchMode );        
     }; 

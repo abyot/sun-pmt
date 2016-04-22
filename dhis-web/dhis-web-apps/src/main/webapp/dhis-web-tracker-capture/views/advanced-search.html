@@ -18,10 +18,22 @@
                 <td>
                     <div class="dataelement-filter">
                         <div class="container-1-2">
-                            <input type="text" placeholder="{{'start_date'| translate}}" class="form-control-select2" d2-date ng-model="enrollment.programEnrollmentStartDate"/>
+                            <input type="text" 
+                                   placeholder="{{'start_date'| translate}}" 
+                                   class="form-control-select2" 
+                                   d2-date 
+                                   d2-date-validator
+                                   max-date="enrollment.programEnrollmentEndDate ? enrollment.programEnrollmentEndDate : selectedProgram.selectEnrollmentDatesInFuture ? '' : 0"
+                                   ng-model="enrollment.programEnrollmentStartDate"/>
                         </div>
                         <div class="container-1-2">
-                            <input type="text" placeholder="{{'end_date'| translate}}" class="form-control-select2" d2-date ng-model="enrollment.programEnrollmentEndDate"/>                
+                            <input type="text" 
+                                   placeholder="{{'end_date'| translate}}" 
+                                   class="form-control-select2" 
+                                   d2-date 
+                                   min-date="enrollment.programEnrollmentStartDate ? enrollment.programEnrollmentStartDate : ''"
+                                   max-date="selectedProgram.selectEnrollmentDatesInFuture ? '' : 0"
+                                   ng-model="enrollment.programEnrollmentEndDate"/>                
                         </div>             
                     </div>                
                 </td>
@@ -31,10 +43,23 @@
                 <td>
                     <div class="dataelement-filter">
                         <div class="container-1-2">
-                            <input type="text" placeholder="{{'start_date'| translate}}" class="form-control-select2" d2-date ng-model="enrollment.programIncidentStartDate"/>
+                            <input type="text" 
+                                   placeholder="{{'start_date'| translate}}" 
+                                   class="form-control-select2" 
+                                   d2-date 
+                                   d2-date-validator
+                                   max-date="enrollment.programIncidentEndDate ? enrollment.programIncidentEndDate : selectedProgram.selectIncidentDatesInFuture ? '' : 0"
+                                   ng-model="enrollment.programIncidentStartDate"/>
                         </div>
                         <div class="container-1-2">
-                            <input type="text" placeholder="{{'end_date'| translate}}" class="form-control-select2" d2-date ng-model="enrollment.programIncidentEndDate"/>                
+                            <input type="text" 
+                                   placeholder="{{'end_date'| translate}}" 
+                                   class="form-control-select2" 
+                                   d2-date 
+                                   d2-date-validator
+                                   min-date="enrollment.programIncidentStartDate ? enrollment.programIncidentStartDate : ''"
+                                   max-date="selectedProgram.selectIncidentDatesInFuture ? '' : 0"
+                                   ng-model="enrollment.programIncidentEndDate"/>                
                         </div>             
                     </div>                
                 </td>

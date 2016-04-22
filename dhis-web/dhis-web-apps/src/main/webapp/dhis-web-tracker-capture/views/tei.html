@@ -1,6 +1,6 @@
 <div class="row vertical-spacing">
-    <div id="selectDropDownParent" class="input-group col-md-3" ng-if="enrollmentStatus==='TODAY' && selectedProgram">            
-        <button type="button" class="select-dropdown-button form-control">{{selectedEventsTodayFilter.displayName}}</button>
+    <div id="selectDropDownParent" class="input-group col-md-3" ng-if="enrollmentStatus==='TODAY' && selectedProgram && (selectedProgram.displayFrontPageList || frontPageListEnabled)">            
+        <button type="button" class="select-dropdown-button form-control">{{selectedEventsTodayFilter.name}}</button>
         <div class="input-group-btn todayfilter-drop-down">
             <button class="btn btn-default select-dropdown-caret" type="button" data-toggle="dropdown" title="Test"><i class="fa fa-caret-down"></i></button>
             <ul id="selectDropDown" class="dropdown-menu dropdown-menu-right">
@@ -38,7 +38,7 @@
                 <tr ng-if="!addingTeiAssociate"
                     ng-repeat="trackedEntity in trackedEntityList.rows.own| orderBy:d2Sort:reverse" 
                     ng-click="mainTei.trackedEntityInstance ? assignRelationship(trackedEntity) : showDashboard(trackedEntity)"
-                    ng-class="{true: 'inactive - tei'} [trackedEntity.inactive]"
+                    ng-class="{true: 'inactive-tei'} [trackedEntity.inactive]"
                     title="{{mainTei.trackedEntityInstance ? 'select' : 'go_to_dashboard'| translate}}">
                     <td ng-repeat="gridColumn in gridColumns| filter:{show: true}">
                         <span ng-switch="gridColumn.valueType">

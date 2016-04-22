@@ -174,7 +174,7 @@ var trackerCaptureDirectives = angular.module('trackerCaptureDirectives', [])
                 $scope.showNoteExistsIcon = true;
                 if(angular.isDefined($scope.applicableButtons)){
                     $scope.showNoteExistsIcon = false;
-                    for(i = 0; i < $scope.applicableButtons.length; i++){
+                    for(var i = 0; i < $scope.applicableButtons.length; i++){
                         if($scope.applicableButtons[i] === NOTE){
                             $scope.showNoteExistsIcon = true;
                             break;

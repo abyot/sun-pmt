@@ -190,44 +190,62 @@
                         </textarea>
                     </span>
                     <span ng-switch-when="TRACKER_ASSOCIATE">
-                        <input type="text"
-                               name="foo" 
-                               class="form-control-trimmed"
-                               ng-model="selectedTei[attribute.id]" 
-                               ng-model-options="{ updateOn: 'default blur', allowInvalid: true }"
-                               d2-attribute-validator 
-                               attribute-data={{attribute}}
-                               selected-program-id={{selectedProgram.id}}  
-                               selected-tei-id={{selectedTei.trackedEntityInstance}}
-                               ng-disabled="true" 
-                               ng-blur="teiValueUpdated(selectedTei, attribute.id)"
-                               style="width:75%;"
-                               ng-required="attribute.mandatory || attribute.unique"/>
-                        <span class="hideInPrint">
-                            <a href ng-class="{true: 'disable-clicks', false: ''} [editingDisabled]" ng-click="getTrackerAssociate(attribute, selectedTei[attribute.id])" title="{{'add'| translate}} {{attribute.displayName}}">
-                                <i class="fa fa-external-link fa-2x vertical-center"></i>
-                            </a>
-                            <a href ng-if="selectedTei[attribute.id]" ng-class="{true: 'disable-clicks', false: ''} [editingDisabled]" ng-click="selectedTei[attribute.id] = null" title="{{'add'| translate}} {{attribute.displayName}}">
-                                <i class="fa fa-trash-o fa-2x vertical-center"></i>
-                            </a>
+                        <span class="input-group">                            
+                            <input type="text"
+                                name="foo" 
+                                class="form-control"
+                                ng-model="selectedTei[attribute.id]" 
+                                ng-model-options="{ updateOn: 'default blur', allowInvalid: true }"
+                                attribute-data={{attribute}}
+                                selected-program-id={{selectedProgram.id}}  
+                                selected-tei-id={{selectedTei.trackedEntityInstance}}
+                                ng-disabled="true" 
+                                ng-blur="teiValueUpdated(selectedTei, attribute.id)"
+                                ng-required="attribute.mandatory || attribute.unique"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-grp hideInPrint trim"
+                                        ng-if="!selectedTei[attribute.id]" 
+                                        ng-class="{true: 'disable-clicks'} [editingDisabled]"
+                                        type="button" 
+                                        title="{{'add'| translate}} {{attribute.displayName}}"
+                                        ng-click="getTrackerAssociate(attribute, selectedTei[attribute.id])">
+                                        <i class="fa fa-external-link"></i>                             
+                                </button>
+                                <button class="btn btn-grp hideInPrint trim"
+                                        ng-if="selectedTei[attribute.id]" 
+                                        ng-class="{true: 'disable-clicks'} [editingDisabled]"
+                                        type="button" 
+                                        title="{{'remove'| translate}} {{attribute.displayName}}"
+                                        ng-click="selectedTei[attribute.id] = null">
+                                        <i class="fa fa-trash-o"></i>                             
+                                </button>
+                            </span>
                         </span>
                     </span>
                     <span ng-switch-when="COORDINATE">
-                        <input type="text"
-                               name="foo" 
-                               placeholder="{{'latitude_longitude_format' | translate}}"
-                               class="form-control"
-                               ng-model="selectedTei[attribute.id]" 
-                               ng-model-options="{ updateOn: 'default blur', allowInvalid: true }"
-                               d2-custom-coordinate-validator 
-                               attribute-data={{attribute}}
-                               selected-program-id={{selectedProgram.id}}  
-                               selected-tei-id={{selectedTei.trackedEntityInstance}}
-                               ng-disabled="editingDisabled" 
-                               ng-blur="teiValueUpdated(selectedTei, attribute.id)"
-                               ng-required="attribute.mandatory || attribute.unique"/>
-                        <span class="hideInPrint" ng-if="!editingDisabled">
-                            <a href ng-click="showAttributeMap(selectedTei, attribute.id)" title="{{'get_from_map'| translate}}"><i class="fa fa-map-marker fa-2x"></i></a>
+                        <span class="input-group">                            
+                            <input type="text"
+                                name="foo" 
+                                placeholder="{{'latitude_longitude_format' | translate}}"
+                                class="form-control"
+                                ng-model="selectedTei[attribute.id]" 
+                                ng-model-options="{ updateOn: 'default blur', allowInvalid: true }"
+                                d2-custom-coordinate-validator 
+                                attribute-data={{attribute}}
+                                selected-program-id={{selectedProgram.id}}  
+                                selected-tei-id={{selectedTei.trackedEntityInstance}}
+                                ng-disabled="editingDisabled" 
+                                ng-blur="teiValueUpdated(selectedTei, attribute.id)"
+                                ng-required="attribute.mandatory || attribute.unique"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-grp hideInPrint trim" 
+                                        type="button" 
+                                        title="{{'get_from_map'| translate}}"
+                                        ng-if="!editingDisabled" 
+                                        ng-click="showAttributeMap(selectedTei, attribute.id)">
+                                        <i class="fa fa-map-marker"></i>                             
+                                </button>
+                            </span>
                         </span>
                     </span>
                     <span ng-switch-default>

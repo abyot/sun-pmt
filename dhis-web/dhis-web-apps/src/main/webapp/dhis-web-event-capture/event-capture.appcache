@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2.23
+# 2.23.1
 
 NETWORK:
 *
@@ -74,6 +74,9 @@ scripts/services.js
 scripts/controllers.js        
 scripts/notes-controller.js
 scripts/filters.js
+scripts/ng-csv.js
+
+i18n/i18n_app.properties
 
 ../dhis-web-commons/javascripts/dhis2/dhis2.translate.js
 ../dhis-web-commons/javascripts/dhis2/dhis2.menu.js

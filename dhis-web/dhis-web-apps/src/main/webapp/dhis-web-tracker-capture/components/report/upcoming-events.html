@@ -107,21 +107,22 @@
                                        placeholder="{{'start_date'| translate}} ({{dhis2CalendarFormat.keyDateFormat}})" 
                                        class="form-control" 
                                        d2-date 
+                                       d2-date-validator
                                        ng-model="report.startDate" 
                                        min-date="today" 
+                                       max-date="report.endDate ? report.endDate : ''" 
                                        ng-required="true"/> 
-                                <span ng-show="outerForm.submitted && outerForm.reportStartDate.$invalid" style="color:red;font-size:12px">{{'required'| translate}} ({{dhis2CalendarFormat.keyDateFormat}})</span>
-                            </div>
-                            <div>
+                                <div ng-messages="outerForm.reportStartDate.$error" ng-if="interacted(outerForm.reportStartDate)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html"></div>
                                 <input type="text" 
                                        name="reportEndDate" 
                                        placeholder="{{'end_date'| translate}} ({{dhis2CalendarFormat.keyDateFormat}})" 
                                        class="form-control" 
                                        d2-date 
+                                       d2-date-validator
                                        ng-model="report.endDate" 
-                                       min-date="today" 
+                                       min-date="report.startDate ? report.startDate : today" 
                                        ng-required="true"/>                            
-                                <span ng-show="outerForm.submitted && outerForm.reportEndDate.$invalid" style="color:red;font-size:12px">{{'required'| translate}} ({{dhis2CalendarFormat.keyDateFormat}})</span>
+                                <div ng-messages="outerForm.reportEndDate.$error" ng-if="interacted(outerForm.reportEndDate)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html"></div>
                             </div>
                         </td>
                     </tr>

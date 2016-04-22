@@ -87,27 +87,7 @@ var eventCaptureServices = angular.module('eventCaptureServices', ['ngResource']
 })
 
 /* Factory to fetch programs */
-.factory('ProgramFactory', function($q, $rootScope, SessionStorageService, ECStorageService) {  
-    
-    var userHasValidRole = function(program, userRoles){
-        
-        var hasRole = false;
-
-        if($.isEmptyObject(program.userRoles)){
-            return hasRole;
-        }
-
-        for(var i=0; i < userRoles.length && !hasRole; i++){
-            if( program.userRoles.hasOwnProperty( userRoles[i].id ) ){
-                hasRole = true;
-            }
-            
-            if(!hasRole && userRoles[i].authorities && userRoles[i].authorities.indexOf('ALL') !== -1){
-                hasRole = true;
-            }
-        }        
-        return hasRole;        
-    };
+.factory('ProgramFactory', function($q, $rootScope, SessionStorageService, ECStorageService, CommonUtils) {  
     
     return {
         getProgramsByOu: function(ou, selectedProgram){
@@ -119,7 +99,7 @@ var eventCaptureServices = angular.module('eventCaptureServices', ['ngResource']
                 ECStorageService.currentStore.getAll('programs').done(function(prs){
                     var programs = [];
                     angular.forEach(prs, function(pr){                            
-                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && userHasValidRole(pr, userRoles)){
+                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(pr, 'programs', userRoles)){
                             programs.push(pr);
                         }
                     });
@@ -225,8 +205,13 @@ var eventCaptureServices = angular.module('eventCaptureServices', ['ngResource']
 
 /* factory for handling events */
 .factory('DHIS2EventFactory', function($http, $q, ECStorageService, $rootScope) {   
-    var internalGetByFilters = function(orgUnit, attributeCategoryUrl, pager, paging, ordering, filterings) {
-        var url = '../api/events.json?' + 'orgUnit=' + orgUnit;
+    var internalGetByFilters = function(orgUnit, attributeCategoryUrl, pager, paging, ordering, filterings, format) {
+        var url;
+           if (format === "csv") {
+            	url = '../api/events.csv?' + 'orgUnit=' + orgUnit;
+        	} else {
+            	url = '../api/events.json?' + 'orgUnit=' + orgUnit;
+        	}
             
             if(filterings) {
                 angular.forEach(filterings,function(filtering) {
@@ -240,7 +225,7 @@ var eventCaptureServices = angular.module('eventCaptureServices', ['ngResource']
                 
             if(paging){
                 var pgSize = pager.pageSize ? pager.pageSize : 50;
-                var pg = pager.pg ? pager.page : 1;
+                var pg = pager.page ? pager.page : 1;
                 pgSize = pgSize > 1 ? pgSize  : 1;
                 pg = pg > 1 ? pg : 1; 
                 url = url  + '&pageSize=' + pgSize + '&page=' + pg + '&totalPages=true';
@@ -281,9 +266,9 @@ var eventCaptureServices = angular.module('eventCaptureServices', ['ngResource']
     };
     
     return {
-        getByStage: function(orgUnit, programStage, attributeCategoryUrl, pager, paging){
+        getByStage: function(orgUnit, programStage, attributeCategoryUrl, pager, paging, format){
             var filterings = [{field:'programStage',value:programStage}];
-            return internalGetByFilters(orgUnit, attributeCategoryUrl, pager, paging, null, filterings);
+            return internalGetByFilters(orgUnit, attributeCategoryUrl, pager, paging, null, filterings, format);
         },  
         getByFilters: function(orgUnit, pager, paging, ordering, filterings){
             return internalGetByFilters(orgUnit, null, pager, paging, ordering, filterings);

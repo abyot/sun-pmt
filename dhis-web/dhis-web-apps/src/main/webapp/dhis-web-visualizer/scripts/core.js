@@ -2554,6 +2554,8 @@ Ext.onReady( function() {
                     getDefaultTips,
                     setDefaultTheme,
                     getDefaultLegend,
+                    getTitleStyle,
+                    getFavoriteTitle,
                     getDefaultChartTitle,
                     getDefaultChartSizeHandler,
                     getDefaultChartTitlePositionHandler,
@@ -2633,7 +2635,7 @@ Ext.onReady( function() {
                             }
 
                             trendLineFields.push(regressionKey);
-                            xResponse.metaData.names[regressionKey] = NS.i18n.trend + ' (Total)';
+                            xResponse.metaData.names[regressionKey] = DV.i18n.trend + ' (Total)';
                         }
                         else {
                             for (var i = 0; i < failSafeColumnIds.length; i++) {
@@ -2650,7 +2652,7 @@ Ext.onReady( function() {
                                 }
 
                                 trendLineFields.push(regressionKey);
-                                xResponse.metaData.names[regressionKey] = NS.i18n.trend + (appConfig.dashboard ? '' : ' (' + xResponse.metaData.names[failSafeColumnIds[i]] + ')');
+                                xResponse.metaData.names[regressionKey] = DV.i18n.trend + (appConfig.dashboard ? '' : ' (' + xResponse.metaData.names[failSafeColumnIds[i]] + ')');
                             }
                         }
                     }
@@ -2763,7 +2765,7 @@ Ext.onReady( function() {
                         return Ext.Array.max(values);
                     };
 
-                    if (NS.isDebug) {
+                    if (DV.isDebug) {
                         console.log("data", data);
                         console.log("rangeFields", store.rangeFields);
                         console.log("domainFields", store.domainFields);
@@ -3173,7 +3175,7 @@ Ext.onReady( function() {
                         },
                         showMarkers: false,
                         title: function() {
-                            var title = (Ext.isString(xLayout.targetLineTitle) ? xLayout.targetLineTitle : NS.i18n.target) + ' (' + xLayout.targetLineValue + ')',
+                            var title = (Ext.isString(xLayout.targetLineTitle) ? xLayout.targetLineTitle : DV.i18n.target) + ' (' + xLayout.targetLineValue + ')',
                                 ls = xLayout.legendStyle;
                             return ls && Ext.isNumber(ls.labelMaxLength) ? title.substr(0, ls.labelMaxLength) + '..' : title;
                         }()
@@ -3194,7 +3196,7 @@ Ext.onReady( function() {
                         },
                         showMarkers: false,
                         title: function() {
-                            var title = (Ext.isString(xLayout.baseLineTitle) ? xLayout.baseLineTitle : NS.i18n.base) + ' (' + xLayout.baseLineValue + ')',
+                            var title = (Ext.isString(xLayout.baseLineTitle) ? xLayout.baseLineTitle : DV.i18n.base) + ' (' + xLayout.baseLineValue + ')',
                                 ls = xLayout.legendStyle;
                             return ls && Ext.isNumber(ls.labelMaxLength) ? title.substr(0, ls.labelMaxLength) + '..' : title;
                         }()
@@ -3296,7 +3298,8 @@ Ext.onReady( function() {
                         padding: padding,
                         itemSpacing: 3,
                         labelFont: labelFont,
-                        labelColor: labelColor
+                        labelColor: labelColor,
+                        boxFill: 'transparent'
                     };
 
                     if (labelMarkerSize) {
@@ -3304,6 +3307,49 @@ Ext.onReady( function() {
                     }
 
                     return Ext.create('Ext.chart.Legend', chartConfig);
+                };
+
+                getTitleStyle = function(text, isSubtitle) {
+                    var fontSize = (app.getCenterRegionWidth() / text.length) < 11.6 ? 12 : 17,
+                        titleFont,
+                        titleColor;
+
+                    titleFont = 'normal ' + fontSize + 'px ' + conf.chart.style.fontFamily;
+                    titleColor = 'black';
+
+                    // legend
+                    if (Ext.isObject(xLayout.legendStyle)) {
+                        var style = xLayout.legendStyle;
+
+                        titleColor = style.titleColor || titleColor;
+
+                        if (style.titleFont) {
+                            titleFont = style.titleFont;
+                        }
+                        else {
+                            titleFont = style.titleFontWeight ? style.titleFontWeight + ' ' : 'normal ';
+                            titleFont += style.titleFontSize ? parseFloat(style.titleFontSize) + 'px ' : (fontSize + 'px ');
+                            titleFont +=  style.titleFontFamily ? style.titleFontFamily : conf.chart.style.fontFamily;
+                        }
+                    }
+
+                    //TODO
+                    if (isSubtitle) {
+                        titleFont = titleFont.replace('bold', 'normal');
+                    }
+
+                    return {
+                        font: titleFont,
+                        fill: titleColor
+                    };
+                };
+
+                getFavoriteTitle = function() {
+                    return appConfig.dashboard && xLayout.name ? Ext.create('Ext.draw.Sprite', Ext.apply({
+                        type: 'text',
+                        text: xLayout.name,
+                        y: 7
+                    }, getTitleStyle(xLayout.name))) : null;
                 };
 
                 getDefaultChartTitle = function(store) {
@@ -3334,34 +3380,12 @@ Ext.onReady( function() {
                         text = xLayout.title;
                     }
 
-                    fontSize = (app.getCenterRegionWidth() / text.length) < 11.6 ? 12 : 17;
-                    titleFont = 'normal ' + fontSize + 'px ' + conf.chart.style.fontFamily;
-                    titleColor = 'black';
-
-                    // legend
-                    if (Ext.isObject(xLayout.legendStyle)) {
-                        var style = xLayout.legendStyle;
-
-                        titleColor = style.titleColor || titleColor;
-
-                        if (style.titleFont) {
-                            titleFont = style.titleFont;
-                        }
-                        else {
-                            titleFont = style.titleFontWeight ? style.titleFontWeight + ' ' : 'normal ';
-                            titleFont += style.titleFontSize ? parseFloat(style.titleFontSize) + 'px ' : (fontSize + 'px ');
-                            titleFont +=  style.titleFontFamily ? style.titleFontFamily : conf.chart.style.fontFamily;
-                        }
-                    }
-
-                    return Ext.create('Ext.draw.Sprite', {
+                    return Ext.create('Ext.draw.Sprite', Ext.apply({
                         type: 'text',
                         text: text,
-                        font: titleFont,
-                        fill: titleColor,
-                        height: 20,
-                        y: appConfig.dashboard ? 7 : 20
-                    });
+                        height: 14,
+                        y: appConfig.dashboard ? 24 : 20
+                    }, getTitleStyle((appConfig.dashboard ? xLayout.name : text), true)));
                 };
 
                 getDefaultChartSizeHandler = function() {
@@ -3379,25 +3403,27 @@ Ext.onReady( function() {
                 getDefaultChartTitlePositionHandler = function() {
                     return function() {
                         if (this.items) {
-                            var title = this.items[0],
-                                titleWidth = Ext.isIE ? title.el.dom.scrollWidth : title.el.getWidth(),
-                                titleXFallback = 10,
-                                legend = this.legend,
-                                legendCenterX,
+                            for (var i = 0, title, titleWidth, titleXFallback, legend, legendCenterX, titleX; i < this.items.length; i++) {
+                                title = this.items[i];
+                                titleWidth = Ext.isIE ? title.el.dom.scrollWidth : title.el.getWidth();
+                                titleXFallback = 10;
+                                legend = this.legend;
+                                legendCenterX;
                                 titleX;
 
-                            if (this.legend.position === 'top') {
-                                legendCenterX = legend.x + (legend.width / 2);
-                                titleX = titleWidth ? legendCenterX - (titleWidth / 2) : titleXFallback;
-                            }
-                            else {
-                                var legendWidth = legend ? legend.width : 0;
-                                titleX = titleWidth ? (this.width / 2) - (titleWidth / 2) : titleXFallback;
-                            }
+                                if (this.legend.position === 'top') {
+                                    legendCenterX = legend.x + (legend.width / 2);
+                                    titleX = titleWidth ? legendCenterX - (titleWidth / 2) : titleXFallback;
+                                }
+                                else {
+                                    var legendWidth = legend ? legend.width : 0;
+                                    titleX = titleWidth ? (this.width / 2) - (titleWidth / 2) : titleXFallback;
+                                }
 
-                            title.setAttributes({
-                                x: titleX
-                            }, true);
+                                title.setAttributes({
+                                    x: titleX
+                                }, true);
+                            }
                         }
                     };
                 };
@@ -3412,9 +3438,9 @@ Ext.onReady( function() {
                             //animate: true,
                             animate: false,
                             shadow: false,
-                            insetPadding: appConfig.dashboard ? 17 : 35,
+                            insetPadding: 35,
                             insetPaddingObject: {
-                                top: appConfig.dashboard ? 12 : 32,
+                                top: appConfig.dashboard ? 20 : 32,
                                 right: appConfig.dashboard ? (isLineBased ? 5 : 3) : (isLineBased ? 25 : 15),
                                 bottom: appConfig.dashboard ? 2 : 10,
                                 left: appConfig.dashboard ? (isLineBased ? 15 : 7) : (isLineBased ? 70 : 50)
@@ -3440,7 +3466,7 @@ Ext.onReady( function() {
                         defaultConfig.insetPaddingObject.top = appConfig.dashboard ? 3 : 10;
                     }
                     else {
-                        defaultConfig.items = [getDefaultChartTitle(store)];
+                        defaultConfig.items = Ext.Array.clean([getFavoriteTitle(), getDefaultChartTitle(store)]);
                     }
 
                     Ext.apply(defaultConfig, config);
@@ -3798,7 +3824,7 @@ Ext.onReady( function() {
                         store: store,
                         series: series,
                         insetPaddingObject: {
-                            top: appConfig.dashboard ? 15 : 40,
+                            top: appConfig.dashboard ? 25 : 40,
                             right: appConfig.dashboard ? 2 : 30,
                             bottom: appConfig.dashboard ? 13: 30,
                             left: appConfig.dashboard ? 7 : 30
@@ -3874,10 +3900,10 @@ Ext.onReady( function() {
                         series: series,
                         theme: 'Category2',
                         insetPaddingObject: {
-                            top: 20,
-                            right: 2,
-                            bottom: 15,
-                            left: 7
+                            top: 30,
+                            right: appConfig.dashboard ? 2 : 60,
+                            bottom: 20,
+                            left: appConfig.dashboard ? 80 : 7
                         },
                         seriesStyle: {
                             labelColor: labelColor,
@@ -3962,24 +3988,17 @@ Ext.onReady( function() {
 
                     chart.setTitlePosition = function() {
                         if (this.items) {
-                            var title = this.items[0],
-                                subTitle = this.items[1],
-                                titleXFallback = 10;
+                            for (var i = 0, item, itemWidth, itemX, itemXFallback = 10; i < this.items.length; i++) {
+                                item = this.items[i];
 
-                            if (title) {
-                                var titleWidth = Ext.isIE ? title.el.dom.scrollWidth : title.el.getWidth(),
-                                    titleX = titleWidth ? (app.getCenterRegionWidth() / 2) - (titleWidth / 2) : titleXFallback;
-                                title.setAttributes({
-                                    x: titleX
-                                }, true);
-                            }
+                                if (item) {
+                                    itemWidth = Ext.isIE ? item.el.dom.scrollWidth : item.el.getWidth();
+                                    itemX = itemWidth ? (app.getCenterRegionWidth() / 2) - (itemWidth / 2) : itemXFallback;
 
-                            if (subTitle) {
-                                var subTitleWidth = Ext.isIE ? subTitle.el.dom.scrollWidth : subTitle.el.getWidth(),
-                                    subTitleX = subTitleWidth ? (app.getCenterRegionWidth() / 2) - (subTitleWidth / 2) : titleXFallback;
-                                subTitle.setAttributes({
-                                    x: subTitleX
-                                }, true);
+                                    item.setAttributes({
+                                        x: itemX
+                                    }, true);
+                                }
                             }
                         }
                     };

@@ -36,6 +36,7 @@ dhis2.db.widthDouble = 847;
 dhis2.db.visualItemTypes = ["CHART", "EVENT_CHART", "MAP", "REPORT_TABLE", "EVENT_REPORT", "APP"];
 dhis2.db.itemContentHeight = 308;
 dhis2.db.itemScrollbarWidth = /\bchrome\b/.test(navigator.userAgent.toLowerCase()) ? 8 : 17;
+dhis2.db.reportTableItems = [];
 
 // TODO support table as link and embedded
 // TODO double horizontal size
@@ -90,6 +91,9 @@ dhis2.db.tmpl = {
 	"<a id='hitFewer-${type}' href='javascript:dhis2.db.searchFewer( \"${type}\" )' style='display:none'>&laquo; ${i18n_see_fewer_hits}</a></li>",
 
 	hitItem: "<li><a class='viewLink' href='${link}'><img src='../images/${img}.png'>${name}</a>" +
+	"{{if canManage}}<a class='addLink' href='javascript:dhis2.db.addItemContent( \"${type}\", \"${id}\" )'>${i18n_add}</a>{{/if}}</li>",
+
+	appHitItem: "<li><a class='viewLink' href='javascript:dhis2.db.addItemContent( \"${type}\", \"${id}\" )'><img src='../images/${img}.png'>${name}</a>" +
 	"{{if canManage}}<a class='addLink' href='javascript:dhis2.db.addItemContent( \"${type}\", \"${id}\" )'>${i18n_add}</a>{{/if}}</li>",
 
 	chartItem: "<li id='liDrop-${itemId}' class='liDropItem'><div class='dropItem' id='drop-${itemId}' style='${style}' data-item='${itemId}'></div></li>" +
@@ -594,8 +598,12 @@ dhis2.db.renderDashboard = function( id )
 					width = dhis2.db.widthDouble;
 				}
 
-				dhis2.db.renderItems( $d, dashboardItem, width, false );
+				dhis2.db.renderItem( $d, dashboardItem, width, false );
 			} );
+
+            reportTablePlugin.url = '..';
+            reportTablePlugin.showTitles = true;
+            reportTablePlugin.load(dhis2.db.reportTableItems);
 
 			dhis2.db.renderLastDropItem( $d );
 		}
@@ -605,6 +613,7 @@ dhis2.db.renderDashboard = function( id )
 		}
 
 		dhis2.db.dashboardReady();
+		dhis2.db.registerDashboardViewEvent();
 	} );
 }
 
@@ -618,7 +627,7 @@ dhis2.db.linkItemHeaderHtml = function( itemId, title )
 	return html;
 }
 
-dhis2.db.renderItems = function( $d, dashboardItem, width, prepend )
+dhis2.db.renderItem = function( $d, dashboardItem, width, prepend )
 {
 	width = width || dhis2.db.widthNormal;
 	prepend = prepend || false;
@@ -729,15 +738,12 @@ dhis2.db.renderItems = function( $d, dashboardItem, width, prepend )
 			"i18n_remove": i18n_remove, "i18n_share": i18n_share_interpretation, "i18n_click_and_drag_to_new_position": i18n_click_and_drag_to_new_position } );
 		dhis2.db.preOrAppend( $d, content, prepend );
 
-		DHIS.getTable({
+		dhis2.db.reportTableItems.push({
 			url: '..',
 			el: 'plugin-' + dashboardItem.id,
 			id: dashboardItem.reportTable.id,
-			dashboard: true,
-			crossDomain: false,
-			skipMask: true,
-			displayDensity: 'compact',
-			fontSize: 'small',
+			displayDensity: 'COMPACT',
+			fontSize: 'SMALL',
 			userOrgUnit: userOrgUnit
 		});
 	}
@@ -903,7 +909,7 @@ dhis2.db.addItemContent = function( type, id )
 					$.getJSON( "../api" + location, function( item ) {
 						if ( item && $.inArray( item.type, dhis2.db.visualItemTypes ) != -1 ) {
 							$d = $( "#contentList" );
-							dhis2.db.renderItems( $d, item, undefined, true );
+							dhis2.db.renderItem( $d, item, undefined, true );
 							dhis2.db.addDragDrop( item.id );
 						}
 						else {
@@ -949,7 +955,7 @@ dhis2.db.removeItemContent = function( itemId, contentId )
 
 dhis2.db.addMessagesContent = function()
 {
-	dhis2.db.addItemContent( "messages", "" );
+	dhis2.db.addItemContent( "MESSAGES", "" );
 	$( "#manageDashboardForm" ).dialog( "destroy" );
 }
 
@@ -1184,7 +1190,7 @@ dhis2.db.renderSearch = function( data, $h )
 			for ( var i in data.apps )
 			{
 				var o = data.apps[i];
-				$h.append( $.tmpl( dhis2.db.tmpl.hitItem, { "canManage": canManage, "link": "../api/apps/" + o.key, "img": "document_small", "name": o.name, "type": "APP", "id": o.key, "i18n_add": i18n_add } ) );
+				$h.append( $.tmpl( dhis2.db.tmpl.appHitItem, { "canManage": canManage, "link": "../api/apps/" + o.key, "img": "app_small", "name": o.name, "type": "APP", "id": o.key, "i18n_add": i18n_add } ) );
 			}
 		}
 	}
@@ -1197,6 +1203,11 @@ dhis2.db.renderSearch = function( data, $h )
 dhis2.db.hideSearch = function()
 {
 	$( "#hitDiv" ).hide();
+}
+
+dhis2.db.registerDashboardViewEvent = function()
+{
+	$.post( "../api/dataStatistics?eventType=DASHBOARD_VIEW" );
 }
 
 //------------------------------------------------------------------------------

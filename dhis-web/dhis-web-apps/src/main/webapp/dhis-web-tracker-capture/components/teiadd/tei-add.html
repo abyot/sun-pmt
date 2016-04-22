@@ -71,12 +71,11 @@
             </div>
             
             <div class='relationship-container' ng-if="!teiForRelationship">
-
                 <div class="row">                    
                     <div class="col-sm-4 vertical-spacing">
                         <select ng-model="selectedProgramForRelative"
                                 class="form-control"
-                                ng-disabled="programs.length < 1 || (selectedProgramForRelative && selectedProgram.relatedProgram && relatedProgramRelationship) || selectedAttribute && selectedAttribute.trackedEntity"
+                                ng-disabled="programs.length < 1 || (selectedProgramForRelative && selectedProgram.relatedProgram && relatedProgramRelationship)"
                                 ng-options="program as program.displayName for program in programs | orderBy: 'displayName'" 
                                 ng-change="setAttributesForSearch(selectedProgramForRelative)">
                             <option value="">{{'please_select_a_program'| translate}}</option>

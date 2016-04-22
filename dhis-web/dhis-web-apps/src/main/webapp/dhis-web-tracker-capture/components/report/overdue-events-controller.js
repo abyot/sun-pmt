@@ -12,7 +12,8 @@ trackerCapture.controller('OverdueEventsController',
                 AttributesFactory,
                 ProgramFactory,
                 CurrentSelection,
-                MetaDataFactory) {    
+                MetaDataFactory,
+                CommonUtils) {    
     $scope.today = DateUtils.getToday();
     
     $scope.selectedOuMode = 'SELECTED';
@@ -113,8 +114,10 @@ trackerCapture.controller('OverdueEventsController',
                     angular.forEach(data.eventRows, function(row){
                         var overdueEvent = {};                    
                         angular.forEach(row.attributes, function(att){
-                            var val = AttributesFactory.formatAttributeValue(att, $scope.attributesById, $scope.optionSets, 'USER');                        
-                            overdueEvent[att.attribute] = val;                        
+                            if( att.attribute && $scope.attributesById[att.attribute] ){
+                                att.value = CommonUtils.formatDataValue(null, att.value, $scope.attributesById[att.attribute], $scope.optionSets, 'USER');                
+                            }
+                            overdueEvent[att.attribute] = att.value;                        
                         });
 
                         overdueEvent.dueDate = DateUtils.formatFromApiToUser(row.dueDate);

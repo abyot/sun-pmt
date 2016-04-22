@@ -508,6 +508,15 @@ public abstract class DeletionHandler
     {
         return null;
     }
+    
+    public void deleteInterpretation( Interpretation interpretation )
+    {
+    }
+    
+    public String allowDeleteIntepretation( Interpretation interpretation )
+    {
+        return null;
+    }
 
     public void deleteMetaDataFilter( MetaDataFilter metaDataFilter )
     {

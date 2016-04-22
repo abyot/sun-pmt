@@ -1,10 +1,11 @@
 <div class="row">
     <div class="col-sm-12" ng-if="model.showEventSearch">
-        <input class="form-control" placeholder="{{'type_your_search_criteria_here' | translate}}" ng-model="model.eventSearchText"/>
+        <input class="form-control" placeholder="{{'event_filter' | translate}}" ng-model="model.eventSearchText"/>
     </div>    
     <div ng-class="getTopLineColumnStyle(1)">
-        <div ng-if="!useMainMenu || (useMainMenu && !hideTopLineEventsForFormTypes[displayCustomForm])" ng-repeat="dhis2Event in getTopLineEventsPage() | eventListFilter:allEventsSorted:model.eventSearchText">            
-            <div class="event-container" ng-click="getEventPage('BACKWARD')" ng-if="$index === 0 && eventPagingStart > 0">
+        <div ng-if="!useMainMenu || (useMainMenu && !hideTopLineEventsForFormTypes[displayCustomForm])" 
+             ng-repeat="dhis2Event in filteredEvents = (getTopLineEventsPage() | eventListFilter:allEventsSorted:model.eventSearchText)">            
+            <div class="event-container event-container-navigation" ng-click="getEventPage('BACKWARD')" ng-if="model.eventSearchText.length === 0 && ($index === 0 && eventPagingStart > 0)">
                 {{'previous'| translate}}
             </div>
             
@@ -43,10 +44,10 @@
                 </div>
                 <div class="event-container-footer">{{getEventStyleLabel(dhis2Event)}}</div>
             </div>
-            <div class="arrow-container" ng-if="$index + 1 < eventPageSize && $index + 1 + eventPagingStart < topLineEvents.length">
+            <div class="arrow-container" ng-if="$index + 1 < filteredEvents.length">
                 <i class="fa fa-arrow-right"></i>
             </div>       
-            <div class="event-container event-container-navigation" ng-click="getEventPage('FORWARD')" ng-if="$index + 1 === eventPageSize && eventPagingEnd < topLineEvents.length">
+            <div class="event-container event-container-navigation" ng-click="getEventPage('FORWARD')" ng-if="model.eventSearchText.length === 0 && ($index + 1 === eventPageSize && eventPagingEnd < topLineEvents.length)">
                 {{'next'| translate}}
             </div>
         </div>

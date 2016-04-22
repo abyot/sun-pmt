@@ -107,10 +107,6 @@ input.option {
     width: 260px;
 }
 
-textarea {
-    width: 264px;
-}
-
 #bootstrapSelectForm .selectContainer .form-control-feedback {
     /* Adjust feedback icon position */
     right: -15px;
@@ -417,10 +413,6 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 input[type=date]::-webkit-inner-spin-button, input[type=date]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-
-input[type=text],input[type=password],input[type=email],textarea {
-    padding: 5px 2px !important;
 }
 
 .big-button {
@@ -758,16 +750,11 @@ div#searchOuTree h4{
 }
 
 .modal-full-window .modal-dialog {
-    width: 100%;
-    height: 100%;
+    width: 75%;
 }
 
 .modal {
-    padding-top: 50px;
-}
-
-.modal-dialog {
-    top: 50%;
+    padding-top: 20px;
 }
 
 .expanded{
@@ -889,7 +876,7 @@ div#searchOuTree h4{
     font-size: 14px;
     line-height: 1.0;
     color: #555;
-    padding: 2px;
+    padding: 5px;
     margin-bottom: 5px;
     margin-top: 5px;
     vertical-align: middle;
@@ -1249,8 +1236,8 @@ ul.tree ul li:last-child:before {
 }
 
 #map-container {
-    height: 800px;
     width: 100%;
+    margin-bottom: -30px;
 }
 
 #polygon-label {
@@ -1296,10 +1283,6 @@ ul.tree ul li:last-child:before {
 .form-horizontal .control-label {
     display: table-cell;
     vertical-align: middle;
-}
-
-input, button, select, textarea {
-    color: #444;
 }
 
 .program-drop-down > .dropdown-menu > li > a {
@@ -1881,14 +1864,14 @@ a.disable-link-effects:focus {
     margin-top:-6px;
     padding-top:6px;
 }
-@media (min-width:768px){
+/*@media (min-width:768px){
     .widgets-sticky {
         position: fixed;
         right: 0;
     }
     
     
-}
+}*/
 
 .custom-tracker-complete{
     background-color: #E6E6E6;
@@ -1949,4 +1932,22 @@ a.disable-link-effects:focus {
 .popover-label > a {
     color: #333 !important;
     text-decoration: none !important;
+}
+
+.popover {
+    max-width: 600px !important;
+}
+
+.btn-grp { 
+    border-color:  #b7b7b7; 
+    background-color: #cccccc;
+    color: #555 !important;
+}
+
+.default-btn-height {
+    font-size: 8pt !important;
+}
+
+.input-group-btn-no-width {
+    width: 0 !important;
 }

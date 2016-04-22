@@ -43,9 +43,11 @@ import org.hisp.dhis.datastatistics.DataStatisticsEvent;
 import org.hisp.dhis.datastatistics.AggregatedStatistics;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
+import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.datastatistics.DataStatisticsEventType;
 import org.hisp.dhis.datastatistics.DataStatisticsService;
 import org.hisp.dhis.datastatistics.EventInterval;
+import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 
 import java.util.List;
 import java.util.Date;
@@ -65,23 +67,23 @@ public class DataStatisticsController
 
     @RequestMapping( value = "/dataStatistics", method = RequestMethod.POST )
     @ResponseStatus( HttpStatus.CREATED )
-    public void saveEvent( @RequestParam DataStatisticsEventType dataStatisticsEventType )
+    public void saveEvent( @RequestParam DataStatisticsEventType eventType )
     {
         Date timestamp = new Date();
         User user = currentUserService.getCurrentUser();
 
-        DataStatisticsEvent event = new DataStatisticsEvent( dataStatisticsEventType, timestamp, user.getUsername() );
+        DataStatisticsEvent event = new DataStatisticsEvent( eventType, timestamp, user.getUsername() );
         dataStatisticsService.addEvent( event );
     }
 
     @RequestMapping( value = "/dataStatistics", method = RequestMethod.GET )
     public @ResponseBody List<AggregatedStatistics> report( @RequestParam Date startDate,
         @RequestParam Date endDate, @RequestParam EventInterval interval, HttpServletResponse response )
+        throws WebMessageException
     {
         if ( startDate.after( endDate ) )
         {
-            response.setStatus( HttpServletResponse.SC_CONFLICT );
-            return null;
+            throw new WebMessageException( WebMessageUtils.conflict( "Start date is after end date" ) );
         }
 
         return dataStatisticsService.getReports( startDate, endDate, interval );

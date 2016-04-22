@@ -67,7 +67,6 @@
                                 </label>
                             </div>
                         </div>
-
                         <div ng-if="!prStDes[eventGridColumn.id].dataElement.optionSetValue" ng-switch="eventGridColumn.valueType">
                             <div ng-switch-when="NUMBER">
                                 <input type="number"
@@ -92,7 +91,6 @@
                                        input-field-id={{eventGridColumn.id}} 
                                        ng-blur="saveDatavalue()" 
                                        class="form-control"/>
-                                </span>
                             </div>
                             <div ng-switch-when="INTEGER_POSITIVE">
                                 <input type="number"
@@ -158,6 +156,7 @@
                                     dh-value="currentEvent[eventGridColumn.id]"
                                     dh-name="foo"
                                     dh-event="currentEvent.event"
+                                    dh-click="saveDatavalueRadio(eventGridColumn, currentEvent, value)"
                                     dh-id="eventGridColumn.id">
                                 </d2-radio-button>
                             </div>
@@ -203,7 +202,7 @@
                                         <a ng-if="currentEvent.event && currentEvent.event !=='SINGLE_EVENT'" href ng-click="downloadFile(currentEvent.event, eventGridColumn.id)" title="{{fileNames[currentEvent.event][eventGridColumn.id]}}">{{fileNames[currentEvent.event][eventGridColumn.id].length > 20 ? fileNames[currentEvent.event][eventGridColumn.id].substr(0,20).contact('...') : fileNames[currentEvent.event][eventGridColumn.id]}}</a>                                        
                                     </div>
                                     <span class="input-group-btn">
-                                        <span class="btn btn-primary btn-file" ng-if="currentEvent[eventGridColumn.id]" ng-click="deleteFile(eventGridColumn.id)">
+                                        <span class="btn btn-grp btn-file" ng-if="currentEvent[eventGridColumn.id]" ng-click="deleteFile(eventGridColumn.id)">
                                             <span
                                                   title="{{'delete' | translate}}" 
                                                   d2-file-input-name="fileNames[currentEvent.event][eventGridColumn.id]" 
@@ -211,7 +210,7 @@
                                                 <i class="fa fa-trash"></i>
                                             </span>
                                         </span>
-                                        <span class="btn btn-primary btn-file" ng-if="!currentEvent[eventGridColumn.id]">
+                                        <span class="btn btn-grp btn-file" ng-if="!currentEvent[eventGridColumn.id]">
                                             <span title="{{'upload' | translate}}">
                                                 <i class="fa fa-upload"></i>
                                                 <input type="file" 
@@ -226,6 +225,29 @@
                                             </span>                                                
                                         </span>
                                     </span>                
+                                </div>
+                            </div>
+                            <div ng-switch-when="COORDINATE">
+                                <div class="input-group">                            
+                                    <input type="text"
+                                        name="foo" 
+                                        placeholder="{{'latitude_longitude_format' | translate}}"
+                                        class="form-control"
+                                        d2-custom-coordinate-validator 
+                                        ng-model="currentEvent[eventGridColumn.id]"
+                                        ng-required={{eventGridColumn.compulsory}}
+                                        ng-disabled="assignedFields[eventGridColumn.id]"
+                                        input-field-id={{eventGridColumn.id}}
+                                        ng-blur="saveDatavalue()"/>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-grp hideInPrint" 
+                                                type="button" 
+                                                title="{{'get_from_map'| translate}}"
+                                                ng-disabled="assignedFields[eventGridColumn.id]"
+                                                ng-click="showDataElementMap(currentEvent, eventGridColumn.id)">
+                                                <i class="fa fa-map-marker"></i>                             
+                                        </button>
+                                    </span>
                                 </div>
                             </div>
                             <div ng-switch-default>
@@ -246,7 +268,6 @@
             </tr>
         </tbody>
     </table>
-    
 </div>
 
 <div ng-if='selectedProgramStage.programStageSections.length'>
@@ -420,6 +441,7 @@
                                         dh-value="currentEvent[de.dataElement.id]"
                                         dh-name="foo"
                                         dh-event="currentEvent.event"
+                                        dh-click="saveDatavalueRadio(prStDes[de.dataElement.id], currentEvent, value)"
                                         dh-id="de.dataElement.id">
                                     </d2-radio-button>
                                 </div>
@@ -467,7 +489,7 @@
                                             <a ng-if="currentEvent.event && currentEvent.event !=='SINGLE_EVENT'" href ng-click="downloadFile(currentEvent.event, de.dataElement.id)">{{fileNames[currentEvent.event][de.dataElement.id]}}</a>                                        
                                         </div>
                                         <span class="input-group-btn">
-                                            <span class="btn btn-primary btn-file"  ng-if="currentEvent[de.dataElement.id]" ng-click="deleteFile(de.dataElement.id)">
+                                            <span class="btn btn-grp btn-file"  ng-if="currentEvent[de.dataElement.id]" ng-click="deleteFile(de.dataElement.id)">
                                                 <span
                                                       title="{{'delete' | translate}}" 
                                                       d2-file-input-name="fileNames[currentEvent.event][de.dataElement.id]" 
@@ -475,7 +497,7 @@
                                                     <i class="fa fa-trash"></i>
                                                 </span>
                                             </span>
-                                            <span class="btn btn-primary btn-file" ng-if="!currentEvent[de.dataElement.id]" >
+                                            <span class="btn btn-grp btn-file" ng-if="!currentEvent[de.dataElement.id]" >
                                                 <span title="{{'upload' | translate}}">
                                                     <i class="fa fa-upload"></i>
                                                     <input type="file" 
@@ -491,6 +513,29 @@
                                             </span>
                                         </span>                
                                     </div>                                    
+                                </div>
+                                <div ng-switch-when="COORDINATE">
+                                    <div class="input-group">                            
+                                        <input type="text"
+                                            name="foo" 
+                                            class="form-control" 
+                                            d2-custom-coordinate-validator 
+                                            placeholder="{{'latitude_longitude_format' | translate}}"
+                                            ng-model="currentEvent[de.dataElement.id]"
+                                            ng-required={{prStDes[de.dataElement.id].compulsory}}
+                                            ng-disabled="assignedFields[de.dataElement.id]"
+                                            input-field-id={{de.dataElement.id}}
+                                            ng-blur="saveDatavalue()"/>
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-grp hideInPrint" 
+                                                    type="button" 
+                                                    title="{{'get_from_map'| translate}}"
+                                                    ng-disabled="assignedFields[de.dataElement.id]"
+                                                    ng-click="showDataElementMap(currentEvent, de.dataElement.id)">
+                                                    <i class="fa fa-map-marker"></i>                             
+                                            </button>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div ng-switch-default>
                                     <input type="text"

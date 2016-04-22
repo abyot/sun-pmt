@@ -67,7 +67,6 @@
 </select>
 </div>
 
-
 <!-- SMS -->
 
 <div class="settingHeader">$i18n.getString( "sms_scheduler")</div>
@@ -79,27 +78,10 @@
 <div class="setting settingIndent">
 <select id="smsSchedulerStrategy" name="smsSchedulerStrategy" class="scheduling">
     <option value="disabled">$i18n.getString( "disabled" )</option>
-    <option value="everyMidNight"#if ( $smsSchedulerStrategy && $smsSchedulerStrategy == "everyMidNight" ) selected="selected"#end>$i18n.getString( "every_mid_night" )</option>
-    
+    <option value="everyMidNight"#if ( $smsSchedulerStrategy && $smsSchedulerStrategy == "everyMidNight" ) selected="selected"#end>$i18n.getString( "all_daily" )</option>
 </select>
 <input type="button" style="width:140px" onclick="window.location.href='executeTask.action?taskKey=sendScheduledMessageTaskNow'" value="$i18n.getString( 'Run Now' )"/>
 </div>
-
-
-  <!-- Data Statistics -->
-
-  <div class="settingHeader">$i18n.getString( "data_statistics" )</div>
-
-  <div class="settingLabel settingIndent">$i18n.getString( "data_statistics_task_strategy" )</div>
-
-  <div class="settingLabel settingIndent tipText">$i18n.getString( "last_success" ): $!format.formatDateTime( $lastDataStatisticSuccess )</div>
-
-  <div class="setting settingIndent">
-    <select id="dataStatisticsStrategy" name="dataStatisticsStrategy" class="scheduling">
-      <option value="disabled">$i18n.getString( "disabled" )</option>
-      <option value="allDaily"#if( $dataStatisticsStrategy && $dataStatisticsStrategy == "allDaily" ) selected="selected"#end>$i18n.getString( "all_daily" )</option>
-    </select>
-  </div>
 
 <!-- Submit -->
 

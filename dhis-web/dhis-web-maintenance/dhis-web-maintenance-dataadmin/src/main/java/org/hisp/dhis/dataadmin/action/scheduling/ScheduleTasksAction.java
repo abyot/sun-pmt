@@ -34,7 +34,6 @@ import static org.hisp.dhis.scheduling.SchedulingManager.TASK_DATA_SYNCH;
 import static org.hisp.dhis.scheduling.SchedulingManager.TASK_MONITORING_LAST_DAY;
 import static org.hisp.dhis.scheduling.SchedulingManager.TASK_RESOURCE_TABLE;
 import static org.hisp.dhis.scheduling.SchedulingManager.TASK_RESOURCE_TABLE_15_MINS;
-import static org.hisp.dhis.scheduling.SchedulingManager.TASK_DATASTATISTICS;
 import static org.hisp.dhis.scheduling.SchedulingManager.TASK_SMS_SCHEDULER;
 import static org.hisp.dhis.scheduling.SchedulingManager.TASK_SEND_SCHEDULED_SMS;
 import static org.hisp.dhis.system.scheduling.Scheduler.CRON_DAILY_0AM;
@@ -275,21 +274,14 @@ public class ScheduleTasksAction
             else
             {
                 ListMap<String, String> cronKeyMap = new ListMap<>();
-                // -------------------------------------------------------------
-                // Data statistics
-                // -------------------------------------------------------------
-
-                if (  STRATEGY_ALL_DAILY.equals( dataStatisticsStrategy ) )
-                {
-                    cronKeyMap.putValue(  CRON_DAILY_0AM, TASK_DATASTATISTICS );
-                }
+                
                 // -------------------------------------------------------------
                 // Resource tables
                 // -------------------------------------------------------------
 
                 if ( STRATEGY_ALL_DAILY.equals( resourceTableStrategy ) )
                 {
-                    cronKeyMap.putValue( CRON_DAILY_0AM, TASK_RESOURCE_TABLE );
+                    cronKeyMap.putValue( CRON_DAILY_11PM, TASK_RESOURCE_TABLE );
                 }
                 else if ( STRATEGY_ALL_15_MIN.equals( resourceTableStrategy ) )
                 {
@@ -331,9 +323,9 @@ public class ScheduleTasksAction
                 // SMS Scheduler
                 // -------------------------------------------------------------
                 
-                if(STRATEGY_EVERY_MIDNIGHT.equals( smsSchedulerStrategy ))
+                if ( STRATEGY_EVERY_MIDNIGHT.equals( smsSchedulerStrategy ) )
                 {
-                    cronKeyMap.putValue(CRON_DAILY_11PM, TASK_SMS_SCHEDULER);
+                    cronKeyMap.putValue( CRON_DAILY_11PM, TASK_SMS_SCHEDULER );
                     cronKeyMap.putValue( CRON_DAILY_8AM, TASK_SEND_SCHEDULED_SMS );
                 }
 
@@ -343,14 +335,6 @@ public class ScheduleTasksAction
         else
         {
             Collection<String> keys = schedulingManager.getScheduledKeys();
-
-            // -------------------------------------------------------------
-            // Data statistics
-            // -------------------------------------------------------------
-
-            if ( keys.contains( TASK_DATASTATISTICS ) ){
-                dataStatisticsStrategy = STRATEGY_ALL_DAILY;
-            }
 
             // -----------------------------------------------------------------
             // Resource tables

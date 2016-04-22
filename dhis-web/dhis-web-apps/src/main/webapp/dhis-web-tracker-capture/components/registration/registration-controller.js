@@ -7,6 +7,7 @@ trackerCapture.controller('RegistrationController',
                 $timeout,
                 $modal,
                 $translate,
+                orderByFilter,
                 AttributesFactory,
                 DHIS2EventFactory,
                 TEService,
@@ -22,6 +23,7 @@ trackerCapture.controller('RegistrationController',
                 TEIGridService,
                 TrackerRulesFactory,
                 TrackerRulesExecutionService,
+                TCStorageService,
                 ModalService) {
     
     $scope.maxOptionSize = 30;
@@ -56,7 +58,18 @@ trackerCapture.controller('RegistrationController',
             
             CurrentSelection.setAttributesById($scope.attributesById);
         });
-    }    
+    }
+    
+    //get ouLevels
+    $scope.ouLevels = CurrentSelection.getOuLevels();
+    if(!$scope.ouLevels){
+        TCStorageService.currentStore.open().done(function(){
+            TCStorageService.currentStore.getAll('ouLevels').done(function(response){
+                var ouLevels = angular.isObject(response) ? orderByFilter(response, '-level').reverse() : [];
+                CurrentSelection.setOuLevels(orderByFilter(ouLevels, '-level').reverse());
+            });
+        });
+    }
     
     $scope.optionSets = CurrentSelection.getOptionSets();        
     if(!$scope.optionSets){
@@ -70,7 +83,7 @@ trackerCapture.controller('RegistrationController',
     }
     
     $scope.dataElementTranslations = CurrentSelection.getDataElementTranslations();        
-    if($scope.dataElementTranslations.length < 1){
+    if(!$scope.dataElementTranslations){
         $scope.dataElementTranslations = [];
         MetaDataFactory.getAll('dataElements').then(function(des){
             angular.forEach(des, function(de){  
@@ -169,7 +182,7 @@ trackerCapture.controller('RegistrationController',
                     $scope.selectedEnrollment.status = 'ACTIVE';
                     angular.forEach($scope.currentStage.programStageDataElements, function (prStDe) {
                         var tx = $scope.dataElementTranslations[prStDe.dataElement.id];
-                        prStDe.dataElement.displayFormName = tx.displayFormName && tx.displayFormName !== "" ? tx.displayFormName : tx.displayName ? tx.displayName : prStDe.dataElement.displayName;                        
+                        prStDe.dataElement.displayFormName = tx && tx.displayFormName && tx.displayFormName !== "" ? tx.displayFormName : tx && tx.displayName ? tx.displayName : prStDe.dataElement.displayName;                        
                         $scope.prStDes[prStDe.dataElement.id] = prStDe;
                         if(prStDe.allowProvidedElsewhere){
                             $scope.allowProvidedElsewhereExists[$scope.currentStage.id] = true;
@@ -337,11 +350,9 @@ trackerCapture.controller('RegistrationController',
             var newAttributeInArray = {attribute:metaAttribute.id,
                 code:metaAttribute.code,
                 displayName:metaAttribute.displayName,
-                type:metaAttribute.valueType
+                type:metaAttribute.valueType,
+                value: $scope.selectedTei[metaAttribute.id]
             };
-            if($scope.selectedTei[newAttributeInArray.attribute]){
-                newAttributeInArray.value = $scope.selectedTei[newAttributeInArray.attribute];
-            }
             
            $scope.selectedTei.attributes.push(newAttributeInArray);
         });
@@ -365,19 +376,21 @@ trackerCapture.controller('RegistrationController',
     
     //listen for rule effect changes
     $scope.$on('ruleeffectsupdated', function(event, args){
-        $scope.warningMessages = [];
-        $scope.hiddenFields = [];    
-        $scope.assignedFields = [];
-        $scope.errorMessages = {};
-        $scope.hiddenSections = [];
-        
-        var effectResult = TrackerRulesExecutionService.processRuleEffectAttribute(args.event, $scope.selectedTei, $scope.tei, $scope.currentEvent, {}, $scope.currentEvent, $scope.attributesById, $scope.hiddenFields, $scope.hiddenSections, $scope.warningMessages, $scope.assignedFields);        
-        $scope.selectedTei = effectResult.selectedTei;
-        $scope.currentEvent = effectResult.currentEvent;
-        $scope.hiddenFields = effectResult.hiddenFields;
-        $scope.hiddenSections = effectResult.hiddenSections;
-        $scope.assignedFields = effectResult.assignedFields;
-        $scope.warningMessages = effectResult.warningMessages;
+        if(args.event === "registration") {
+            $scope.warningMessages = [];
+            $scope.hiddenFields = [];    
+            $scope.assignedFields = [];
+            $scope.errorMessages = {};
+            $scope.hiddenSections = [];
+
+            var effectResult = TrackerRulesExecutionService.processRuleEffectAttribute(args.event, $scope.selectedTei, $scope.tei, $scope.currentEvent, {}, $scope.currentEvent, $scope.attributesById, $scope.hiddenFields, $scope.hiddenSections, $scope.warningMessages, $scope.assignedFields);        
+            $scope.selectedTei = effectResult.selectedTei;
+            $scope.currentEvent = effectResult.currentEvent;
+            $scope.hiddenFields = effectResult.hiddenFields;
+            $scope.hiddenSections = effectResult.hiddenSections;
+            $scope.assignedFields = effectResult.assignedFields;
+            $scope.warningMessages = effectResult.warningMessages;
+        }
     });
 
     $scope.interacted = function(field) {        
@@ -449,6 +462,33 @@ trackerCapture.controller('RegistrationController',
     };
     
     $scope.showAttributeMap = function(obj, id){
+        var lat = "",
+            lng = "";
+        if(obj[id] && obj[id].length > 0){
+            var coordinates = obj[id].split(",");
+            lng = coordinates[0];
+            lat = coordinates[1];
+        }
+        var modalInstance = $modal.open({
+            templateUrl: '../dhis-web-commons/angular-forms/map.html',
+            controller: 'MapController',
+            windowClass: 'modal-full-window',
+            resolve: {
+                location: function () {
+                    return {lat: lat, lng: lng};
+                }
+            }
+        });
+
+        modalInstance.result.then(function (location) {
+            if(angular.isObject(location)){
+                obj[id] = location.lng + ',' + location.lat;
+            }
+        }, function () {
+        });
+    };
+    
+    $scope.showDataElementMap = function(obj, id){
         var lat = "",
             lng = "";
         if(obj[id] && obj[id].length > 0){

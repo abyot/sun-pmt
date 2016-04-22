@@ -226,7 +226,7 @@
                         <a href ng-click="downloadFile(currentEvent.event, de.dataElement.id)" title="{{fileNames[currentEvent.event][de.dataElement.id]}}">{{fileNames[currentEvent.event][de.dataElement.id].length > 20 ? fileNames[currentEvent.event][de.dataElement.id].substring(0,20).concat('...') : fileNames[currentEvent.event][de.dataElement.id]}}</a>
                     </div>
                         <span class="input-group-btn">
-                            <span class="btn btn-primary btn-file" ng-click="deleteFile(currentEvent,de.dataElement.id)" ng-if="currentEvent[de.dataElement.id]">
+                            <span class="btn btn-grp btn-file" ng-click="deleteFile(currentEvent,de.dataElement.id)" ng-if="currentEvent[de.dataElement.id]">
                                 <span
                                       title="{{'delete' | translate}}"
                                       d2-file-input-name="fileNames[currentEvent.event][de.dataElement.id]"
@@ -234,7 +234,7 @@
                                     <i class="fa fa-trash"></i>
                                 </span>
                             </span>
-                            <span class="btn btn-primary btn-file" ng-if="!currentEvent[de.dataElement.id]">
+                            <span class="btn btn-grp btn-file" ng-if="!currentEvent[de.dataElement.id]">
                                 <span title="{{'upload' | translate}}">
                                     <i class="fa fa-upload"></i>
                                     <input type="file"
@@ -257,7 +257,8 @@
         </div>
         <div ng-switch-when="COORDINATE">
             <div class="hideInPrint">
-                <input type="text"
+                <span class="input-group">                            
+                    <input type="text"
                        placeholder="{{'latitude_longitude_format' | translate}}"
                        d2-custom-coordinate-validator 
                        class="form-control"
@@ -267,8 +268,15 @@
                        ng-disabled="selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][de.dataElement.id]"
                        ng-change="saveDatavalue(prStDes[de.dataElement.id], innerForm.foo)"
                        name="foo"/>
-                <span ng-if="!(selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][de.dataElement.id])">
-                    <a href ng-click="showDataElementMap(currentEvent, prStDes[de.dataElement.id].dataElement.id, innerForm.foo)" title="{{'get_from_map'| translate}}"><i class="fa fa-map-marker fa-2x"></i></a>
+                    <span class="input-group-btn">
+                        <button class="btn btn-grp trim" 
+                                type="button" 
+                                title="{{'get_from_map'| translate}}"
+                                ng-if="!(selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][de.dataElement.id])"
+                                ng-click="showDataElementMap(currentEvent, prStDes[de.dataElement.id].dataElement.id, innerForm.foo)">
+                                <i class="fa fa-map-marker"></i>                             
+                        </button>
+                    </span>
                 </span>
             </div>
             <div class="not-for-screen">

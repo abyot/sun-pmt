@@ -50,7 +50,7 @@ import java.io.IOException;
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
 @Controller
-@RequestMapping( "/metadata/import" )
+@RequestMapping( "/23/metadata" )
 public class MetadataImportController
 {
     @Autowired

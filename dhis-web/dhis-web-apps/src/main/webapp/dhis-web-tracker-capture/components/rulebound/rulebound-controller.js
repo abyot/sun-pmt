@@ -40,6 +40,11 @@ trackerCapture.controller('RuleBoundController',
             if(effect.location === $scope.widgetTitle){
                 //This effect is affecting the local widget
                 
+                //Round data to two decimals if it is a number:
+                if(dhis2.validation.isNumber(effect.data)){
+                    effect.data = Math.round(effect.data*100)/100;
+                }
+                
                 if(effect.action === "DISPLAYTEXT") {
                     //this action is display text. Make sure the displaytext is
                     //added to the local list of displayed texts

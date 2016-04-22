@@ -35,7 +35,7 @@ trackerCapture.controller('DataEntryController',
     $scope.eventPagingEnd = $scope.eventPageSize;
     
     //Data entry form
-    $scope.outerDataEntryForm = {};
+    $scope.outerDataEntryForm = {longitude: {}, latitude: {}};
     $scope.displayCustomForm = false;
     $scope.currentElement = {};
     $scope.schedulingEnabled = false;
@@ -220,7 +220,7 @@ trackerCapture.controller('DataEntryController',
                         }
                         else {
                             //TODO: Alerts is going to be replaced with a proper display mecanism.
-                            alert($scope.prStDes[effect.dataElement.id].dataElement.formName + "Was blanked out and hidden by your last action");
+                            alert($scope.prStDes[effect.dataElement.id].dataElement.displayFormName + " was blanked out and hidden by your last action");
                         }
 
                         //Blank out the value:
@@ -281,6 +281,10 @@ trackerCapture.controller('DataEntryController',
                     //For "ASSIGN" actions where we have a dataelement, we save the calculated value to the dataelement:
                     //Blank out the value:
                     var processedValue = $filter('trimquotes')(effect.data);
+                    
+                    processedValue = processedValue === "true" ? true : processedValue;
+                    processedValue = processedValue === "false" ? false : processedValue;
+                    
                     affectedEvent[effect.dataElement.id] = processedValue;
                     $scope.assignedFields[event][effect.dataElement.id] = true;
                     $scope.saveDataValueForEvent($scope.prStDes[effect.dataElement.id], null, affectedEvent, true);
@@ -583,6 +587,7 @@ trackerCapture.controller('DataEntryController',
                     angular.forEach(stage.programStageDataElements, function (prStDe) {                        
                         var tx = $scope.dataElementTranslations[prStDe.dataElement.id];
                         prStDe.dataElement.displayFormName = tx.displayFormName && tx.displayFormName !== "" ? tx.displayFormName : tx.displayName ? tx.displayName : prStDe.dataElement.displayName;
+                        prStDe.dataElement.description = tx.description ? tx.description : prStDe.dataElement.description;
                         $scope.prStDes[prStDe.dataElement.id] = prStDe;
                         if(prStDe.allowProvidedElsewhere){
                             $scope.allowProvidedElsewhereExists[stage.id] = true;
@@ -1491,7 +1496,7 @@ trackerCapture.controller('DataEntryController',
         if (type === 'LAT' || type === 'LATLNG') {
             $scope.latitudeSaved = false;
         }
-        if (type === 'LAT' || type === 'LATLNG') {
+        if (type === 'LNG' || type === 'LATLNG') {
             $scope.longitudeSaved = false;
         }
 

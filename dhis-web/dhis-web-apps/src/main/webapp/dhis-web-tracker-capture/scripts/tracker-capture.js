@@ -164,7 +164,7 @@ function getUserRoles()
        return; 
     }
     
-    return dhis2.tracker.getTrackerObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,authorities]]', 'sessionStorage', dhis2.tc.store);
+    return dhis2.tracker.getTrackerObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,programs,authorities]]', 'sessionStorage', dhis2.tc.store);
 }
 
 function getCalendarSetting()
@@ -318,7 +318,7 @@ function getBatchPrograms( programs, batch )
     $.ajax( {
         url: '../api/programs.json',
         type: 'GET',
-        data: 'fields=id,displayName,type,version,useFirstStageDuringRegistration,displayFrontPageList,dataEntryMethod,enrollmentDateLabel,incidentDateLabel,displayIncidentDate,ignoreOverdueEvents,selectEnrollmentDatesInFuture,selectIncidentDatesInFuture,onlyEnrollOnce,externalAccess,displayOnAllOrgunit,registration,dataEntryForm[id,displayName,style,htmlCode,format],relationshipText,relationshipFromA,relatedProgram[id,displayName],relationshipType[id,displayName],trackedEntity[id,displayName,description],userRoles[id,displayName],categoryCombo[id,displayName,isDefault,categories[id,displayName,categoryOptions[id,displayName]]],organisationUnits[id,displayName],userRoles[id,displayName],programStages[id,displayName,sortOrder,version,dataEntryForm[id,displayName,style,htmlCode,format],captureCoordinates,blockEntryForm,autoGenerateEvent,allowGenerateNextVisit,generatedByEnrollmentDate,remindCompleted,hideDueDate,excecutionDateLabel,minDaysFromStart,repeatable,openAfterEnrollment,standardInterval,periodType,reportDateToUse,programStageSections[id,displayName,programStageDataElements[dataElement[id]]],programStageDataElements[displayInReports,allowProvidedElsewhere,allowFutureDate,compulsory,dataElement[id,code,displayName,description,formName,valueType,optionSetValue,optionSet[id],dataElementGroups[id,displayName]]]],programTrackedEntityAttributes[displayInList,mandatory,allowFutureDate,trackedEntityAttribute[id,unique]]&paging=false&filter=id:in:' + ids
+        data: 'fields=id,displayName,type,version,useFirstStageDuringRegistration,displayFrontPageList,dataEntryMethod,enrollmentDateLabel,incidentDateLabel,displayIncidentDate,ignoreOverdueEvents,selectEnrollmentDatesInFuture,selectIncidentDatesInFuture,onlyEnrollOnce,externalAccess,displayOnAllOrgunit,registration,dataEntryForm[id,displayName,style,htmlCode,format],relationshipText,relationshipFromA,relatedProgram[id,displayName],relationshipType[id,displayName],trackedEntity[id,displayName,description],categoryCombo[id,displayName,isDefault,categories[id,displayName,categoryOptions[id,displayName]]],organisationUnits[id,displayName],userRoles[id,displayName],programStages[id,displayName,sortOrder,version,dataEntryForm[id,displayName,style,htmlCode,format],captureCoordinates,blockEntryForm,autoGenerateEvent,allowGenerateNextVisit,generatedByEnrollmentDate,remindCompleted,hideDueDate,excecutionDateLabel,minDaysFromStart,repeatable,openAfterEnrollment,standardInterval,periodType,reportDateToUse,programStageSections[id,displayName,programStageDataElements[dataElement[id]]],programStageDataElements[displayInReports,allowProvidedElsewhere,allowFutureDate,compulsory,dataElement[id,code,displayName,description,url,formName,valueType,optionSetValue,optionSet[id],dataElementGroups[id,displayName]]]],programTrackedEntityAttributes[displayInList,mandatory,allowFutureDate,trackedEntityAttribute[id,unique]]&paging=false&filter=id:in:' + ids
     }).done( function( response ){
 
         if(response.programs){
@@ -328,12 +328,6 @@ function getBatchPrograms( programs, batch )
                     ou[o.id] = o.displayName;
                 });
                 program.organisationUnits = ou;
-
-                var ur = {};
-                _.each(_.values( program.userRoles), function(u){
-                    ur[u.id] = u.displayName;
-                });
-                program.userRoles = ur;
 
                 dhis2.tc.store.set( 'programs', program );
                 dhis2.tc.store.setAll( 'programStages', program.programStages );
@@ -540,7 +534,7 @@ function getOptionSets()
 
 function getDataElements()
 {   
-    return dhis2.tracker.getBatches( dataElementIds, batchSize, null, 'dataElements', 'dataElements', '../api/dataElements.json', 'paging=false&fields=id,formName,displayFormName', 'idb', dhis2.tc.store );
+    return dhis2.tracker.getBatches( dataElementIds, batchSize, null, 'dataElements', 'dataElements', '../api/dataElements.json', 'paging=false&fields=id,formName,displayFormName,description', 'idb', dhis2.tc.store );
 }
 
 function getMetaProgramValidations( programs, programIds )

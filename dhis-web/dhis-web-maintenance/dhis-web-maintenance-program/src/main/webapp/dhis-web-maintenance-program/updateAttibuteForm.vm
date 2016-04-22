@@ -86,7 +86,7 @@
 		<td></td>				
 	</tr>
     
-	<tr>
+	<!--<tr>
 		<td><label for="searchScope">$i18n.getString( "search_scope" ) <br /></label></td>
 		<td>
             <select id="searchScope" name="searchScope" >
@@ -97,7 +97,7 @@
 			</select>
 		</td>
 		<td></td>
-	</tr>
+	</tr>-->
 	
 	<tr>
 		<td><label for="optionSetId">$i18n.getString( "option_set" )</label></td>

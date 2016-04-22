@@ -30,7 +30,6 @@ package org.hisp.dhis.common;
 
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeValue;
-import org.hisp.dhis.common.NameableObject.NameableProperty;
 import org.hisp.dhis.user.User;
 
 import java.util.Collection;
@@ -100,6 +99,8 @@ public interface IdentifiableObjectManager
 
     <T extends IdentifiableObject> List<T> getAllSortedByLastUpdated( Class<T> clazz );
 
+    <T extends IdentifiableObject> List<T> getAllByAttributes( Class<T> klass, List<Attribute> attributes );
+
     <T extends IdentifiableObject> List<T> getByUid( Class<T> clazz, Collection<String> uids );
 
     <T extends IdentifiableObject> List<T> getByUidOrdered( Class<T> clazz, List<String> uids );
@@ -136,10 +137,6 @@ public interface IdentifiableObjectManager
 
     <T extends IdentifiableObject> Map<String, T> getIdMapNoAcl( Class<T> clazz, IdScheme idScheme );
 
-    <T extends NameableObject> Map<String, T> getIdMap( Class<T> clazz, NameableProperty property );
-
-    <T extends NameableObject> Map<String, T> getIdMapNoAcl( Class<T> clazz, NameableProperty property );
-
     <T extends IdentifiableObject> List<T> getObjects( Class<T> clazz, IdentifiableProperty property, Collection<String> identifiers );
 
     <T extends IdentifiableObject> List<T> getObjects( Class<T> clazz, Collection<Integer> identifiers );
@@ -175,6 +172,8 @@ public interface IdentifiableObjectManager
     void evict( Object object );
 
     <T extends IdentifiableObject> List<AttributeValue> getAttributeValueByAttribute( Class<T> klass, Attribute attribute );
+
+    List<AttributeValue> getAttributeValueByAttributes( Class<? extends IdentifiableObject> klass, List<Attribute> attributes );
 
     <T extends IdentifiableObject> List<AttributeValue> getAttributeValueByAttributeAndValue( Class<T> klass, Attribute attribute, String value );
 

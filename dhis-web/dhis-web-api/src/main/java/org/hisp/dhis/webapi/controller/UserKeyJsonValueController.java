@@ -72,9 +72,7 @@ public class UserKeyJsonValueController
      * If no namespaces exist, an empty array is returned.
      */
     @RequestMapping( value = "", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    List<String> getNamespaces( HttpServletResponse response )
+    public @ResponseBody List<String> getNamespaces( HttpServletResponse response )
         throws IOException
     {
         return userKeyJsonValueService.getNamespacesByUser( currentUserService.getCurrentUser() );
@@ -85,9 +83,7 @@ public class UserKeyJsonValueController
      * If no namespaces exist, an empty array is returned.
      */
     @RequestMapping( value = "/{namespace}", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    List<String> getKeys( @PathVariable String namespace, HttpServletResponse response )
+    public @ResponseBody List<String> getKeys( @PathVariable String namespace, HttpServletResponse response )
         throws IOException
     {
         return userKeyJsonValueService.getKeysByUserAndNamespace( currentUserService.getCurrentUser(), namespace );
@@ -112,9 +108,7 @@ public class UserKeyJsonValueController
      * the current user.
      */
     @RequestMapping( value = "/{namespace}/{key}", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    String getUserKeyJsonValue(
+    public @ResponseBody String getUserKeyJsonValue(
         @PathVariable String namespace,
         @PathVariable String key )
         throws IOException, WebMessageException

@@ -13,7 +13,8 @@ trackerCapture.controller('UpcomingEventsController',
                 AttributesFactory,
                 ProgramFactory,
                 CurrentSelection,
-                MetaDataFactory) {
+                MetaDataFactory,
+                CommonUtils) {
     $scope.today = DateUtils.getToday();
     
     $scope.maxOptionSize = 30;
@@ -111,8 +112,10 @@ trackerCapture.controller('UpcomingEventsController',
                 angular.forEach(data.eventRows, function(row){
                     var upcomingEvent = {};
                     angular.forEach(row.attributes, function(att){
-                        var val = AttributesFactory.formatAttributeValue(att, $scope.attributesById, $scope.optionSets, 'USER');
-                        upcomingEvent[att.attribute] = val;                        
+                        if( att.attribute && $scope.attributesById[att.attribute] ){
+                            att.value = CommonUtils.formatDataValue(null, att.value, $scope.attributesById[att.attribute], $scope.optionSets, 'USER');                
+                        }
+                        upcomingEvent[att.attribute] = att.value;                        
                     });
 
                     upcomingEvent.dueDate = DateUtils.formatFromApiToUser(row.dueDate);
@@ -308,5 +311,13 @@ trackerCapture.controller('UpcomingEventsController',
     $scope.getPage = function(page){    
         $scope.pager.page = page;
         $scope.generateReport();
+    };
+    
+    $scope.interacted = function(field) {
+        var status = false;
+        if(field){            
+            status = $scope.outerForm.submitted || field.$dirty;
+        }
+        return status;        
     };
 });

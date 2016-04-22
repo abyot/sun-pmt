@@ -478,16 +478,28 @@ public class Attribute
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isLegendSetAttribute() { return legendSetAttribute; }
+    public boolean isLegendSetAttribute()
+    {
+        return legendSetAttribute;
+    }
 
-    public void setLegendSetAttribute( boolean legendSetAttribute ) { this.legendSetAttribute = legendSetAttribute; }
+    public void setLegendSetAttribute( boolean legendSetAttribute )
+    {
+        this.legendSetAttribute = legendSetAttribute;
+    }
 
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isConstantAttribute() { return constantAttribute; }
+    public boolean isConstantAttribute()
+    {
+        return constantAttribute;
+    }
 
-    public void setConstantAttribute( boolean constantAttribute ) { this.constantAttribute = constantAttribute; }
+    public void setConstantAttribute( boolean constantAttribute )
+    {
+        this.constantAttribute = constantAttribute;
+    }
 
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
@@ -514,7 +526,6 @@ public class Attribute
     {
         this.sortOrder = sortOrder;
     }
-
 
     public List<Class<? extends IdentifiableObject>> getSupportedClasses()
     {
@@ -576,6 +587,7 @@ public class Attribute
             constantAttribute = attribute.isConstantAttribute();
             legendSetAttribute = attribute.isLegendSetAttribute();
             mandatory = attribute.isMandatory();
+            unique = attribute.isUnique();
 
             if ( mergeMode.isReplace() )
             {

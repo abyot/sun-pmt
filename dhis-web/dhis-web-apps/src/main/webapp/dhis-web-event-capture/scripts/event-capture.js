@@ -181,7 +181,7 @@ function getUserRoles()
        return; 
     }
     
-    return dhis2.tracker.getTrackerObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,authorities]]', 'sessionStorage', dhis2.ec.store);
+    return dhis2.tracker.getTrackerObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,programs,authorities]]', 'sessionStorage', dhis2.ec.store);
 }
 
 function getCalendarSetting()
@@ -235,7 +235,7 @@ function filterMissingPrograms( programs )
 
     var ids = [];
     _.each( _.values( programs ), function ( program ) {        
-        if(program.programStages && program.programStages[0].programStageDataElements){
+        if(program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements){
             build = build.then(function() {
                 var d = $.Deferred();
                 var p = d.promise();
@@ -317,7 +317,7 @@ function getBatchPrograms( programs, batch )
     $.ajax( {
         url: '../api/programs.json',
         type: 'GET',
-        data: 'fields=id,displayName,programType,version,dataEntryMethod,enrollmentDateLabel,incidentDateLabel,displayIncidentDate,ignoreOverdueEvents,categoryCombo[id,displayName,isDefault,categories[id,displayName,categoryOptions[id,displayName]]],organisationUnits[id,displayName],programStages[id,displayName,version,description,excecutionDateLabel,captureCoordinates,dataEntryForm[id,displayName,style,htmlCode,format],minDaysFromStart,repeatable,preGenerateUID,programStageSections[id,displayName,programStageDataElements[dataElement[id]]],programStageDataElements[displayInReports,sortOrder,allowProvidedElsewhere,allowFutureDate,compulsory,dataElement[id,name,url,description,valueType,optionSetValue,optionSet[id]]]],userRoles[id,displayName]&paging=false&filter=id:in:' + ids
+        data: 'fields=id,displayName,programType,version,dataEntryMethod,enrollmentDateLabel,incidentDateLabel,displayIncidentDate,ignoreOverdueEvents,categoryCombo[id,displayName,isDefault,categories[id,displayName,categoryOptions[id,displayName]]],organisationUnits[id,displayName],programStages[id,displayName,version,description,excecutionDateLabel,captureCoordinates,dataEntryForm[id,displayName,style,htmlCode,format],minDaysFromStart,repeatable,preGenerateUID,programStageSections[id,displayName,programStageDataElements[dataElement[id]]],programStageDataElements[displayInReports,sortOrder,allowProvidedElsewhere,allowFutureDate,compulsory,dataElement[id,name,url,description,valueType,optionSetValue,optionSet[id]]]]&paging=false&filter=id:in:' + ids
     }).done( function( response ){
 
         if(response.programs){
@@ -327,12 +327,6 @@ function getBatchPrograms( programs, batch )
                     ou[o.id] = o.displayName;
                 });
                 program.organisationUnits = ou;
-
-                var ur = {};
-                _.each(_.values( program.userRoles), function(u){
-                    ur[u.id] = u.displayName;
-                });
-                program.userRoles = ur;
 
                 dhis2.ec.store.set( 'programs', program );
             });
@@ -411,7 +405,7 @@ function getOptionSets()
 
 function getDataElements()
 {    
-    return dhis2.tracker.getBatches( dataElementIds, batchSize, null, 'dataElements', 'dataElements', '../api/dataElements.json', 'paging=false&fields=id,displayName,displayFormName', 'idb', dhis2.ec.store );
+    return dhis2.tracker.getBatches( dataElementIds, batchSize, null, 'dataElements', 'dataElements', '../api/dataElements.json', 'paging=false&fields=id,displayName,displayFormName,description', 'idb', dhis2.ec.store );
 }
 
 function getMetaProgramValidations( programs, programIds )

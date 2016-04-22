@@ -30,8 +30,9 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
     w.selectedWidget = {title: 'current_selections', view: "components/selected/selected.html", show: false, expand: true, parent: 'smallerWidget', order: 0};
     w.feedbackWidget = {title: 'feedback', view: "components/rulebound/rulebound.html", show: true, expand: true, parent: 'smallerWidget', order: 1};
     w.profileWidget = {title: 'profile', view: "components/profile/profile.html", show: true, expand: true, parent: 'smallerWidget', order: 2};    
-    w.relationshipWidget = {title: 'relationships', view: "components/relationship/relationship.html", show: true, expand: true, parent: 'smallerWidget', order: 4};
-    w.notesWidget = {title: 'notes', view: "components/notes/notes.html", show: true, expand: true, parent: 'smallerWidget', order: 5};            
+    w.relationshipWidget = {title: 'relationships', view: "components/relationship/relationship.html", show: true, expand: true, parent: 'smallerWidget', order: 3};
+    w.notesWidget = {title: 'notes', view: "components/notes/notes.html", show: true, expand: true, parent: 'smallerWidget', order: 4};
+    w.messagingWidget = {title: 'messaging', view: "components/messaging/messaging.html", show: false, expand: true, parent: 'smallerWidget', order: 5};
     var defaultLayout = new Object();
     
     defaultLayout['DEFAULT'] = {widgets: w, program: 'DEFAULT'};
@@ -244,28 +245,8 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
 })
 
 /* Factory to fetch programs */
-.factory('ProgramFactory', function($q, $rootScope, SessionStorageService, TCStorageService, orderByFilter) { 
-    
-    var userHasValidRole = function(program, userRoles){
-        
-        var hasRole = false;
+.factory('ProgramFactory', function($q, $rootScope, SessionStorageService, TCStorageService, orderByFilter, CommonUtils) { 
 
-        if($.isEmptyObject(program.userRoles)){
-            return hasRole;
-        }
-
-        for(var i=0; i < userRoles.length && !hasRole; i++){
-            if( program.userRoles.hasOwnProperty( userRoles[i].id ) ){
-                hasRole = true;
-            }
-            
-            if(!hasRole && userRoles[i].authorities && userRoles[i].authorities.indexOf('ALL') !== -1){
-                hasRole = true;
-            }
-        } 
-        return hasRole;        
-    };
-    
     return {        
         
         getAll: function(){
@@ -279,7 +260,7 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                 TCStorageService.currentStore.getAll('programs').done(function(prs){
                     var programs = [];
                     angular.forEach(prs, function(pr){
-                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && userHasValidRole(pr, userRoles)){
+                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(pr, 'programs', userRoles)){
                             programs.push(pr);
                         }
                     });
@@ -300,7 +281,7 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                 TCStorageService.currentStore.getAll('programs').done(function(prs){
                     var programs = [];
                     angular.forEach(prs, function(pr){                            
-                        if(userHasValidRole(pr, userRoles)){
+                        if(CommonUtils.userHasValidRole(pr, 'programs', userRoles)){
                             programs.push(pr);
                         }
                     });
@@ -362,7 +343,7 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                 TCStorageService.currentStore.getAll('programs').done(function(prs){
                     var programs = [];
                     angular.forEach(prs, function(pr){                            
-                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && userHasValidRole(pr, userRoles)){
+                        if(pr.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(pr, 'programs', userRoles)){
                             programs.push(pr);
                         }
                     });
@@ -695,7 +676,7 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
 })
 
 /* Service for getting tracked entity instances */
-.factory('TEIService', function($http, $q, AttributesFactory, DialogService ) {
+.factory('TEIService', function($http, $q, AttributesFactory, DialogService, CommonUtils, CurrentSelection, DateUtils ) {
     
     return {
         get: function(entityUid, optionSets, attributesById){
@@ -703,9 +684,9 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                 var tei = response.data;
                 angular.forEach(tei.attributes, function(att){                    
                     if(attributesById[att.attribute]){
-                        att.displayName = attributesById[att.attribute].displayName;
+                        att.displayName = attributesById[att.attribute].displayName;                        
+                        att.value = CommonUtils.formatDataValue(null, att.value, attributesById[att.attribute], optionSets, 'USER');                
                     }
-                    att.value = AttributesFactory.formatAttributeValue(att, attributesById, optionSets, 'USER');
                 });
                 return tei;
             }, function(error){
@@ -727,9 +708,17 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
             
             return promise;
         },
-        search: function(ouId, ouMode, queryUrl, programUrl, attributeUrl, pager, paging) {
-                
-            var url =  '../api/trackedEntityInstances/query.json?ou=' + ouId + '&ouMode='+ ouMode;
+        search: function(ouId, ouMode, queryUrl, programUrl, attributeUrl, pager, paging, format, attributesList, attrNamesIdMap, optionSets) {
+            var url;
+            var deferred = $q.defer();
+
+            if (format === "csv") {
+                url = '../api/trackedEntityInstances/query.csv?ou=' + ouId + '&ouMode=' + ouMode;
+            } else if (format === "xml") {
+                url = '../api/trackedEntityInstances/query.json?ou=' + ouId + '&ouMode=' + ouMode;
+            }else {
+                url = '../api/trackedEntityInstances/query.json?ou=' + ouId + '&ouMode=' + ouMode;
+            }
             
             if(queryUrl){
                 url = url + '&'+ queryUrl;
@@ -740,7 +729,6 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
             if(attributeUrl){
                 url = url + '&' + attributeUrl;
             }
-            
             if(paging){
                 var pgSize = pager ? pager.pageSize : 50;
                 var pg = pager ? pager.page : 1;
@@ -752,8 +740,87 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                 url = url + '&paging=false';
             }
             
-            var promise = $http.get( url ).then(function(response){
-                return response.data;
+            $http.get( url ).then(function(response){
+                var xmlData, rows, headers, index, itemName, value, jsonData;
+                var trackedEntityInstance, attributesById;
+                if (format) {
+                    attributesById = CurrentSelection.getAttributesById();
+                    if (format === "json") {
+                        jsonData = {"trackedEntityInstances": []};
+                        rows = response.data.rows;
+                        headers = response.data.headers;
+                        for (var i = 0; i < rows.length; i++) {
+                            trackedEntityInstance = null;
+                            for (var j = 0; j < rows[i].length; j++) {
+                                index = attributesList.indexOf(headers[j].name);
+                                itemName = headers[j].column;
+                                value = rows[i][j].replace(/&/g, "&amp;");
+                                if (attributesById[headers[j].name]) {
+                                    value = CommonUtils.formatDataValue(null, value, attributesById[headers[j].name], optionSets, 'USER');
+                                } else if ((headers[j].name === "created") || ((headers[j].name === "lastupdated"))) {
+                                    value = DateUtils.formatFromApiToUser(value);
+                                }
+
+                                if (trackedEntityInstance === null) {
+                                    trackedEntityInstance = {};
+                                }
+
+                                if (index > -1) {
+                                    if (!trackedEntityInstance["attributes"]) {
+                                        trackedEntityInstance["attributes"] = [];
+                                    }
+                                    trackedEntityInstance["attributes"].push({
+                                        id: attrNamesIdMap[itemName], name: itemName,
+                                        value: value
+                                    });
+                                } else {
+                                    trackedEntityInstance[headers[j].name] = value;
+                                }
+                            }
+                            if (trackedEntityInstance !== null) {
+                                jsonData["trackedEntityInstances"].push(trackedEntityInstance);
+                            }
+                        }
+                        if (jsonData) {
+                            deferred.resolve(JSON.stringify(jsonData, null, 2));
+                        }
+                    } else if (format === "xml") {
+                        xmlData = "";
+                        if (response.data && response.data.rows) {
+                            xmlData += "<trackedEntityInstances>";
+                            rows = response.data.rows;
+                            headers = response.data.headers;
+                            for (var i = 0; i < rows.length; i++) {
+                                xmlData += "<trackedEntityInstance>";
+                                for (var j = 0; j < rows[i].length; j++) {
+                                    index = attributesList.indexOf(headers[j].name);
+                                    itemName = headers[j].column;
+                                    value = rows[i][j].replace(/&/g, "&amp;");
+                                    if (attributesById[headers[j].name]) {
+                                        value = CommonUtils.formatDataValue(null, value, attributesById[headers[j].name], optionSets, 'USER');
+                                    } else if ((headers[j].name === "created") || ((headers[j].name === "lastupdated"))) {
+                                        value = DateUtils.formatFromApiToUser(value);
+                                    }
+                                    if (index > -1) {
+                                        xmlData += '<attribute id="' + attrNamesIdMap[itemName] + '" ' +
+                                            'name="' + itemName + '" value="' + value + '"></attribute>';
+                                    } else {
+                                        xmlData += '<' + headers[j].name + ' value="' + value + '"></' + headers[j].name + '>';
+                                    }
+
+                                }
+                                xmlData += "</trackedEntityInstance>";
+
+                            }
+                            xmlData += "</trackedEntityInstances>";
+                            deferred.resolve(xmlData);
+                        }
+                    } else if (format === "csv") {
+                        deferred.resolve(response.data);
+                    }
+                } else {
+                    deferred.resolve(response.data);
+                }
             }, function(error){
                 if(error && error.status === 403){
                     var dialogOptions = {
@@ -762,13 +829,14 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
                     };		
                     DialogService.showDialog({}, dialogOptions);
                 }
+                deferred.resolve(null);
             });            
-            return promise;
+            return deferred.promise;
         },                
         update: function(tei, optionSets, attributesById){
             var formattedTei = angular.copy(tei);
-            angular.forEach(formattedTei.attributes, function(att){                        
-                att.value = AttributesFactory.formatAttributeValue(att, attributesById, optionSets, 'API');                                                                
+            angular.forEach(formattedTei.attributes, function(att){
+                att.value = CommonUtils.formatDataValue(null, att.value, attributesById[att.attribute], optionSets, 'API');
             });
             var promise = $http.put( '../api/trackedEntityInstances/' + formattedTei.trackedEntityInstance , formattedTei ).then(function(response){                    
                 return response.data;
@@ -780,7 +848,7 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
             var formattedTei = angular.copy(tei);
             var attributes = [];
             angular.forEach(formattedTei.attributes, function(att){ 
-                attributes.push({attribute: att.attribute, value: AttributesFactory.formatAttributeValue(att, attributesById, optionSets, 'API')});
+                attributes.push({attribute: att.attribute, value: CommonUtils.formatDataValue(null, att.value, attributesById[att.attribute], optionSets, 'API')});
             });
             
             formattedTei.attributes = attributes;
@@ -941,64 +1009,6 @@ var trackerCaptureServices = angular.module('trackerCaptureServices', ['ngResour
             teiAttributes = orderByFilter(teiAttributes, '-order');
             teiAttributes.reverse();
             return teiAttributes;
-        },
-        formatAttributeValue: function(att, attsById, optionSets, destination){
-            var val = att.value;
-            var type = '';
-            if(att.type){
-                type = att.type;
-            }            
-            if(att.valueType){
-                type = att.valueType;
-            }
-            if(type === 'TRUE_ONLY'){
-                if(destination === 'USER'){
-                    val = val === 'true' ? true : '';
-                }
-                else{
-                    val = val === true ? 'true' : '';
-                }                
-            }
-            else{
-                if(val){  
-                    if(type === 'NUMBER' ||
-                        type === 'INTEGER' ||
-                        type === 'INTEGER_POSITIVE' ||
-                        type === 'INTEGER_NEGATIVE' ||
-                        type === 'INTEGER_ZERO_OR_POSITIVE'){
-                        if( dhis2.validation.isNumber(val)){
-                            if(type === 'NUMBER'){
-                                val = parseFloat(val);
-                            }else{
-                                val = parseInt(val);
-                            }
-                        } else {
-                            val = parseInt('0');
-                        }
-                    }
-                    if(type === 'DATE'){
-                        if(destination === 'USER'){
-                            val = DateUtils.formatFromApiToUser(val);
-                        }
-                        else{
-                            val = DateUtils.formatFromUserToApi(val);
-                        }                        
-                    }
-                    if(attsById[att.attribute] && 
-                            attsById[att.attribute].optionSetValue && 
-                            attsById[att.attribute].optionSet && 
-                            attsById[att.attribute].optionSet.id && 
-                            optionSets[attsById[att.attribute].optionSet.id]){
-                        if(destination === 'USER'){
-                            val = OptionSetService.getName(optionSets[attsById[att.attribute].optionSet.id].options, val);                                
-                        }
-                        else{
-                            val = OptionSetService.getCode(optionSets[attsById[att.attribute].optionSet.id].options, val);                                
-                        }                        
-                    }                    
-                }
-            }
-            return val;
         },
         generateAttributeFilters: function(attributes){
             angular.forEach(attributes, function(attribute){

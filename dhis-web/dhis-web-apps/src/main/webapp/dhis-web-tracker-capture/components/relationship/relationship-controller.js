@@ -10,7 +10,8 @@ trackerCapture.controller('RelationshipController',
                 CurrentSelection,
                 RelationshipFactory,
                 ModalService,
-                DialogService) {
+                DialogService,
+                CommonUtils) {
     $scope.dashboardReady = false;
     $rootScope.showAddRelationshipDiv = false;    
     $scope.relatedProgramRelationship = false;
@@ -168,8 +169,10 @@ trackerCapture.controller('RelationshipController',
         
         if(tei && tei.relative && tei.relative.attributes && !tei.relative.processed){
             angular.forEach(tei.relative.attributes, function(att){                
-                var val = AttributesFactory.formatAttributeValue(att,$scope.attributesById, $scope.optionSets, 'USER');                
-                attributes[att.attribute] = val;
+                if( att.attribute && $scope.attributesById[att.attribute] ){
+                    att.value = CommonUtils.formatDataValue(null, att.value, $scope.attributesById[att.attribute], $scope.optionSets, 'USER');                
+                }                
+                attributes[att.attribute] = att.value;
             });
         }
         

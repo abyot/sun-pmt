@@ -224,7 +224,7 @@
                         <a href ng-click="downloadFile(currentEvent.event, prStDe.dataElement.id)" title="{{fileNames[currentEvent.event][prStDe.dataElement.id]}}">{{fileNames[currentEvent.event][prStDe.dataElement.id].length > 20 ? fileNames[currentEvent.event][prStDe.dataElement.id].substring(0,20).concat('...') : fileNames[currentEvent.event][prStDe.dataElement.id]}}</a>
                     </div>
                     <span class="input-group-btn">
-                        <span class="btn btn-primary btn-file" ng-if="currentEvent[prStDe.dataElement.id]" ng-click="deleteFile(currentEvent,prStDe.dataElement.id)">
+                        <span class="btn btn-grp btn-file" ng-if="currentEvent[prStDe.dataElement.id]" ng-click="deleteFile(currentEvent,prStDe.dataElement.id)">
                             <span ng-if="currentEvent[prStDe.dataElement.id]"
                                   title="{{'delete' | translate}}"
                                   d2-file-input-name="fileNames[currentEvent.event][prStDe.dataElement.id]"
@@ -232,7 +232,7 @@
                                 <i class="fa fa-trash"></i><
                             </span>
                         </span>
-                        <span class="btn btn-primary btn-file" ng-if="!currentEvent[prStDe.dataElement.id]">
+                        <span class="btn btn-grp btn-file" ng-if="!currentEvent[prStDe.dataElement.id]">
                             <span ng-if="!currentEvent[prStDe.dataElement.id]" title="{{'upload' | translate}}">
                                 <i class="fa fa-upload"></i>
                                 <input type="file"
@@ -255,7 +255,8 @@
         </div>
         <div ng-switch-when="COORDINATE">
             <div class="hideInPrint">
-                <input type="text"
+                <span class="input-group">                            
+                    <input type="text"
                        placeholder="{{'latitude_longitude_format' | translate}}"
                        d2-custom-coordinate-validator 
                        class="form-control"
@@ -265,8 +266,15 @@
                        ng-disabled="selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][prStDe.dataElement.id]"
                        ng-blur="saveDatavalue(prStDe, innerForm.foo)"
                        name="foo"/>
-                <span ng-if="!(selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][prStDe.dataElement.id])">
-                    <a href ng-click="showDataElementMap(currentEvent, prStDe.dataElement.id)" title="{{'get_from_map'| translate}}"><i class="fa fa-map-marker fa-2x"></i></a>
+                    <span class="input-group-btn">
+                        <button class="btn btn-grp trim" 
+                                type="button" 
+                                title="{{'get_from_map'| translate}}"
+                                ng-if="!(selectedEnrollment.status !== 'ACTIVE' || currentEvent.editingNotAllowed || assignedFields[currentEvent.event][prStDe.dataElement.id])"
+                                ng-click="showDataElementMap(currentEvent, prStDe.dataElement.id, innerForm.foo)">
+                                <i class="fa fa-map-marker"></i>                             
+                        </button>
+                    </span>
                 </span>
             </div>
             <div class="not-for-screen">

@@ -71,9 +71,7 @@ public class KeyJsonValueController
      * If no namespaces exist, an empty array is returned.
      */
     @RequestMapping( value = "", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    List<String> getNamespaces( HttpServletResponse response )
+    public @ResponseBody List<String> getNamespaces( HttpServletResponse response )
         throws IOException
     {
         return keyJsonValueService.getNamespaces();
@@ -83,9 +81,7 @@ public class KeyJsonValueController
      * Returns a list of strings representing keys in the given namespace.
      */
     @RequestMapping( value = "/{namespace}", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    List<String> getKeysInNamespace( @PathVariable String namespace, HttpServletResponse response )
+    public @ResponseBody List<String> getKeysInNamespace( @PathVariable String namespace, HttpServletResponse response )
         throws IOException, WebMessageException
     {
         if ( !keyJsonValueService.getNamespaces().contains( namespace ) )
@@ -126,9 +122,7 @@ public class KeyJsonValueController
      * the given namespace.
      */
     @RequestMapping( value = "/{namespace}/{key}", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    String getKeyJsonValue(
+    public @ResponseBody String getKeyJsonValue(
         @PathVariable String namespace, @PathVariable String key, HttpServletResponse response )
         throws IOException, WebMessageException
     {
@@ -153,9 +147,7 @@ public class KeyJsonValueController
      * Retrieves the KeyJsonValue represented by the given key from the given namespace.
      */
     @RequestMapping( value = "/{namespace}/{key}/metaData", method = RequestMethod.GET, produces = "application/json" )
-    public
-    @ResponseBody
-    KeyJsonValue getKeyJsonValueMetaData(
+    public @ResponseBody KeyJsonValue getKeyJsonValueMetaData(
         @PathVariable String namespace, @PathVariable String key, HttpServletResponse response )
         throws Exception
     {

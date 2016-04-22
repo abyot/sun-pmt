@@ -81,14 +81,14 @@ Version: 3.4.5 Timestamp: Mon Nov  4 08:22:42 PST 2013
 
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
     margin-right: 42px;
-    //padding: 2px 6px;
+    padding: 2px 6px;
 }
 
 .select2-container .select2-choice > .select2-chosen {
     margin-right: 26px;
     display: block;
     overflow: hidden;
-
+	padding: 2px;
     white-space: nowrap;
 
     text-overflow: ellipsis;

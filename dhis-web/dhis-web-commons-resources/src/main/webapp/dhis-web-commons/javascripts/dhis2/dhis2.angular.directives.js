@@ -110,7 +110,7 @@ var d2Directives = angular.module('d2Directives', [])
     };
 })
 
-.directive('d2PopOver', function ($compile, $templateCache) {
+.directive('d2PopOver', function ($compile, $templateCache, $translate) {
 
     return {
         restrict: 'EA',
@@ -130,7 +130,7 @@ var d2Directives = angular.module('d2Directives', [])
                 placement: scope.placement ? scope.placement : 'auto',
                 trigger: scope.trigger ? scope.trigger : 'hover',
                 html: true,
-                title: scope.title
+                title: $translate.instant('_details')
             };
             element.popover(options);            
             
@@ -294,29 +294,42 @@ var d2Directives = angular.module('d2Directives', [])
                 dateFormat = 'dd-mm-yyyy';
             }
 
-            var minDate = $parse(attrs.minDate)(scope),
-                    maxDate = $parse(attrs.maxDate)(scope),
-                    calendar = $.calendars.instance(calendarSetting.keyCalendar);
-
-            element.calendarsPicker({
-                changeMonth: true,
-                dateFormat: dateFormat,
-                yearRange: '-120:+30',
-                minDate: minDate,
-                maxDate: maxDate,
-                calendar: calendar,
-                duration: "fast",
-                showAnim: "",
-                renderer: $.calendars.picker.themeRollerRenderer,
-                onSelect: function () {
-                    $(this).change();
-                }
-            })
-                    .change(function () {
-                        ctrl.$setViewValue(this.value);
-                        this.focus();
-                        scope.$apply();
-                    });
+            var minDate = $parse(attrs.minDate)(scope);
+            var maxDate = $parse(attrs.maxDate)(scope);
+            var calendar = $.calendars.instance(calendarSetting.keyCalendar);                      
+            
+            var initializeDatePicker = function( sDate, eDate ){
+                element.calendarsPicker({
+                    changeMonth: true,
+                    dateFormat: dateFormat,
+                    yearRange: '-120:+30',
+                    minDate: sDate,
+                    maxDate: eDate,
+                    calendar: calendar,
+                    duration: "fast",
+                    showAnim: "",
+                    renderer: $.calendars.picker.themeRollerRenderer,
+                    onSelect: function () {
+                        $(this).change();
+                    }
+                }).change(function () {
+                    ctrl.$setViewValue(this.value);
+                    this.focus();
+                    scope.$apply();
+                });
+            };            
+            
+            initializeDatePicker(minDate, maxDate);
+            
+            scope.$watch(attrs.minDate, function(value){
+                element.calendarsPicker('destroy');
+                initializeDatePicker( value, $parse(attrs.maxDate)(scope));
+            });
+            
+            scope.$watch(attrs.maxDate, function(value){
+                element.calendarsPicker('destroy');
+                initializeDatePicker( $parse(attrs.minDate)(scope), value);
+            });            
         }
     };
 })
@@ -403,7 +416,7 @@ var d2Directives = angular.module('d2Directives', [])
         }
     };
 })
-.directive('d2Audit', function () {
+.directive('d2Audit', function (CurrentSelection, MetaDataFactory ) {
     return {
         restrict: 'E',
         template: '<span class="hideInPrint audit-icon" title="{{\'audit_history\' | translate}}" data-ng-click="showAuditHistory()">' +
@@ -416,23 +429,44 @@ var d2Directives = angular.module('d2Directives', [])
         },
         controller: function ($scope, $modal) {
             $scope.showAuditHistory = function () {
-                $modal.open({
-                    templateUrl: "../dhis-web-commons/angular-forms/audit-history.html",
-                    controller: "AuditHistoryController",
-                    resolve: {
-                        eventId: function () {
-                            return $scope.eventId;
-                        },
-                        dataType: function () {
-                            return $scope.type;
-                        },
-                        nameIdMap: function () {
-                            return $scope.nameIdMap;
+                
+                var openModal = function( ops ){
+                    $modal.open({
+                        templateUrl: "../dhis-web-commons/angular-forms/audit-history.html",
+                        controller: "AuditHistoryController",
+                        resolve: {
+                            eventId: function () {
+                                return $scope.eventId;
+                            },
+                            dataType: function () {
+                                return $scope.type;
+                            },
+                            nameIdMap: function () {
+                                return $scope.nameIdMap;
+                            },
+                            optionSets: function(){
+                                return ops;
+                            }
                         }
-                    }
-                })
-            }
-        },
+                    });
+                };
+                
+                var optionSets = CurrentSelection.getOptionSets();
+                if(!optionSets){
+                    optionSets = [];
+                    MetaDataFactory.getAll('optionSets').then(function(optionSets){
+                        angular.forEach(optionSets, function(optionSet){  
+                            optionSets[optionSet.id] = optionSet;
+                        });
+                        CurrentSelection.setOptionSets(optionSets);
+                        openModal(optionSets);
+                    });                
+                }
+                else{
+                    openModal(optionSets);
+                }                
+            };
+        }
     };
 })
 .directive('d2RadioButton', function (){  

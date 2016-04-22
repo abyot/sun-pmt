@@ -105,6 +105,13 @@
                     <span ng-if="eventRegistration">{{'print_form'| translate}}</span>
                     <span ng-if="editingEventInFull">{{'print_details'| translate}}</span>
                 </button>
+                <button type="button"
+                        class="btn btn-info small-horizontal-spacing"
+                        ng-if="dhis2Events.length > 0 && !eventRegistration && !editingEventInFull"
+                        ng-csv="getExportList()"
+                        filename="eventList.csv">
+                    {{'export'| translate}}
+                </button>
             </div>
         </div>        
         <!-- selection ends -->        
@@ -143,7 +150,7 @@
                                 </td>
                             </tr>
                         </table>
-                    </script>                    
+                    </script>                 
                     <div class="bordered-div">
                         <div ng-if="displayCustomForm" ng-include="'views/ec-custom-form.html'"></div>  
                         <div ng-if="!displayCustomForm" ng-include="'views/defaultForm.html'"></div>
@@ -151,8 +158,8 @@
                         <div ng-include="'views/buttons-section.html'"></div>
                     </div>                    
                 </div>
-
-                <div class="col-sm-4" ng-if="allProgramRules.programIndicators.rules && allProgramRules.programIndicators.rules.length > 0">
+                <div class="col-sm-4" ng-if="warningMessages.length > 0 || 
+                    (allProgramRules.programIndicators.rules && allProgramRules.programIndicators.rules.length > 0)">
                     <div class="bordered-div">
                         <div ng-if="allProgramRules.programIndicators.rules && allProgramRules.programIndicators.rules.length > 0" ng-include="'views/indicators.html'"></div>
                         <div ng-if="warningMessages.length > 0" ng-include="'views/warnings.html'"></div>

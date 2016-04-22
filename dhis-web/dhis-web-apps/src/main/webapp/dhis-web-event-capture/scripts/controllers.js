@@ -3,7 +3,7 @@
 'use strict';
 
 /* Controllers */
-var eventCaptureControllers = angular.module('eventCaptureControllers', [])
+var eventCaptureControllers = angular.module('eventCaptureControllers', ['ngCsv'])
 
 //Controller for settings page
 .controller('MainController',
@@ -13,6 +13,8 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                 $translate,
                 $anchorScroll,
                 $window,
+                $q,
+                $filter,
                 orderByFilter,
                 SessionStorageService,
                 Paginator,
@@ -189,7 +191,7 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                 $scope.filterTypes = {};                               
                 $scope.newDhis2Event = {};
 
-                $scope.eventGridColumns.push({displayName: 'form_id', id: 'uid', valueType: 'TEXT', compulsory: false, filterWithRange: false, showFilter: false, show: false});
+                $scope.eventGridColumns.push({displayName: 'event_uid', id: 'uid', valueType: 'TEXT', compulsory: false, filterWithRange: false, showFilter: false, show: false});
                 $scope.filterTypes['uid'] = 'TEXT';                
 
                 $scope.eventGridColumns.push({displayName: $scope.selectedProgramStage.reportDateDescription ? $scope.selectedProgramStage.reportDateDescription : $translate.instant('incident_date'), id: 'eventDate', valueType: 'DATE', filterWithRange: true, compulsory: false, showFilter: false, show: true});
@@ -199,6 +201,7 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                 angular.forEach($scope.selectedProgramStage.programStageDataElements, function(prStDe){
                     var tx = $scope.dataElementTranslations[prStDe.dataElement.id];                    
                     prStDe.dataElement.displayFormName = tx.displayFormName && tx.displayFormName !== "" ? tx.displayFormName : tx.displayName;
+                    prStDe.dataElement.description = tx.description ? tx.description : prStDe.dataElement.description;
                     $scope.prStDes[prStDe.dataElement.id] = prStDe;
                     $scope.newDhis2Event[prStDe.dataElement.id] = '';
                     
@@ -281,7 +284,7 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
         $scope.eventLength = 0;
         $scope.eventFetched = false;
         
-        var attributeCategoryUrl = {cc: $scope.selectedProgram.categoryCombo.id, default: $scope.selectedProgram.categoryCombo.isDefault, cp: ""};
+        $scope.attributeCategoryUrl = {cc: $scope.selectedProgram.categoryCombo.id, default: $scope.selectedProgram.categoryCombo.isDefault, cp: ""};
         if(!$scope.selectedProgram.categoryCombo.isDefault){            
             if($scope.selectedOptions.length !== $scope.selectedCategories.length){
                 var dialogOptions = {
@@ -292,13 +295,13 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                 DialogService.showDialog({}, dialogOptions);
                 return;
             }            
-            attributeCategoryUrl.cp = $scope.selectedOptions.join(';');
+            $scope.attributeCategoryUrl.cp = $scope.selectedOptions.join(';');
         }
                
         if( $scope.selectedProgram && $scope.selectedProgramStage && $scope.selectedProgramStage.id){
             
             //Load events for the selected program stage and orgunit
-            DHIS2EventFactory.getByStage($scope.selectedOrgUnit.id, $scope.selectedProgramStage.id, attributeCategoryUrl, $scope.pager, true ).then(function(data){
+            DHIS2EventFactory.getByStage($scope.selectedOrgUnit.id, $scope.selectedProgramStage.id, $scope.attributeCategoryUrl, $scope.pager, true ).then(function(data){
 
                 if(data.events){
                     $scope.eventLength = data.events.length;
@@ -902,7 +905,220 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
             });
         });        
     };
-        
+
+    $scope.getExportList = function() {
+
+        var deferred = $q.defer();
+
+        var modalInstance = $modal.open({
+            templateUrl: '../dhis-web-commons/angular-forms/export.html',
+            controller: 'ExportController',
+            resolve: {
+                gridColumns: function () {
+                    return $scope.eventGridColumns;
+                }
+            }
+        });
+
+        modalInstance.result.then(function (format) {
+            var fieldsToExport = $filter('filter')($scope.eventGridColumns, {show: true});
+            var idList = ["programStage", "orgUnit", "program", "event", "status", "eventDate", "created"];
+            var eventsJSON = [];
+            var eventsJSONIndex = -1;
+            var dataValuesJSON;
+            var headers = [];
+            var row;
+            var rowXML;
+            var eventsCSV = [];
+            var eventsXML = '';
+            var anchor;
+            var nameToIdMap = {};
+            var emptyRow = [];
+
+            eventsCSV[0] = angular.copy(idList);
+
+            for (var ind = 0; ind < fieldsToExport.length; ind++) {
+                emptyRow[ind] = null;
+                nameToIdMap[fieldsToExport[ind].id] = fieldsToExport[ind].displayName;
+            }
+
+
+            initExportList();
+
+            /*Get All the events list from the server*/
+            DHIS2EventFactory.getByStage($scope.selectedOrgUnit.id, $scope.selectedProgramStage.id,
+                $scope.attributeCategoryUrl, true).then(function (data) {
+
+                if (angular.isObject(data.events)) {
+                    angular.forEach(data.events, function (event) {
+                        ++eventsJSONIndex;
+                        eventsJSON[eventsJSONIndex] = {};
+                        row = angular.copy(emptyRow);
+                        rowXML = angular.copy(emptyRow);
+                        if (format === 'xml') {
+                            eventsXML += '<event>';
+                        }
+                        dataValuesJSON = [];
+                        angular.forEach(event.dataValues, function (dataValue) {
+                            if ($scope.prStDes[dataValue.dataElement]) {
+                                var val = dataValue.value;
+                                if (angular.isObject($scope.prStDes[dataValue.dataElement].dataElement)) {
+                                    val = CommonUtils.formatDataValue(null, val, $scope.prStDes[dataValue.dataElement].dataElement, $scope.optionSets, 'USER');
+                                }
+                                event[dataValue.dataElement] = val;
+
+                                insertDataValueToRow(dataValue.dataElement, val);
+                            }
+                        });
+
+                        event.eventDate = DateUtils.formatFromApiToUser(event.eventDate);
+                        event['eventDate'] = event.eventDate;
+
+                        event.created = DateUtils.formatFromApiToUser(event.created);
+                        event['created'] = event.created;
+
+
+                        if (format === 'xml' || format === 'csv') {
+                            insertItemToRow(event, 'programStage');
+                            insertItemToRow(event, 'orgUnit');
+                            insertItemToRow(event, 'program');
+                            insertItemToRow(event, 'event');
+                            insertItemToRow(event, 'status');
+                            insertItemToRow(event, 'eventDate');
+                            insertItemToRow(event, 'created');
+                            insertRowToExportList();
+                        } else if (format === 'json') {
+                            if (event['programStage']) {
+                                eventsJSON[eventsJSONIndex]['programStage'] = event['programStage'];
+                            }
+                            if (event['orgUnit']) {
+                                eventsJSON[eventsJSONIndex]['orgUnit'] = event['orgUnit'];
+                            }
+                            if (event['program']) {
+                                eventsJSON[eventsJSONIndex]['program'] = event['program'];
+                            }
+                            if (event['event']) {
+                                eventsJSON[eventsJSONIndex]['event'] = event['event'];
+                            }
+                            if (event['status']) {
+                                eventsJSON[eventsJSONIndex]['status'] = event['status'];
+                            }
+                            if (event['eventDate']) {
+                                eventsJSON[eventsJSONIndex]['eventDate'] = event['eventDate'];
+                            }
+
+                            if (dataValuesJSON.length > 0) {
+                                eventsJSON[eventsJSONIndex]["dataValues"] = dataValuesJSON;
+                            }
+                        }
+                        delete event.dataValues;
+                    });
+
+                    if (format === 'xml') {
+                        eventsXML += '</events>';
+                    }
+                }
+                anchor = document.createElement('a');
+                document.body.appendChild(anchor);
+
+                if (format === 'json') {
+                    anchor.download = 'eventList.json';
+                    anchor.href = 'data:attachment/json;charset=utf-8,' + encodeURI(JSON.stringify({"events": eventsJSON}, null, 3));
+                    anchor.click();
+                }
+
+                if (format === 'xml') {
+                    anchor.download = 'eventList.xml';
+                    anchor.href = 'data:attachment/xml;charset=utf-8,' + encodeURI(eventsXML);
+                    anchor.click();
+                }
+
+                if (format === 'csv') {
+                    deferred.resolve(eventsCSV);
+                }
+            });
+
+            function initExportList() {
+                var item, id;
+                for (var index = 0; index < fieldsToExport.length; index++) {
+                    item = fieldsToExport[index];
+                    id = item.id === "uid" ? "event" : item.id;
+                    if (idList.indexOf(id) === -1) {
+                        idList.push(id);
+                        eventsCSV[0].push(item.displayName);
+                    }
+                    if (format === 'json') {
+                        headers.push({
+                            "name": item.displayName
+                        });
+                    }
+                }
+                if (format === 'xml') {
+                    eventsXML += '<events>';
+                }
+            }
+
+            function insertDataValueToRow(dataElement, value) {
+                var index = idList.indexOf(dataElement);
+                if (index > -1) {
+                    if (format === 'xml' || format === 'csv') {
+                        row[index] = {value: value, dataElement: dataElement, isDataValue: true};
+                    } else if (format === 'json') {
+                        dataValuesJSON.push(value);
+                    }
+                }
+            }
+
+            function insertItemToRow(item, name) {
+                var index = idList.indexOf(name);
+                if (index > -1) {
+                    if (format === 'xml' || format === 'csv') {
+                        row[index] = {value: item[name], dataElement: name, isDataValue: false};
+                    }
+                }
+            }
+
+            function insertRowToExportList() {
+                var dataValues = '';
+                var csvRow = [];
+                for (var index = 0; index < row.length; index++) {
+                    if (row[index]) {
+                        if (format === 'xml') {
+                            if (row[index].isDataValue) {
+                                if (dataValues.length === 0) {
+                                    dataValues += '<datavalues>';
+                                }
+                                dataValues += '<dataValue dataElementId="' + row[index].dataElement + '" ' +
+                                    'dataElementName="' + nameToIdMap[row[index].dataElement] + '" ' +
+                                    'value="' + row[index].value + '"/>';
+                            } else {
+                                eventsXML += '<' + row[index].dataElement + '>' + row[index].value + '</' + row[index].dataElement + '>';
+                            }
+                        } else if (format === 'csv') {
+                            csvRow.push(row[index].value);
+                        }
+                    } else {
+                        if (format === 'csv') {
+                            csvRow.push(null);
+                        }
+                    }
+                }
+                if (format === 'csv') {
+                    eventsCSV.push(csvRow);
+                }
+
+                if (format === 'xml') {
+                    if (dataValues.length > 0) {
+                        eventsXML += dataValues + '</datavalues>';
+                    }
+                    eventsXML += '</event>';
+                }
+            }
+        });
+
+        return deferred.promise;
+    };
+
     $scope.showNotes = function(dhis2Event){
         
         var modalInstance = $modal.open({
@@ -938,6 +1154,9 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                 },
                 nameIdMap: function () {
                     return $scope.prStDes;
+                },
+                optionSets: function(){
+                    return $scope.optionSets;
                 }
             }
         });
@@ -969,7 +1188,7 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
         });
     };
     
-    $scope.showDataElementMap = function(obj, id, fieldId){
+    $scope.showDataElementMap = function(obj, id, mode){
         var lat = "",
             lng = "";
         if(obj[id] && obj[id].length > 0){
@@ -991,6 +1210,9 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
         modalInstance.result.then(function (location) {
             if(angular.isObject(location)){
                 obj[id] = location.lng + ',' + location.lat;
+                if( mode && mode === "UPDATE"){
+                    $scope.updateEventDataValue(obj, id);
+                }
             }
         }, function () {
         });
@@ -1107,7 +1329,7 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
                                 }
                                 else {
                                     //TODO: Alerts is going to be replaced with a proper display mecanism.
-                                    alert($scope.prStDes[effect.dataElement.id].dataElement.formName + "Was blanked out and hidden by your last action");
+                                    alert($scope.prStDes[effect.dataElement.id].dataElement.displayFormName + " was blanked out and hidden by your last action");
                                 }
 
                                 //Blank out the value:
@@ -1172,6 +1394,11 @@ var eventCaptureControllers = angular.module('eventCaptureControllers', [])
     };
     
     $scope.saveDatavalue = function(){        
+        $scope.executeRules();
+    };
+    
+    $scope.saveDatavalueRadio = function(prStDe, event, value){
+        event[prStDe.id] = value;
         $scope.executeRules();
     };
     
