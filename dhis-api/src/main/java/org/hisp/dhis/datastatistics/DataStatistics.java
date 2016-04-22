@@ -39,16 +39,13 @@ import org.hisp.dhis.common.BaseIdentifiableObject;
 public class DataStatistics
     extends BaseIdentifiableObject
 {
-    private Integer activeUsers;
     private Double mapViews;
     private Double chartViews;
     private Double reportTableViews;
     private Double eventReportViews;
     private Double eventChartViews;
     private Double dashboardViews;
-    private Double indicatorViews;
     private Double totalViews;
-    private Double averageViews;
     private Double savedMaps;
     private Double savedCharts;
     private Double savedReportTables;
@@ -56,25 +53,24 @@ public class DataStatistics
     private Double savedEventCharts;
     private Double savedDashboards;
     private Double savedIndicators;
+    private Integer activeUsers;
     private Integer users;
 
     public DataStatistics()
     {
     }
 
-    public DataStatistics( Integer activeUsers, Double mapViews, Double chartViews, Double reportTableViews, Double eventReportViews,
-        Double eventChartViews, Double dashboardViews, Double indicatorViews, Double totalViews, Double savedMaps,
+    public DataStatistics( Double mapViews, Double chartViews, Double reportTableViews, Double eventReportViews,
+        Double eventChartViews, Double dashboardViews, Double totalViews, Double savedMaps,
         Double savedCharts, Double savedReportTables, Double savedEventReports, Double savedEventCharts, Double savedDashboards,
-        Double savedIndicators, Integer users )
+        Double savedIndicators, Integer activeUsers, Integer users )
     {
-        this.activeUsers = activeUsers;
         this.mapViews = mapViews;
         this.chartViews = chartViews;
         this.reportTableViews = reportTableViews;
         this.eventReportViews = eventReportViews;
         this.eventChartViews = eventChartViews;
         this.dashboardViews = dashboardViews;
-        this.indicatorViews = indicatorViews;
         this.totalViews = totalViews;
         this.savedMaps = savedMaps;
         this.savedCharts = savedCharts;
@@ -83,21 +79,8 @@ public class DataStatistics
         this.savedEventCharts = savedEventCharts;
         this.savedDashboards = savedDashboards;
         this.savedIndicators = savedIndicators;
+        this.activeUsers = activeUsers;
         this.users = users;
-
-        this.setAverage();
-    }
-
-    private void setAverage()
-    {
-        if ( activeUsers != 0 )
-        {
-            this.averageViews = this.totalViews / activeUsers;
-        }
-        else
-        {
-            this.averageViews = 0.0;
-        }
     }
 
     @JsonProperty
@@ -178,17 +161,6 @@ public class DataStatistics
     }
 
     @JsonProperty
-    public Double getIndicatorViews()
-    {
-        return indicatorViews;
-    }
-
-    public void setIndicatorViews( Double indicatorViews )
-    {
-        this.indicatorViews = indicatorViews;
-    }
-
-    @JsonProperty
     public Double getTotalViews()
     {
         return totalViews;
@@ -197,17 +169,6 @@ public class DataStatistics
     public void setTotalViews( Double totalViews )
     {
         this.totalViews = totalViews;
-    }
-
-    @JsonProperty
-    public Double getAverageViews()
-    {
-        return averageViews;
-    }
-
-    public void setAverageViews( Double averageViews )
-    {
-        this.averageViews = averageViews;
     }
 
     @JsonProperty
@@ -302,16 +263,13 @@ public class DataStatistics
     @Override public String toString()
     {
         return super.toString() + "DataStatistics{" +
-            "activeUsers=" + activeUsers +
-            ", mapViews=" + mapViews +
+            "mapViews=" + mapViews +
             ", chartViews=" + chartViews +
             ", reportTableViews=" + reportTableViews +
             ", eventReportViews=" + eventReportViews +
             ", eventChartViews=" + eventChartViews +
             ", dashboardViews=" + dashboardViews +
-            ", indicatorViews=" + indicatorViews +
             ", totalViews=" + totalViews +
-            ", averageViews=" + averageViews +
             ", savedMaps=" + savedMaps +
             ", savedCharts=" + savedCharts +
             ", savedReportTables=" + savedReportTables +
@@ -319,6 +277,7 @@ public class DataStatistics
             ", savedEventCharts=" + savedEventCharts +
             ", savedDashboards=" + savedDashboards +
             ", savedIndicators=" + savedIndicators +
+            ", activeUsers=" + activeUsers +
             ", users=" + users +
             '}';
     }

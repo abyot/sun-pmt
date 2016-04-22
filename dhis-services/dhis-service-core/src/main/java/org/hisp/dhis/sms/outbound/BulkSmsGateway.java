@@ -1,5 +1,7 @@
 package org.hisp.dhis.sms.outbound;
 
+import java.net.URI;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -107,26 +109,27 @@ public class BulkSmsGateway
     private GatewayResponse send( UriComponentsBuilder uriBuilder )
     {
         ResponseEntity<String> responseEntity = null;
-
+        
         try
         {
-            responseEntity = restTemplate.exchange( uriBuilder.build().encode( "ISO-8859-1" ).toUri(), HttpMethod.POST,
-                null, String.class );
+            URI url = uriBuilder.build().encode( "ISO-8859-1" ).toUri();
+            
+            responseEntity = restTemplate.exchange( url, HttpMethod.POST, null, String.class );
         }
         catch ( HttpClientErrorException ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Client error", ex );
         }
         catch ( HttpServerErrorException ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Server error", ex );
         }
         catch ( Exception ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Error", ex );
         }
 
-        return responseHandler( responseEntity.getBody() );
+        return getResponse( responseEntity );
     }
 
     private String builCsvUrl( List<OutboundSms> smsBatch )
@@ -160,8 +163,15 @@ public class BulkSmsGateway
         return uriBuilder;
     }
 
-    private GatewayResponse responseHandler( String response )
+    private GatewayResponse getResponse( ResponseEntity<String> responseEntity )
     {
+        if ( responseEntity == null )
+        {
+            return GatewayResponse.FAILED;
+        }
+        
+        String response = responseEntity.getBody();
+        
         return BULKSMS_GATEWAY_RESPONSE_MAP.get( StringUtils.split( response, "|" )[0] );
     }
 

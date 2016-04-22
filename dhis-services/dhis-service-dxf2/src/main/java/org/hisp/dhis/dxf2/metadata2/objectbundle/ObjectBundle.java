@@ -68,6 +68,10 @@ public class ObjectBundle
 
     private final Preheat preheat;
 
+    private final boolean skipSharing;
+
+    private final boolean skipValidation;
+
     private ObjectBundleStatus objectBundleStatus = ObjectBundleStatus.CREATED;
 
     private Map<Boolean, Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>>> objects = new HashMap<>();
@@ -82,11 +86,13 @@ public class ObjectBundle
         this.user = params.getUser();
         this.objectBundleMode = params.getObjectBundleMode();
         this.preheatIdentifier = params.getPreheatIdentifier();
-        this.importMode = params.getImportMode();
+        this.importMode = params.getImportStrategy();
         this.atomicMode = params.getAtomicMode();
         this.preheatMode = params.getPreheatMode();
         this.mergeMode = params.getMergeMode();
         this.flushMode = params.getFlushMode();
+        this.skipSharing = params.isSkipSharing();
+        this.skipValidation = params.isSkipValidation();
         this.preheat = preheat;
 
         addObject( objectMap );
@@ -95,6 +101,11 @@ public class ObjectBundle
     public User getUser()
     {
         return user;
+    }
+
+    public String getUsername()
+    {
+        return user != null ? user.getUsername() : "system-process";
     }
 
     public ObjectBundleMode getObjectBundleMode()
@@ -130,6 +141,16 @@ public class ObjectBundle
     public FlushMode getFlushMode()
     {
         return flushMode;
+    }
+
+    public boolean isSkipSharing()
+    {
+        return skipSharing;
+    }
+
+    public boolean isSkipValidation()
+    {
+        return skipValidation;
     }
 
     public ObjectBundleStatus getObjectBundleStatus()

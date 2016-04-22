@@ -30,12 +30,15 @@ package org.hisp.dhis.sms;
 
 import java.lang.Character.UnicodeBlock;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.sms.config.GatewayAdministrationService;
+import org.hisp.dhis.sms.config.SmsGatewayConfig;
 import org.hisp.dhis.sms.outbound.OutboundSms;
 import org.hisp.dhis.sms.outbound.OutboundSmsService;
 import org.hisp.dhis.sms.outbound.OutboundSmsTransportService;
@@ -68,6 +71,30 @@ public class DefaultSmsSender
     @Autowired
     private GatewayAdministrationService gatewayAdminService;
 
+    // -------------------------------------------------------------------------
+    // SmsSender implementation
+    // -------------------------------------------------------------------------
+
+    @Override
+    public boolean isServiceReady()
+    {
+        Map<String, SmsGatewayConfig> gatewayMap = new HashMap<>();
+
+        if ( transportService == null || gatewayAdminService == null )
+        {
+            return false;
+        }
+
+        gatewayMap = gatewayAdminService.getGatewayConfigurationMap();
+
+        if ( gatewayMap.isEmpty() )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     @Transactional
     @Override
     public String sendMessage( OutboundSms sms, String gatewayId )
@@ -92,20 +119,28 @@ public class DefaultSmsSender
     public String sendMessage( OutboundSms sms )
         throws SmsServiceException
     {
-        if ( transportService == null )
+        SmsGatewayConfig gateway = gatewayAdminService.getDefaultGateway();
+
+        if ( transportService == null || gateway == null )
         {
             throw new SmsServiceNotEnabledException();
         }
 
-        return transportService.sendMessage( sms, gatewayAdminService.getDefaultGateway().getName() )
-            .getResponseMessage();
+        return transportService.sendMessage( sms, gateway.getName() ).getResponseMessage();
     }
 
     @Transactional
     @Override
     public String sendMessage( List<OutboundSms> smsBatch )
     {
-        return sendMessage( smsBatch, gatewayAdminService.getDefaultGateway().getName() );
+        SmsGatewayConfig gateway = gatewayAdminService.getDefaultGateway();
+
+        if ( gateway == null )
+        {
+            throw new SmsServiceNotEnabledException();
+        }
+
+        return sendMessage( smsBatch, gateway.getName() );
     }
 
     @Transactional
@@ -136,15 +171,16 @@ public class DefaultSmsSender
     {
         String message = null;
 
-        if ( transportService == null )
+        SmsGatewayConfig gateway = gatewayAdminService.getDefaultGateway();
+
+        if ( transportService == null || gateway == null )
         {
-            message = "No transport service available";
-            return message;
+            throw new SmsServiceNotEnabledException();
         }
 
         List<User> toSendList = new ArrayList<>();
 
-        String gatewayId = gatewayAdminService.getDefaultGateway().getName();
+        String gatewayId = gateway.getName();
 
         if ( gatewayId != null && !gatewayId.trim().isEmpty() )
         {

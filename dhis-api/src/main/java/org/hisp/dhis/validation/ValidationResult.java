@@ -300,6 +300,7 @@ public class ValidationResult
         return "[Org unit: " + orgUnit.getUid() +
             ", period: " + period.getUid() +
             ", validation rule: " + validationRule.getUid() +
+            "(" + validationRule.getDisplayName() + ")"+
             ", left side value: " + leftsideValue +
             ", right side value: " + rightsideValue + "]";
     }

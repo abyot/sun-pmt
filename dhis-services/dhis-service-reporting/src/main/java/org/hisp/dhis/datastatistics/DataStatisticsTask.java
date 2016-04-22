@@ -1,5 +1,8 @@
 package org.hisp.dhis.datastatistics;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -41,6 +44,10 @@ import java.util.Date;
 public class DataStatisticsTask
     implements Runnable
 {
+    private static final Log log = LogFactory.getLog( DataStatisticsTask.class );
+    
+    public static final String KEY_TASK = "dataStatisticsTask";
+    
     @Autowired
     private DataStatisticsService dataStatisticsService;
 
@@ -50,11 +57,13 @@ public class DataStatisticsTask
     @Override
     public void run()
     {
-        int id = dataStatisticsService.saveSnapshot();
+        int id = dataStatisticsService.saveDataStatisticsSnapshot();
 
         if ( id > 0 )
         {
             systemSettingManager.saveSystemSetting( SettingKey.LAST_SUCCESSFUL_DATA_STATISTIC, new Date() );
+            
+            log.info( "Saved data statistics snapshot" );
         }
     }
 }

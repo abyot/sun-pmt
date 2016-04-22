@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hisp.dhis.common.ListMap;
+import org.hisp.dhis.datastatistics.DataStatisticsTask;
 import org.hisp.dhis.fileresource.FileResourceCleanUpTask;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
@@ -80,6 +81,9 @@ public class DefaultSchedulingManager
     @Autowired
     private FileResourceCleanUpTask fileResourceCleanUpTask;
     
+    @Autowired
+    private DataStatisticsTask dataStatisticsTask;
+    
     // TODO Avoid map, use bean identifier directly and get bean from context
 
     // -------------------------------------------------------------------------
@@ -109,9 +113,14 @@ public class DefaultSchedulingManager
         }
     }
     
+    /**
+     * Schedules fixed tasks, i.e. tasks which are required for various system
+     * functions to work.
+     */
     private void scheduleFixedTasks()
     {
         scheduler.scheduleTask( FileResourceCleanUpTask.KEY_TASK, fileResourceCleanUpTask, Scheduler.CRON_DAILY_2AM );
+        scheduler.scheduleTask( DataStatisticsTask.KEY_TASK, dataStatisticsTask, Scheduler.CRON_DAILY_2AM );
     }
     
     @Override

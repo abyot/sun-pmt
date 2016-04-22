@@ -29,7 +29,11 @@ package org.hisp.dhis.dxf2.metadata2;
  */
 
 import com.google.common.base.Enums;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.MergeMode;
+import org.hisp.dhis.commons.timer.SystemTimer;
+import org.hisp.dhis.commons.timer.Timer;
 import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.dxf2.metadata2.feedback.ImportReport;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
@@ -56,6 +60,8 @@ import java.util.Map;
 @Transactional
 public class DefaultMetadataImportService implements MetadataImportService
 {
+    private static final Log log = LogFactory.getLog( DefaultMetadataImportService.class );
+
     @Autowired
     private CurrentUserService currentUserService;
 
@@ -65,6 +71,8 @@ public class DefaultMetadataImportService implements MetadataImportService
     @Override
     public ImportReport importMetadata( MetadataImportParams params )
     {
+        Timer timer = new SystemTimer().start();
+
         ImportReport report = new ImportReport();
         report.setStatus( Status.OK );
 
@@ -72,6 +80,9 @@ public class DefaultMetadataImportService implements MetadataImportService
         {
             params.setUser( currentUserService.getCurrentUser() );
         }
+
+        String username = params.getUser() != null ? params.getUser().getUsername() : "system-process";
+        log.info( "(" + username + ") Import:Start" );
 
         ObjectBundleParams bundleParams = params.toObjectBundleParams();
         ObjectBundle bundle = objectBundleService.create( bundleParams );
@@ -81,6 +92,8 @@ public class DefaultMetadataImportService implements MetadataImportService
 
         if ( !(!validationReport.getErrorReports().isEmpty() && AtomicMode.ALL == bundle.getAtomicMode()) )
         {
+            Timer commitTimer = new SystemTimer().start();
+
             ObjectBundleCommitReport commitReport = objectBundleService.commit( bundle );
             report.addTypeReports( commitReport.getTypeReportMap() );
 
@@ -88,11 +101,15 @@ public class DefaultMetadataImportService implements MetadataImportService
             {
                 report.setStatus( Status.WARNING );
             }
+
+            log.info( "(" + bundle.getUsername() + ") Import:Commit took " + commitTimer.toString() );
         }
         else
         {
             report.setStatus( Status.ERROR );
         }
+
+        log.info( "(" + bundle.getUsername() + ") Import:Done took " + timer.toString() );
 
         return report;
     }
@@ -101,10 +118,12 @@ public class DefaultMetadataImportService implements MetadataImportService
     public MetadataImportParams getParamsFromMap( Map<String, List<String>> parameters )
     {
         MetadataImportParams params = new MetadataImportParams();
-        params.setObjectBundleMode( getEnumWithDefault( ObjectBundleMode.class, parameters, "objectBundleMode", ObjectBundleMode.COMMIT ) );
+        params.setSkipSharing( getBooleanWithDefault( parameters, "skipSharing", false ) );
+        params.setSkipValidation( getBooleanWithDefault( parameters, "skipValidation", false ) );
+        params.setImportMode( getEnumWithDefault( ObjectBundleMode.class, parameters, "importMode", ObjectBundleMode.COMMIT ) );
         params.setPreheatMode( getEnumWithDefault( PreheatMode.class, parameters, "preheatMode", PreheatMode.REFERENCE ) );
-        params.setPreheatIdentifier( getEnumWithDefault( PreheatIdentifier.class, parameters, "preheatIdentifier", PreheatIdentifier.UID ) );
-        params.setImportMode( getEnumWithDefault( ImportStrategy.class, parameters, "importMode", ImportStrategy.CREATE_AND_UPDATE ) );
+        params.setIdentifier( getEnumWithDefault( PreheatIdentifier.class, parameters, "identifier", PreheatIdentifier.UID ) );
+        params.setImportStrategy( getEnumWithDefault( ImportStrategy.class, parameters, "importStrategy", ImportStrategy.CREATE_AND_UPDATE ) );
         params.setAtomicMode( getEnumWithDefault( AtomicMode.class, parameters, "atomicMode", AtomicMode.ALL ) );
         params.setMergeMode( getEnumWithDefault( MergeMode.class, parameters, "mergeMode", MergeMode.MERGE ) );
         params.setFlushMode( getEnumWithDefault( FlushMode.class, parameters, "flushMode", FlushMode.AUTO ) );
@@ -115,6 +134,18 @@ public class DefaultMetadataImportService implements MetadataImportService
     //-----------------------------------------------------------------------------------
     // Utility Methods
     //-----------------------------------------------------------------------------------
+
+    private boolean getBooleanWithDefault( Map<String, List<String>> parameters, String key, boolean defaultValue )
+    {
+        if ( parameters == null || parameters.get( key ) == null || parameters.get( key ).isEmpty() )
+        {
+            return defaultValue;
+        }
+
+        String value = String.valueOf( parameters.get( key ).get( 0 ) );
+
+        return "true".equals( value.toLowerCase() );
+    }
 
     private <T extends Enum<T>> T getEnumWithDefault( Class<T> enumKlass, Map<String, List<String>> parameters, String key, T defaultValue )
     {

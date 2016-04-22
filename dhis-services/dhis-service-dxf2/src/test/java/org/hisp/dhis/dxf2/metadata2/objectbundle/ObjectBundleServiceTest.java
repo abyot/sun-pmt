@@ -154,7 +154,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -212,7 +212,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -261,7 +261,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -283,7 +283,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -302,7 +302,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.UID );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -321,7 +321,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.UID );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -342,7 +342,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.CODE );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -361,7 +361,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.AUTO );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -380,7 +380,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.UID );
-        params.setImportMode( ImportStrategy.DELETE );
+        params.setImportStrategy( ImportStrategy.DELETE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -399,7 +399,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.CODE );
-        params.setImportMode( ImportStrategy.DELETE );
+        params.setImportStrategy( ImportStrategy.DELETE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -418,7 +418,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
         params.setPreheatIdentifier( PreheatIdentifier.AUTO );
-        params.setImportMode( ImportStrategy.DELETE );
+        params.setImportStrategy( ImportStrategy.DELETE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -455,7 +455,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.DELETE );
+        params.setImportStrategy( ImportStrategy.DELETE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -477,7 +477,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
         params.setPreheatIdentifier( PreheatIdentifier.CODE );
-        params.setImportMode( ImportStrategy.DELETE );
+        params.setImportStrategy( ImportStrategy.DELETE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -497,7 +497,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -549,7 +549,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -580,7 +580,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -592,7 +592,7 @@ public class ObjectBundleServiceTest
 
         params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
@@ -627,7 +627,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
         params.setPreheatMode( PreheatMode.REFERENCE );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         Map<String, DataElement> dataElementMap = manager.getIdMap( DataElement.class, IdScheme.UID );
@@ -686,7 +686,7 @@ public class ObjectBundleServiceTest
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
         params.setPreheatIdentifier( PreheatIdentifier.CODE );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         Map<String, DataElement> dataElementMap = manager.getIdMap( DataElement.class, IdScheme.UID );
@@ -742,7 +742,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -788,7 +788,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -856,7 +856,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -869,7 +869,7 @@ public class ObjectBundleServiceTest
 
         params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
@@ -923,7 +923,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -962,7 +962,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -988,7 +988,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1036,7 +1036,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1049,7 +1049,7 @@ public class ObjectBundleServiceTest
 
         params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
@@ -1104,7 +1104,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1162,7 +1162,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1219,7 +1219,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1245,7 +1245,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1265,7 +1265,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -1288,7 +1288,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setAtomicMode( AtomicMode.ALL );
         params.setObjects( metadata );
 
@@ -1310,7 +1310,7 @@ public class ObjectBundleServiceTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -1323,7 +1323,7 @@ public class ObjectBundleServiceTest
 
         params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );

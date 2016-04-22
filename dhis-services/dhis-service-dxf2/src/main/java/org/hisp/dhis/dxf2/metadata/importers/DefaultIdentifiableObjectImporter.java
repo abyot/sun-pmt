@@ -613,6 +613,7 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
 
         if ( (object.getName() == null || object.getName().length() == 0)
             && !DashboardItem.class.isInstance( object ) && !Translation.class.isInstance( object )
+            && !ProgramRuleAction.class.isAssignableFrom( object.getClass() )
             && !ProgramStageDataElement.class.isInstance( object ) )
         {
             conflict = new ImportConflict( IdentifiableObjectUtils.getDisplayName( object ), "Empty name for object " + object );

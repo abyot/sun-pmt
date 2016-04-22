@@ -1,7 +1,5 @@
 package org.hisp.dhis.dxf2.metadata2;
 
-import com.google.common.base.MoreObjects;
-
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -30,6 +28,7 @@ import com.google.common.base.MoreObjects;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.base.MoreObjects;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleMode;
@@ -51,19 +50,23 @@ public class MetadataImportParams
 {
     private User user;
 
-    private ObjectBundleMode objectBundleMode = ObjectBundleMode.COMMIT;
+    private ObjectBundleMode importMode = ObjectBundleMode.COMMIT;
 
-    private PreheatIdentifier preheatIdentifier = PreheatIdentifier.UID;
+    private PreheatIdentifier identifier = PreheatIdentifier.UID;
 
     private PreheatMode preheatMode = PreheatMode.REFERENCE;
 
-    private ImportStrategy importMode = ImportStrategy.CREATE_AND_UPDATE;
+    private ImportStrategy importStrategy = ImportStrategy.CREATE_AND_UPDATE;
 
     private AtomicMode atomicMode = AtomicMode.ALL;
 
     private MergeMode mergeMode = MergeMode.MERGE;
 
     private FlushMode flushMode = FlushMode.AUTO;
+
+    private boolean skipSharing;
+
+    private boolean skipValidation;
 
     private Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> objects = new HashMap<>();
 
@@ -81,24 +84,24 @@ public class MetadataImportParams
         this.user = user;
     }
 
-    public ObjectBundleMode getObjectBundleMode()
+    public ObjectBundleMode getImportMode()
     {
-        return objectBundleMode;
+        return importMode;
     }
 
-    public void setObjectBundleMode( ObjectBundleMode objectBundleMode )
+    public void setImportMode( ObjectBundleMode importMode )
     {
-        this.objectBundleMode = objectBundleMode;
+        this.importMode = importMode;
     }
 
-    public PreheatIdentifier getPreheatIdentifier()
+    public PreheatIdentifier getIdentifier()
     {
-        return preheatIdentifier;
+        return identifier;
     }
 
-    public void setPreheatIdentifier( PreheatIdentifier preheatIdentifier )
+    public void setIdentifier( PreheatIdentifier identifier )
     {
-        this.preheatIdentifier = preheatIdentifier;
+        this.identifier = identifier;
     }
 
     public PreheatMode getPreheatMode()
@@ -111,14 +114,14 @@ public class MetadataImportParams
         this.preheatMode = preheatMode;
     }
 
-    public ImportStrategy getImportMode()
+    public ImportStrategy getImportStrategy()
     {
-        return importMode;
+        return importStrategy;
     }
 
-    public void setImportMode( ImportStrategy importMode )
+    public void setImportStrategy( ImportStrategy importStrategy )
     {
-        this.importMode = importMode;
+        this.importStrategy = importStrategy;
     }
 
     public AtomicMode getAtomicMode()
@@ -149,6 +152,26 @@ public class MetadataImportParams
     public void setFlushMode( FlushMode flushMode )
     {
         this.flushMode = flushMode;
+    }
+
+    public boolean isSkipSharing()
+    {
+        return skipSharing;
+    }
+
+    public void setSkipSharing( boolean skipSharing )
+    {
+        this.skipSharing = skipSharing;
+    }
+
+    public boolean isSkipValidation()
+    {
+        return skipValidation;
+    }
+
+    public void setSkipValidation( boolean skipValidation )
+    {
+        this.skipValidation = skipValidation;
     }
 
     public Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> getObjects()
@@ -200,12 +223,14 @@ public class MetadataImportParams
     {
         ObjectBundleParams params = new ObjectBundleParams();
         params.setUser( user );
-        params.setImportMode( importMode );
+        params.setSkipSharing(skipSharing);
+        params.setSkipValidation( skipValidation);
+        params.setImportStrategy( importStrategy );
         params.setAtomicMode( atomicMode );
         params.setObjects( objects );
-        params.setPreheatIdentifier( preheatIdentifier );
+        params.setPreheatIdentifier( identifier );
         params.setPreheatMode( preheatMode );
-        params.setObjectBundleMode( objectBundleMode );
+        params.setObjectBundleMode( importMode );
         params.setMergeMode( mergeMode );
         params.setFlushMode( flushMode );
 
@@ -218,10 +243,10 @@ public class MetadataImportParams
     {
         return MoreObjects.toStringHelper( this )
             .add( "user", user )
-            .add( "objectBundleMode", objectBundleMode )
-            .add( "preheatIdentifier", preheatIdentifier )
-            .add( "preheatMode", preheatMode )
             .add( "importMode", importMode )
+            .add( "identifier", identifier )
+            .add( "preheatMode", preheatMode )
+            .add( "importStrategy", importStrategy )
             .add( "mergeMode", mergeMode )
             .toString();
     }

@@ -21,16 +21,14 @@
     <property name="eventReportViews" column="eventreportviews" type="double"/>
     <property name="eventChartViews" column="eventchartviews" type="double"/>
     <property name="dashboardViews" column="dashboardviews" type="double"/>
-    <property name="indicatorViews" column="indicatorviews" type="double"/>
     <property name="activeUsers" column="active_users" type="int"/>
     <property name="totalViews" column="totalviews" type="double"/>
-    <property name="averageViews" column="average_views" type="double"/>
     <property name="savedCharts" column="charts" type="double"/>
     <property name="savedMaps" column="maps" type="double"/>
     <property name="savedReportTables" column="reporttables" type="double"/>
     <property name="savedEventReports" column="eventreports" type="double"/>
     <property name="savedEventCharts" column="eventcharts" type="double"/>
-    <property name="savedDashboards" column="dashborards" type="double"/>
+    <property name="savedDashboards" column="dashboards" type="double"/>
     <property name="savedIndicators" column="indicators" type="double"/>
     <property name="users" column="users" type="int"/>
 

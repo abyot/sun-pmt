@@ -1658,7 +1658,7 @@ public class DataQueryParams
     
     public List<DimensionalItemObject> getDataElements()
     {
-        return ImmutableList.copyOf( AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.AGGREGATE_DATA_ELEMENT, getDimensionOptions( DATA_X_DIM_ID ) ) );
+        return ImmutableList.copyOf( AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.DATA_ELEMENT, getDimensionOptions( DATA_X_DIM_ID ) ) );
     }
     
     public List<DimensionalItemObject> getDataElementOperands()
@@ -1668,7 +1668,7 @@ public class DataQueryParams
     
     public void setDataElements( List<? extends DimensionalItemObject> dataElements )
     {
-        setDataDimensionOptions( DataDimensionItemType.AGGREGATE_DATA_ELEMENT, dataElements );
+        setDataDimensionOptions( DataDimensionItemType.DATA_ELEMENT, dataElements );
     }
     
     public List<DimensionalItemObject> getReportingRates()
@@ -1778,7 +1778,7 @@ public class DataQueryParams
     
     public List<DimensionalItemObject> getFilterDataElements()
     {
-        return ImmutableList.copyOf( AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.AGGREGATE_DATA_ELEMENT, getFilterOptions( DATA_X_DIM_ID ) ) );
+        return ImmutableList.copyOf( AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.DATA_ELEMENT, getFilterOptions( DATA_X_DIM_ID ) ) );
     }
 
     public List<DimensionalItemObject> getFilterReportingRates()

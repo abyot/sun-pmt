@@ -90,6 +90,11 @@ public class AnalyticalObjectObjectBundleHook
                 session.save( dataDimensionItem.getDataElementOperand() );
             }
 
+            if ( dataDimensionItem.getReportingRate() != null )
+            {
+                preheatService.connectReferences( dataDimensionItem.getReportingRate(), bundle.getPreheat(), bundle.getPreheatIdentifier() );
+            }
+
             preheatService.connectReferences( dataDimensionItem, bundle.getPreheat(), bundle.getPreheatIdentifier() );
             session.save( dataDimensionItem );
         }

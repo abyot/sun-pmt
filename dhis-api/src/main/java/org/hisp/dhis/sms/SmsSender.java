@@ -42,11 +42,13 @@ public interface SmsSender
         throws SmsServiceException;
 
     String sendMessage( List<OutboundSms> smsBatch );
-    
+
     String sendMessage( List<OutboundSms> smsBatch, String gatewayId );
 
     String sendMessage( String message, String phoneNumber )
         throws SmsServiceException;
 
     String sendMessage( String subject, String text, User sender, List<User> users, boolean forceSend );
+
+    boolean isServiceReady();
 }

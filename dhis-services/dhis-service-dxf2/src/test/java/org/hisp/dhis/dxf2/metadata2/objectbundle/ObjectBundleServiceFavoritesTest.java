@@ -84,7 +84,7 @@ public class ObjectBundleServiceFavoritesTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -111,7 +111,7 @@ public class ObjectBundleServiceFavoritesTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -143,7 +143,7 @@ public class ObjectBundleServiceFavoritesTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );

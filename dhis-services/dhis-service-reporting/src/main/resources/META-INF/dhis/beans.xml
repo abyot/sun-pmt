@@ -19,6 +19,7 @@
     <property name="sessionFactory" ref="sessionFactory"/>
   </bean>
 
+  <bean id="dataStatisticsTask" class="org.hisp.dhis.datastatistics.DataStatisticsTask" scope="prototype"/>
 
   <!-- ReportTable -->
 
@@ -160,8 +161,6 @@
     </property>
   </bean>
 
-  <bean id="dataStatisticsTask" class="org.hisp.dhis.datastatistics.DataStatisticsTask" scope="prototype"/>
-
   <!-- Startup routine definitions -->
 
   <bean id="org.hisp.dhis.common.ReportingIdentityPopulator" class="org.hisp.dhis.common.IdentityPopulator">
@@ -215,13 +214,11 @@
       <aop:before pointcut="execution( * org.hisp.dhis.report.ReportService.delete*(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.chart.ChartService.delete*(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.document.DocumentService.delete*(..) )" method="intercept" />
+      <aop:before pointcut="execution( * org.hisp.dhis.interpretation.InterpretationService.delete*(..) )" method="intercept" />
     </aop:aspect>
 
     <aop:aspect ref="statementInterceptor">
-      <aop:around pointcut="execution( * org.hisp.dhis.completeness.DataSetCompletenessService.exportDataSetCompleteness(..) )"
-        method="intercept" />
-      <aop:around pointcut="execution( * org.hisp.dhis.completeness.DataSetCompletenessService.getDataSetCompleteness(..) )"
-        method="intercept" />
+      <aop:around pointcut="execution( * org.hisp.dhis.completeness.DataSetCompletenessService.getDataSetCompleteness(..) )" method="intercept" />
     </aop:aspect>
 
   </aop:config>

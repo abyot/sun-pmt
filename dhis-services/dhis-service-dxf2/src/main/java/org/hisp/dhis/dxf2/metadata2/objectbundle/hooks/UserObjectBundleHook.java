@@ -138,6 +138,12 @@ public class UserObjectBundleHook extends AbstractObjectBundleHook
 
             User user = (User) identifiableObject;
             UserCredentials userCredentials = user.getUserCredentials();
+
+            if ( userCredentials == null )
+            {
+                continue;
+            }
+
             Map<String, Object> userCredentialsReferenceMap = userCredentialsReferences.get( userCredentials.getUid() );
 
             if ( userCredentialsReferenceMap == null || userCredentialsReferenceMap.isEmpty() )

@@ -1812,8 +1812,8 @@
       <aop:before pointcut="execution( * org.hisp.dhis.user.UserGroupService.delete*(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.option.OptionService.delete*(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.attribute.AttributeService.delete*(..) )" method="intercept" />
-      <aop:before pointcut="execution( * org.hisp.dhis.mapping.MappingService.deleteLegend(..) )" method="intercept" />
-      <aop:before pointcut="execution( * org.hisp.dhis.mapping.MappingService.deleteLegendSet(..) )" method="intercept" />
+      <aop:before pointcut="execution( * org.hisp.dhis.legend.LegendService.deleteLegend(..) )" method="intercept" />
+      <aop:before pointcut="execution( * org.hisp.dhis.legend.LegendService.deleteLegendSet(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.mapping.MappingService.deleteMapView(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.mapping.MappingService.deleteMap(..) )" method="intercept" />
       <aop:before pointcut="execution( * org.hisp.dhis.i18n.I18nLocaleService.delete*(..) )" method="intercept" />

@@ -394,8 +394,10 @@ public class JdbcEventAnalyticsManager
         
         if ( rowSet.next() )
         {
+            Object extent = rowSet.getObject( COL_EXTENT );
+            
             map.put( COL_COUNT, rowSet.getLong( COL_COUNT ) );
-            map.put( COL_EXTENT, String.valueOf( rowSet.getObject( COL_EXTENT ) ) );
+            map.put( COL_EXTENT, extent != null ? String.valueOf( rowSet.getObject( COL_EXTENT ) ) : null );
         }
         
         return map;

@@ -55,11 +55,27 @@ public interface DataStatisticsService
      * @return list of reports
      */
     List<AggregatedStatistics> getReports( Date startDate, Date endDate, EventInterval eventInterval );
-
+    
+    /**
+     * Returns a DataStatistics instance for the given day.
+     * 
+     * @param day the day to generate the DataStatistics instance for.
+     * @return a DataStatistics instance for the given day.
+     */
+    DataStatistics getDataStatisticsSnapshot( Date day );
+    
+    /**
+     * Saves a DataStatistics instance.
+     *  
+     * @param dataStatistics the DataStatistics instance.
+     * @return identifier of the persisted DataStatistics object.
+     */
+    int saveDataStatistics( DataStatistics dataStatistics );
+    
     /**
      * Gets all information and creates a DataStatistics object and persists it.
      * 
      * @return identifier of the persisted DataStatistics object.
      */
-    int saveSnapshot();
+    int saveDataStatisticsSnapshot();
 }

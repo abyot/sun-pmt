@@ -85,7 +85,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -131,7 +131,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -144,7 +144,7 @@ public class ObjectBundleServiceUserTest
 
         params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -185,7 +185,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -206,7 +206,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setAtomicMode( AtomicMode.NONE );
         params.setObjects( metadata );
 
@@ -225,7 +225,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE_AND_UPDATE );
+        params.setImportStrategy( ImportStrategy.CREATE_AND_UPDATE );
         params.setAtomicMode( AtomicMode.ALL );
         params.setObjects( metadata );
 
@@ -253,7 +253,7 @@ public class ObjectBundleServiceUserTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.UPDATE );
+        params.setImportStrategy( ImportStrategy.UPDATE );
         params.setAtomicMode( AtomicMode.ALL );
         params.setObjects( metadata );
 

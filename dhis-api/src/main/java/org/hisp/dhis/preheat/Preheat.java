@@ -65,11 +65,11 @@ public class Preheat
 
     private Map<String, PeriodType> periodTypeMap = new HashMap<>();
 
-    private Map<Class<? extends IdentifiableObject>, List<String>> mandatoryAttributes = new HashMap<>();
+    private Map<Class<? extends IdentifiableObject>, Set<String>> mandatoryAttributes = new HashMap<>();
 
     private Map<Class<? extends IdentifiableObject>, Set<String>> uniqueAttributes = new HashMap<>();
 
-    private Map<Class<? extends IdentifiableObject>, Map<String, Set<String>>> uniqueAttributeValues = new HashMap<>();
+    private Map<Class<? extends IdentifiableObject>, Map<String, Map<String, String>>> uniqueAttributeValues = new HashMap<>();
 
     public Preheat()
     {
@@ -78,6 +78,11 @@ public class Preheat
     public User getUser()
     {
         return user;
+    }
+
+    public String getUsername()
+    {
+        return user != null ? user.getUsername() : "system-process";
     }
 
     public void setUser( User user )
@@ -436,12 +441,12 @@ public class Preheat
         this.periodTypeMap = periodTypeMap;
     }
 
-    public Map<Class<? extends IdentifiableObject>, List<String>> getMandatoryAttributes()
+    public Map<Class<? extends IdentifiableObject>, Set<String>> getMandatoryAttributes()
     {
         return mandatoryAttributes;
     }
 
-    public void setMandatoryAttributes( Map<Class<? extends IdentifiableObject>, List<String>> mandatoryAttributes )
+    public void setMandatoryAttributes( Map<Class<? extends IdentifiableObject>, Set<String>> mandatoryAttributes )
     {
         this.mandatoryAttributes = mandatoryAttributes;
     }
@@ -456,12 +461,12 @@ public class Preheat
         this.uniqueAttributes = uniqueAttributes;
     }
 
-    public Map<Class<? extends IdentifiableObject>, Map<String, Set<String>>> getUniqueAttributeValues()
+    public Map<Class<? extends IdentifiableObject>, Map<String, Map<String, String>>> getUniqueAttributeValues()
     {
         return uniqueAttributeValues;
     }
 
-    public void setUniqueAttributeValues( Map<Class<? extends IdentifiableObject>, Map<String, Set<String>>> uniqueAttributeValues )
+    public void setUniqueAttributeValues( Map<Class<? extends IdentifiableObject>, Map<String, Map<String, String>>> uniqueAttributeValues )
     {
         this.uniqueAttributeValues = uniqueAttributeValues;
     }

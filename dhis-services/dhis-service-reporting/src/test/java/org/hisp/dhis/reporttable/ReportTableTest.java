@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.hisp.dhis.DhisSpringTest;
+import org.hisp.dhis.common.DataDimensionType;
 import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.common.ReportingRate;
@@ -146,7 +147,7 @@ public class ReportTableTest
         categoryOptionCombos.add( categoryOptionComboA );
         categoryOptionCombos.add( categoryOptionComboB );
 
-        categoryCombo = new DataElementCategoryCombo( "CategoryComboA" );
+        categoryCombo = new DataElementCategoryCombo( "CategoryComboA", DataDimensionType.DISAGGREGATION );
         categoryCombo.setId( 'A' );
         categoryCombo.setOptionCombos( new HashSet<>( categoryOptionCombos ) );
         

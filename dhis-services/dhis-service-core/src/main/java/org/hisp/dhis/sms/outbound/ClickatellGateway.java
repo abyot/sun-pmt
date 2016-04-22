@@ -102,19 +102,19 @@ public class ClickatellGateway
         }
         catch ( HttpClientErrorException ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Client error", ex );
 
             statusCode = ex.getStatusCode();
         }
         catch ( HttpServerErrorException ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Server error", ex );
 
             statusCode = ex.getStatusCode();
         }
         catch ( Exception ex )
         {
-            log.error( "Error: " + ex.getMessage() );
+            log.error( "Error", ex );
         }
 
         log.info( "Response status code: " + statusCode );

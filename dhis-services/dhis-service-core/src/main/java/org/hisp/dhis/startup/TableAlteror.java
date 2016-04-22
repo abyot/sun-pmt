@@ -653,6 +653,9 @@ public class TableAlteror
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PATIENTIDENTIFIERTYPE_UPDATE'" );
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PROGRAM_ATTRIBUTE_UPDATE'" );
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PATIENT_DATAVALUE_UPDATE'" );
+        
+        // remove unused configurations
+        executeSql( "delete from systemsetting where name='keySmsConfig'" );
 
         // update denominator of indicator which has indicatortype as 'number'
         executeSql( "UPDATE indicator SET denominator = 1, denominatordescription = '' WHERE indicatortypeid IN (SELECT DISTINCT indicatortypeid FROM indicatortype WHERE indicatornumber = true) AND denominator IS NULL" );
@@ -877,6 +880,9 @@ public class TableAlteror
 
         executeSql( "alter table trackedentitydatavalue alter column storedby TYPE character varying(255)" );
         executeSql( "alter table datavalue alter column storedby TYPE character varying(255)" );
+        
+        executeSql( "alter table datastatisticsevent alter column eventtype type character varying" );
+        executeSql( "alter table orgunitlevel drop constraint orgunitlevel_name_key" );
 
         updateEnums();
 

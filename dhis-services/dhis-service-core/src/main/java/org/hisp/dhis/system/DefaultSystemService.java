@@ -139,6 +139,7 @@ public class DefaultSystemService
 
                 info.setVersion( properties.getProperty( "build.version" ) );
                 info.setRevision( properties.getProperty( "build.revision" ) );
+                info.setJasperReportsVersion( properties.getProperty( "jasperreports.version" ) );
 
                 String buildTime = properties.getProperty( "build.time" );
 

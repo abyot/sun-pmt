@@ -73,7 +73,7 @@ public class DefaultDataStatisticsServiceTest
 
         dse1 = new DataStatisticsEvent();
         dse2 = new DataStatisticsEvent( DataStatisticsEventType.EVENT_CHART_VIEW, now, "TestUser" );
-        DataStatistics ds = new DataStatistics( 10, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 11.0, 10.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18 );
+        DataStatistics ds = new DataStatistics( 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 11.0, 10.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 10, 18 );
 
         snapId1 = hibernateDataStatisticsStore.save( ds );
     }
@@ -105,7 +105,7 @@ public class DefaultDataStatisticsServiceTest
         dse1 = new DataStatisticsEvent( DataStatisticsEventType.EVENT_CHART_VIEW, startDate, "TestUser" );
         dataStatisticsService.addEvent( dse1 );
         dataStatisticsService.addEvent( dse2 );
-        int snapId2 = dataStatisticsService.saveSnapshot();
+        int snapId2 = dataStatisticsService.saveDataStatisticsSnapshot();
 
         assertTrue( snapId2 != 0 );
         assertTrue( snapId1 != snapId2 );

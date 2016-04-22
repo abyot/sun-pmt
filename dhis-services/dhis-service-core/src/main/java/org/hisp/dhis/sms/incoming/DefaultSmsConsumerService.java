@@ -34,13 +34,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.sms.SmsPublisher;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Zubair <rajazubair.asghar@gmail.com>
  */
-
 public class DefaultSmsConsumerService
     implements SmsConsumerService
 {
@@ -57,8 +56,8 @@ public class DefaultSmsConsumerService
     // Implementation
     // -------------------------------------------------------------------------
 
-    @EventListener
-    public void handleContextRefresh( ContextRefreshedEvent event )
+    @PostConstruct
+    public void init()
     {
         startSmsConsumer();
     }

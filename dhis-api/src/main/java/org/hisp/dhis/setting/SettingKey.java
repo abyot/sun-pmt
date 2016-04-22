@@ -70,7 +70,7 @@ public enum SettingKey
     EMAIL_PASSWORD( "keyEmailPassword", "", String.class, true ),
     INSTANCE_BASE_URL( "keyInstanceBaseUrl" ),
     SCHEDULED_TASKS( "keySchedTasks", ListMap.class ),
-    SMS_CONFIG( "keySmsConfig", SmsConfiguration.class ),
+    SMS_CONFIG( "keySmsConfiguration", SmsConfiguration.class ),
     CACHE_STRATEGY( "keyCacheStrategy", "CACHE_6AM_TOMORROW", String.class ),
     PHONE_NUMBER_AREA_CODE( "phoneNumberAreaCode" ),
     MULTI_ORGANISATION_UNIT_FORMS( "multiOrganisationUnitForms", Boolean.FALSE, Boolean.class ),

@@ -52,6 +52,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ import static org.hisp.dhis.common.IdentifiableObjectUtils.getIdentifiers;
 import static org.hisp.dhis.commons.util.TextUtils.getCommaDelimitedString;
 import static org.hisp.dhis.commons.util.TextUtils.getQuotedCommaDelimitedString;
 import static org.hisp.dhis.system.util.DateUtils.getMediumDateString;
+import static org.hisp.dhis.system.util.DateUtils.getDateAfterAddition;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -409,7 +411,7 @@ public class JdbcEventStore
 
         if ( params.getFollowUp() != null )
         {
-            sql += hlp.whereAnd() + " pi.followup is " + (params.getFollowUp() ? "true" : "false") + " ";
+            sql += hlp.whereAnd() + " pi.followup is " + ( params.getFollowUp() ? "true" : "false" ) + " ";
         }
 
         if ( params.getLastUpdated() != null )
@@ -435,8 +437,9 @@ public class JdbcEventStore
 
         if ( params.getEndDate() != null )
         {
-            sql += hlp.whereAnd() + " (psi.executiondate <= '" + getMediumDateString( params.getEndDate() ) + "' " +
-                "or (psi.executiondate is null and psi.duedate <= '" + getMediumDateString( params.getEndDate() ) + "')) ";
+            Date dateAfterEndDate = getDateAfterAddition( params.getEndDate(), 1 );
+            sql += hlp.whereAnd() + " (psi.executiondate < '" + getMediumDateString( dateAfterEndDate ) + "' " +
+                "or (psi.executiondate is null and psi.duedate < '" + getMediumDateString( dateAfterEndDate ) + "')) ";
         }
 
         if ( params.getEventStatus() != null )

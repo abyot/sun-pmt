@@ -224,9 +224,9 @@ public class DefaultValidationRuleService
     public Collection<ValidationResult> validate( DataSet dataSet, Period period, OrganisationUnit source,
         DataElementCategoryOptionCombo attributeCombo )
     {
-        log.info( "Validate data set: " + dataSet.getName() + " period: " + period.getPeriodType().getName() + " "
+        log.debug( "Validate data set: " + dataSet.getName() + " period: " + period.getPeriodType().getName() + " "
             + period.getStartDate() + " " + period.getEndDate() + " source: " + source.getName()
-            + " attribute combo: " + (attributeCombo == null ? "[none]" : attributeCombo.getName()) );
+            + " attribute combo: " + ( attributeCombo == null ? "[none]" : attributeCombo.getName() ) );
 
         Collection<Period> periods = new ArrayList<>();
         periods.add( period );

@@ -72,11 +72,8 @@ public class HibernateDataStatisticsEventStoreTest
 
         dse1 = new DataStatisticsEvent( DataStatisticsEventType.REPORT_TABLE_VIEW, endDate, "Testuser" );
         dse2 = new DataStatisticsEvent( DataStatisticsEventType.EVENT_CHART_VIEW, endDate, "TestUser" );
-        dse3 = new DataStatisticsEvent( DataStatisticsEventType.INDICATOR_VIEW, testDate, "Testuser" );
+        dse3 = new DataStatisticsEvent( DataStatisticsEventType.CHART_VIEW, testDate, "Testuser" );
         dse4 = new DataStatisticsEvent( DataStatisticsEventType.DASHBOARD_VIEW, endDate, "TestUser" );
-
-        dse1Id = 0;
-        dse2Id = 0;
     }
 
     @Test

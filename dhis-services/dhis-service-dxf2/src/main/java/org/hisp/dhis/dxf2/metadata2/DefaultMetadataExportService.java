@@ -552,6 +552,8 @@ public class DefaultMetadataExportService implements MetadataExportService
         if ( !metadata.containsKey( ProgramTrackedEntityAttribute.class ) ) metadata.put( ProgramTrackedEntityAttribute.class, new HashSet<>() );
         metadata.get( ProgramTrackedEntityAttribute.class ).add( programTrackedEntityAttribute );
 
+        handleTrackedEntityAttribute( metadata, programTrackedEntityAttribute.getAttribute() );
+
         return metadata;
     }
 
@@ -593,6 +595,8 @@ public class DefaultMetadataExportService implements MetadataExportService
         if ( programStageDataElement == null ) return metadata;
         if ( !metadata.containsKey( ProgramStageDataElement.class ) ) metadata.put( ProgramStageDataElement.class, new HashSet<>() );
         metadata.get( ProgramStageDataElement.class ).add( programStageDataElement );
+
+        handleDataElement( metadata, programStageDataElement.getDataElement() );
 
         return metadata;
     }

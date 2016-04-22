@@ -199,7 +199,7 @@ public class DataQueryParamsTest
         
         assertEquals( 7, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         
-        params.retainDataDimension( DataDimensionItemType.AGGREGATE_DATA_ELEMENT );
+        params.retainDataDimension( DataDimensionItemType.DATA_ELEMENT );
         
         assertEquals( 3, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         assertTrue( params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().contains( deA ) );
@@ -217,7 +217,7 @@ public class DataQueryParamsTest
         
         assertEquals( 7, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         
-        params.retainDataDimensions( DataDimensionItemType.AGGREGATE_DATA_ELEMENT, DataDimensionItemType.REPORTING_RATE );
+        params.retainDataDimensions( DataDimensionItemType.DATA_ELEMENT, DataDimensionItemType.REPORTING_RATE );
         
         assertEquals( 5, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         assertTrue( params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().contains( deA ) );

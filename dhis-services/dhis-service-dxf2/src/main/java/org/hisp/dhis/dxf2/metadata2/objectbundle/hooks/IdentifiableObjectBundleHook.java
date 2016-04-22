@@ -78,6 +78,12 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
     {
         if ( !schema.havePersistedProperty( "userGroupAccesses" ) ) return;
 
+        if ( bundle.isSkipSharing() )
+        {
+            identifiableObject.getUserGroupAccesses().clear();
+            return;
+        }
+
         for ( UserGroupAccess userGroupAccess : identifiableObject.getUserGroupAccesses() )
         {
             UserGroup userGroup = bundle.getPreheat().get( bundle.getPreheatIdentifier(), userGroupAccess.getUserGroup() );

@@ -33,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeValue;
-import org.hisp.dhis.common.NameableObject.NameableProperty;
 import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.exception.InvalidIdentifierReferenceException;
 import org.hisp.dhis.dataelement.DataElementCategory;
@@ -431,6 +430,20 @@ public class DefaultIdentifiableObjectManager
 
     @Override
     @SuppressWarnings( "unchecked" )
+    public <T extends IdentifiableObject> List<T> getAllByAttributes( Class<T> klass, List<Attribute> attributes )
+    {
+        GenericIdentifiableObjectStore<IdentifiableObject> store = getIdentifiableObjectStore( klass );
+
+        if ( store == null )
+        {
+            return new ArrayList<>();
+        }
+
+        return (List<T>) store.getAllByAttributes( attributes );
+    }
+
+    @Override
+    @SuppressWarnings( "unchecked" )
     public <T extends IdentifiableObject> List<T> getByUid( Class<T> clazz, Collection<String> uids )
     {
         GenericIdentifiableObjectStore<IdentifiableObject> store = getIdentifiableObjectStore( clazz );
@@ -741,7 +754,7 @@ public class DefaultIdentifiableObjectManager
         {
             return ids;
         }
-        
+
         for ( String uid : uids )
         {
             IdentifiableObject object = store.getByUid( uid );
@@ -776,7 +789,7 @@ public class DefaultIdentifiableObjectManager
 
         List<T> objects = store.getAll();
 
-        return IdentifiableObjectUtils.getMap( objects, idScheme );
+        return IdentifiableObjectUtils.getIdMap( objects, idScheme );
     }
 
     @Override
@@ -800,65 +813,7 @@ public class DefaultIdentifiableObjectManager
 
         List<T> objects = store.getAllNoAcl();
 
-        return IdentifiableObjectUtils.getMap( objects, idScheme );
-    }
-
-    @Override
-    @SuppressWarnings( "unchecked" )
-    public <T extends NameableObject> Map<String, T> getIdMap( Class<T> clazz, NameableProperty property )
-    {
-        GenericNameableObjectStore<T> store = (GenericNameableObjectStore<T>) getNameableObjectStore( clazz );
-
-        Map<String, T> map = new HashMap<>();
-
-        if ( store == null )
-        {
-            return map;
-        }
-        
-        List<T> objects = store.getAll();
-
-        for ( T object : objects )
-        {
-            if ( property == NameableProperty.SHORT_NAME )
-            {
-                if ( object.getShortName() != null )
-                {
-                    map.put( object.getShortName(), object );
-                }
-            }
-        }
-
-        return map;
-    }
-
-    @Override
-    @SuppressWarnings( "unchecked" )
-    public <T extends NameableObject> Map<String, T> getIdMapNoAcl( Class<T> clazz, NameableProperty property )
-    {
-        GenericNameableObjectStore<T> store = (GenericNameableObjectStore<T>) getNameableObjectStore( clazz );
-
-        Map<String, T> map = new HashMap<>();
-
-        if ( store == null )
-        {
-            return map;
-        }
-        
-        List<T> objects = store.getAllNoAcl();
-
-        for ( T object : objects )
-        {
-            if ( property == NameableProperty.SHORT_NAME )
-            {
-                if ( object.getShortName() != null )
-                {
-                    map.put( object.getShortName(), object );
-                }
-            }
-        }
-
-        return map;
+        return IdentifiableObjectUtils.getIdMap( objects, idScheme );
     }
 
     @Override
@@ -871,7 +826,7 @@ public class DefaultIdentifiableObjectManager
         {
             return new ArrayList<>();
         }
-        
+
         if ( identifiers != null && !identifiers.isEmpty() )
         {
             if ( property == null || IdentifiableProperty.UID.equals( property ) )
@@ -923,14 +878,14 @@ public class DefaultIdentifiableObjectManager
         {
             return null;
         }
-        
+
         Attribute attribute = null;
 
         if ( idScheme.isAttribute() )
         {
             attribute = get( Attribute.class, idScheme.getAttribute() );
         }
-        
+
         if ( !StringUtils.isEmpty( value ) )
         {
             if ( idScheme.isNull() || idScheme.is( IdentifiableProperty.UID ) )
@@ -1126,6 +1081,19 @@ public class DefaultIdentifiableObjectManager
         }
 
         return store.getAttributeValueByAttribute( attribute );
+    }
+
+    @Override
+    public List<AttributeValue> getAttributeValueByAttributes( Class<? extends IdentifiableObject> klass, List<Attribute> attributes )
+    {
+        GenericIdentifiableObjectStore<IdentifiableObject> store = getIdentifiableObjectStore( klass );
+
+        if ( store == null )
+        {
+            return null;
+        }
+
+        return store.getAttributeValueByAttributes( attributes );
     }
 
     @Override

@@ -77,6 +77,8 @@ public class SystemInfo
     private String revision;
 
     private Date buildTime;
+    
+    private String jasperReportsVersion;
 
     private String environmentVariable;
 
@@ -271,6 +273,18 @@ public class SystemInfo
     public void setBuildTime( Date buildTime )
     {
         this.buildTime = buildTime;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getJasperReportsVersion()
+    {
+        return jasperReportsVersion;
+    }
+
+    public void setJasperReportsVersion( String jasperReportsVersion )
+    {
+        this.jasperReportsVersion = jasperReportsVersion;
     }
 
     @JsonProperty

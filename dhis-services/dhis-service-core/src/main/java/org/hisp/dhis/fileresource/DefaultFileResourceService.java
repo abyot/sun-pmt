@@ -96,6 +96,7 @@ public class DefaultFileResourceService
     // -------------------------------------------------------------------------
 
     @Override
+    @Transactional
     public FileResource getFileResource( String uid )
     {
         // TODO ensureStorageStatus(..) is a temp fix. Should be removed.
@@ -103,20 +104,22 @@ public class DefaultFileResourceService
     }
 
     @Override
+    @Transactional
     public List<FileResource> getFileResources( List<String> uids )
     {
         return fileResourceStore.getByUid( uids );
     }
 
     @Override
+    @Transactional
     public List<FileResource> getOrphanedFileResources( )
     {
         return fileResourceStore.getAllLeCreated( new DateTime().minus( IS_ORPHAN_TIME_DELTA ).toDate() )
             .stream().filter( IS_ORPHAN_PREDICATE ).collect( Collectors.toList() );
     }
 
-    @Transactional
     @Override
+    @Transactional
     public String saveFileResource( FileResource fileResource, File file )
     {
         fileResource.setStorageStatus( FileResourceStorageStatus.PENDING );
@@ -132,8 +135,8 @@ public class DefaultFileResourceService
         return uid;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void deleteFileResource( String uid )
     {
         if ( uid == null )
@@ -159,13 +162,14 @@ public class DefaultFileResourceService
     }
 
     @Override
+    @Transactional
     public boolean fileResourceExists( String uid )
     {
         return fileResourceStore.getByUid( uid ) != null;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void updateFileResource( FileResource fileResource )
     {
         fileResourceStore.update( fileResource );

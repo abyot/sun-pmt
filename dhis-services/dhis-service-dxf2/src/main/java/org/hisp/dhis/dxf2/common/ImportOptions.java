@@ -48,13 +48,13 @@ public class ImportOptions
 
     private boolean dryRun;
 
-    private boolean preheatCache = true;
+    private Boolean preheatCache;
 
     private boolean async;
 
     private ImportStrategy importStrategy = ImportStrategy.CREATE_AND_UPDATE;
 
-    private MergeMode mergeMode = MergeMode.MERGE_IF_NOT_NULL;
+    private MergeMode mergeMode = MergeMode.MERGE;
 
     private boolean skipExistingCheck;
 
@@ -91,6 +91,22 @@ public class ImportOptions
         return DEFAULT_OPTIONS;
     }
 
+    /**
+     * Indicates whether to heat cache. Default is true.
+     */
+    public boolean isPreheatCache()
+    {
+        return preheatCache == null ? true : preheatCache;
+    }
+
+    /**
+     * Indicates whether to heat cache. Default is false.
+     */
+    public boolean isPreheatCacheDefaultFalse()
+    {
+        return preheatCache == null ? false : preheatCache;
+    }
+    
     //--------------------------------------------------------------------------
     // Get methods
     //--------------------------------------------------------------------------
@@ -105,7 +121,7 @@ public class ImportOptions
         return dryRun;
     }
 
-    public boolean isPreheatCache()
+    public Boolean getPreheatCache()
     {
         return preheatCache;
     }
@@ -245,7 +261,7 @@ public class ImportOptions
         return this;
     }
 
-    public ImportOptions setPreheatCache( boolean preheatCache )
+    public ImportOptions setPreheatCache( Boolean preheatCache )
     {
         this.preheatCache = preheatCache;
         return this;

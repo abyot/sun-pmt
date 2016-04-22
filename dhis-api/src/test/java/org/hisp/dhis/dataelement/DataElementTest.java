@@ -41,7 +41,6 @@ import org.junit.Test;
 
 /**
  * @author Lars Helge Overland
- * @version $Id$
  */
 public class DataElementTest
 {

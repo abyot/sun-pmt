@@ -81,7 +81,7 @@ public class DefaultSmsConfigurationManager
             return;
         }
 
-        log.info( "Found the following gateway configurations: " + gatewayList );
+        log.info( "Gateway configurations found: " + gatewayList );
 
         gatewayAdminService.loadGatewayConfigurationMap( smsConfiguration );
     }

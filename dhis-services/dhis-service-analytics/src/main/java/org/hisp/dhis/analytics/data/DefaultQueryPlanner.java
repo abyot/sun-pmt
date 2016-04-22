@@ -233,7 +233,7 @@ public class DefaultQueryPlanner
 
         final List<DataQueryParams> queries = new ArrayList<>( groupByPartition( params, plannerParams ) );
         
-        ImmutableList<Consumer<DataQueryParams>> groupers = new ImmutableList.Builder<Consumer<DataQueryParams>>().
+        List<Consumer<DataQueryParams>> groupers = new ImmutableList.Builder<Consumer<DataQueryParams>>().
             add( q -> queries.addAll( groupByOrgUnitLevel( q ) ) ).
             add( q -> queries.addAll( groupByPeriodType( q ) ) ).
             add( q -> queries.addAll( groupByDataType( q ) ) ).

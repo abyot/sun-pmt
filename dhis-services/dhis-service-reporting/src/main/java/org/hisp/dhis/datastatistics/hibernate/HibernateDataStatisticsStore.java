@@ -38,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -50,6 +52,8 @@ public class HibernateDataStatisticsStore
     extends HibernateGenericStore<DataStatistics>
     implements DataStatisticsStore
 {
+    private static final Log log = LogFactory.getLog( HibernateDataStatisticsStore.class );
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -61,6 +65,8 @@ public class HibernateDataStatisticsStore
     public List<AggregatedStatistics> getSnapshotsInInterval( EventInterval eventInterval, Date startDate, Date endDate )
     {
         final String sql = getQuery( eventInterval, startDate, endDate );
+
+        log.debug( "Get snapshots SQL: " + sql );
 
         return jdbcTemplate.query( sql, ( resultSet, i ) -> {
 
@@ -82,16 +88,20 @@ public class HibernateDataStatisticsStore
                 ads.setMonth( resultSet.getInt( "mnt" ) );
             }
 
-            ads.setActiveUsers( resultSet.getInt( "activeUsers" ) );
             ads.setMapViews( resultSet.getInt( "mapViews" ) );
             ads.setChartViews( resultSet.getInt( "chartViews" ) );
-            ads.setReportTablesViews( resultSet.getInt( "reportTablesViews" ) );
-            ads.setEventReportViews( resultSet.getInt( "reportTablesViews" ) );
+            ads.setReportTableViews( resultSet.getInt( "reportTableViews" ) );
+            ads.setEventReportViews( resultSet.getInt( "eventReportViews" ) );
             ads.setEventChartViews( resultSet.getInt( "eventChartViews" ) );
             ads.setDashboardViews( resultSet.getInt( "dashboardViews" ) );
-            ads.setIndicatorsViews( resultSet.getInt( "indicatorsViews" ) );
             ads.setTotalViews( resultSet.getInt( "totalViews" ) );
             ads.setAverageViews( resultSet.getInt( "averageViews" ) );
+            ads.setAverageMapViews( resultSet.getInt( "averageMapViews" ) );
+            ads.setAverageChartViews( resultSet.getInt( "averageChartViews" ) );
+            ads.setAverageReportTableViews( resultSet.getInt( "averageReportTableViews" ) );
+            ads.setAverageEventReportViews( resultSet.getInt( "averageEventReportViews" ) );
+            ads.setAverageEventChartViews( resultSet.getInt( "averageEventChartViews" ) );
+            ads.setAverageDashboardViews( resultSet.getInt( "averageDashboardViews" ) );
             ads.setSavedMaps( resultSet.getInt( "savedMaps" ) );
             ads.setSavedCharts( resultSet.getInt( "savedCharts" ) );
             ads.setSavedReportTables( resultSet.getInt( "savedReportTables" ) );
@@ -99,7 +109,8 @@ public class HibernateDataStatisticsStore
             ads.setSavedEventCharts( resultSet.getInt( "savedEventCharts" ) );
             ads.setSavedDashboards( resultSet.getInt( "savedDashboards" ) );
             ads.setSavedIndicators( resultSet.getInt( "savedIndicators" ) );
-            ads.setusers( resultSet.getInt( "users" ) );
+            ads.setActiveUsers( resultSet.getInt( "activeUsers" ) );
+            ads.setUsers( resultSet.getInt( "users" ) );
 
             return ads;
         } );
@@ -134,7 +145,7 @@ public class HibernateDataStatisticsStore
     }
 
     /**
-     * Creating a SQL for retrieving aggregated data with group by YEAR
+     * Creating a SQL for retrieving aggregated data with group by YEAR.
      *
      * @param start start date
      * @param end   end date
@@ -143,11 +154,12 @@ public class HibernateDataStatisticsStore
     private String getYearSql( Date start, Date end )
     {
         return "select extract(year from created) as yr, " +
-            commonSql( start, end ) + " order by yr;";
+            getCommonSql( start, end ) +
+            "group by yr order by yr;";
     }
 
     /**
-     * Creating a SQL for retrieving aggregated data with group by YEAR, MONTH
+     * Creating a SQL for retrieving aggregated data with group by YEAR, MONTH.
      *
      * @param start start date
      * @param end   end date
@@ -157,11 +169,13 @@ public class HibernateDataStatisticsStore
     {
         return "select extract(year from created) as yr, " +
             "extract(month from created) as mnt, " +
-            commonSql( start, end ) + ", mnt order by yr, mnt;";
+            getCommonSql( start, end ) +
+            "group by yr, mnt order by yr, mnt;";
     }
 
     /**
-     * Creating a SQL for retrieving aggregated data with group by YEAR, WEEK
+     * Creating a SQL for retrieving aggregated data with group by YEAR, WEEK.
+     * Ignoring week 53.
      *
      * @param start start date
      * @param end   end date
@@ -171,11 +185,13 @@ public class HibernateDataStatisticsStore
     {
         return "select extract(year from created) as yr, " +
             "extract(week from created) as week, " +
-            commonSql( start, end ) + ", week order by yr, week;";
+            getCommonSql( start, end ) +
+            "and extract(week from created) < 53 " +
+            "group by yr, week order by yr, week;";
     }
 
     /**
-     * Creating a SQL for retrieving aggregated data with group by YEAR, DAY
+     * Creating a SQL for retrieving aggregated data with group by YEAR, DAY.
      *
      * @param start start date
      * @param end   end date
@@ -186,39 +202,45 @@ public class HibernateDataStatisticsStore
         return "select extract(year from created) as yr, " +
             "extract(month from created) as mnt," +
             "extract(day from created) as day, " +
-            commonSql( start, end ) + ", mnt, day order by yr, mnt, day;";
+            getCommonSql( start, end ) +
+            "group by yr, mnt, day order by yr, mnt, day;";
     }
 
     /**
      * Part of SQL witch is always the same in the different intervals YEAR,
-     * MONTH, WEEK and DAY
+     * MONTH, WEEK and DAY.
      *
      * @param start start date
      * @param end   end date
      * @return SQL string
      */
-    private String commonSql( Date start, Date end )
+    private String getCommonSql( Date start, Date end )
     {
-        return "max(active_users) as activeUsers," +
+        return
             "cast(round(cast(sum(mapviews) as numeric),0) as int) as mapViews," +
-            "cast(round(cast(sum(chartviews) as numeric),0) as int) as chartViews," +
-            "cast(round(cast(sum(reporttableviews) as numeric),0) as int) as reportTablesViews, " +
-            "cast(round(cast(sum(eventreportviews) as numeric),0) as int) as eventReportViews, " +
-            "cast(round(cast(sum(eventchartviews) as numeric),0) as int) as eventChartViews," +
-            "cast(round(cast(sum(dashboardviews) as numeric),0) as int) as dashboardViews, " +
-            "cast(round(cast(sum(indicatorviews) as numeric),0) as int) as indicatorsViews, " +
-            "cast(round(cast(sum(totalviews) as numeric),0) as int) as totalViews," +
-            "cast(round(cast(sum(average_views) as numeric),0) as int) as averageViews, " +
-            "cast(round(cast(sum(maps) as numeric),0) as int) as savedMaps," +
-            "cast(round(cast(sum(charts) as numeric),0) as int) as savedCharts," +
-            "cast(round(cast(sum(reporttables) as numeric),0) as int) as savedReportTables," +
-            "cast(round(cast(sum(eventreports) as numeric),0) as int) as savedEventReports," +
-            "cast(round(cast(sum(eventcharts) as numeric),0) as int) as savedEventCharts," +
-            "cast(round(cast(sum(dashborards) as numeric),0) as int) as savedDashboards, " +
-            "cast(round(cast(sum(indicators) as numeric),0) as int) as savedIndicators," +
-            "max(users) as users from datastatistics " +
-            "where (created between '" + DateUtils.getMediumDateString( start ) +
-            "' and '" + DateUtils.getMediumDateString( end ) + "') " +
-            "group by yr";
+                "cast(round(cast(sum(chartviews) as numeric),0) as int) as chartViews," +
+                "cast(round(cast(sum(reporttableviews) as numeric),0) as int) as reportTableViews, " +
+                "cast(round(cast(sum(eventreportviews) as numeric),0) as int) as eventReportViews, " +
+                "cast(round(cast(sum(eventchartviews) as numeric),0) as int) as eventChartViews," +
+                "cast(round(cast(sum(dashboardviews) as numeric),0) as int) as dashboardViews, " +
+                "max(active_users) as activeUsers," +
+                "sum(totalviews)/max(active_users) as averageViews, " +
+                "sum(mapviews)/max(active_users) as averageMapViews, " +
+                "sum(chartviews)/max(active_users) as averageChartViews, " +
+                "sum(reporttableviews)/max(active_users) as averageReportTableViews, " +
+                "sum(eventreportviews)/max(active_users) as averageEventReportViews, " +
+                "sum(eventchartviews)/max(active_users) as averageEventChartViews, " +
+                "sum(dashboardviews)/max(active_users) as averageDashboardViews, " +
+                "cast(round(cast(sum(totalviews) as numeric),0) as int) as totalViews," +
+                "cast(round(cast(sum(maps) as numeric),0) as int) as savedMaps," +
+                "cast(round(cast(sum(charts) as numeric),0) as int) as savedCharts," +
+                "cast(round(cast(sum(reporttables) as numeric),0) as int) as savedReportTables," +
+                "cast(round(cast(sum(eventreports) as numeric),0) as int) as savedEventReports," +
+                "cast(round(cast(sum(eventcharts) as numeric),0) as int) as savedEventCharts," +
+                "cast(round(cast(sum(dashboards) as numeric),0) as int) as savedDashboards, " +
+                "cast(round(cast(sum(indicators) as numeric),0) as int) as savedIndicators," +
+                "max(users) as users from datastatistics " +
+                "where created >= '" + DateUtils.getMediumDateString( start ) + "' " +
+                "and created <= '" + DateUtils.getMediumDateString( end ) + "' ";
     }
 }

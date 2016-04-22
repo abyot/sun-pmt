@@ -40,7 +40,7 @@ import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.feedback.ObjectBundleValidationReport;
 import org.hisp.dhis.feedback.ErrorCode;
-import org.hisp.dhis.feedback.ErrorReport;
+import org.hisp.dhis.feedback.ObjectReport;
 import org.hisp.dhis.importexport.ImportStrategy;
 import org.hisp.dhis.option.Option;
 import org.hisp.dhis.option.OptionSet;
@@ -97,7 +97,7 @@ public class ObjectBundleServiceAttributesTest
 
         ObjectBundleParams params = new ObjectBundleParams();
         params.setObjectBundleMode( ObjectBundleMode.COMMIT );
-        params.setImportMode( ImportStrategy.CREATE );
+        params.setImportStrategy( ImportStrategy.CREATE );
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
@@ -179,14 +179,74 @@ public class ObjectBundleServiceAttributesTest
 
         ObjectBundle bundle = objectBundleService.create( params );
         ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
-        List<ErrorReport> reportsByCode = validationReport.getErrorReportsByCode( DataElement.class, ErrorCode.E4011 );
+        List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
 
-        assertFalse( reportsByCode.isEmpty() );
+        assertFalse( objectReports.isEmpty() );
+        assertEquals( 4, objectReports.size() );
+        objectReports.forEach( objectReport -> assertEquals( 2, objectReport.getErrorReports().size() ) );
+    }
+
+    @Test
+    public void testValidateMetadataAttributeValuesMandatoryFromPayload() throws IOException
+    {
+        Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> metadata = renderService.fromMetadata(
+            new ClassPathResource( "dxf2/metadata_with_mandatory_attributes_from_payload_only.json" ).getInputStream(), RenderFormat.JSON );
+
+        ObjectBundleParams params = new ObjectBundleParams();
+        params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
+        params.setObjects( metadata );
+
+        ObjectBundle bundle = objectBundleService.create( params );
+        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
+
+        assertFalse( objectReports.isEmpty() );
+        assertEquals( 4, objectReports.size() );
+        objectReports.forEach( objectReport -> assertEquals( 1, objectReport.getErrorReports().size() ) );
+    }
+
+    @Test
+    public void testValidateMetadataAttributeValuesUnique() throws IOException
+    {
+        defaultSetupWithAttributes();
+
+        Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> metadata = renderService.fromMetadata(
+            new ClassPathResource( "dxf2/metadata_with_unique_attributes.json" ).getInputStream(), RenderFormat.JSON );
+
+        ObjectBundleParams params = new ObjectBundleParams();
+        params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
+        params.setObjects( metadata );
+
+        ObjectBundle bundle = objectBundleService.create( params );
+        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
+
+        assertFalse( objectReports.isEmpty() );
+        assertEquals( 2, validationReport.getErrorReportsByCode( DataElement.class, ErrorCode.E4009 ).size() );
+    }
+
+    @Test
+    public void testValidateMetadataAttributeValuesUniqueFromPayload() throws IOException
+    {
+        Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> metadata = renderService.fromMetadata(
+            new ClassPathResource( "dxf2/metadata_with_unique_attributes_from_payload.json" ).getInputStream(), RenderFormat.JSON );
+
+        ObjectBundleParams params = new ObjectBundleParams();
+        params.setObjectBundleMode( ObjectBundleMode.VALIDATE );
+        params.setObjects( metadata );
+
+        ObjectBundle bundle = objectBundleService.create( params );
+        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
+
+        assertFalse( objectReports.isEmpty() );
+        assertEquals( 2, validationReport.getErrorReportsByCode( DataElement.class, ErrorCode.E4009 ).size() );
     }
 
     private void defaultSetupWithAttributes()
     {
         Attribute attribute = new Attribute( "AttributeA", ValueType.TEXT );
+        attribute.setUid( "d9vw7V9Mw8W" );
         attribute.setUnique( true );
         attribute.setMandatory( true );
         attribute.setDataElementAttribute( true );

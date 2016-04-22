@@ -107,6 +107,12 @@ public class Expression
     @Scanned
     private Set<DataElement> dataElementsInExpression = new HashSet<>();
 
+    /**
+     * A reference to the DataElements in the Expression.
+     */
+    @Scanned
+    private Set<DataElement> sampleElementsInExpression = new HashSet<>();
+
     // -------------------------------------------------------------------------
     // Transient properties
     // -------------------------------------------------------------------------
@@ -131,11 +137,29 @@ public class Expression
      * @param description              A description of the Expression.
      * @param dataElementsInExpression A reference to the DataElements in the Expression.
      */
+    public Expression( String expression, String description, 
+		       Set<DataElement> dataElementsInExpression,
+		       Set<DataElement> sampleElementsInExpression )
+    {
+        this.expression = expression;
+        this.description = description;
+        this.dataElementsInExpression = dataElementsInExpression;
+        this.sampleElementsInExpression = sampleElementsInExpression;
+    }
+
+    /**
+     * Constructor without sample elements
+     *
+     * @param expression               The expression as a String
+     * @param description              A description of the Expression.
+     * @param dataElementsInExpression A reference to the DataElements in the Expression.
+     */
     public Expression( String expression, String description, Set<DataElement> dataElementsInExpression )
     {
         this.expression = expression;
         this.description = description;
         this.dataElementsInExpression = dataElementsInExpression;
+        this.sampleElementsInExpression = null;
     }
 
     // -------------------------------------------------------------------------
@@ -306,6 +330,21 @@ public class Expression
         this.dataElementsInExpression = dataElementsInExpression;
     }
 
+    @JsonProperty(value = "sampleElements")
+    @JsonSerialize(contentAs = BaseIdentifiableObject.class)
+    @JsonView({ DetailedView.class, ExportView.class })
+    @JacksonXmlElementWrapper(localName = "sampleElements", namespace = DxfNamespaces.DXF_2_0)
+    @JacksonXmlProperty(localName = "sampleElement", namespace = DxfNamespaces.DXF_2_0)
+    public Set<DataElement> getSampleElementsInExpression()
+    {
+    	return sampleElementsInExpression;
+    }
+
+    public void setSampleElementsInExpression( Set<DataElement> sampleElementsInExpression )
+    {
+        this.sampleElementsInExpression = sampleElementsInExpression;
+    }
+
     @JsonProperty
     @JsonView({ DetailedView.class, ExportView.class })
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
@@ -353,5 +392,7 @@ public class Expression
 
         dataElementsInExpression = other.getDataElementsInExpression() == null ?
             dataElementsInExpression : new HashSet<>( other.getDataElementsInExpression() );
+        sampleElementsInExpression = other.getSampleElementsInExpression() == null ?
+            sampleElementsInExpression : new HashSet<>( other.getSampleElementsInExpression() );
     }
 }

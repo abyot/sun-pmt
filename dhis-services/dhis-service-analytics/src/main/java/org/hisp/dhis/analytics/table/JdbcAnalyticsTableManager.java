@@ -161,8 +161,7 @@ public class JdbcAnalyticsTableManager
 
         final String approvalClause = getApprovalJoinClause();
 
-        taskLoop:
-        while ( true )
+        taskLoop: while ( true )
         {
             AnalyticsTable table = tables.poll();
 

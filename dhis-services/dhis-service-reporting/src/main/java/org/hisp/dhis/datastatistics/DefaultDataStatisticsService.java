@@ -83,14 +83,12 @@ public class DefaultDataStatisticsService
     }
 
     @Override
-    public int saveSnapshot()
-    {
-        Date now = new Date();
-        Date startDate = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime( startDate );
-        c.add( Calendar.DATE, -1 );
-        startDate = c.getTime();
+    public DataStatistics getDataStatisticsSnapshot( Date day )
+    {        
+        Calendar cal = Calendar.getInstance();
+        cal.setTime( day );
+        cal.add( Calendar.DATE, -1 );
+        Date startDate = cal.getTime();
 
         double savedMaps = identifiableObjectManager.getCountByCreated( org.hisp.dhis.mapping.Map.class, startDate );
         double savedCharts = identifiableObjectManager.getCountByCreated( Chart.class, startDate );
@@ -99,23 +97,34 @@ public class DefaultDataStatisticsService
         double savedEventCharts = identifiableObjectManager.getCountByCreated( EventChart.class, startDate );
         double savedDashboards = identifiableObjectManager.getCountByCreated( Dashboard.class, startDate );
         double savedIndicators = identifiableObjectManager.getCountByCreated( Indicator.class, startDate );
-        int totalUsers = identifiableObjectManager.getCount( User.class );
         int activeUsers = userService.getActiveUsersCount( 1 );
+        int users = identifiableObjectManager.getCount( User.class );
 
-        Map<DataStatisticsEventType, Double> eventCountMap = dataStatisticsEventStore.getDataStatisticsEventCount( startDate, now );
+        Map<DataStatisticsEventType, Double> eventCountMap = dataStatisticsEventStore.getDataStatisticsEventCount( startDate, day );
 
-        DataStatistics dataStatistics = new DataStatistics( activeUsers,
+        DataStatistics dataStatistics = new DataStatistics( 
             eventCountMap.get( DataStatisticsEventType.MAP_VIEW ),
             eventCountMap.get( DataStatisticsEventType.CHART_VIEW ),
             eventCountMap.get( DataStatisticsEventType.REPORT_TABLE_VIEW ),
             eventCountMap.get( DataStatisticsEventType.EVENT_REPORT_VIEW ),
             eventCountMap.get( DataStatisticsEventType.EVENT_CHART_VIEW ),
             eventCountMap.get( DataStatisticsEventType.DASHBOARD_VIEW ),
-            eventCountMap.get( DataStatisticsEventType.INDICATOR_VIEW ),
             eventCountMap.get( DataStatisticsEventType.TOTAL_VIEW ),
             savedMaps, savedCharts, savedReportTables, savedEventReports,
-            savedEventCharts, savedDashboards, savedIndicators, totalUsers );
+            savedEventCharts, savedDashboards, savedIndicators, activeUsers, users );
+        
+        return dataStatistics;
+    }
 
+    @Override
+    public int saveDataStatistics( DataStatistics dataStatistics )
+    {
         return dataStatisticsStore.save( dataStatistics );
+    }
+
+    @Override
+    public int saveDataStatisticsSnapshot()
+    {
+        return saveDataStatistics( getDataStatisticsSnapshot( new Date() ) );
     }
 }

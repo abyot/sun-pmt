@@ -402,12 +402,6 @@ public class UserCredentials
         return user != null ? user.getName() : username;
     }
 
-    @Override
-    public String getCode()
-    {
-        return username;
-    }
-
     /**
      * Sets the last login property to the current date.
      */

@@ -273,11 +273,12 @@ public class JdbcEventAnalyticsTableManager
             String dataType = getColumnType( valueType );
             String dataClause = dataElement.isNumericType() ? numericClause : dataElement.getValueType().isDate() ? dateClause : "";
             String select = getSelectClause( valueType );
+            boolean skipIndex = ValueType.LONG_TEXT == dataElement.getValueType() && !dataElement.hasOptionSet();
 
             String sql = "(select " + select + " from trackedentitydatavalue where programstageinstanceid=psi.programstageinstanceid " + 
                 "and dataelementid=" + dataElement.getId() + dataClause + ") as " + quote( dataElement.getUid() );
 
-            columns.add( new AnalyticsTableColumn( quote( dataElement.getUid() ), dataType, sql ) );
+            columns.add( new AnalyticsTableColumn( quote( dataElement.getUid() ), dataType, sql, skipIndex ) );
         }
 
         for ( DataElement dataElement : table.getProgram().getDataElementsWithLegendSet() )
@@ -298,11 +299,12 @@ public class JdbcEventAnalyticsTableManager
             String dataType = getColumnType( attribute.getValueType() );
             String dataClause = attribute.isNumericType() ? numericClause : attribute.isDateType() ? dateClause : "";
             String select = getSelectClause( attribute.getValueType() );
+            boolean skipIndex = ValueType.LONG_TEXT == attribute.getValueType() && !attribute.hasOptionSet();
 
             String sql = "(select " + select + " from trackedentityattributevalue where trackedentityinstanceid=pi.trackedentityinstanceid " + 
                 "and trackedentityattributeid=" + attribute.getId() + dataClause + ") as " + quote( attribute.getUid() );
 
-            columns.add( new AnalyticsTableColumn( quote( attribute.getUid() ), dataType, sql ) );
+            columns.add( new AnalyticsTableColumn( quote( attribute.getUid() ), dataType, sql, skipIndex ) );
         }
         
         for ( TrackedEntityAttribute attribute : table.getProgram().getNonConfidentialTrackedEntityAttributesWithLegendSet() )
@@ -337,7 +339,7 @@ public class JdbcEventAnalyticsTableManager
         if ( databaseInfo.isSpatialSupport() )
         {
             String alias = "(select ST_SetSRID(ST_MakePoint(psi.longitude, psi.latitude), 4326)) as geom";
-            columns.add( new AnalyticsTableColumn( quote( "geom" ), "geometry(Point, 4326)", alias, "gist" ) );
+            columns.add( new AnalyticsTableColumn( quote( "geom" ), "geometry(Point, 4326)", alias, false, "gist" ) );
         }
         
         if ( table.hasProgram() && table.getProgram().isRegistration() )
