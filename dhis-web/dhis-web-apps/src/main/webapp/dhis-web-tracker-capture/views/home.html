@@ -103,12 +103,7 @@
                         class="btn btn-primary"
                         ng-click="showRegistration()">                    
                     {{registerLabel}}
-                </button>
-                <button type="button"
-                        class="btn btn-info small-horizontal-spacing"
-                        ng-if="exportEnabled()" data-ng-click="getExportList()">
-                    {{'export'| translate}}
-                </button>
+                </button>                
                 <button type="button"
                         class="btn btn-info"
                         ng-if="teiCount > 0"
@@ -132,7 +127,7 @@
 
         <!-- entity grid begins -->
         
-        <div class="row">
+        <div class="row long-vertical-spacing">
             <div class="col-sm-12">
                 <span ng-if='!showRegistrationDiv'>
                     <span class="btn-group" ng-if="selectedProgram">
@@ -150,9 +145,14 @@
                     </span>
                 </span>
                 
-                <div class="pull-right hideInPrint" ng-if="trackedEntityList.length > 0 && !showRegistrationDiv">
-                    <a href ng-click="showHideColumns()" title="{{showHideLabel}}"><i class="fa fa-table fa-2x"></i></a>                    
-                </div>
+                <span class="long-horizontal-spacing hideInPrint" ng-if="trackedEntityList.length > 0 && !showRegistrationDiv">
+                    <label class="btn btn-default" ng-if="exportEnabled()" ng-click="getExportList()" title="{{'export'| translate}}">                            
+                        <i class="fa fa-download"></i>
+                    </label>                        
+                    <label class="horizontal-spacing btn btn-default" ng-click="showHideColumns()" title="{{'show_hide_columns'| translate}}">
+                        <i class="fa fa-table"></i>
+                    </label>
+                </span>
                 
             </div>
         </div>

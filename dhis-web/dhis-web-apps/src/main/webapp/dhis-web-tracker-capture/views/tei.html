@@ -1,5 +1,5 @@
-<div class="row vertical-spacing">
-    <div id="selectDropDownParent" class="input-group col-md-3" ng-if="enrollmentStatus==='TODAY' && selectedProgram && (selectedProgram.displayFrontPageList || frontPageListEnabled)">            
+<div class="row vertical-spacing" ng-if="enrollmentStatus==='TODAY' && selectedProgram && (selectedProgram.displayFrontPageList || frontPageListEnabled)">
+    <div id="selectDropDownParent" class="input-group col-md-3">
         <button type="button" class="select-dropdown-button form-control">{{selectedEventsTodayFilter.name}}</button>
         <div class="input-group-btn todayfilter-drop-down">
             <button class="btn btn-default select-dropdown-caret" type="button" data-toggle="dropdown" title="Test"><i class="fa fa-caret-down"></i></button>
@@ -17,7 +17,7 @@
         {{'no'| translate}} {{selectedProgram.trackedEntity.displayName|| 'records' | translate}} {{'found'| translate}}
     </div>
 
-    <div class="vertical-spacing" ng-if="trackedEntityList.length > 0">
+    <div class="small-vertical-spacing" ng-if="trackedEntityList.length > 0">
         <table class="table table-striped dhis2-table-hover table-bordered">               
             <thead>                        
                 <tr>

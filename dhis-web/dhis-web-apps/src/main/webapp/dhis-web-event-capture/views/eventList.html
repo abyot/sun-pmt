@@ -14,25 +14,22 @@
         <div ng-switch-default>           
             <div class="row vertical-spacing small-vertical-spacing">
                 <div class="col-sm-12">
-                    <span>
-                        {{'registered_events'| translate}}<span class="small-horizonal-spacing" ng-if="pager.total">({{'total' | translate}}:  {{pager.total}})</span>                        
+                    <span class="alert alert-default remove-default-padding horizontal-spacing label-font">
+                        <label class="btn-default no-bold" ng-disabled="true">{{'registered_events'| translate}} <span class="small-horizontal-spacing" ng-if="pager.total">({{'total' | translate}}:  {{pager.total}})</span></label>
                     </span>
-                    
-                    <div class="pull-right hideInPrint">
-                        <button class="btn btn-primary hideInPrint"
-                                type="button"
-                                ng-if="editingEventInGrid"
-                                ng-click="showEventList()">
-                            {{'close_editing'| translate}}
-                        </button>
-                        <button class="btn btn-info hideInPrint small-horizonal-spacing"
-                                ng-show="dhis2Events.length"
-                                type="button"
-                                ng-disabled="eventRegistration || editingEventInFull || editingEventInGrid"                                        
-                                ng-click="showHideColumns()">
-                            {{'show_hide_columns'| translate}}
-                        </button>
-                    </div>
+                    <span class="long-horizontal-spacing hideInPrint">                        
+                        <span ng-if="dhis2Events.length > 0 && !eventRegistration && !editingEventInFull && !editingEventInGrid">
+                            <label class="btn btn-default" ng-csv="getExportList()" filename="eventList.csv" title="{{'export'| translate}}">
+                                <i class="fa fa-download label-font"></i>
+                            </label>                        
+                            <label class="btn btn-default horizontal-spacing" ng-click="showHideColumns()" title="{{'show_hide_columns'| translate}}">
+                                <i class="fa fa-table label-font"></i>
+                            </label>
+                        </span>                        
+                        <label class="btn btn-default" ng-if="editingEventInGrid" ng-click="showEventList()" title="{{'close_editing'| translate}}">
+                            <i class="fa fa-times-circle label-font"></i>
+                        </label>
+                    </span>
                 </div>
             </div>
             

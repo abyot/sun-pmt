@@ -100,9 +100,7 @@ public class SystemSettingController
 
         systemSettingManager.saveSystemSetting( key, valueObject );
 
-        webMessageService
-            .send( WebMessageUtils.ok( "System setting " + key + " set to value '" + valueObject + "'." ), response,
-                request );
+        webMessageService.send( WebMessageUtils.ok( "System setting " + key + " set to value '" + valueObject + "'." ), response, request );
     }
 
     @RequestMapping( method = RequestMethod.POST, consumes = { ContextUtils.CONTENT_TYPE_JSON } )

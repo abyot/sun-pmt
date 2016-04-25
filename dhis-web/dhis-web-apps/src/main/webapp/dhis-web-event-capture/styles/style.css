@@ -309,6 +309,10 @@ select {
     clear: both
 }
 
+.long-horizontal-spacing {
+    margin-left: 60px;
+}
+
 .horizontal-spacing {
     margin-left: 10px;
     margin-right: 10px;
@@ -345,7 +349,7 @@ select {
     cursor:pointer; 
 }
 
-.small-horizonal-spacing{
+.small-horizontal-spacing{
     margin-left: 5px;    
 }
 
@@ -585,4 +589,28 @@ div#orgUnitTree {
     border-color:  #b7b7b7; 
     background-color: #cccccc;
     color: #555 !important;
+}
+
+.remove-default-padding {
+    margin: -15px !important;
+}
+
+.add-default-padding {
+    margin: 15px !important;
+}
+
+.add-default-top-margin {
+    margin-top: 15px !important;
+}
+
+.add-default-left-padding {
+    padding-left: 15px !important;
+}
+
+.add-default-right-padding {
+    padding-right: 15px !important;
+}
+
+.no-bold {
+    font-weight: normal !important;
 }

@@ -99,11 +99,8 @@ import org.hisp.dhis.i18n.I18nFormat;
 public interface AnalyticsService
 {
     final String NAMES_META_KEY = "names";
-
     final String PAGER_META_KEY = "pager";
-
     final String OU_HIERARCHY_KEY = "ouHierarchy";
-
     final String OU_NAME_HIERARCHY_KEY = "ouNameHierarchy";
 
     /**
@@ -117,17 +114,15 @@ public interface AnalyticsService
     /**
      * Generates an aggregated value grid for the given query. The grid will
      * represent a table with dimensions used as columns and rows as specified
-     * in columns and rows dimension arguments.
+     * in columns and rows dimension arguments. If columns and rows are null or
+     * empty, the normalized table will be returned.
      * 
      * @param params the data query parameters.
-     * @param tableLayout whether to render the grid as a table with columns and
-     *        rows, or as a normalized plain data source.
      * @param columns the identifiers of the dimensions to use as columns.
      * @param rows the identifiers of the dimensions to use as rows.
      * @return aggregated data as a Grid object.
      */
-    Grid getAggregatedDataValues( DataQueryParams params, boolean tableLayout, List<String> columns,
-        List<String> rows );
+    Grid getAggregatedDataValues( DataQueryParams params, List<String> columns, List<String> rows );
     
     /**
      * Generates an aggregated value grid for the given query based on the given

@@ -644,6 +644,10 @@ table.table-striped tr td.optionset {
     cursor: move;
 }
 
+.long-horizontal-spacing {
+    margin-left: 60px;
+}
+
 .horizontal-spacing {
     margin-left: 10px;
     margin-right: 10px;
@@ -652,6 +656,10 @@ table.table-striped tr td.optionset {
 .row-with-margin {
     padding-left: 30px;
     padding-right: 30px;
+}
+
+.long-vertical-spacing{
+    margin-top: 20px;
 }
 
 .vertical-spacing{
@@ -1864,14 +1872,14 @@ a.disable-link-effects:focus {
     margin-top:-6px;
     padding-top:6px;
 }
-/*@media (min-width:768px){
+@media (min-width:768px){
     .widgets-sticky {
         position: fixed;
         right: 0;
     }
     
     
-}*/
+}
 
 .custom-tracker-complete{
     background-color: #E6E6E6;

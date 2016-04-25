@@ -171,11 +171,6 @@ public class DefaultQueryPlanner
     {
         String violation = null;
 
-        if ( (columns == null || columns.isEmpty()) && (rows == null || rows.isEmpty()) )
-        {
-            violation = "Cannot generate table layout when columns and rows are empty";
-        }
-
         if ( columns != null )
         {
             for ( String column : columns )

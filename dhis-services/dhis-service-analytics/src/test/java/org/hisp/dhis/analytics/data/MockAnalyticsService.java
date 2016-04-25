@@ -58,7 +58,7 @@ public class MockAnalyticsService
     }
 
     @Override
-    public Grid getAggregatedDataValues( DataQueryParams params, boolean tableLayout, List<String> columns, List<String> rows )
+    public Grid getAggregatedDataValues( DataQueryParams params, List<String> columns, List<String> rows )
     {
         throw new NotImplementedException( "" );
     }

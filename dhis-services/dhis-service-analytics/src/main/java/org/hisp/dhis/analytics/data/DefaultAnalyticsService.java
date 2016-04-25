@@ -638,8 +638,10 @@ public class DefaultAnalyticsService
     }
     
     @Override
-    public Grid getAggregatedDataValues( DataQueryParams params, boolean tableLayout, List<String> columns, List<String> rows )
+    public Grid getAggregatedDataValues( DataQueryParams params, List<String> columns, List<String> rows )
     {
+        boolean tableLayout = ( columns != null && !columns.isEmpty() ) || ( rows != null && !rows.isEmpty() );
+        
         if ( !tableLayout )
         {
             return getAggregatedDataValues( params );

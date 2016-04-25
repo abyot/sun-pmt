@@ -13,7 +13,7 @@
     
     <img id="ouwt_loader" src="../images/ajax-loader-bar.gif" alt="{{'in_progress'| translate}}"/>
     
-    <div class="small-horizonal-spacing" ng-if="!treeLoaded">
+    <div class="small-horizontal-spacing" ng-if="!treeLoaded">
         {{'loading_tree'| translate}}
     </div>
     
@@ -90,27 +90,20 @@
                 </div>
             </div>
             <div class="col-sm-6 div-bottom" ng-if="selectedProgram.categoryCombo.isDefault || !selectedProgram.categoryCombo.isDefault && optionsReady">                
-                <button class="btn btn-success hideInPrint small-horizonal-spacing"
+                <button class="btn btn-success hideInPrint small-horizontal-spacing"
                         type="button"
                         ng-show="selectedProgramStage" 
                         ng-click="showEventRegistration()" 
                         ng-disabled="eventRegistration || editingEventInFull || editingEventInGrid">
                     {{'register_event'| translate}}
                 </button>
-                <button class="btn btn-primary hideInPrint small-horizonal-spacing" 
+                <button class="btn btn-primary hideInPrint small-horizontal-spacing"
                         type="button" 
                         ng-if="dhis2Events.length > 0 || eventRegistration || editingEventInFull"
                         onclick="javascript:window.print()">
                     <span ng-if="!eventRegistration && !editingEventInFull">{{'print_list'| translate}}</span>
                     <span ng-if="eventRegistration">{{'print_form'| translate}}</span>
                     <span ng-if="editingEventInFull">{{'print_details'| translate}}</span>
-                </button>
-                <button type="button"
-                        class="btn btn-info small-horizontal-spacing"
-                        ng-if="dhis2Events.length > 0 && !eventRegistration && !editingEventInFull"
-                        ng-csv="getExportList()"
-                        filename="eventList.csv">
-                    {{'export'| translate}}
                 </button>
             </div>
         </div>        
@@ -126,7 +119,7 @@
                 <h3>
                     <span ng-if="editingEventInFull">{{'event_details'| translate}}</span>
                     <span ng-if="eventRegistration">{{'new_event'| translate}}</span>
-                    <span ng-if="currentEvent.event && currentEvent.event !== 'SINGLE_EVENT'" class="horizonal-spacing">
+                    <span ng-if="currentEvent.event && currentEvent.event !== 'SINGLE_EVENT'" class="horizontal-spacing">
                         <d2-audit style="font-size: 15px" name-id-map="prStDes" event-id="{{currentEvent.event}}" data-type="dataElement">
                         </d2-audit>
                     </span>
