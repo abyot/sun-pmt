@@ -48,6 +48,9 @@ public class SMSCommand
     public static final String NO_USER_MESSAGE = "No user associated with this phone number. Please contact your supervisor.";
 
     public static final String ALERT_FEEDBACK = "Your alert message sent";
+    
+    public static final String PARAMETER_MISSING = "Mandatory parameter is missing";
+        
 
     // Completeness method code
 

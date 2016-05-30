@@ -41,4 +41,11 @@ import java.lang.annotation.Target;
 public @interface Property
 {
     org.hisp.dhis.schema.PropertyType value() default org.hisp.dhis.schema.PropertyType.TEXT;
+
+    Required required() default Required.DEFAULT;
+
+    enum Required
+    {
+        TRUE, FALSE, DEFAULT
+    }
 }

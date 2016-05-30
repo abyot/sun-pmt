@@ -31,6 +31,7 @@ package org.hisp.dhis.datastatistics;
 import org.hisp.dhis.chart.Chart;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.dashboard.Dashboard;
+import org.hisp.dhis.datavalue.DataValueService;
 import org.hisp.dhis.eventchart.EventChart;
 import org.hisp.dhis.eventreport.EventReport;
 import org.hisp.dhis.indicator.Indicator;
@@ -45,6 +46,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Yrjan A. F. Fraschetti
@@ -64,7 +66,10 @@ public class DefaultDataStatisticsService
     private UserService userService;
 
     @Autowired
-    private IdentifiableObjectManager identifiableObjectManager;
+    private IdentifiableObjectManager idObjectManager;
+
+    @Autowired
+    private DataValueService dataValueService;
 
     // -------------------------------------------------------------------------
     // DataStatisticsService implementation
@@ -89,16 +94,20 @@ public class DefaultDataStatisticsService
         cal.setTime( day );
         cal.add( Calendar.DATE, -1 );
         Date startDate = cal.getTime();
+        Date now = new Date();
+        long diff = now.getTime() - startDate.getTime();
+        int days = (int) TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 
-        double savedMaps = identifiableObjectManager.getCountByCreated( org.hisp.dhis.mapping.Map.class, startDate );
-        double savedCharts = identifiableObjectManager.getCountByCreated( Chart.class, startDate );
-        double savedReportTables = identifiableObjectManager.getCountByCreated( ReportTable.class, startDate );
-        double savedEventReports = identifiableObjectManager.getCountByCreated( EventReport.class, startDate );
-        double savedEventCharts = identifiableObjectManager.getCountByCreated( EventChart.class, startDate );
-        double savedDashboards = identifiableObjectManager.getCountByCreated( Dashboard.class, startDate );
-        double savedIndicators = identifiableObjectManager.getCountByCreated( Indicator.class, startDate );
+        double savedMaps = idObjectManager.getCountByCreated( org.hisp.dhis.mapping.Map.class, startDate );
+        double savedCharts = idObjectManager.getCountByCreated( Chart.class, startDate );
+        double savedReportTables = idObjectManager.getCountByCreated( ReportTable.class, startDate );
+        double savedEventReports = idObjectManager.getCountByCreated( EventReport.class, startDate );
+        double savedEventCharts = idObjectManager.getCountByCreated( EventChart.class, startDate );
+        double savedDashboards = idObjectManager.getCountByCreated( Dashboard.class, startDate );
+        double savedIndicators = idObjectManager.getCountByCreated( Indicator.class, startDate );
+        double savedDataValues = dataValueService.getDataValueCount( days );
         int activeUsers = userService.getActiveUsersCount( 1 );
-        int users = identifiableObjectManager.getCount( User.class );
+        int users = idObjectManager.getCount( User.class );
 
         Map<DataStatisticsEventType, Double> eventCountMap = dataStatisticsEventStore.getDataStatisticsEventCount( startDate, day );
 
@@ -109,9 +118,10 @@ public class DefaultDataStatisticsService
             eventCountMap.get( DataStatisticsEventType.EVENT_REPORT_VIEW ),
             eventCountMap.get( DataStatisticsEventType.EVENT_CHART_VIEW ),
             eventCountMap.get( DataStatisticsEventType.DASHBOARD_VIEW ),
+            eventCountMap.get( DataStatisticsEventType.DATA_SET_REPORT_VIEW ),
             eventCountMap.get( DataStatisticsEventType.TOTAL_VIEW ),
             savedMaps, savedCharts, savedReportTables, savedEventReports,
-            savedEventCharts, savedDashboards, savedIndicators, activeUsers, users );
+            savedEventCharts, savedDashboards, savedIndicators, savedDataValues, activeUsers, users );
         
         return dataStatistics;
     }
@@ -126,5 +136,11 @@ public class DefaultDataStatisticsService
     public int saveDataStatisticsSnapshot()
     {
         return saveDataStatistics( getDataStatisticsSnapshot( new Date() ) );
+    }
+
+    @Override
+    public List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, String sortOrder )
+    {
+        return dataStatisticsEventStore.getFavoritesData( eventType, pageSize, sortOrder );
     }
 }

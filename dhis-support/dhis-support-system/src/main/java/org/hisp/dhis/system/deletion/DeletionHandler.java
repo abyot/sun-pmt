@@ -31,6 +31,8 @@ package org.hisp.dhis.system.deletion;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeValue;
 import org.hisp.dhis.chart.Chart;
+import org.hisp.dhis.color.Color;
+import org.hisp.dhis.color.ColorSet;
 import org.hisp.dhis.common.filter.MetaDataFilter;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.dashboard.DashboardItem;
@@ -75,6 +77,7 @@ import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.RelativePeriods;
 import org.hisp.dhis.program.Program;
+import org.hisp.dhis.program.ProgramDataElement;
 import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramInstance;
 import org.hisp.dhis.program.ProgramStage;
@@ -822,5 +825,23 @@ public abstract class DeletionHandler
     public String allowDeleteOAuth2Client( OAuth2Client oAuth2Client )
     {
         return null;
+    }
+
+    public String allowDeleteProgramDataElement( ProgramDataElement programDataElement ) { return null; }
+
+    public void deleteProgramDataElement( ProgramDataElement programDataElement )
+    {
+    }
+
+    public String allowDeleteColorSet ( ColorSet colorSet ) { return null; }
+
+    public void deleteColorSet( ColorSet colorSet  )
+    {
+    }
+
+    public String allowDeleteColor ( Color color ) { return null; }
+
+    public void deleteColor( Color color  )
+    {
     }
 }

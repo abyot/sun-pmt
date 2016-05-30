@@ -32,6 +32,7 @@ import com.google.common.base.MoreObjects;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.user.User;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,8 @@ import java.util.List;
 public class Query extends Criteria
 {
     private User user;
+
+    private String locale;
 
     private List<Order> orders = new ArrayList<>();
 
@@ -103,6 +106,21 @@ public class Query extends Criteria
     public void setUser( User user )
     {
         this.user = user;
+    }
+
+    public String getLocale()
+    {
+        return locale;
+    }
+
+    public boolean hasLocale()
+    {
+        return !StringUtils.isEmpty( locale );
+    }
+
+    public void setLocale( String locale )
+    {
+        this.locale = locale;
     }
 
     public Integer getFirstResult()

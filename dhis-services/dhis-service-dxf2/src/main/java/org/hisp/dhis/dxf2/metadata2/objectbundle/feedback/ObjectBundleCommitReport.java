@@ -29,6 +29,8 @@ package org.hisp.dhis.dxf2.metadata2.objectbundle.feedback;
  */
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+
 import org.hisp.dhis.feedback.ErrorCode;
 import org.hisp.dhis.feedback.ErrorReport;
 import org.hisp.dhis.feedback.ObjectReport;
@@ -86,7 +88,10 @@ public class ObjectBundleCommitReport
 
     public void addTypeReport( TypeReport report )
     {
-        if ( report == null ) return;
+        if ( report == null )
+        {
+            return;
+        }
 
         if ( !typeReportMap.containsKey( report.getKlass() ) )
         {
@@ -124,19 +129,28 @@ public class ObjectBundleCommitReport
 
     public List<ObjectReport> getObjectReports( Class<?> klass )
     {
-        if ( !typeReportMap.containsKey( klass ) ) new ArrayList<>();
+        if ( !typeReportMap.containsKey( klass ) )
+        {
+            return Lists.newArrayList();
+        }
+        
         return typeReportMap.get( klass ).getObjectReports();
     }
 
     public List<ErrorReport> getErrorReports( Class<?> klass )
     {
-        if ( !typeReportMap.containsKey( klass ) ) new ArrayList<>();
+        if ( !typeReportMap.containsKey( klass ) )
+        {
+            return Lists.newArrayList();
+        }
+        
         return typeReportMap.get( klass ).getErrorReports().stream().collect( Collectors.toList() );
     }
 
     public List<ErrorReport> getErrorReports()
     {
         List<ErrorReport> errorReports = new ArrayList<>();
+        
         typeReportMap.values().forEach( typeReport -> errorReports.addAll( typeReport.getErrorReports() ) );
 
         return errorReports;

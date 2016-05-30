@@ -39,7 +39,6 @@ import javax.annotation.PostConstruct;
 
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObject;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.comparator.LocaleNameComparator;
 import org.hisp.dhis.i18n.locale.I18nLocale;
 import org.hisp.dhis.system.util.LocaleUtils;
@@ -83,8 +82,8 @@ public class DefaultI18nLocaleService
             countrs.add( new BaseIdentifiableObject( country, country, new Locale( "en", country ).getDisplayCountry() ) );
         }
         
-        Collections.sort( langs, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( countrs, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( langs );
+        Collections.sort( countrs );
         
         for ( IdentifiableObject lang : langs )
         {

@@ -35,7 +35,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.common.collect.Sets;
-
 import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.DimensionItemType;
@@ -56,6 +55,7 @@ import org.hisp.dhis.period.YearlyPeriodType;
 import org.hisp.dhis.schema.PropertyType;
 import org.hisp.dhis.schema.annotation.Property;
 import org.hisp.dhis.schema.annotation.PropertyRange;
+import org.hisp.dhis.translation.TranslationProperty;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -232,10 +232,10 @@ public class DataElement
         Collections.sort( list, DataSetFrequencyComparator.INSTANCE );
         return !list.isEmpty() ? list.get( 0 ) : null;
     }
-    
+
     /**
      * Returns the data set of this data element. If this data element has
-     * multiple data sets, the data set with approval enabled, then the highest 
+     * multiple data sets, the data set with approval enabled, then the highest
      * collection frequency, is returned.
      */
     public DataSet getApprovalDataSet()
@@ -244,7 +244,7 @@ public class DataElement
         Collections.sort( list, DataSetApprovalFrequencyComparator.INSTANCE );
         return !list.isEmpty() ? list.get( 0 ) : null;
     }
-    
+
     /**
      * Returns the category combinations associated with the data sets of this
      * data element.
@@ -333,30 +333,30 @@ public class DataElement
 
         return maxOpenPeriods;
     }
-    
+
     /**
      * Returns the latest period which is open for data input. Returns null if
      * data set is not associated with any data sets.
-     * 
+     *
      * @return the latest period which is open for data input.
      */
     public Period getLatestOpenFuturePeriod()
-    {        
+    {
         int periods = getOpenFuturePeriods();
-        
+
         PeriodType periodType = getPeriodType();
-        
+
         if ( periodType != null )
         {
             Period period = periodType.createPeriod();
-            
+
             // Rewind one as 0 open periods implies current period is locked
-            
+
             period = periodType.getPreviousPeriod( period );
-        
+
             return periodType.getNextPeriod( period, periods );
         }
-        
+
         return null;
     }
 
@@ -445,8 +445,8 @@ public class DataElement
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getDisplayFormName()
     {
-        return displayFormName != null && !displayFormName.trim().isEmpty() ? displayFormName : 
-            getFormName() != null && !getFormName().isEmpty() ? getFormName() : getDisplayName();
+        displayFormName = getTranslation( TranslationProperty.FORM_NAME, displayFormName );
+        return displayFormName != null ? displayFormName : getFormName() != null && !getFormName().isEmpty() ? getFormName() : getDisplayName();
     }
 
     public void setDisplayFormName( String displayFormName )
@@ -509,7 +509,7 @@ public class DataElement
     // -------------------------------------------------------------------------
 
     //TODO can also be dimension
-    
+
     @Override
     public DimensionItemType getDimensionItemType()
     {

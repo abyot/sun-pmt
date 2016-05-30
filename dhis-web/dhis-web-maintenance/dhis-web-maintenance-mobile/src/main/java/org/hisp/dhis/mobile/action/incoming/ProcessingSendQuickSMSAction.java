@@ -179,7 +179,7 @@ public class ProcessingSendQuickSMSAction
 
         // Set<User> recipientsList = new HashSet<User>();
 
-        if ( sendTarget != null && sendTarget.equals( "phone" ) )
+        if ( "phone".equals( sendTarget ) )
         {
             ObjectMapper mapper = new ObjectMapper().setVisibility( PropertyAccessor.FIELD,
                 JsonAutoDetect.Visibility.ANY );
@@ -200,7 +200,7 @@ public class ProcessingSendQuickSMSAction
             // message = messageSender.sendMessage( smsSubject, smsMessage,
             // currentUser, true, recipients, gatewayId );
         }
-        else if ( sendTarget.equals( "userGroup" ) )
+        else if ( "userGroup".equals( sendTarget ) )
         {
             UserGroup group = userGroupService.getUserGroup( userGroup );
 

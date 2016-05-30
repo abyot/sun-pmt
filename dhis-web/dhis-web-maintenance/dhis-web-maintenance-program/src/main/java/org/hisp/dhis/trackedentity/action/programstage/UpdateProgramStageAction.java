@@ -373,7 +373,7 @@ public class UpdateProgramStageAction
         programStage.setName( StringUtils.trimToNull( name ) );
         programStage.setDescription( StringUtils.trimToNull( description ) );
         programStage.setStandardInterval( standardInterval );
-        programStage.setExcecutionDateLabel( StringUtils.trimToNull( excecutionDateLabel ) );
+        programStage.setExecutionDateLabel( StringUtils.trimToNull( excecutionDateLabel ) );
         programStage.setMinDaysFromStart( minDaysFromStart );
         programStage.setRepeatable( repeatable );
         programStage.setMinDaysFromStart( minDaysFromStart );

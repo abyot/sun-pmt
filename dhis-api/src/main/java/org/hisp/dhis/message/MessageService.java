@@ -1,5 +1,12 @@
 package org.hisp.dhis.message;
 
+import org.hisp.dhis.dataset.CompleteDataSetRegistration;
+import org.hisp.dhis.user.User;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -28,12 +35,6 @@ package org.hisp.dhis.message;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-import java.util.Set;
-
-import org.hisp.dhis.dataset.CompleteDataSetRegistration;
-import org.hisp.dhis.user.User;
-
 /**
  * @author Lars Helge Overland
  */
@@ -45,37 +46,36 @@ public interface MessageService
 
     /**
      * Sends a message to the in-box of the given recipients.
-     * 
-     * @param subject the message subject.
-     * @param text the message text.
+     *
+     * @param subject  the message subject.
+     * @param text     the message text.
      * @param metaData message meta-data.
-     * @param users the recipients of the message.
-     * 
+     * @param users    the recipients of the message.
      * @return the identifier of the created message conversation.
      */
     int sendMessage( String subject, String text, String metaData, Set<User> users );
 
     /**
      * Sends a message to the in-box of the given recipients.
-     * 
-     * @param subject the message subject.
-     * @param text the message text.
-     * @param metaData message meta-data.
-     * @param users the recipients of the message.
+     *
+     * @param subject                   the message subject.
+     * @param text                      the message text.
+     * @param metaData                  message meta-data.
+     * @param users                     the recipients of the message.
      * @param includeFeedbackRecipients include the feedback recipients user group
-     *        in the message recipients.
-     * @param forceNotifications send notifications to message senders ignoring
-     *        whether users have enabled it.
-     *        
+     *                                  in the message recipients.
+     * @param forceNotifications        send notifications to message senders ignoring
+     *                                  whether users have enabled it.
      * @return the identifier of the created message conversation.
      */
-    int sendMessage( String subject, String text, String metaData, Set<User> users, User sender, boolean includeFeedbackRecipients, boolean forceNotifications );
+    int sendMessage( String subject, String text, String metaData, Set<User> users, User sender,
+        boolean includeFeedbackRecipients, boolean forceNotifications );
 
     int sendFeedback( String subject, String text, String metaData );
-    
+
     int sendSystemNotification( String subject, String text );
 
-    void sendReply( MessageConversation conversation, String text, String metaData );
+    void sendReply( MessageConversation conversation, String text, String metaData, boolean internal );
 
     int saveMessageConversation( MessageConversation conversation );
 
@@ -93,15 +93,16 @@ public interface MessageService
 
     /**
      * Get all MessageConversations for the current user.
+     *
      * @return a list of all message conversations for the current user.
      */
     List<MessageConversation> getMessageConversations();
 
     List<MessageConversation> getMessageConversations( int first, int max );
 
-    List<MessageConversation> getMessageConversations( boolean followUpOnly, boolean unreadOnly, int first, int max );
+    List<MessageConversation> getMessageConversations( MessageConversationStatus status, boolean followUpOnly, boolean unreadOnly, int first, int max );
 
-    List<MessageConversation> getMessageConversations( User user, String[] messageConversationUids );
+    List<MessageConversation> getMessageConversations( User user, Collection<String> messageConversationUids );
 
     int getMessageConversationCount();
 
@@ -110,4 +111,11 @@ public interface MessageService
     void deleteMessages( User sender );
 
     List<UserMessage> getLastRecipients( int first, int max );
+
+    /**
+     * Returns true is user is part of the feedbackRecipients group
+     * @param user user to check
+     * @return
+     */
+    boolean hasAccessToInternalNotes( User user );
 }

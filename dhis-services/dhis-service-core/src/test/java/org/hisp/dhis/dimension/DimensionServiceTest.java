@@ -34,11 +34,15 @@ import static org.hisp.dhis.period.RelativePeriodEnum.LAST_12_MONTHS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hisp.dhis.common.DimensionalObjectUtils.*;
 
 import org.hisp.dhis.DhisSpringTest;
 import org.hisp.dhis.common.*;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementService;
+import org.hisp.dhis.dataset.DataSet;
+import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupService;
@@ -61,6 +65,8 @@ public class DimensionServiceTest
 {
     private DataElement deA;
     private DataElement deB;
+    
+    private DataSet dsA;
     
     private Program prA;
     
@@ -96,6 +102,9 @@ public class DimensionServiceTest
     private OrganisationUnitGroupService organisationUnitGroupService;
     
     @Autowired
+    private DataSetService dataSetService;
+    
+    @Autowired
     private IdentifiableObjectManager idObjectManager;
     
     @Autowired
@@ -109,6 +118,10 @@ public class DimensionServiceTest
         
         dataElementService.addDataElement( deA );
         dataElementService.addDataElement( deB );
+        
+        dsA = createDataSet( 'A' );
+        
+        dataSetService.addDataSet( dsA );
         
         prA = createProgram( 'A' );
         
@@ -257,12 +270,16 @@ public class DimensionServiceTest
     public void testGetOrAddDimensionalItemObject()
     {
         String idA = deA.getUid();
-        String idB = prA.getUid() + DimensionalObjectUtils.COMPOSITE_DIM_OBJECT_PLAIN_SEP + deA.getUid();
-        String idC = prA.getUid() + DimensionalObjectUtils.COMPOSITE_DIM_OBJECT_PLAIN_SEP + atA.getUid();
+        String idB = prA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + deA.getUid();
+        String idC = prA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + atA.getUid();
+        String idD = dsA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + ReportingRateMetric.REPORTING_RATE.name();
+        String idE = dsA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + "UNKNOWN_METRIC";
         
         assertNotNull( dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idA ) );
         assertNotNull( dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idB ) );
         assertNotNull( dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idC ) );
+        assertNotNull( dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idD ) );        
+        assertNull( dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idE ) );
         
         assertEquals( deA, dimensionService.getOrAddDataDimensionalItemObject( IdScheme.UID, idA ) );
     }
@@ -271,12 +288,16 @@ public class DimensionServiceTest
     public void testGetDimensionalItemObject()
     {
         String idA = deA.getUid();
-        String idB = prA.getUid() + DimensionalObjectUtils.COMPOSITE_DIM_OBJECT_PLAIN_SEP + deA.getUid();
-        String idC = prA.getUid() + DimensionalObjectUtils.COMPOSITE_DIM_OBJECT_PLAIN_SEP + atA.getUid();
+        String idB = prA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + deA.getUid();
+        String idC = prA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + atA.getUid();
+        String idD = dsA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + ReportingRateMetric.REPORTING_RATE.name();
+        String idE = dsA.getUid() + COMPOSITE_DIM_OBJECT_PLAIN_SEP + "UNKNOWN_METRIC";
         
         assertNotNull( dimensionService.getDataDimensionalItemObject( idA ) );
         assertNotNull( dimensionService.getDataDimensionalItemObject( idB ) );
         assertNotNull( dimensionService.getDataDimensionalItemObject( idC ) );
+        assertNotNull( dimensionService.getDataDimensionalItemObject( idD ) );
+        assertNull( dimensionService.getDataDimensionalItemObject( idE ) );
         
         assertEquals( deA, dimensionService.getDataDimensionalItemObject( idA ) );
     }

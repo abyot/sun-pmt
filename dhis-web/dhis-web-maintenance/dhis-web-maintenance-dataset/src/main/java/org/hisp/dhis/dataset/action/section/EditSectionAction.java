@@ -28,11 +28,7 @@ package org.hisp.dhis.dataset.action.section;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-
-import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
-import org.hisp.dhis.dataelement.DataElementGroup;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.Section;
 import org.hisp.dhis.dataset.SectionService;
@@ -92,20 +88,6 @@ public class EditSectionAction
     public DataElementCategoryCombo getCategoryCombo()
     {
         return categoryCombo;
-    }
-
-    private List<DataElement> dataElementOfDataSet;
-
-    public List<DataElement> getDataElementOfDataSet()
-    {
-        return dataElementOfDataSet;
-    }
-
-    private List<DataElementGroup> dataElementGroups;
-
-    public List<DataElementGroup> getDataElementGroups()
-    {
-        return dataElementGroups;
     }
 
     // -------------------------------------------------------------------------

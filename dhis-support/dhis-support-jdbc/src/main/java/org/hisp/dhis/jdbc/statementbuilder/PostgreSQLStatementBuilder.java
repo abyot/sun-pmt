@@ -127,76 +127,15 @@ public class PostgreSQLStatementBuilder
     }
 
     @Override
-    public String getMoveDataValueToDestination( int sourceId, int destinationId )
-    {
-        return "UPDATE datavalue AS d1 SET sourceid=" + destinationId + " " + "WHERE sourceid=" + sourceId + " "
-        + "AND NOT EXISTS ( " + "SELECT * from datavalue AS d2 " + "WHERE d2.sourceid=" + destinationId + " "
-        + "AND d1.dataelementid=d2.dataelementid " + "AND d1.periodid=d2.periodid "
-        + "AND d1.categoryoptioncomboid=d2.categoryoptioncomboid );";
-    }
-
-    @Override
-    public String getSummarizeDestinationAndSourceWhereMatching( int sourceId, int destId )
-    {
-        return "UPDATE datavalue AS d1 SET value=( " + "SELECT SUM( CAST( value AS "
-            + getDoubleColumnType() + " ) ) " + "FROM datavalue as d2 "
-            + "WHERE d1.dataelementid=d2.dataelementid " + "AND d1.periodid=d2.periodid "
-            + "AND d1.categoryoptioncomboid=d2.categoryoptioncomboid " + "AND d2.sourceid IN ( " + destId + ", "
-            + sourceId + " ) ) " + "FROM dataelement AS de " + "WHERE d1.sourceid=" + destId + " "
-            + "AND d1.dataelementid=de.dataelementid " + "AND de.valuetype='int';";
-    }
-
-    @Override
-    public String getUpdateDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId )
-    {
-        return "UPDATE datavalue AS d1 SET dataelementid=" + destDataElementId + ", categoryoptioncomboid="
-            + destCategoryOptionComboId + " " + "WHERE dataelementid=" + sourceDataElementId
-            + " and categoryoptioncomboid=" + sourceCategoryOptionComboId + " " + "AND NOT EXISTS ( "
-            + "SELECT * FROM datavalue AS d2 " + "WHERE d2.dataelementid=" + destDataElementId + " "
-            + "AND d2.categoryoptioncomboid=" + destCategoryOptionComboId + " " + "AND d1.periodid=d2.periodid "
-            + "AND d1.sourceid=d2.sourceid );";
-    }
-
-    @Override
-    public String getMoveFromSourceToDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId )
-    {
-        return "UPDATE datavalue SET value=d2.value,storedby=d2.storedby,lastupdated=d2.lastupdated,comment=d2.comment,followup=d2.followup "
-            + "FROM datavalue AS d2 "
-            + "WHERE datavalue.periodid=d2.periodid "
-            + "AND datavalue.sourceid=d2.sourceid "
-            + "AND datavalue.lastupdated<d2.lastupdated "
-            + "AND datavalue.dataelementid="
-            + destDataElementId
-            + " AND datavalue.categoryoptioncomboid="
-            + destCategoryOptionComboId + " "
-            + "AND d2.dataelementid="
-            + sourceDataElementId + " AND d2.categoryoptioncomboid=" + sourceCategoryOptionComboId + ";";
-    }
-
-    @Override
-    public String getStandardDeviation( int dataElementId, int categoryOptionComboId, int organisationUnitId )
-    {
-    	return "SELECT STDDEV( CAST( value AS " + getDoubleColumnType() + " ) ) FROM datavalue " +
-    	    "WHERE dataelementid='" + dataElementId + "' " +
-	    "AND categoryoptioncomboid='" + categoryOptionComboId + "' " +
-	    "AND sourceid='" + organisationUnitId + "'";
-    }
-
-    @Override
-    public String getAverage( int dataElementId, int categoryOptionComboId, int organisationUnitId )
-    {
-       	 return "SELECT AVG( CAST( value AS " + getDoubleColumnType() + " ) ) FROM datavalue " +
-       	     "WHERE dataelementid='" + dataElementId + "' " +
-             "AND categoryoptioncomboid='" + categoryOptionComboId + "' " +
-             "AND sourceid='" + organisationUnitId + "'";
-    }
-
-    @Override
     public String getAddDate( String dateField, int days )
     {
         return "(" + dateField + "+" + days + ")";
+    }
+    
+    @Override
+    public String getDaysBetweenDates( String fromColumn, String toColumn )
+    {
+        return toColumn + " - " + fromColumn;
     }
 
     @Override

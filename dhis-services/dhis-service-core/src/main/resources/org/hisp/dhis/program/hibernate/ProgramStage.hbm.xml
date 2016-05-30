@@ -41,7 +41,7 @@
       <one-to-many class="org.hisp.dhis.program.ProgramStageSection" />
     </set>
 
-    <property name="excecutionDateLabel" />
+    <property name="executionDateLabel" column="executiondatelabel" />
 
     <set name="reminders" order-by="daysAllowedSendMessage" cascade="all">
       <key column="programStageid" />

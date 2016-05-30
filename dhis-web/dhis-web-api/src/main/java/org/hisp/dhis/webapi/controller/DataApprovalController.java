@@ -28,6 +28,7 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Lists;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.SetMap;
 import org.hisp.dhis.dataapproval.DataApproval;
@@ -47,6 +48,10 @@ import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
+import org.hisp.dhis.fieldfilter.FieldFilterService;
+import org.hisp.dhis.node.NodeUtils;
+import org.hisp.dhis.node.Preset;
+import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.Period;
@@ -56,6 +61,8 @@ import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.webapi.webdomain.approval.Approval;
@@ -68,6 +75,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -89,6 +97,7 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 @Controller
 @RequestMapping
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class DataApprovalController
 {
     public static final String APPROVALS_PATH = "/dataApprovals";
@@ -127,6 +136,12 @@ public class DataApprovalController
 
     @Autowired
     private RenderService renderService;
+
+    @Autowired
+    private FieldFilterService fieldFilterService;
+
+    @Autowired
+    private ContextService contextService;
 
     // -------------------------------------------------------------------------
     // Get
@@ -178,7 +193,7 @@ public class DataApprovalController
     }
 
     @RequestMapping( value = STATUS_PATH, method = RequestMethod.GET, produces = ContextUtils.CONTENT_TYPE_JSON )
-    public void getApproval(
+    public @ResponseBody RootNode getApproval(
         @RequestParam Set<String> ds,
         @RequestParam( required = false ) String pe,
         @RequestParam Date startDate,
@@ -188,6 +203,17 @@ public class DataApprovalController
         HttpServletResponse response )
         throws IOException, WebMessageException
     {
+
+        List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
+
+        if ( fields.isEmpty() )
+        {
+            fields.addAll( Preset.ALL.getFields() );
+            List<String> defaults = new ArrayList<>();
+            defaults.add( "period[id,name,code],organisationUnit[id,name,created,lastUpdated],dataSet[code,name,created,lastUpdated,id]" );
+            fields.addAll( defaults );
+        }
+
         Set<DataSet> dataSets = parseDataSetsWithWorkflow( ds );
 
         Set<Period> periods = new HashSet<>();
@@ -229,7 +255,12 @@ public class DataApprovalController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
-        renderService.toJson( response.getOutputStream(), dataApprovalStateResponses );
+
+        RootNode rootNode = NodeUtils.createMetadata();
+
+        rootNode.addChild( fieldFilterService.filter( DataApprovalStateResponse.class, dataApprovalStateResponses.getDataApprovalStateResponses(), fields ) );
+
+        return rootNode;
     }
 
     private DataApprovalStateResponse getDataApprovalStateResponse( DataSet dataSet,

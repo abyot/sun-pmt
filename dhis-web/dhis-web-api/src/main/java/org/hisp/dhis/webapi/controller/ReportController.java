@@ -33,8 +33,6 @@ import net.sf.jasperreports.j2ee.servlets.BaseHttpServlet;
 import net.sf.jasperreports.j2ee.servlets.ImageServlet;
 import org.hisp.dhis.system.util.CodecUtils;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
-import org.hisp.dhis.i18n.I18nFormat;
-import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.MonthlyPeriodType;
 import org.hisp.dhis.period.Period;
@@ -75,9 +73,6 @@ public class ReportController
 
     @Autowired
     private OrganisationUnitService organisationUnitService;
-
-    @Autowired
-    private I18nManager i18nManager;
 
     @Autowired
     private ContextUtils contextUtils;
@@ -189,8 +184,6 @@ public class ReportController
     {
         Report report = reportService.getReport( uid );
 
-        I18nFormat format = i18nManager.getI18nFormat();
-
         if ( report == null )
         {
             throw new WebMessageException( WebMessageUtils.notFound( "Report not found for identifier: " + uid ) );
@@ -206,7 +199,7 @@ public class ReportController
         {
             contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_HTML, report.getCacheStrategy() );
 
-            reportService.renderHtmlReport( response.getWriter(), uid, date, organisationUnitUid, format );
+            reportService.renderHtmlReport( response.getWriter(), uid, date, organisationUnitUid );
         }
         else
         {
@@ -218,7 +211,7 @@ public class ReportController
 
             contextUtils.configureResponse( response, contentType, report.getCacheStrategy(), filename, attachment );
 
-            JasperPrint print = reportService.renderReport( response.getOutputStream(), uid, period, organisationUnitUid, type, format );
+            JasperPrint print = reportService.renderReport( response.getOutputStream(), uid, period, organisationUnitUid, type );
 
             if ( "html".equals( type ) )
             {

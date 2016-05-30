@@ -104,7 +104,7 @@ public class FilterListAction
             filters = new ArrayList<>( metaDataFilterService.getFiltersBetween( paging.getStartPos(), paging.getPageSize() ) );
         }
 
-        Collections.sort( filters, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( filters );
 
         return SUCCESS;
     }

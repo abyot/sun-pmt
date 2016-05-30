@@ -31,7 +31,6 @@ package org.hisp.dhis.trackedentity.action.dataentryform;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
@@ -83,13 +82,6 @@ public class SelectDataElementAction
     public Collection<DataElement> getDataElements()
     {
         return dataElements;
-    }
-
-    private List<DataElement> dataElementList;
-
-    public List<DataElement> getDataElementList()
-    {
-        return dataElementList;
     }
 
     private ProgramStage association;

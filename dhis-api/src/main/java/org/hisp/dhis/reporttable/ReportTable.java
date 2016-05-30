@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
 import org.hisp.dhis.common.BaseAnalyticalObject;
 import org.hisp.dhis.common.CombinationGenerator;
 import org.hisp.dhis.common.DimensionalItemObject;
@@ -231,7 +232,7 @@ public class ReportTable
     public ReportTable()
     {
     }
-    
+
     /**
      * Default constructor.
      *
@@ -404,7 +405,7 @@ public class ReportTable
     }
 
     /**
-     * Generates a pretty column name based on the given display property of the 
+     * Generates a pretty column name based on the given display property of the
      * argument objects. Null arguments are ignored in the name.
      */
     public static String getPrettyColumnName( List<DimensionalItemObject> objects, DisplayProperty displayProperty )
@@ -594,7 +595,7 @@ public class ReportTable
 
             for ( DimensionalItemObject object : row )
             {
-                grid.addValue( object.getUid() );
+                grid.addValue( object.getDimensionItem() );
                 grid.addValue( object.getDisplayProperty( displayProperty ) );
                 grid.addValue( object.getCode() );
                 grid.addValue( object.getDisplayDescription() );
@@ -658,11 +659,12 @@ public class ReportTable
         // Show hierarchy option
         // ---------------------------------------------------------------------
 
-        if ( showHierarchy && rowDimensions.indexOf( ORGUNIT_DIM_ID ) != -1 && grid.hasMetaDataKey( "ouNameHierarchy" ) )
+        if ( showHierarchy && rowDimensions.contains( ORGUNIT_DIM_ID ) && grid.hasMetaDataKey( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey() ) )
         {
-            int ouNameIndex = (rowDimensions.indexOf( ORGUNIT_DIM_ID ) * 4) + 1; // Ou name position
-            Map<Object, Object> hierarchyNameMap = (Map<Object, Object>) grid.getMetaData().get( "ouNameHierarchy" );
-            grid.substituteMetaData( ouNameIndex, hierarchyNameMap );
+            int ouIdIndex = ( rowDimensions.indexOf( ORGUNIT_DIM_ID ) * 4 ); // Org unit name position
+            int ouNameIndex = ouIdIndex + 1;
+            Map<Object, Object> hierarchyNameMap = (Map<Object, Object>) grid.getMetaData().get( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey() );
+            grid.substituteMetaData( ouIdIndex, ouNameIndex, hierarchyNameMap );
         }
 
         return grid;

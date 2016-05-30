@@ -75,13 +75,6 @@ public class RemoveDataEntryFormAction
         this.id = id;
     }
 
-    private String message;
-
-    public String getMessage()
-    {
-        return message;
-    }
-
     private Integer programStageId;
 
     public void setProgramStageId( Integer programStageId )

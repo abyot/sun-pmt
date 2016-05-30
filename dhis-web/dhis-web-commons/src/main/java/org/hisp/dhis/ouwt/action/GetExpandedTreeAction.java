@@ -29,7 +29,6 @@ package org.hisp.dhis.ouwt.action;
  */
 
 import com.opensymphony.xwork2.Action;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.ouwt.manager.OrganisationUnitSelectionManager;
 import org.hisp.dhis.ouwt.manager.TreeStateManager;
@@ -111,7 +110,7 @@ public class GetExpandedTreeAction
 
         roots = new ArrayList<>( selectionManager.getRootOrganisationUnits() );
 
-        Collections.sort( roots, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( roots );
 
         // ---------------------------------------------------------------------
         // Get the children of the roots

@@ -47,7 +47,7 @@ import java.io.Serializable;
  * @author Lars Helge Overland
  * @version $Id$
  */
-@JacksonXmlRootElement( localName = "reportParams", namespace = DxfNamespaces.DXF_2_0)
+@JacksonXmlRootElement( localName = "reportParams", namespace = DxfNamespaces.DXF_2_0 )
 public class ReportParams
     implements Serializable
 {
@@ -56,13 +56,13 @@ public class ReportParams
      */
     private static final long serialVersionUID = 2509958165452862235L;
 
-    private Boolean paramReportingMonth; //TODO rename to paramReportingPeriod
+    private boolean paramReportingMonth; //TODO rename to paramReportingPeriod
 
-    private Boolean paramGrandParentOrganisationUnit;
+    private boolean paramGrandParentOrganisationUnit;
 
-    private Boolean paramParentOrganisationUnit;
+    private boolean paramParentOrganisationUnit;
 
-    private Boolean paramOrganisationUnit;
+    private boolean paramOrganisationUnit;
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -72,7 +72,7 @@ public class ReportParams
     {
     }
 
-    public ReportParams( boolean paramReportingMonth, boolean paramGrandParentOrganisationUnit, 
+    public ReportParams( boolean paramReportingMonth, boolean paramGrandParentOrganisationUnit,
         boolean paramParentOrganisationUnit, boolean paramOrganisationUnit )
     {
         this.paramReportingMonth = paramReportingMonth;
@@ -84,26 +84,6 @@ public class ReportParams
     // -------------------------------------------------------------------------
     // Logic
     // -------------------------------------------------------------------------
-
-    public boolean isParamReportingMonth()
-    {
-        return paramReportingMonth != null && paramReportingMonth;
-    }
-
-    public boolean isParamGrandParentOrganisationUnit()
-    {
-        return paramGrandParentOrganisationUnit != null && paramGrandParentOrganisationUnit;
-    }
-
-    public boolean isParamParentOrganisationUnit()
-    {
-        return paramParentOrganisationUnit != null && paramParentOrganisationUnit;
-    }
-
-    public boolean isParamOrganisationUnit()
-    {
-        return paramOrganisationUnit != null && paramOrganisationUnit;
-    }
 
     public boolean isSet()
     {
@@ -121,9 +101,9 @@ public class ReportParams
     // -------------------------------------------------------------------------
 
     @JsonProperty( value = "paramReportingPeriod" )
-    @JsonView( {DetailedView.class, ExportView.class, DimensionalView.class} )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0)
-    public Boolean getParamReportingMonth()
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isParamReportingMonth()
     {
         return paramReportingMonth;
     }
@@ -134,9 +114,9 @@ public class ReportParams
     }
 
     @JsonProperty
-    @JsonView( {DetailedView.class, ExportView.class} )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0)
-    public Boolean getParamGrandParentOrganisationUnit()
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isParamGrandParentOrganisationUnit()
     {
         return paramGrandParentOrganisationUnit;
     }
@@ -147,9 +127,9 @@ public class ReportParams
     }
 
     @JsonProperty
-    @JsonView( {DetailedView.class, ExportView.class, DimensionalView.class} )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0)
-    public Boolean getParamParentOrganisationUnit()
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isParamParentOrganisationUnit()
     {
         return paramParentOrganisationUnit;
     }
@@ -160,9 +140,9 @@ public class ReportParams
     }
 
     @JsonProperty
-    @JsonView( {DetailedView.class, ExportView.class, DimensionalView.class} )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0)
-    public Boolean getParamOrganisationUnit()
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isParamOrganisationUnit()
     {
         return paramOrganisationUnit;
     }

@@ -156,11 +156,11 @@ public class ProgramStageInstanceStoreTest
 
         stageA = new ProgramStage( "A", programA );
 
-        TrackedEntityInstanceReminder reminderA = new TrackedEntityInstanceReminder( "A", 0, "Test program stage message template",
+        TrackedEntityInstanceReminder reminderA = createTrackedEntityInstanceReminder( 'A', 0, "Test program stage message template",
             TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE, TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, null,
             TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
 
-        TrackedEntityInstanceReminder reminderB = new TrackedEntityInstanceReminder( "B", 0, "Test program stage message template",
+        TrackedEntityInstanceReminder reminderB = createTrackedEntityInstanceReminder( 'B', 0, "Test program stage message template",
             TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE, TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE,
             TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT, TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
 
@@ -172,7 +172,7 @@ public class ProgramStageInstanceStoreTest
         programStageService.saveProgramStage( stageA );
 
         stageB = new ProgramStage( "B", programA );
-        TrackedEntityInstanceReminder reminderC = new TrackedEntityInstanceReminder( "C", 0, "Test program stage message template",
+        TrackedEntityInstanceReminder reminderC = createTrackedEntityInstanceReminder( 'C', 0, "Test program stage message template",
             TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE, TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE,
             TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT, TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
 
@@ -193,10 +193,10 @@ public class ProgramStageInstanceStoreTest
         dataElementService.addDataElement( dataElementA );
         dataElementService.addDataElement( dataElementB );
 
-        stageDataElementA = new ProgramStageDataElement( stageA, dataElementA, false, 1 );
-        stageDataElementB = new ProgramStageDataElement( stageA, dataElementB, false, 2 );
-        stageDataElementC = new ProgramStageDataElement( stageB, dataElementA, false, 1 );
-        stageDataElementD = new ProgramStageDataElement( stageB, dataElementB, false, 2 );
+        stageDataElementA = createProgramStageDataElement( stageA, dataElementA, false, 1 );
+        stageDataElementB = createProgramStageDataElement( stageA, dataElementB, false, 2 );
+        stageDataElementC = createProgramStageDataElement( stageB, dataElementA, false, 1 );
+        stageDataElementD = createProgramStageDataElement( stageB, dataElementB, false, 2 );
 
         programStageDataElementStore.save( stageDataElementA );
         programStageDataElementStore.save( stageDataElementB );
@@ -210,10 +210,12 @@ public class ProgramStageInstanceStoreTest
         Program programB = createProgram( 'B', new HashSet<>(), organisationUnitB );
         programService.addProgram( programB );
 
-        stageC = new ProgramStage( "C", programB );
+        stageC = createProgramStage( 'C', 0 );
+        stageC.setProgram( programB );
         programStageService.saveProgramStage( stageC );
 
-        stageD = new ProgramStage( "D", programB );
+        stageD = createProgramStage( 'D', 0 );
+        stageD.setProgram( programB );
         stageC.setRepeatable( true );
         programStageService.saveProgramStage( stageD );
 

@@ -30,8 +30,6 @@ package org.hisp.dhis.jdbc;
 
 import java.util.List;
 
-import org.hisp.dhis.period.Period;
-
 /**
  * @author Lars Helge Overland
  * @version $Id: StatementBuilder.java 5715 2008-09-17 14:05:28Z larshelg $
@@ -171,17 +169,27 @@ public interface StatementBuilder
     String getUid();
 
     /**
-     * Creates a SELECT statement returning the identifier of the given Period.
-     * 
-     * @param period the Period to use in the statement. 
-     * @return a SELECT statement returning the identifier of the given Period.
-     */
-    String getPeriodIdentifierStatement( Period period );
-
-    /**
      * Returns the number of columns part of the primary key for the given table.
      */
     String getNumberOfColumnsInPrimaryKey( String table );
+    
+    /**
+     * Returns a cast to timestamp statement for the given column.
+     * 
+     * @param column the column name.
+     * @return a cast to timestamp statement for the given column.
+     */
+    String getCastToDate( String column );
+    
+    /**
+     * Returns a statement which calculates the number of days between the two
+     * given dates or columns of type date.
+     * 
+     * @param from the from date column.
+     * @param to the to date column.
+     * @return statement which calculates the number of days between the given dates.
+     */
+    String getDaysBetweenDates( String fromColumn, String toColumn );
     
     /**
      * Creates a delete datavalue statement.
@@ -189,20 +197,6 @@ public interface StatementBuilder
      */
     String getDeleteZeroDataValues();
 
-    String getMoveDataValueToDestination( int sourceId, int destinationId );
-
-    String getSummarizeDestinationAndSourceWhereMatching( int sourceId, int destinationId );
-
-    String getMoveFromSourceToDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId );
-
-    String getUpdateDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId );
-    
-    String getStandardDeviation( int dataElementId, int categoryOptionComboId, int organisationUnitId );
-    
-    String getAverage( int dataElementId, int categoryOptionComboId, int organisationUnitId );
-    
     String getAddDate( String dateField, int days );
     
     String queryDataElementStructureForOrgUnit();

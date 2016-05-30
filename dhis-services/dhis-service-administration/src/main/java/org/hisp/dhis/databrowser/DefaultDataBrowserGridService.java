@@ -28,8 +28,6 @@ package org.hisp.dhis.databrowser;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -216,18 +214,7 @@ public class DefaultDataBrowserGridService
             return i18n.getString( dateString );
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat( Period.DEFAULT_DATE_FORMAT );
-
-        try
-        {
-            Date date = dateFormat.parse( dateString );
-
-            return format.formatPeriod( periodType.createPeriod( date ) );
-        }
-        catch ( ParseException pe )
-        {
-            throw new RuntimeException( "Date string could not be parsed: " + dateString );
-        }
+        return format.formatPeriod( periodType.createPeriod( DateUtils.getMediumDate( dateString ) ) );
     }
 
     @Override
@@ -305,30 +292,20 @@ public class DefaultDataBrowserGridService
      */
     private List<Period> getPeriodsList( PeriodType periodType, String fromDate, String toDate )
     {
-        String formatString = Period.DEFAULT_DATE_FORMAT;
-        SimpleDateFormat sdf = new SimpleDateFormat( formatString );
+        Date date1 = DateUtils.getMediumDate( fromDate );
+        Date date2 = DateUtils.getMediumDate( toDate );
 
-        try
+        List<Period> periods = new ArrayList<>( periodService.getPeriodsBetweenDates(
+            periodType, date1, date2 ) );
+
+        if ( periods.isEmpty() )
         {
-            Date date1 = sdf.parse( fromDate );
-            Date date2 = sdf.parse( toDate );
-
-            List<Period> periods = new ArrayList<>( periodService.getPeriodsBetweenDates(
-                periodType, date1, date2 ) );
-
-            if ( periods.isEmpty() )
-            {
-                periods.add( periodType.createPeriod( date1 ) );
-                periods.add( periodType.createPeriod( date2 ) );
-            }
-
-            Collections.sort( periods, new AscendingPeriodComparator() );
-
-            return periods;
+            periods.add( periodType.createPeriod( date1 ) );
+            periods.add( periodType.createPeriod( date2 ) );
         }
-        catch ( ParseException e )
-        {
-            return null; // The user hasn't specified any dates
-        }
+
+        Collections.sort( periods, new AscendingPeriodComparator() );
+
+        return periods;
     }
 }

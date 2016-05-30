@@ -44,6 +44,11 @@ public class UserKeyJsonValue
     private User user;
 
     /**
+     * A namespace is a collection of keys for a given user
+     */
+    private String namespace;
+
+    /**
      * A key belongs to a namespace and user, and represent a value
      */
     private String key;
@@ -59,21 +64,49 @@ public class UserKeyJsonValue
     private String encryptedValue;
 
     /**
-     * A namespace is a collection of keys for a given user
-     */
-    private String namespace;
-
-    /**
-     * Indicates whether the value should be encypted or not.
+     * Indicates whether the value should be encrypted or not.
      */
     private Boolean encrypted = false;
 
     /**
-     * Temporary variable to hold any new values set during session; Will be made into the corrent type
-     * when being persisted (encrypted or plain)
+     * Temporary variable to hold any new values set during session. Will be made into the correct type
+     * when being persisted by the persistence layer (encrypted or plain).
      */
     private String value;
 
+    // -------------------------------------------------------------------------
+    // Constructors
+    // -------------------------------------------------------------------------
+
+    public UserKeyJsonValue()
+    {
+    }
+    
+    public UserKeyJsonValue( User user, String namespace, String key, String value, Boolean encrypted )
+    {
+        this.user = user;
+        this.namespace = namespace;
+        this.key = key;
+        this.value = value;
+        this.encrypted = encrypted;
+    }
+    
+    // -------------------------------------------------------------------------
+    // Get and set methods
+    // -------------------------------------------------------------------------
+
+    @JsonProperty
+    public User getUser()
+    {
+        return user;
+    }
+
+    public void setUser( User user )
+    {
+        this.user = user;
+    }
+
+    @JsonProperty
     public String getNamespace()
     {
         return namespace;
@@ -96,20 +129,9 @@ public class UserKeyJsonValue
     }
 
     @JsonProperty
-    public User getUser()
-    {
-        return user;
-    }
-
-    public void setUser( User user )
-    {
-        this.user = user;
-    }
-
-    @JsonProperty
     public String getValue()
     {
-        return (encrypted ? encryptedValue : plainValue);
+        return encrypted ? encryptedValue : plainValue;
     }
 
     public void setValue( String value )
@@ -119,7 +141,7 @@ public class UserKeyJsonValue
 
     public String getPlainValue()
     {
-        return (!encrypted && value != null ? value : plainValue);
+        return !encrypted && value != null ? value : plainValue;
     }
 
     public void setPlainValue( String plainValue )
@@ -129,7 +151,7 @@ public class UserKeyJsonValue
 
     public String getEncryptedValue()
     {
-        return (encrypted && value != null ? value : encryptedValue);
+        return encrypted && value != null ? value : encryptedValue;
     }
 
     public void setEncryptedValue( String encryptedValue )

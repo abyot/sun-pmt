@@ -63,7 +63,7 @@ public class DefaultIncomingSmsService
     {
         return (List<IncomingSms>) incomingSmsStore.getAllSmses();
     }
-    
+
     @Override
     public int save( IncomingSms incomingSms )
     {
@@ -88,11 +88,12 @@ public class DefaultIncomingSmsService
         else
         {
             sms.setSentDate( new Date() );
-
         }
+        
         sms.setReceivedDate( new Date() );
         sms.setEncoding( SmsMessageEncoding.ENC7BIT );
         sms.setStatus( SmsMessageStatus.INCOMING );
+        
         return save( sms );
     }
 
@@ -132,5 +133,11 @@ public class DefaultIncomingSmsService
     public List<IncomingSms> getSmsByStatus( SmsMessageStatus status, String keyword, Integer min, Integer max )
     {
         return incomingSmsStore.getSmsByStatus( status, keyword, min, max );
+    }
+
+    @Override
+    public List<IncomingSms> getAllUnparsedMessages()
+    {
+        return incomingSmsStore.getAllUnparsedSmses();
     }
 }

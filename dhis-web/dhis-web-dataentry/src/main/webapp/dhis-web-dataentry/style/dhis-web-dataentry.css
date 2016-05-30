@@ -106,6 +106,10 @@
   border-collapse: collapse;
 }
 
+.sectionTable thead {
+    background-color: #EEEEEE;
+}
+
 .sectionDescription
 {
   font-size: 13px;

@@ -152,7 +152,7 @@ public class HibernateDataApprovalStore
     {
         String hql = "delete from DataApproval d where d.organisationUnit = :unit";
         
-        sessionFactory.getCurrentSession().createQuery( hql ).
+        getSession().createQuery( hql ).
             setEntity( "unit", organisationUnit ).executeUpdate();
     }
 
@@ -186,12 +186,12 @@ public class HibernateDataApprovalStore
     {
         final User user = currentUserService.getCurrentUser();
 
-        boolean isSuperUser = currentUserService.currentUserIsSuper();
+        final boolean isSuperUser = currentUserService.currentUserIsSuper();
 
         final String startDate = DateUtils.getMediumDateString( period.getStartDate() );
         final String endDate = DateUtils.getMediumDateString( period.getEndDate() );
 
-        boolean maySeeDefaultCategoryCombo = user == null || user.getUserCredentials() == null ||
+        boolean maySeeDefaultCategoryCombo = 
             ( CollectionUtils.isEmpty( user.getUserCredentials().getCogsDimensionConstraints() )
             && CollectionUtils.isEmpty( user.getUserCredentials().getCatDimensionConstraints() ) );
 
@@ -377,7 +377,7 @@ public class HibernateDataApprovalStore
             "where ( coo.categoryoptionid is null or ous.organisationunitid is not null " + testAncestors + ")" +
             ( attributeOptionCombos == null || attributeOptionCombos.isEmpty() ? "" : " and cocco.categoryoptioncomboid in (" +
                 StringUtils.join( IdentifiableObjectUtils.getIdentifiers( attributeOptionCombos ), "," ) + ") " ) +
-            ( isSuperUser || user == null ? "" :
+            ( isSuperUser ? "" :
                 " and ( co.publicaccess is null or left(co.publicaccess, 1) = 'r' or co.userid is null or co.userid = " + user.getId() + " or exists ( " +
                 "select 1 from dataelementcategoryoptionusergroupaccesses couga " +
                 "left join usergroupaccess uga on uga.usergroupaccessid = couga.usergroupaccessid " +

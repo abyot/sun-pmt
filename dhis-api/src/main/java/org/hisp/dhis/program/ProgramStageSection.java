@@ -68,7 +68,6 @@ public class ProgramStageSection
 
     public ProgramStageSection()
     {
-
     }
 
     public ProgramStageSection( String name, List<ProgramStageDataElement> programStageDataElements )

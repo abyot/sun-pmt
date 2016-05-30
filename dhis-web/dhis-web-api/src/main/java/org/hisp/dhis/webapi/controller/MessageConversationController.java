@@ -35,6 +35,8 @@ import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.hibernate.exception.DeleteAccessDeniedException;
 import org.hisp.dhis.hibernate.exception.UpdateAccessDeniedException;
+import org.hisp.dhis.message.MessageConversationPriority;
+import org.hisp.dhis.message.MessageConversationStatus;
 import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.node.types.CollectionNode;
 import org.hisp.dhis.node.types.RootNode;
@@ -42,6 +44,7 @@ import org.hisp.dhis.node.types.SimpleNode;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.query.Order;
+import org.hisp.dhis.query.QueryParserException;
 import org.hisp.dhis.schema.descriptors.MessageConversationSchemaDescriptor;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserGroup;
@@ -57,12 +60,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -92,7 +90,9 @@ public class MessageConversationController
     private UserGroupService userGroupService;
 
     @Override
-    public void postProcessEntity( org.hisp.dhis.message.MessageConversation entity, WebOptions options, Map<String, String> parameters, TranslateParams translateParams ) throws Exception
+    public void postProcessEntity( org.hisp.dhis.message.MessageConversation entity, WebOptions options,
+        Map<String, String> parameters, TranslateParams translateParams )
+        throws Exception
     {
         Boolean markRead = Boolean.parseBoolean( parameters.get( "markRead" ) );
 
@@ -104,7 +104,8 @@ public class MessageConversationController
     }
 
     @Override
-    public RootNode getObject( @PathVariable String uid, Map<String, String> rpParameters, TranslateParams translateParams, HttpServletRequest request, HttpServletResponse response )
+    public RootNode getObject( @PathVariable String uid, Map<String, String> rpParameters,
+        TranslateParams translateParams, HttpServletRequest request, HttpServletResponse response )
         throws Exception
     {
         org.hisp.dhis.message.MessageConversation messageConversation = messageService.getMessageConversation( uid );
@@ -126,7 +127,9 @@ public class MessageConversationController
     }
 
     @Override
-    protected List<org.hisp.dhis.message.MessageConversation> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders )
+    protected List<org.hisp.dhis.message.MessageConversation> getEntityList( WebMetadata metadata, WebOptions options,
+        List<String> filters, List<Order> orders, TranslateParams translateParams )
+        throws QueryParserException
     {
         List<org.hisp.dhis.message.MessageConversation> entityList;
 
@@ -141,7 +144,8 @@ public class MessageConversationController
             Pager pager = new Pager( options.getPage(), count, options.getPageSize() );
             metadata.setPager( pager );
 
-            entityList = new ArrayList<>( messageService.getMessageConversations( pager.getOffset(), pager.getPageSize() ) );
+            entityList = new ArrayList<>(
+                messageService.getMessageConversations( pager.getOffset(), pager.getPageSize() ) );
         }
         else
         {
@@ -156,20 +160,26 @@ public class MessageConversationController
     //--------------------------------------------------------------------------
 
     @Override
-    public void postXmlObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postXmlObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response )
+        throws Exception
     {
-        MessageConversation messageConversation = renderService.fromXml( request.getInputStream(), MessageConversation.class );
+        MessageConversation messageConversation = renderService
+            .fromXml( request.getInputStream(), MessageConversation.class );
         postObject( response, request, messageConversation );
     }
 
     @Override
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response )
+        throws Exception
     {
-        MessageConversation messageConversation = renderService.fromJson( request.getInputStream(), MessageConversation.class );
+        MessageConversation messageConversation = renderService
+            .fromJson( request.getInputStream(), MessageConversation.class );
         postObject( response, request, messageConversation );
     }
 
-    public void postObject( HttpServletResponse response, HttpServletRequest request, MessageConversation messageConversation ) throws WebMessageException
+    public void postObject( HttpServletResponse response, HttpServletRequest request,
+        MessageConversation messageConversation )
+        throws WebMessageException
     {
         List<User> users = new ArrayList<>( messageConversation.getUsers() );
         messageConversation.getUsers().clear();
@@ -180,7 +190,8 @@ public class MessageConversationController
 
             if ( organisationUnit == null )
             {
-                throw new WebMessageException( WebMessageUtils.conflict( "Organisation Unit does not exist: " + ou.getUid() ) );
+                throw new WebMessageException(
+                    WebMessageUtils.conflict( "Organisation Unit does not exist: " + ou.getUid() ) );
             }
 
             messageConversation.getUsers().addAll( organisationUnit.getUsers() );
@@ -204,7 +215,8 @@ public class MessageConversationController
 
             if ( userGroup == null )
             {
-                throw new WebMessageException( WebMessageUtils.notFound( "User Group does not exist: " + ug.getUid() ) );
+                throw new WebMessageException(
+                    WebMessageUtils.notFound( "User Group does not exist: " + ug.getUid() ) );
             }
 
             messageConversation.getUsers().addAll( userGroup.getMembers() );
@@ -217,11 +229,13 @@ public class MessageConversationController
 
         String metaData = MessageService.META_USER_AGENT + request.getHeader( ContextUtils.HEADER_USER_AGENT );
 
-        int id = messageService.sendMessage( messageConversation.getSubject(), messageConversation.getText(), metaData, messageConversation.getUsers() );
+        int id = messageService.sendMessage( messageConversation.getSubject(), messageConversation.getText(), metaData,
+            messageConversation.getUsers() );
 
         org.hisp.dhis.message.MessageConversation conversation = messageService.getMessageConversation( id );
 
-        response.addHeader( "Location", MessageConversationSchemaDescriptor.API_ENDPOINT + "/" + conversation.getUid() );
+        response
+            .addHeader( "Location", MessageConversationSchemaDescriptor.API_ENDPOINT + "/" + conversation.getUid() );
         webMessageService.send( WebMessageUtils.created( "Message conversation created" ), response, request );
     }
 
@@ -231,7 +245,8 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{uid}", method = RequestMethod.POST )
     public void postMessageConversationReply( @PathVariable( "uid" ) String uid, @RequestBody String body,
-        HttpServletRequest request, HttpServletResponse response ) throws Exception
+        HttpServletRequest request, HttpServletResponse response )
+        throws Exception
     {
         String metaData = MessageService.META_USER_AGENT + request.getHeader( ContextUtils.HEADER_USER_AGENT );
 
@@ -242,9 +257,10 @@ public class MessageConversationController
             throw new WebMessageException( WebMessageUtils.notFound( "Message conversation does not exist: " + uid ) );
         }
 
-        messageService.sendReply( conversation, body, metaData );
+        messageService.sendReply( conversation, body, metaData, false );
 
-        response.addHeader( "Location", MessageConversationSchemaDescriptor.API_ENDPOINT + "/" + conversation.getUid() );
+        response
+            .addHeader( "Location", MessageConversationSchemaDescriptor.API_ENDPOINT + "/" + conversation.getUid() );
         webMessageService.send( WebMessageUtils.created( "Message conversation created" ), response, request );
     }
 
@@ -254,7 +270,8 @@ public class MessageConversationController
 
     @RequestMapping( value = "/feedback", method = RequestMethod.POST )
     public void postMessageConversationFeedback( @RequestParam( "subject" ) String subject, @RequestBody String body,
-        HttpServletRequest request, HttpServletResponse response ) throws Exception
+        HttpServletRequest request, HttpServletResponse response )
+        throws Exception
     {
         String metaData = MessageService.META_USER_AGENT + request.getHeader( ContextUtils.HEADER_USER_AGENT );
 
@@ -264,19 +281,118 @@ public class MessageConversationController
     }
 
     //--------------------------------------------------------------------------
+    // Assign priority
+    //--------------------------------------------------------------------------
+
+    @RequestMapping( value = "/{uid}/priority", method = RequestMethod.POST, produces = {
+        MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode setMessagePriority(
+        @PathVariable String uid,
+        @RequestParam( required = true ) MessageConversationPriority messageConversationPriority,
+        HttpServletResponse response )
+    {
+
+        RootNode responseNode = new RootNode( "response" );
+
+        User user = currentUserService.getCurrentUser();
+
+        if ( !canModifyUserConversation( user, user ) &&
+            (user.isAuthorized( "F_MANAGE_TICKETS" ) || user.isAuthorized( "ALL" )) )
+        {
+            throw new UpdateAccessDeniedException( "Not authorized to modify this object." );
+        }
+
+        org.hisp.dhis.message.MessageConversation messageConversation = messageService
+            .getMessageConversation( uid );
+
+        if ( messageConversation == null )
+        {
+            response.setStatus( HttpServletResponse.SC_NOT_FOUND );
+            responseNode.addChild( new SimpleNode( "message", "No MessageConversation found for the given ID." ) );
+            return responseNode;
+        }
+
+        CollectionNode marked = responseNode
+            .addChild( new CollectionNode( messageConversationPriority.name() ) );
+        marked.setWrapping( false );
+
+        messageConversation.setPriority( messageConversationPriority );
+        messageService.updateMessageConversation( messageConversation );
+        marked.addChild( new SimpleNode( "uid", messageConversation.getUid() ) );
+        response.setStatus( HttpServletResponse.SC_OK );
+
+        return responseNode;
+    }
+
+    //--------------------------------------------------------------------------
+    // Assign status
+    //--------------------------------------------------------------------------
+
+    @RequestMapping( value = "/{uid}/status", method = RequestMethod.POST, produces = {
+        MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode setMessageStatus(
+        @PathVariable String uid,
+        @RequestParam( required = true ) MessageConversationStatus messageConversationStatus,
+        HttpServletResponse response )
+    {
+
+        RootNode responseNode = new RootNode( "response" );
+
+        User user = currentUserService.getCurrentUser();
+
+        if ( !canModifyUserConversation( user, user ) &&
+            (user.isAuthorized( "F_MANAGE_TICKETS" ) || user.isAuthorized( "ALL" )) )
+        {
+            throw new UpdateAccessDeniedException( "Not authorized to modify this object." );
+        }
+
+        org.hisp.dhis.message.MessageConversation messageConversation = messageService
+            .getMessageConversation( uid );
+
+        if ( messageConversation == null )
+        {
+            response.setStatus( HttpServletResponse.SC_NOT_FOUND );
+            responseNode.addChild( new SimpleNode( "message", "No MessageConversation found for the given ID." ) );
+            return responseNode;
+        }
+
+        CollectionNode marked = responseNode
+            .addChild( new CollectionNode( messageConversationStatus.name() ) );
+        marked.setWrapping( false );
+
+        messageConversation.setStatus( messageConversationStatus );
+        messageService.updateMessageConversation( messageConversation );
+        marked.addChild( new SimpleNode( "uid", messageConversation.getUid() ) );
+        response.setStatus( HttpServletResponse.SC_OK );
+
+        return responseNode;
+    }
+
+    //--------------------------------------------------------------------------
     // Mark conversations read
     //--------------------------------------------------------------------------
 
-    @RequestMapping( value = "/{uid}/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode markMessageConversationRead(
+    @RequestMapping( value = "/{uid}/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode markMessageConversationRead(
         @PathVariable String uid, @RequestParam( required = false ) String userUid, HttpServletResponse response )
     {
-        return modifyMessageConversationRead( userUid, new String[]{ uid }, response, true );
+        return modifyMessageConversationRead( userUid, Lists.newArrayList( uid ), response, true );
     }
 
-    @RequestMapping( value = "/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode markMessageConversationsRead(
-        @RequestParam( value = "user", required = false ) String userUid, @RequestBody String[] uids, HttpServletResponse response )
+    @RequestMapping( value = "/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode markMessageConversationsRead(
+        @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
+        HttpServletResponse response )
     {
         return modifyMessageConversationRead( userUid, uids, response, true );
     }
@@ -285,16 +401,23 @@ public class MessageConversationController
     // Mark conversations unread
     //--------------------------------------------------------------------------
 
-    @RequestMapping( value = "/{uid}/unread", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode markMessageConversationUnread(
+    @RequestMapping( value = "/{uid}/unread", method = RequestMethod.POST, produces = {
+        MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode markMessageConversationUnread(
         @PathVariable String uid, @RequestParam( required = false ) String userUid, HttpServletResponse response )
     {
-        return modifyMessageConversationRead( userUid, new String[]{ uid }, response, false );
+        return modifyMessageConversationRead( userUid, Lists.newArrayList( uid ), response, false );
     }
 
-    @RequestMapping( value = "/unread", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode markMessageConversationsUnread(
-        @RequestParam( value = "user", required = false ) String userUid, @RequestBody String[] uids, HttpServletResponse response )
+    @RequestMapping( value = "/unread", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode markMessageConversationsUnread(
+        @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
+        HttpServletResponse response )
     {
         return modifyMessageConversationRead( userUid, uids, response, false );
     }
@@ -303,9 +426,13 @@ public class MessageConversationController
     // Mark conversations for follow up
     //--------------------------------------------------------------------------
 
-    @RequestMapping( value = "followup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode markMessageConversationFollowup(
-        @RequestParam( value = "user", required = false ) String userUid, @RequestBody String[] uids, HttpServletResponse response )
+    @RequestMapping( value = "followup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode markMessageConversationFollowup(
+        @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
+        HttpServletResponse response )
     {
         RootNode responseNode = new RootNode( "response" );
 
@@ -324,7 +451,8 @@ public class MessageConversationController
             throw new UpdateAccessDeniedException( "Not authorized to modify this object." );
         }
 
-        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService.getMessageConversations( user, uids );
+        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService
+            .getMessageConversations( user, uids );
 
         if ( messageConversations.isEmpty() )
         {
@@ -355,9 +483,13 @@ public class MessageConversationController
     // Clear follow up
     //--------------------------------------------------------------------------
 
-    @RequestMapping( value = "unfollowup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode unmarkMessageConversationFollowup(
-        @RequestParam( value = "user", required = false ) String userUid, @RequestBody String[] uids, HttpServletResponse response )
+    @RequestMapping( value = "unfollowup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode unmarkMessageConversationFollowup(
+        @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
+        HttpServletResponse response )
     {
         RootNode responseNode = new RootNode( "response" );
 
@@ -376,7 +508,8 @@ public class MessageConversationController
             throw new UpdateAccessDeniedException( "Not authorized to modify this object." );
         }
 
-        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService.getMessageConversations( user, uids );
+        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService
+            .getMessageConversations( user, uids );
 
         if ( messageConversations.isEmpty() )
         {
@@ -427,9 +560,13 @@ public class MessageConversationController
     // In practice a DELETE on MessageConversation <-> User relationship
     //--------------------------------------------------------------------------
 
-    @RequestMapping( value = "/{mc-uid}/{user-uid}", method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode removeUserFromMessageConversation(
-        @PathVariable( value = "mc-uid" ) String mcUid, @PathVariable( value = "user-uid" ) String userUid, HttpServletResponse response )
+    @RequestMapping( value = "/{mc-uid}/{user-uid}", method = RequestMethod.DELETE, produces = {
+        MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode removeUserFromMessageConversation(
+        @PathVariable( value = "mc-uid" ) String mcUid, @PathVariable( value = "user-uid" ) String userUid,
+        HttpServletResponse response )
         throws DeleteAccessDeniedException
     {
         RootNode responseNode = new RootNode( "reply" );
@@ -475,9 +612,13 @@ public class MessageConversationController
     // Remove a user from one or more MessageConversations (batch operation)
     //--------------------------------------------------------------------------
 
-    @RequestMapping( method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public @ResponseBody RootNode removeUserFromMessageConversations(
-        @RequestParam( "mc" ) String[] mcUids, @RequestParam( value = "user", required = false ) String userUid, HttpServletResponse response )
+    @RequestMapping( method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE } )
+    public
+    @ResponseBody
+    RootNode removeUserFromMessageConversations(
+        @RequestParam( "mc" ) List<String> mcUids, @RequestParam( value = "user", required = false ) String userUid,
+        HttpServletResponse response )
         throws DeleteAccessDeniedException
     {
         RootNode responseNode = new RootNode( "response" );
@@ -498,7 +639,8 @@ public class MessageConversationController
             throw new DeleteAccessDeniedException( "Not authorized to modify user: " + user.getUid() );
         }
 
-        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService.getMessageConversations( user, mcUids );
+        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService
+            .getMessageConversations( user, mcUids );
 
         if ( messageConversations.isEmpty() )
         {
@@ -551,7 +693,8 @@ public class MessageConversationController
      * @param messageConversation the MessageConversation to access.
      * @return true if the user can read the MessageConversation, false otherwise.
      */
-    private boolean canReadMessageConversation( User user, org.hisp.dhis.message.MessageConversation messageConversation )
+    private boolean canReadMessageConversation( User user,
+        org.hisp.dhis.message.MessageConversation messageConversation )
     {
         return messageConversation.getUsers().contains( user ) || user.isSuper();
     }
@@ -561,13 +704,13 @@ public class MessageConversationController
      *
      * @param readValue true when setting as read, false when setting unread.
      */
-    private RootNode modifyMessageConversationRead( String userUid, String[] uids, HttpServletResponse response, boolean readValue )
+    private RootNode modifyMessageConversationRead( String userUid, List<String> uids, HttpServletResponse response,
+        boolean readValue )
     {
         RootNode responseNode = new RootNode( "response" );
 
         User currentUser = currentUserService.getCurrentUser();
         User user = userUid != null ? userService.getUser( userUid ) : currentUser;
-
 
         if ( user == null )
         {
@@ -581,7 +724,8 @@ public class MessageConversationController
             throw new UpdateAccessDeniedException( "Not authorized to modify this object." );
         }
 
-        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService.getMessageConversations( user, uids );
+        Collection<org.hisp.dhis.message.MessageConversation> messageConversations = messageService
+            .getMessageConversations( user, uids );
 
         if ( messageConversations.isEmpty() )
         {
@@ -590,7 +734,8 @@ public class MessageConversationController
             return responseNode;
         }
 
-        CollectionNode marked = responseNode.addChild( new CollectionNode( readValue ? "markedRead" : "markedUnread" ) );
+        CollectionNode marked = responseNode
+            .addChild( new CollectionNode( readValue ? "markedRead" : "markedUnread" ) );
         marked.setWrapping( false );
 
         for ( org.hisp.dhis.message.MessageConversation conversation : messageConversations )

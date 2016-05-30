@@ -33,9 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.hisp.dhis.DhisSpringTest;
@@ -86,8 +84,6 @@ public class ProgramExpressionServiceTest
     private ProgramExpression programExpressionA;
 
     private ProgramExpression programExpressionB;
-
-    private ProgramStageInstance stageInstance;
 
     private DataElement dataElementA;
 
@@ -147,7 +143,7 @@ public class ProgramExpressionServiceTest
     }
 
     @Test
-    public void tesAddProgramExpression()
+    public void testAddProgramExpression()
     {
         int idA = programExpressionService.addProgramExpression( programExpressionA );
         int idB = programExpressionService.addProgramExpression( programExpressionB );
@@ -157,7 +153,7 @@ public class ProgramExpressionServiceTest
     }
 
     @Test
-    public void tesUpdateProgramExpression()
+    public void testUpdateProgramExpression()
     {
         int idA = programExpressionService.addProgramExpression( programExpressionA );
 
@@ -190,7 +186,7 @@ public class ProgramExpressionServiceTest
     }
 
     @Test
-    public void tesGetProgramExpression()
+    public void testGetProgramExpression()
     {
         int idA = programExpressionService.addProgramExpression( programExpressionA );
         int idB = programExpressionService.addProgramExpression( programExpressionB );
@@ -200,22 +196,7 @@ public class ProgramExpressionServiceTest
     }
 
     @Test
-    public void tesGetProgramExpressionValue()
-    {
-        programExpressionService.addProgramExpression( programExpressionA );
-
-        Map<String, String> dataValueMap = new HashMap<>();
-        dataValueMap.put( stageA.getUid() + "." + dataElementA.getUid(), "1" );
-        dataValueMap.put( stageA.getUid() + "." + dataElementB.getUid(), "2" );
-
-        String value = programExpressionService.getProgramExpressionValue( programExpressionA, stageInstance,
-            dataValueMap );
-
-        assertEquals( "1", value );
-    }
-
-    @Test
-    public void tesGetExpressionDescription()
+    public void testGetExpressionDescription()
     {
         programExpressionService.addProgramExpression( programExpressionA );
 

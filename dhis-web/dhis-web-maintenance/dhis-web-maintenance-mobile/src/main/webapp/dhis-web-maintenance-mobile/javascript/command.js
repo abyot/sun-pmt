@@ -8,10 +8,12 @@ function changeParserType( value )
     } else if ( value == 'ALERT_PARSER' || value == 'UNREGISTERED_PARSER' ) {
     	showById( "alertParser" );
 		enable("userGroupID");
-    } else if (value == 'ANONYMOUS_PROGRAM_PARSER') {
-    	showById( "anonymousProgramParser" );
-		enable("programId");
-    } else if (value == 'TRACKED_ENTITY_REGISTRATION_PARSER') {
+    } 
+   else if (value == 'EVENT_REGISTRATION_PARSER') {
+    	showById( "eventRegistrationParser" );
+		enable("selectedProgramIdWithoutRegistration");
+    }
+    else if (value == 'TRACKED_ENTITY_REGISTRATION_PARSER') {
     	showById( "registrationParser" );
 		enable("selectedProgramId");
     }
@@ -22,12 +24,12 @@ function hideAll()
 {
 	hideById( "dataSetParser" ); 
 	disable( "selectedDataSetID" ); 
+	
+	hideById( "eventRegistrationParser" ); 
+	disable( "selectedProgramIdWithoutRegistration" ); 
 
 	hideById( "alertParser" );
 	disable( "userGroupID" );
-
-	hideById( "anonymousProgramParser" );
-	disable( "programId" );
 
 	hideById( "registrationParser" );
 	disable( "selectedProgramId" );

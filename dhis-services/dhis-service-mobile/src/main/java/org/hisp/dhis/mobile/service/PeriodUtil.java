@@ -28,11 +28,7 @@ package org.hisp.dhis.mobile.service;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Vector;
 
 import org.hisp.dhis.common.exception.InvalidIdentifierReferenceException;
@@ -43,60 +39,21 @@ import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.period.YearlyPeriodType;
+import org.hisp.dhis.system.util.DateUtils;
 
 public class PeriodUtil
 {
     public static Period getPeriod( String periodName, PeriodType periodType )
         throws InvalidIdentifierReferenceException
     {
-
         if ( periodType instanceof DailyPeriodType )
         {
-            String pattern = "yyyy-MM-dd";
-            SimpleDateFormat formatter = new SimpleDateFormat( pattern );
-            Date date;
-            try
-            {
-                date = formatter.parse( periodName );
-            }
-            catch ( ParseException e )
-            {
-                throw new InvalidIdentifierReferenceException( "Couldn't make a period of type " + periodType.getName()
-                    + " and name " + periodName, e );
-            }
-            return periodType.createPeriod( date );
-
+            return periodType.createPeriod( DateUtils.getMediumDate( periodName ) );
         }
 
         if ( periodType instanceof WeeklyPeriodType )
         {
-            String pattern = "yyyy-MM-dd";
-            SimpleDateFormat formatter = new SimpleDateFormat( pattern );
-            Date date;
-            try
-            {
-                date = formatter.parse( periodName );
-            }
-            catch ( ParseException e )
-            {
-                throw new InvalidIdentifierReferenceException( "Couldn't make a period of type " + periodType.getName()
-                    + " and name " + periodName, e );
-            }
-            return periodType.createPeriod( date );
-
-            // int dashIndex = periodName.indexOf( '-' );
-            //
-            // if ( dashIndex < 0 )
-            // {
-            // return null;
-            // }
-            //
-            // int week = Integer.parseInt( periodName.substring( 0, dashIndex )
-            // );
-            // int year = Integer.parseInt( periodName.substring( dashIndex + 1,
-            // periodName.length() ) );
-            //
-            // return periodType.createPeriod(year + "W" + week);
+            return periodType.createPeriod( DateUtils.getMediumDate( periodName ) );
         }
 
         if ( periodType instanceof MonthlyPeriodType )
@@ -162,28 +119,6 @@ public class PeriodUtil
 
         throw new InvalidIdentifierReferenceException( "Couldn't make a period of type " + periodType.getName() + " and name "
             + periodName );
-    }
-
-    public static String dateToString( Date date )
-    {
-        DateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-        return dateFormat.format( date );
-    }
-
-    public static Date stringToDate( String dateString )
-    {
-        SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-        Date date = null;
-        try
-        {
-            date = dateFormat.parse( dateString );
-        }
-        catch ( Exception e )
-        {
-            return null;
-        }
-
-        return date;
     }
 
     public static String convertDateFormat( String standardDate )

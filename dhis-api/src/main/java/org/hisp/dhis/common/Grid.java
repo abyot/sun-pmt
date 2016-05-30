@@ -38,6 +38,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import net.sf.jasperreports.engine.JRDataSource;
 
 /**
+ * Represents a two-dimensional grid of Object-typed values organized in rows
+ * and columns.
+ * 
  * @author Lars Helge Overland
  */
 public interface Grid
@@ -290,21 +293,22 @@ public interface Grid
     Grid addCumulativesToGrid( int startColumnIndex, int numberOfColumns );
     
     /**
-     * Substitutes the values in the meta columns with the mapped value in the
-     * meta-data map.
+     * Substitutes the grid header names and the grid values for meta type columns
+     * based on the given mapping.
      * 
-     * @param metaDataMap meta-data map of keys and substitutions.
+     * @param metaDataMap meta data map of keys and value substitutions.
      */
     Grid substituteMetaData( Map<? extends Object, ? extends Object> metaDataMap );
     
     /**
-     * Substitutes the values in the meta columns with the mapped value in the
-     * meta-data map for the column with the given index.
+     * Substitutes the grid values based on the given mapping. Substitutes values
+     * per row based on the given source column index and target column index.
      * 
-     * @param columnIndex the index of the column to substitute.
+     * @param sourceColumnIndex the index of the column to read values.
+     * @param targetColumnIndex the index of the column to substitute values.
      * @param metaDataMap meta-data map of keys and substitutions.
      */
-    Grid substituteMetaData( int columnIndex, Map<? extends Object, ? extends Object> metaDataMap );
+    Grid substituteMetaData( int sourceColumnIndex, int targetColumnIndex, Map<? extends Object, ? extends Object> metaDataMap );
     
     /**
      * Returns indexes of the meta grid headers.

@@ -28,14 +28,13 @@ package org.hisp.dhis.mapping.hibernate;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-
 import org.hibernate.Criteria;
-import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.hisp.dhis.common.hibernate.HibernateIdentifiableObjectStore;
 import org.hisp.dhis.mapping.MapLayer;
 import org.hisp.dhis.mapping.MapLayerStore;
+
+import java.util.List;
 
 /**
  * @author Jan Henrik Overland
@@ -48,10 +47,7 @@ public class HibernateMapLayerStore
     @SuppressWarnings( "unchecked" )
     public List<MapLayer> getMapLayersByType( String type )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( MapLayer.class );
-
+        Criteria criteria = getSession().createCriteria( MapLayer.class );
         criteria.add( Restrictions.eq( "type", type ) );
 
         return criteria.list();
@@ -60,10 +56,7 @@ public class HibernateMapLayerStore
     @SuppressWarnings( "unchecked" )
     public List<MapLayer> getMapLayersByMapSourceType( String mapSourceType )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( MapLayer.class );
-
+        Criteria criteria = getSession().createCriteria( MapLayer.class );
         criteria.add( Restrictions.eq( "mapSourceType", mapSourceType ) );
 
         return criteria.list();
@@ -72,10 +65,7 @@ public class HibernateMapLayerStore
     @Override
     public MapLayer getMapLayerByMapSource( String mapSource )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( MapLayer.class );
-
+        Criteria criteria = getSession().createCriteria( MapLayer.class );
         criteria.add( Restrictions.eq( "mapSource", mapSource ) );
 
         return (MapLayer) criteria.uniqueResult();

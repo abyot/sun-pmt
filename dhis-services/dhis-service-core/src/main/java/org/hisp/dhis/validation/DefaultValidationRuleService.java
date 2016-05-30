@@ -51,6 +51,7 @@ import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
+import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserGroup;
@@ -58,7 +59,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -553,11 +553,9 @@ public class DefaultValidationRuleService
     {
         StringBuilder builder = new StringBuilder();
 
-        SimpleDateFormat dateTimeFormatter = new SimpleDateFormat( "yyyy-MM-dd HH:mm" );
-
         Map<Importance, Integer> importanceCountMap = countResultsByImportanceType( results );
 
-        String subject = "Alerts as of " + dateTimeFormatter.format( scheduledRunStart ) + ": High "
+        String subject = "Alerts as of " + DateUtils.getLongDateString( scheduledRunStart ) + ": High "
             + (importanceCountMap.get( Importance.HIGH ) == null ? 0 : importanceCountMap.get( Importance.HIGH )) + ", Medium "
             + (importanceCountMap.get( Importance.MEDIUM ) == null ? 0 : importanceCountMap.get( Importance.MEDIUM )) + ", Low "
             + (importanceCountMap.get( Importance.LOW ) == null ? 0 : importanceCountMap.get( Importance.LOW ));

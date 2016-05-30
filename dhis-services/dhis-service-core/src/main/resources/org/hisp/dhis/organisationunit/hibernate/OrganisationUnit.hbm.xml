@@ -78,6 +78,12 @@
       <many-to-many class="org.hisp.dhis.user.User" column="userinfoid" />
     </set>
 
+    <set name="categoryOptions" table="categoryoption_organisationunits" inverse="true">
+      <cache usage="read-write" />
+      <key column="organisationunitid" />
+      <many-to-many class="org.hisp.dhis.dataelement.DataElementCategoryOption" column="categoryoptionid" />
+    </set>
+
     <!-- Contact info -->
 
     <property name="contactPerson" length="255" />

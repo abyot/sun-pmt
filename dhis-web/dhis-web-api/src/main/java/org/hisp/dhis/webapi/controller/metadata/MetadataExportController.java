@@ -31,6 +31,7 @@ package org.hisp.dhis.webapi.controller.metadata;
 import org.hisp.dhis.dxf2.metadata2.MetadataExportParams;
 import org.hisp.dhis.dxf2.metadata2.MetadataExportService;
 import org.hisp.dhis.node.types.RootNode;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.ContextService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,11 +39,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import static org.hisp.dhis.webapi.mvc.annotation.ApiVersion.Version;
+
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
 @Controller
-@RequestMapping( "/23/metadata" )
+@RequestMapping( "/metadata" )
+@ApiVersion( Version.ALL )
 public class MetadataExportController
 {
     @Autowired

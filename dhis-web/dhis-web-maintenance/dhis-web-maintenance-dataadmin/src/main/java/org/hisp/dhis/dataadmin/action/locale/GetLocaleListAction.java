@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.i18n.I18nLocaleService;
 import org.hisp.dhis.i18n.locale.I18nLocale;
 import org.hisp.dhis.paging.ActionPagingSupport;
@@ -122,7 +121,7 @@ public class GetLocaleListAction
                 paging.getPageSize() );
         }
 
-        Collections.sort( i18nlocales, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( i18nlocales );
 
         return SUCCESS;
     }

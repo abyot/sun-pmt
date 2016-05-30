@@ -32,9 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
-import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataentryform.DataEntryForm;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
@@ -112,13 +110,6 @@ public class GetDataSetAction
         return dataEntryForm;
     }
 
-    private DataElementCategoryCombo categoryCombo;
-
-    public DataElementCategoryCombo getCategoryCombo()
-    {
-        return categoryCombo;
-    }
-
     // -------------------------------------------------------------------------
     // Action
     // -------------------------------------------------------------------------
@@ -131,11 +122,11 @@ public class GetDataSetAction
 
         dataSetDataElements = new ArrayList<>( dataSet.getDataElements() );
 
-        Collections.sort( dataSetDataElements, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataSetDataElements );
 
         dataSetIndicators = new ArrayList<>( dataSet.getIndicators() );
 
-        Collections.sort( dataSetIndicators, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataSetIndicators );
 
         dataEntryForm = dataSet.getDataEntryForm();
 

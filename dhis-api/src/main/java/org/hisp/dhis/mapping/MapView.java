@@ -84,6 +84,7 @@ public class MapView
     public static final String LAYER_THEMATIC2 = "thematic2";
     public static final String LAYER_THEMATIC3 = "thematic3";
     public static final String LAYER_THEMATIC4 = "thematic4";
+    public static final String LAYER_EARTH_ENGINE = "earthEngine";
 
     public static final Integer METHOD_EQUAL_INTERVALS = 2;
     public static final Integer METHOD_EQUAL_COUNTS = 3;
@@ -117,6 +118,8 @@ public class MapView
     private List<String> columnDimensions = new ArrayList<>();
 
     private String layer;
+    
+    private String key;
 
     private Integer method;
 
@@ -355,6 +358,19 @@ public class MapView
     public void setLayer( String layer )
     {
         this.layer = layer;
+    }
+
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getKey()
+    {
+        return key;
+    }
+
+    public void setKey( String key )
+    {
+        this.key = key;
     }
 
     @JsonProperty
@@ -646,6 +662,7 @@ public class MapView
             if ( mergeMode.isReplace() )
             {
                 layer = mapView.getLayer();
+                key = mapView.getKey();
                 method = mapView.getMethod();
                 classes = mapView.getClasses();
                 colorLow = mapView.getColorLow();
@@ -666,6 +683,7 @@ public class MapView
             else if ( mergeMode.isMerge() )
             {
                 layer = mapView.getLayer() == null ? layer : mapView.getLayer();
+                key = mapView.getKey() == null ? key : mapView.getKey();
                 method = mapView.getMethod() == null ? method : mapView.getMethod();
                 classes = mapView.getClasses() == null ? classes : mapView.getClasses();
                 colorLow = mapView.getColorLow() == null ? colorLow : mapView.getColorLow();

@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.hisp.dhis.common.AnalyticalObjectService;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.i18n.I18nFormat;
 
 /**
  * @author Lars Helge Overland
@@ -120,12 +119,11 @@ public interface ReportTableService
      * with the given identifier.
      *
      * @param uid                 the ReportTable unique identifier.
-     * @param format              the I18nFormat.
      * @param reportingPeriod     the reporting date.
      * @param organisationUnitUid the organisation unit uid.
      * @return a Grid.
      */
-    Grid getReportTableGrid( String uid, I18nFormat format, Date reportingPeriod, String organisationUnitUid );
+    Grid getReportTableGrid( String uid, Date reportingPeriod, String organisationUnitUid );
 
     ReportTable getReportTable( String uid, String mode );
 

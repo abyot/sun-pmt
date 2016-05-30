@@ -315,7 +315,7 @@ public class GeoToolsMapGenerationService
      */
     private List<MapValue> getAggregatedMapValues( MapView mapView )
     {
-        Grid grid = analyticsService.getAggregatedDataValues( mapView, null );
+        Grid grid = analyticsService.getAggregatedDataValues( mapView );
 
         return getMapValues( grid );
     }

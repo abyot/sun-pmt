@@ -34,6 +34,7 @@ import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.MaintenanceModeException;
 import org.hisp.dhis.common.exception.InvalidIdentifierReferenceException;
 import org.hisp.dhis.dataapproval.exceptions.DataApprovalException;
+import org.hisp.dhis.dxf2.adx.AdxException;
 import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.dxf2.metadata2.MetadataExportException;
 import org.hisp.dhis.dxf2.metadata2.MetadataImportException;
@@ -89,6 +90,30 @@ public class CrudControllerAdvice
         webMessageService.send( WebMessageUtils.conflict( "Could not encrypt data, indicates a configuration issue" ), response, request );
     }
 
+    @ExceptionHandler( { IllegalQueryException.class, DeleteNotAllowedException.class, InvalidIdentifierReferenceException.class } )
+    public void conflictsExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
+    {
+        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
+    }
+
+    @ExceptionHandler( { DataApprovalException.class, SmsServiceNotEnabledException.class, AdxException.class, IllegalStateException.class } )
+    public void dataApprovalExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
+    {
+        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
+    }
+
+    @ExceptionHandler( { JsonParseException.class, MetadataImportException.class, MetadataExportException.class } )
+    public void jsonParseExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
+    {
+        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
+    }
+
+    @ExceptionHandler( { QueryParserException.class, QueryException.class } )
+    public void queryExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
+    {
+        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
+    }
+
     @ExceptionHandler( { NotAuthenticatedException.class } )
     public void notAuthenticatedExceptionHandler( NotAuthenticatedException ex, HttpServletResponse response, HttpServletRequest request )
     {
@@ -107,22 +132,10 @@ public class CrudControllerAdvice
         webMessageService.send( WebMessageUtils.unprocessableEntity( ex.getMessage() ), response, request );
     }
 
-    @ExceptionHandler( { IllegalQueryException.class, DeleteNotAllowedException.class, InvalidIdentifierReferenceException.class, SmsServiceNotEnabledException.class } )
-    public void conflictsExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
-    {
-        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
-    }
-
     @ExceptionHandler( MaintenanceModeException.class )
     public void maintenanceModeExceptionHandler( MaintenanceModeException ex, HttpServletResponse response, HttpServletRequest request )
     {
         webMessageService.send( WebMessageUtils.serviceUnavailable( ex.getMessage() ), response, request );
-    }
-
-    @ExceptionHandler( DataApprovalException.class )
-    public void dataApprovalExceptionHandler( DataApprovalException ex, HttpServletResponse response, HttpServletRequest request )
-    {
-        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request ); //TODO fix message
     }
 
     @ExceptionHandler( AccessDeniedException.class )
@@ -137,27 +150,9 @@ public class CrudControllerAdvice
         webMessageService.send( ex.getWebMessage(), response, request );
     }
 
-    @ExceptionHandler( JsonParseException.class )
-    public void jsonParseExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
-    {
-        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
-    }
-
-    @ExceptionHandler( { QueryParserException.class, QueryException.class } )
-    public void queryExceptionHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
-    {
-        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
-    }
-
     @ExceptionHandler( HttpStatusCodeException.class )
     public void httpStatusCodeExceptionHandler( HttpStatusCodeException ex, HttpServletResponse response, HttpServletRequest request )
     {
         webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, ex.getStatusCode() ), response, request );
-    }
-
-    @ExceptionHandler( { MetadataImportException.class, MetadataExportException.class } )
-    public void metadataImportExportHandler( Exception ex, HttpServletResponse response, HttpServletRequest request )
-    {
-        webMessageService.send( WebMessageUtils.conflict( ex.getMessage() ), response, request );
     }
 }

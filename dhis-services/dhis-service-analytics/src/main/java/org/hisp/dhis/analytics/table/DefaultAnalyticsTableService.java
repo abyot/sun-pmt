@@ -99,7 +99,10 @@ public class DefaultAnalyticsTableService
         int processNo = getProcessNo();
         int orgUnitLevelNo = organisationUnitService.getNumberOfOrganisationalLevels();
         
-        Clock clock = new Clock( log ).startClock().logTime( "Starting update, processes: " + processNo + ", org unit levels: " + orgUnitLevelNo );
+        String tableName = tableManager.getTableName();
+        Date earliest = PartitionUtils.getEarliestDate( lastYears );
+        
+        Clock clock = new Clock( log ).startClock().logTime( "Starting update: " + tableName + ", processes: " + processNo + ", org unit levels: " + orgUnitLevelNo );
         
         String validState = tableManager.validState();
         
@@ -108,12 +111,9 @@ public class DefaultAnalyticsTableService
             notifier.notify( taskId, validState );
             return;
         }
-        
-        Date earliest = PartitionUtils.getEarliestDate( lastYears );
-        
+                
         final List<AnalyticsTable> tables = tableManager.getTables( earliest );
-        final String tableName = tableManager.getTableName();
-        
+                
         clock.logTime( "Table update start: " + tableName + ", processes: " + processNo + ", partitions: " + tables + ", last years: " + lastYears + ", earliest: " + earliest );
         notifier.notify( taskId, "Performing pre-create table work, processes: " + processNo + ", org unit levels: " + orgUnitLevelNo );
         
@@ -169,7 +169,8 @@ public class DefaultAnalyticsTableService
     public void generateResourceTables()
     {
         resourceTableService.dropAllSqlViews();
-        resourceTableService.generateOrganisationUnitStructures();        
+        resourceTableService.generateOrganisationUnitStructures();
+        resourceTableService.generateDataSetOrganisationUnitCategoryTable();
         resourceTableService.generateCategoryOptionComboNames();
         resourceTableService.generateCategoryOptionGroupSetTable();
         resourceTableService.generateDataElementGroupSetTable();

@@ -1,7 +1,5 @@
 package org.hisp.dhis.analytics.event;
 
-import java.util.Map;
-
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -32,6 +30,8 @@ import java.util.Map;
 
 import org.hisp.dhis.common.Grid;
 
+import org.hisp.dhis.analytics.Rectangle;
+
 /**
  * @author Lars Helge Overland
  */
@@ -45,5 +45,5 @@ public interface EventAnalyticsManager
     
     long getEventCount( EventQueryParams params );
     
-    Map<String, Object> getCountAndExtent( EventQueryParams params );
+    Rectangle getRectangle( EventQueryParams params );
 }

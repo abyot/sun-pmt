@@ -144,6 +144,11 @@ public class Schema implements Ordered, Klass
     private boolean defaultPrivate;
 
     /**
+     * If this is true, do not require private authority for create/update of instances of this type.
+     */
+    private boolean implicitPrivateAuthority;
+
+    /**
      * List of authorities required for doing operations on this class.
      */
     private List<Authority> authorities = Lists.newArrayList();
@@ -366,6 +371,18 @@ public class Schema implements Ordered, Klass
     public void setDefaultPrivate( boolean defaultPrivate )
     {
         this.defaultPrivate = defaultPrivate;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isImplicitPrivateAuthority()
+    {
+        return implicitPrivateAuthority;
+    }
+
+    public void setImplicitPrivateAuthority( boolean implicitPrivateAuthority )
+    {
+        this.implicitPrivateAuthority = implicitPrivateAuthority;
     }
 
     @JsonProperty

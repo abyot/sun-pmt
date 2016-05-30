@@ -28,7 +28,7 @@ package org.hisp.dhis.dxf2.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Locale;
 
@@ -55,9 +55,23 @@ public class TranslateParams
         this.translate = translate;
     }
 
+    public Locale getLocaleWithDefault( Locale defaultLocale )
+    {
+        Locale locale = getLocale();
+        return locale != null ? locale : defaultLocale;
+    }
+
     public Locale getLocale()
     {
-        return Locale.forLanguageTag( locale );
+        try
+        {
+            return Locale.forLanguageTag( locale );
+        }
+        catch ( Exception ignored )
+        {
+        }
+
+        return null;
     }
 
     public void setLocale( String locale )

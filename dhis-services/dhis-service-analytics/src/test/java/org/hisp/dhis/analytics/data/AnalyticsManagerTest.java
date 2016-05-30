@@ -60,12 +60,12 @@ public class AnalyticsManagerTest
     {
         Period y2012 = createPeriod( "2012" );
                 
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( createDataElement( 'A' ), createDataElement( 'B' ) ) );
-        params.setPeriods( getList( y2012 ) );
-        params.setOrganisationUnits( getList( createOrganisationUnit( 'A' ) ) );
-        params.setDataPeriodType( new YearlyPeriodType() );
-        params.setAggregationType( AggregationType.AVERAGE_SUM_INT_DISAGGREGATION );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( createDataElement( 'A' ), createDataElement( 'B' ) ) )
+            .withPeriods( getList( y2012 ) )
+            .withOrganisationUnits( getList( createOrganisationUnit( 'A' ) ) )
+            .withDataPeriodType( new YearlyPeriodType() )
+            .withAggregationType( AggregationType.AVERAGE_SUM_INT_DISAGGREGATION ).build();
         
         Map<String, Object> dataValueMap = new HashMap<>();
         dataValueMap.put( BASE_UID + "A-2012-" + BASE_UID + "A", 1d );

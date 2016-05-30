@@ -35,7 +35,6 @@ import java.util.List;
 import org.hisp.dhis.event.EventStatus;
 import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
-import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 
 /**
@@ -47,63 +46,64 @@ public interface ProgramStageInstanceService
     String ID = ProgramStageInstanceService.class.getName();
 
     /**
-     * Adds an {@link TrackedEntityAttribute}
+     * Adds a {@link ProgramStageInstance}
      *
-     * @param programStageInstance The to TrackedEntityAttribute add.
-     * @return A generated unique id of the added {@link TrackedEntityAttribute}
-     *         .
+     * @param programStageInstance The ProgramStageInstance to add.
+     * @return A generated unique id of the added {@link ProgramStageInstance}.
      */
     int addProgramStageInstance( ProgramStageInstance programStageInstance );
 
     /**
-     * Deletes a {@link TrackedEntityAttribute}.
+     * Deletes a {@link ProgramStageInstance}.
      *
-     * @param programStageInstance the TrackedEntityAttribute to delete.
+     * @param programStageInstance the ProgramStageInstance to delete.
      */
     void deleteProgramStageInstance( ProgramStageInstance programStageInstance );
 
     /**
-     * Updates an {@link TrackedEntityAttribute}.
+     * Updates a {@link ProgramStageInstance}.
      *
-     * @param programStageInstance the TrackedEntityAttribute to update.
+     * @param programStageInstance the ProgramStageInstance to update.
      */
     void updateProgramStageInstance( ProgramStageInstance programStageInstance );
 
     boolean programStageInstanceExists(String uid);
 
     /**
-     * Returns a {@link TrackedEntityAttribute}.
+     * Returns a {@link ProgramStageInstance}.
      *
-     * @param id the id of the TrackedEntityAttribute to return.
-     * @return the TrackedEntityAttribute with the given id
+     * @param id the id of the ProgramStageInstance to return.
+     * @return the ProgramStageInstance with the given id.
      */
     ProgramStageInstance getProgramStageInstance( int id );
 
     /**
-     * Returns the {@link TrackedEntityAttribute} with the given UID.
+     * Returns the {@link ProgramStageInstance} with the given UID.
      *
      * @param uid the UID.
-     * @return the TrackedEntityAttribute with the given UID, or null if no
+     * @return the ProgramStageInstance with the given UID, or null if no
      *         match.
      */
     ProgramStageInstance getProgramStageInstance( String uid );
 
     /**
-     * Retrieve an event on a program instance and a program stage. For
-     * repeatable stage, the system returns the last event
+     * Retrieve an event on a ProgramInstance and a ProgramStage. For
+     * repeatable stages, the system returns the last event.
      *
-     * @param programInstance ProgramInstance
-     * @param programStage ProgramStage
-     * @return ProgramStageInstance
+     * @param programInstance the ProgramInstance.
+     * @param programStage the ProgramStage.
+     * @return the ProgramStageInstance corresponding to the given
+     *          programInstance and ProgramStage, or null if no match.
      */
     ProgramStageInstance getProgramStageInstance( ProgramInstance programInstance, ProgramStage programStage );
 
     /**
-     * Retrieve an event list on program instance list with a certain status
+     * Retrieve an event list on a list of ProgramInstances with a certain status.
      *
-     * @param programInstances ProgramInstance list
-     * @param status EventStatus
-     * @return ProgramStageInstance list
+     * @param programInstances the ProgramInstance list.
+     * @param status the EventStatus.
+     * @return a list of all ProgramStageInstances for the given ProgramInstances
+     *          and EventStatus.
      */
     List<ProgramStageInstance> getProgramStageInstances( Collection<ProgramInstance> programInstances,
         EventStatus status );
@@ -112,9 +112,10 @@ public interface ProgramStageInstanceService
      * Get all events by TrackedEntityInstance, optionally filtering by
      * completed.
      *
-     * @param entityInstance TrackedEntityInstance
-     * @param status EventStatus
-     * @return ProgramStageInstance list
+     * @param entityInstance the TrackedEntityInstance.
+     * @param status the EventStatus.
+     * @return a list of all ProgramStageInstance for the given
+     *          TrackedEntityInstance and EventStatus.
      */
     List<ProgramStageInstance> getProgramStageInstances( TrackedEntityInstance entityInstance, EventStatus status );
 
@@ -127,31 +128,31 @@ public interface ProgramStageInstanceService
     long getProgramStageInstanceCount( int days );
 
     /**
-     * Retrieve scheduled list of entityInstances registered
+     * Retrieve scheduled list of entityInstances registered.
      *
-     * @return A SchedulingProgramObject list
+     * @return A list of SchedulingProgramObject.
      */
     Collection<SchedulingProgramObject> getSendMessageEvents();
 
     /**
-     * Complete an event. Besides, program template messages will be send if it
-     * was defined to send when to complete this program
+     * Complete an event. Besides, program template messages will be sent if it was
+     * defined for sending upon completion.
      *
-     * @param programStageInstance ProgramStageInstance
-     * @param sendNotifications indicates whether to send messages and notifications.
-     * @param format I18nFormat
+     * @param programStageInstance the ProgramStageInstance.
+     * @param sendNotifications whether to send messages and notifications or not.
+     * @param format the I18nFormat for the notification messages.
      */
     void completeProgramStageInstance( ProgramStageInstance programStageInstance, boolean sendNotifications, I18nFormat format );
 
     /**
-     * Creates a program stage instance. Will create a program instance in case
+     * Creates a ProgramStageInstance. Will create a ProgramInstance in case
      * the program is single event.
      *
-     * @param entityInstance the tracked entity instance.
-     * @param program the program.
+     * @param entityInstance the TrackedEntityInstance.
+     * @param program the Program.
      * @param executionDate the report date of the event.
-     * @param organisationUnit the organisation unit where the event took place.
-     * @return ProgramStageInstance a ProgramStageInstance object.
+     * @param organisationUnit the OrganisationUnit where the event took place.
+     * @return ProgramStageInstance the ProgramStageInstance which was created.
      */
     ProgramStageInstance createProgramStageInstance( TrackedEntityInstance entityInstance, Program program,
         Date executionDate, OrganisationUnit organisationUnit );
@@ -159,12 +160,12 @@ public interface ProgramStageInstanceService
     /**
      * Creates a program stage instance. 
      *
-     * @param programInstance the program instance.
-     * @param programStage the program stage.
+     * @param programInstance the ProgramInstance.
+     * @param programStage the ProgramStage.
      * @param enrollmentDate the enrollment date.
-     * @param incidentDate the date of incident.
-     * @param organisationUnit the organisation unit where the event took place.
-     * @return ProgramStageInstance a ProgramStageInstance object.
+     * @param incidentDate date of the incident.
+     * @param organisationUnit the OrganisationUnit where the event took place.
+     * @return ProgramStageInstance the ProgramStageInstance which was created.
      */
     ProgramStageInstance createProgramStageInstance( ProgramInstance programInstance, ProgramStage programStage,
         Date enrollmentDate, Date incidentDate, OrganisationUnit organisationUnit );

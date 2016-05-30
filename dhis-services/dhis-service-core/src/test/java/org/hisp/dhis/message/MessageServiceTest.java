@@ -28,20 +28,19 @@ package org.hisp.dhis.message;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.hisp.dhis.DhisSpringTest;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Lars Helge Overland
@@ -54,39 +53,39 @@ public class MessageServiceTest
 
     @Autowired
     private UserService _userService;
-    
+
     private User sender;
     private User userA;
     private User userB;
-   
+
 
     private Set<User> users;
-    
+
     // -------------------------------------------------------------------------
     // Fixture
     // -------------------------------------------------------------------------
 
     @Override
     public void setUpTest()
-    {        
+    {
         userService = _userService;
-        
+
         sender = createUser( 'S' );
         userA = createUser( 'A' );
         userB = createUser( 'B' );
-        
+
         userService.addUser( sender );
         userService.addUserCredentials( sender.getUserCredentials() );
 
         userService.addUser( userA );
         userService.addUserCredentials( userA.getUserCredentials() );
-        
+
         userService.addUser( userB );
         userService.addUserCredentials( userB.getUserCredentials() );
-        
+
         users = new HashSet<>();
         users.add( userA );
-        users.add( userB );        
+        users.add( userB );
     }
 
     @Test
@@ -94,13 +93,13 @@ public class MessageServiceTest
     {
         MessageConversation conversationA = new MessageConversation( "SubjectA", sender );
         MessageConversation conversationB = new MessageConversation( "SubjectB", sender );
-        
+
         int idA = messageService.saveMessageConversation( conversationA );
         int idB = messageService.saveMessageConversation( conversationB );
-        
+
         conversationA = messageService.getMessageConversation( idA );
         conversationB = messageService.getMessageConversation( idB );
-        
+
         assertNotNull( conversationA );
         assertEquals( "SubjectA", conversationA.getSubject() );
 
@@ -201,7 +200,7 @@ public class MessageServiceTest
         message.addMessage( new Message( "TextA", "MetaA", sender) );
         int id = messageService.saveMessageConversation( message );
         
-        messageService.sendReply( message, "TextB", "MetaB" );
+        messageService.sendReply( message, "TextB", "MetaB", false );
         
         message = messageService.getMessageConversation( id );
         
@@ -228,7 +227,7 @@ public class MessageServiceTest
         messageService.saveMessageConversation( conversationB );
         messageService.saveMessageConversation( conversationC );
 
-        String[] uids = { uidA, uidB };
+        Collection<String> uids = Sets.newHashSet( uidA, uidB );
 
         List<MessageConversation> conversations = messageService.getMessageConversations( sender, uids );
 

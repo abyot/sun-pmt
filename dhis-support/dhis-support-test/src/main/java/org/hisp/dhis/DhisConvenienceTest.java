@@ -74,6 +74,7 @@ import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
 import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramStageInstance;
+import org.hisp.dhis.program.ProgramStageSection;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.program.ProgramType;
 import org.hisp.dhis.programrule.ProgramRule;
@@ -89,6 +90,7 @@ import org.hisp.dhis.trackedentity.TrackedEntity;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.trackedentity.TrackedEntityAttributeGroup;
 import org.hisp.dhis.trackedentity.TrackedEntityInstance;
+import org.hisp.dhis.trackedentity.TrackedEntityInstanceReminder;
 import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValue;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserAuthorityGroup;
@@ -133,6 +135,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Lars Helge Overland
@@ -699,6 +702,17 @@ public abstract class DhisConvenienceTest
 
     /**
      * @param uniqueCharacter A unique character to identify the object.
+     */
+    public static DataSet createDataSet( char uniqueCharacter )
+    {
+        DataSet dataSet = createDataSet( uniqueCharacter, null );
+        dataSet.setPeriodType( new MonthlyPeriodType() );
+        
+        return dataSet;
+    }
+    
+    /**
+     * @param uniqueCharacter A unique character to identify the object.
      * @param periodType      The period type.
      */
     public static DataSet createDataSet( char uniqueCharacter, PeriodType periodType )
@@ -989,7 +1003,7 @@ public abstract class DhisConvenienceTest
      */
     public static ValidationRule createMonitoringRule( String uniqueCharacter, Operator operator,
         Expression leftSide, Expression rightSide, Expression skipTest,
-        PeriodType periodType, int organisationUnitLevel, int sequentialSampleCount, 
+        PeriodType periodType, int organisationUnitLevel, int sequentialSampleCount,
         int annualSampleCount, int sequentialSkipCount )
     {
         ValidationRule validationRule = new ValidationRule();
@@ -1024,7 +1038,7 @@ public abstract class DhisConvenienceTest
      * @param sequentialSampleCount How many sequential past periods to sample.
      * @param annualSampleCount     How many years of past periods to sample.
      */
-    public static ValidationRule createMonitoringRule( String uniqueCharacter, 
+    public static ValidationRule createMonitoringRule( String uniqueCharacter,
         Operator operator, Expression leftSide, Expression rightSide,
         PeriodType periodType, int organisationUnitLevel,
         int sequentialSampleCount, int annualSampleCount )
@@ -1100,7 +1114,6 @@ public abstract class DhisConvenienceTest
         chart.setType( ChartType.COLUMN );
 
         return chart;
-
     }
 
     public static Chart createChart( char uniqueCharacter, List<Indicator> indicators, List<Period> periods,
@@ -1196,12 +1209,13 @@ public abstract class DhisConvenienceTest
         Set<TrackedEntityAttribute> attributes, Set<OrganisationUnit> organisationUnits )
     {
         Program program = new Program();
+        program.setAutoFields();
 
         program.setName( "Program" + uniqueCharacter );
+        program.setShortName( "ProgramShort" + uniqueCharacter  );
         program.setDescription( "Description" + uniqueCharacter );
         program.setEnrollmentDateLabel( "DateOfEnrollmentDescription" );
         program.setIncidentDateLabel( "DateOfIncidentDescription" );
-        program.setProgramStages( programStages );
         program.setProgramType( ProgramType.WITH_REGISTRATION );
 
         if ( programStages != null )
@@ -1217,7 +1231,10 @@ public abstract class DhisConvenienceTest
         {
             for ( TrackedEntityAttribute attribute : attributes )
             {
-                program.getProgramAttributes().add( new ProgramTrackedEntityAttribute( program, attribute, false, false ) );
+                ProgramTrackedEntityAttribute ptea = new ProgramTrackedEntityAttribute( program, attribute, false, false );
+                ptea.setAutoFields();
+                
+                program.getProgramAttributes().add( ptea );
             }
         }
 
@@ -1232,6 +1249,8 @@ public abstract class DhisConvenienceTest
     public static ProgramRule createProgramRule( char uniqueCharacter, Program parentProgram )
     {
         ProgramRule programRule = new ProgramRule();
+        programRule.setAutoFields();
+        
         programRule.setName( "ProgramRule" + uniqueCharacter );
         programRule.setProgram( parentProgram );
         programRule.setCondition( "true" );
@@ -1242,6 +1261,8 @@ public abstract class DhisConvenienceTest
     public static ProgramRuleAction createProgramRuleAction( char uniqueCharacter )
     {
         ProgramRuleAction programRuleAction = new ProgramRuleAction();
+        programRuleAction.setAutoFields();
+        
         programRuleAction.setName( "ProgramRuleAction" + uniqueCharacter );
         programRuleAction.setProgramRuleActionType( ProgramRuleActionType.HIDEFIELD );
 
@@ -1259,11 +1280,21 @@ public abstract class DhisConvenienceTest
     public static ProgramRuleVariable createProgramRuleVariable( char uniqueCharacter, Program parentProgram )
     {
         ProgramRuleVariable programRuleVariable = new ProgramRuleVariable();
+        programRuleVariable.setAutoFields();
+        
         programRuleVariable.setName( "ProgramRuleVariable" + uniqueCharacter );
         programRuleVariable.setProgram( parentProgram );
         programRuleVariable.setSourceType( ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT );
 
         return programRuleVariable;
+    }
+
+    public static ProgramStage createProgramStage( char uniqueCharacter, Program program )
+    {
+        ProgramStage stage = createProgramStage( uniqueCharacter, 0, false );
+        stage.setProgram( program );
+        
+        return stage;
     }
 
     public static ProgramStage createProgramStage( char uniqueCharacter, int minDays )
@@ -1274,6 +1305,7 @@ public abstract class DhisConvenienceTest
     public static ProgramStage createProgramStage( char uniqueCharacter, int minDays, boolean repeatable )
     {
         ProgramStage programStage = new ProgramStage();
+        programStage.setAutoFields();
 
         programStage.setName( "ProgramStage" + uniqueCharacter );
         programStage.setDescription( "description" + uniqueCharacter );
@@ -1289,14 +1321,27 @@ public abstract class DhisConvenienceTest
 
         if ( dataElements != null )
         {
+            int sortOrder = 1;
+            
             for ( DataElement dataElement : dataElements )
             {
-                ProgramStageDataElement psd = new ProgramStageDataElement( programStage, dataElement, false );
+                ProgramStageDataElement psd = createProgramStageDataElement( programStage, dataElement, false, sortOrder );
+                psd.setAutoFields();
+                
                 programStage.getProgramStageDataElements().add( psd );
             }
         }
 
         return programStage;
+    }
+    
+    public static ProgramStageDataElement createProgramStageDataElement( ProgramStage programStage, DataElement dataElement, 
+        boolean compulsory, Integer sortOrder )
+    {
+        ProgramStageDataElement psde = new ProgramStageDataElement( programStage, dataElement, compulsory, sortOrder );
+        psde.setAutoFields();
+        
+        return psde;
     }
 
     public static ProgramIndicator createProgramIndicator( char uniqueCharacter, Program program, String expression, String filter )
@@ -1312,6 +1357,16 @@ public abstract class DhisConvenienceTest
         indicator.setFilter( filter );
 
         return indicator;
+    }
+    
+    public static ProgramStageSection createProgramStageSection( char uniqueCharacter, Integer sortOrder )
+    {
+        ProgramStageSection section = new ProgramStageSection();
+        section.setAutoFields();        
+        section.setName( "ProgramStageSection" + uniqueCharacter );
+        section.setSortOrder( sortOrder );
+        
+        return section;
     }
 
     public static TrackedEntity createTrackedEntity( char uniqueChar )
@@ -1450,6 +1505,21 @@ public abstract class DhisConvenienceTest
     }
 
     /**
+     * @param uniqueChar A unique character to identify the object.
+     * @return TrackedEntityInstanceReminder
+     */
+    public static TrackedEntityInstanceReminder createTrackedEntityInstanceReminder( char uniqueCharacter, 
+        Integer daysAllowedSendMessage, String templateMessage, String dateToCompare,
+        Integer sendTo, Integer whenToSend, Integer messageType )
+    {
+        TrackedEntityInstanceReminder reminder = new TrackedEntityInstanceReminder( "Reminder" + uniqueCharacter, daysAllowedSendMessage,
+            templateMessage, dateToCompare, sendTo, whenToSend, messageType );
+        reminder.setAutoFields();
+        
+        return reminder;
+    }
+
+    /**
      * @param uniqueCharacter A unique character to identify the object.
      * @param sql             A query statement to retreive record/data from database.
      * @return a sqlView instance
@@ -1531,13 +1601,16 @@ public abstract class DhisConvenienceTest
         {
             String[] children = dir.list();
 
-            for ( String aChildren : children )
+            if ( children != null )
             {
-                boolean success = deleteDir( new File( dir, aChildren ) );
-
-                if ( !success )
+                for ( String aChildren : children )
                 {
-                    return false;
+                    boolean success = deleteDir( new File( dir, aChildren ) );
+    
+                    if ( !success )
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -1688,7 +1761,7 @@ public abstract class DhisConvenienceTest
         return user;
     }
 
-    protected User createAndInjectAdminUser()
+    protected User createAdminUser( String... authorities )
     {
         Assert.notNull( userService, "UserService must be injected in test" );
 
@@ -1700,7 +1773,7 @@ public abstract class DhisConvenienceTest
         userAuthorityGroup.setCode( "Superuser" );
         userAuthorityGroup.setName( "Superuser" );
         userAuthorityGroup.setDescription( "Superuser" );
-        userAuthorityGroup.setAuthorities( Sets.newHashSet( "ALL" ) );
+        userAuthorityGroup.setAuthorities( Sets.newHashSet( authorities ) );
 
         userService.addUserAuthorityGroup( userAuthorityGroup );
 
@@ -1726,13 +1799,25 @@ public abstract class DhisConvenienceTest
         user.setUserCredentials( userCredentials );
         userService.updateUser( user );
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add( new SimpleGrantedAuthority( "ALL" ) );
+        return user;
+    }
+
+    protected User createAndInjectAdminUser()
+    {
+        return createAndInjectAdminUser( "ALL" );
+    }
+
+    protected User createAndInjectAdminUser( String... authorities )
+    {
+        User user = createAdminUser( authorities );
+
+        List<GrantedAuthority> grantedAuthorities = user.getUserCredentials().getAllAuthorities()
+            .stream().map( SimpleGrantedAuthority::new ).collect( Collectors.toList() );
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-            user.getUserCredentials().getUsername(), user.getUserCredentials().getPassword(), authorities );
+            user.getUserCredentials().getUsername(), user.getUserCredentials().getPassword(), grantedAuthorities );
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken( userDetails, "", authorities );
+        Authentication authentication = new UsernamePasswordAuthenticationToken( userDetails, "", grantedAuthorities );
         SecurityContextHolder.getContext().setAuthentication( authentication );
 
         return user;

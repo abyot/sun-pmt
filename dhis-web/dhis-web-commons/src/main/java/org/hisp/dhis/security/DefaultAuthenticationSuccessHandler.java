@@ -35,20 +35,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.hisp.dhis.external.conf.ConfigurationKey;
 import org.hisp.dhis.external.conf.DhisConfigurationProvider;
 import org.hisp.dhis.security.intercept.LoginInterceptor;
 import org.hisp.dhis.user.UserCredentials;
 import org.hisp.dhis.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 /**
  * Since ActionContext is not available at this point, we set a mark in the
- * session that signales that login has just occured, and that LoginInterceptor
+ * session that signals that login has just occurred, and that LoginInterceptor
  * should be run.
  *
  * @author mortenoh
@@ -75,24 +72,15 @@ public class DefaultAuthenticationSuccessHandler
     {
         HttpSession session = request.getSession();
         
-        String username = null;
+        String username = authentication.getName();
         
-        if ( User.class.isAssignableFrom( authentication.getClass() ) )
-        {
-            username = ((User)authentication.getPrincipal()).getUsername();
-        }
-        else if ( LdapUserDetailsImpl.class.isAssignableFrom( authentication.getClass() ) )
-        {
-            username = ((LdapUserDetailsImpl)authentication.getPrincipal()).getUsername();
-        }        
-
-        session.setAttribute( "userIs", username);
+        session.setAttribute( "userIs", username );
         session.setAttribute( LoginInterceptor.JLI_SESSION_VARIABLE, Boolean.TRUE );
         session.setMaxInactiveInterval( DefaultAuthenticationSuccessHandler.DEFAULT_SESSION_TIMEOUT );
 
         UserCredentials credentials = userService.getUserCredentialsByUsername( username );
 
-        boolean readOnly = config.isEnabled( ConfigurationKey.SYSTEM_READ_ONLY_MODE );
+        boolean readOnly = config.isReadOnlyMode();
         
         if ( credentials != null && !readOnly )
         {

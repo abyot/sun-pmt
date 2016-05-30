@@ -212,6 +212,7 @@ dhis2.dsr.displayDataSetReport = function( dataSetReport )
     	hideLoader();
     	dhis2.dsr.showContent();
     	setTableStyles();
+    	dhis2.dsr.registerViewEvent();
     } );
 }
 
@@ -252,6 +253,13 @@ dhis2.dsr.setUserInfo = function( username )
 	        title : "User"
 	    } );
 	} );	
+}
+
+dhis2.dsr.registerViewEvent = function()
+{
+	var ds = $( "#dataSetId" ).val();
+	
+	$.post( "../api/dataStatistics?eventType=DATA_SET_REPORT_VIEW&favorite=" + ds );
 }
 
 dhis2.dsr.showCriteria = function()

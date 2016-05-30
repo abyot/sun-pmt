@@ -48,9 +48,10 @@ public class GridUtilsTest
     {
         String html = IOUtils.toString( new ClassPathResource( "customform.html" ).getInputStream() );
         
-        List<Grid> grids = GridUtils.fromHtml( html );
+        List<Grid> grids = GridUtils.fromHtml( html, "TitleA" );
         
         assertNotNull( grids );
         assertEquals( 6, grids.size() );
+        assertEquals( "TitleA", grids.get( 0 ).getTitle() );
     }
 }

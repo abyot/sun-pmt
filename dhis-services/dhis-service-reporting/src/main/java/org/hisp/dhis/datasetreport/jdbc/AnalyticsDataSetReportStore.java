@@ -51,7 +51,9 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.system.filter.AggregatableDataElementFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.hisp.dhis.common.DimensionalItemObject;
+
+import com.google.common.collect.Lists;
+
 import org.hisp.dhis.commons.filter.FilterUtils;
 
 /**
@@ -85,19 +87,18 @@ public class AnalyticsDataSetReportStore
             return new HashMap<>();
         }
         
-        DataQueryParams params = new DataQueryParams();
-        
-        params.setDataElements( dataElements );
-        params.setPeriod( period );
-        params.setOrganisationUnit( unit );
-        params.setCategoryOptionCombos( new ArrayList<DimensionalItemObject>() );
+        DataQueryParams.Builder params = DataQueryParams.newBuilder()
+            .withDataElements( dataElements )
+            .withPeriod( period )
+            .withOrganisationUnit( unit )
+            .withCategoryOptionCombos( Lists.newArrayList() );
         
         if ( dimensions != null )
         {
-            params.setFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
+            params.addFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
         }
         
-        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params );
+        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params.build() );
         
         Map<String, Object> dataMap = new HashMap<>();
         
@@ -140,19 +141,18 @@ public class AnalyticsDataSetReportStore
                     continue;
                 }
                 
-                DataQueryParams params = new DataQueryParams();
-                
-                params.setDataElements( dataElements );
-                params.setPeriod( period );
-                params.setOrganisationUnit( unit );
-                params.setCategory( category );            
+                DataQueryParams.Builder params = DataQueryParams.newBuilder()
+                    .withDataElements( dataElements )
+                    .withPeriod( period )
+                    .withOrganisationUnit( unit )
+                    .withCategory( category );
 
                 if ( dimensions != null )
                 {
-                    params.setFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
+                    params.addFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
                 }
                 
-                Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params );
+                Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params.build() );
                 
                 for ( Entry<String, Object> entry : map.entrySet() )
                 {
@@ -177,18 +177,17 @@ public class AnalyticsDataSetReportStore
             return new HashMap<>();
         }
         
-        DataQueryParams params = new DataQueryParams();
-        
-        params.setDataElements( dataElements );
-        params.setPeriod( period );
-        params.setOrganisationUnit( unit );
+        DataQueryParams.Builder params = DataQueryParams.newBuilder()
+            .withDataElements( dataElements )
+            .withPeriod( period )
+            .withOrganisationUnit( unit );
 
         if ( dimensions != null )
         {
-            params.setFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
+            params.addFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
         }
         
-        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params );
+        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params.build() );
 
         Map<String, Object> dataMap = new HashMap<>();
         
@@ -211,18 +210,17 @@ public class AnalyticsDataSetReportStore
             return new HashMap<>();
         }        
 
-        DataQueryParams params = new DataQueryParams();
-        
-        params.setIndicators( indicators );
-        params.setPeriod( period );
-        params.setOrganisationUnit( unit );
+        DataQueryParams.Builder params = DataQueryParams.newBuilder() 
+            .withIndicators( indicators )
+            .withPeriod( period )
+            .withOrganisationUnit( unit );
 
         if ( dimensions != null )
         {
-            params.setFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
+            params.addFilters( dataQueryService.getDimensionalObjects( dimensions, null, null, null, IdScheme.UID ) );
         }
         
-        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params );
+        Map<String, Object> map = analyticsService.getAggregatedDataValueMapping( params.build() );
 
         Map<String, Object> dataMap = new HashMap<>();
         

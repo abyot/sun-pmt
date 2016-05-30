@@ -36,8 +36,6 @@ import org.hisp.dhis.dataapproval.DataApprovalWorkflow;
 import org.hisp.dhis.dataapproval.DataApprovalWorkflowService;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
-import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
-import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
@@ -131,20 +129,6 @@ public class ShowUpdateProgramFormAction
     public Program getProgram()
     {
         return program;
-    }
-
-    private List<OrganisationUnitLevel> levels;
-
-    public List<OrganisationUnitLevel> getLevels()
-    {
-        return levels;
-    }
-
-    private List<OrganisationUnitGroup> groups;
-
-    public List<OrganisationUnitGroup> getGroups()
-    {
-        return groups;
     }
 
     private Integer level;

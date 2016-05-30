@@ -169,6 +169,7 @@ public class HibernateDbmsManager
 
         emptyTable( "minmaxdataelement" );
         emptyTable( "expressiondataelement" );
+        emptyTable( "expressionsampleelement" );
         emptyTable( "expressionoptioncombo" );
         emptyTable( "calculateddataelement" );
         emptyTable( "dataelementgroupsetmembers" );

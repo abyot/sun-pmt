@@ -1,5 +1,7 @@
 package org.hisp.dhis.webapi.view;
 
+import org.apache.commons.lang3.StringUtils;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -29,7 +31,6 @@ package org.hisp.dhis.webapi.view;
  */
 
 import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
 import org.springframework.web.accept.PathExtensionContentNegotiationStrategy;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.util.UrlPathHelper;
@@ -74,7 +75,7 @@ public class CustomPathExtensionContentNegotiationStrategy extends PathExtension
         String path = URL_PATH_HELPER.getLookupPathForRequest( servletRequest );
         String filename = WebUtils.extractFullFilenameFromUrlPath( path );
         String extension = getFilenameExtension( filename );
-        return (StringUtils.hasText( extension )) ? extension.toLowerCase( Locale.ENGLISH ) : null;
+        return !StringUtils.isBlank( extension ) ? extension.toLowerCase( Locale.ENGLISH ) : null;
     }
 
     private static final char EXTENSION_SEPARATOR = '.';

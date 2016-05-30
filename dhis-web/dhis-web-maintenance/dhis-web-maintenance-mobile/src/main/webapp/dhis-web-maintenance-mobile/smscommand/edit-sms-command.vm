@@ -13,7 +13,12 @@
 			selectedDataOptions += '{"dataElementId" :' + document.getElementById('codeId'+i).value.split('.')[0] +  ','; 
 			selectedDataOptions += '"optionId" :' + document.getElementById('codeId'+i).value.split('.')[1] +  ','; 
 			selectedDataOptions += '"code" :"' + document.getElementById('codeValue'+i).value + '",';
-			selectedDataOptions += '"formula" :"' + document.getElementById('formula'+i).value + '"},';
+			selectedDataOptions += '"formula" :"' + document.getElementById('formula'+i).value + '"}';
+
+		    if ( i < jQuery('.trDataElementCode').length )
+		    {
+		        selectedDataOptions += ',';
+		    }
 		}
 		selectedDataOptions += ']}';
 		$("#codeDataelementOption").val(selectedDataOptions);
@@ -35,7 +40,11 @@
 		for (var i=0; i<jQuery('.trSpecialCharacter').length; i++)
 		{ 
 			specialCharactersInfo += '{"name" :"'+document.getElementById("speCharName").options[i].value+'",';
-			specialCharactersInfo += '"value" :"'+document.getElementById("speCharValue").options[i].value+'"},';	
+			specialCharactersInfo += '"value" :"'+document.getElementById("speCharValue").options[i].value+'"}';
+			if ( i < jQuery('.trSpecialCharacter').length - 1 )
+            {
+                specialCharactersInfo += ',';
+            }
 		}
 		specialCharactersInfo += ']}';
 		$("#specialCharactersInfo").val(specialCharactersInfo);
@@ -49,6 +58,19 @@
 		}
 		trackedEntityAttributeCodes += ']}';
 		$("#trackedEntityAttributeCodes").val(trackedEntityAttributeCodes);
+		
+		
+		var programStageDataElementCodes = '{"programStageDataElementCodes":[';	
+		
+		for (var i=1; i<= jQuery('.programStageDataElement').length; i++)
+		{ 
+			programStageDataElementCodes += '{"programStageDataElementId" :"'+document.getElementById("attId"+i).value+'",';
+			programStageDataElementCodes += '"code" :"'+document.getElementById("attCode"+i).value+'"},';	
+		}
+		
+		programStageDataElementCodes = programStageDataElementCodes.slice(0,programStageDataElementCodes.length-1);
+		programStageDataElementCodes += ']}';
+		$("#programStageDataElementCodes").val(programStageDataElementCodes);		
 		
 		$("#updateSMSCommandForm").submit();
     };
@@ -156,7 +178,7 @@
 			<td>#if($smsCommand.parserType) $i18n.getString( "$smsCommand.parserType" ) #end</td>
 		</tr>
 		
-		#if( $smsCommand.parserType == 'KEY_VALUE_PARSER' || $smsCommand.parserType == 'J2ME_PARSER' || $smsCommand.parserType == 'TRACKED_ENTITY_REGISTRATION_PARSER')
+		#if( $smsCommand.parserType == 'KEY_VALUE_PARSER' || $smsCommand.parserType == 'J2ME_PARSER' || $smsCommand.parserType == 'TRACKED_ENTITY_REGISTRATION_PARSER' || $smsCommand.parserType == 'EVENT_REGISTRATION_PARSER')
 		<tbody id="codes">
 		<tr>
 			<td><label for="dataset">$i18n.getString( "dataset" )</label></td>
@@ -301,12 +323,46 @@
             </tr>      
 	    #end
     #end
+    
+    
+    
+    
+     #if( $smsCommand.parserType == 'EVENT_REGISTRATION_PARSER' )
+    	<tbody id="codes">
+	      <tr>
+	        <th colspan='2'>$i18n.getString( "program_stage_data_elements")</th>
+	      </tr>
+	    </thead>
+	    #set($index = 0)
+    	#foreach($attribute in $programStageDataElementList)
+    		
+	    #set ($index = $index + 1)
+	    
+    		 <tr class="programStageDataElement">
+               <td>
+				   <label for="attCode$index">$attribute.name</label>
+				   <input type="hidden" id="attId$index" name="attId$index" value="$attribute.id"/>
+			   </td>
+               <td><input type="text" name="attCode$index" id="attCode$index" class="{validate:{required:true}}" value='$!codes["$attribute.id"]'></td>   
+            </tr>      
+	    #end
+    #end
+    
+    
+    
+    
+    
+    
+    
 
 </table>
+
 	<br/>	
     <input type="hidden" name="codeDataelementOption" id="codeDataelementOption" />
 	<input type="hidden" name="specialCharactersInfo" id="specialCharactersInfo" />
 	<input type="hidden" name="trackedEntityAttributeCodes" id="trackedEntityAttributeCodes" />
+	<input type="hidden" name="programStageDataElementCodes" id="programStageDataElementCodes" />
+	
 	
     <input type="button" style="width: 100px" onclick="prepSubmit()" value="$i18n.getString( 'save' )" />
     <input type="button" id="btnBack" name="btnBack" value="$i18n.getString('cancel')" style="width:8em" onclick="window.location.href='SMSCommands.action'"/>

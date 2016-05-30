@@ -28,21 +28,13 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.io.ByteSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.dataelement.DataElement;
+import org.hisp.dhis.dataelement.DataElementCategoryOption;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataset.DataSetService;
@@ -56,6 +48,7 @@ import org.hisp.dhis.fileresource.FileResource;
 import org.hisp.dhis.fileresource.FileResourceDomain;
 import org.hisp.dhis.fileresource.FileResourceService;
 import org.hisp.dhis.fileresource.FileResourceStorageStatus;
+import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.Period;
@@ -64,6 +57,7 @@ import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.system.util.ValidationUtils;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -76,13 +70,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.google.common.io.ByteSource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Lars Helge Overland
  */
 @Controller
 @RequestMapping( value = DataValueController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class DataValueController
 {
     public static final String RESOURCE_PATH = "/dataValues";
@@ -108,7 +110,7 @@ public class DataValueController
 
     @Autowired
     private IdentifiableObjectManager idObjectManager;
-    
+
     @Autowired
     private SystemSettingManager systemSettingManager;
 
@@ -117,6 +119,9 @@ public class DataValueController
 
     @Autowired
     private FileResourceService fileResourceService;
+
+    @Autowired
+    private I18nManager i18nManager;
 
     // ---------------------------------------------------------------------
     // POST
@@ -141,7 +146,7 @@ public class DataValueController
         boolean strictCategoryOptionCombos = (Boolean) systemSettingManager.getSystemSetting( SettingKey.DATA_IMPORT_STRICT_CATEGORY_OPTION_COMBOS );
         boolean strictOrgUnits = (Boolean) systemSettingManager.getSystemSetting( SettingKey.DATA_IMPORT_STRICT_ORGANISATION_UNITS );
         boolean requireCategoryOptionCombo = (Boolean) systemSettingManager.getSystemSetting( SettingKey.DATA_IMPORT_REQUIRE_CATEGORY_OPTION_COMBO );
-        
+
         // ---------------------------------------------------------------------
         // Input validation
         // ---------------------------------------------------------------------
@@ -155,8 +160,10 @@ public class DataValueController
         Period period = getAndValidatePeriod( pe );
 
         OrganisationUnit organisationUnit = getAndValidateOrganisationUnit( ou );
-        
+
         validateInvalidFuturePeriod( period, dataElement );
+
+        validateAttributeOptionComboWithOrgUnitAndPeriod( attributeOptionCombo, organisationUnit, period );
 
         String valueValid = ValidationUtils.dataValueIsValid( value, dataElement );
 
@@ -178,22 +185,22 @@ public class DataValueController
 
         if ( strictPeriods && !dataElement.getPeriodTypes().contains( period.getPeriodType() ) )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( 
+            throw new WebMessageException( WebMessageUtils.conflict(
                 "Period type of period: " + period.getIsoDate() + " not valid for data element: " + dataElement.getUid() ) );
         }
-        
+
         if ( strictCategoryOptionCombos && !dataElement.getCategoryCombo().getOptionCombos().contains( categoryOptionCombo ) )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( 
+            throw new WebMessageException( WebMessageUtils.conflict(
                 "Category option combo: " + categoryOptionCombo.getUid() + " must be part of category combo of data element: " + dataElement.getUid() ) );
         }
-        
+
         if ( strictOrgUnits && !organisationUnit.hasDataElement( dataElement ) )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( 
+            throw new WebMessageException( WebMessageUtils.conflict(
                 "Data element: " + dataElement.getUid() + " must be assigned through data sets to organisation unit: " + organisationUnit.getUid() ) );
         }
-        
+
         // ---------------------------------------------------------------------
         // Locking validation
         // ---------------------------------------------------------------------
@@ -271,7 +278,7 @@ public class DataValueController
             // Value and comment are sent individually, so null checks must be 
             // made for each. Empty string is sent for clearing a value.
             // -----------------------------------------------------------------
-            
+
             if ( value != null )
             {
                 dataValue.setValue( StringUtils.trimToNull( value ) );
@@ -508,7 +515,7 @@ public class DataValueController
         // ---------------------------------------------------------------------
 
         response.setContentType( fileResource.getContentType() );
-        response.setContentLength( Math.round( fileResource.getContentLength() ) );
+        response.setContentLength( new Long( fileResource.getContentLength() ).intValue() );
         response.setHeader( HttpHeaders.CONTENT_DISPOSITION, "filename=" + fileResource.getName() );
 
         // ---------------------------------------------------------------------
@@ -625,11 +632,53 @@ public class DataValueController
         throws WebMessageException
     {
         Period latestFuturePeriod = dataElement.getLatestOpenFuturePeriod();
-        
+
         if ( period.isAfter( latestFuturePeriod ) )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Period: " + 
+            throw new WebMessageException( WebMessageUtils.conflict( "Period: " +
                 period.getIsoDate() + " is after latest open future period: " + latestFuturePeriod.getIsoDate() + " for data element: " + dataElement.getUid() ) );
+        }
+    }
+
+    private void validateAttributeOptionComboWithOrgUnitAndPeriod( DataElementCategoryOptionCombo attributeOptionCombo,
+        OrganisationUnit organisationUnit, Period period )
+        throws WebMessageException
+    {
+        for ( DataElementCategoryOption option : attributeOptionCombo.getCategoryOptions() )
+        {
+            if ( option.getStartDate() != null && period.getEndDate().compareTo( option.getStartDate() ) < 0 )
+            {
+                throw new WebMessageException( WebMessageUtils.conflict( "Period " + period.getIsoDate()
+                    + " is before start date " + i18nManager.getI18nFormat().formatDate( option.getStartDate() )
+                    + " for attributeOption '" + option.getName() + "'" ) );
+            }
+
+            if ( option.getEndDate() != null && period.getStartDate().compareTo( option.getEndDate() ) > 0 )
+            {
+                throw new WebMessageException( WebMessageUtils.conflict( "Period " + period.getIsoDate()
+                    + " is after end date " + i18nManager.getI18nFormat().formatDate( option.getEndDate() )
+                    + " for attributeOption '" + option.getName() + "'" ) );
+            }
+
+            if ( option.getOrganisationUnits() != null && !option.getOrganisationUnits().isEmpty() )
+            {
+                boolean validOrgUnit = false;
+
+                for ( OrganisationUnit optionOrgUnit : option.getOrganisationUnits() )
+                {
+                    if ( optionOrgUnit.getPath().contains( organisationUnit.getUid() ) )
+                    {
+                        validOrgUnit = true;
+                        break;
+                    }
+                }
+
+                if ( !validOrgUnit )
+                {
+                    throw new WebMessageException( WebMessageUtils.conflict( "Organisation Unit " + organisationUnit.getUid() +
+                        " is not valid for attributeOption '" + option.getName() ) );
+                }
+            }
         }
     }
 

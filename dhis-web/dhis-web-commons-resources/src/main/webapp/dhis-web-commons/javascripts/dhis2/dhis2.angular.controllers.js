@@ -77,22 +77,20 @@ var d2Controllers = angular.module('d2Controllers', [])
             optionSets,
             CommonUtils) {
 
-    $scope.itemList = [];
 
     $scope.model = {type: dataType, 
     				name: dataType === 'dataElement' ? $translate.instant('data_element') : $translate.instant('attribute'),
-    				searchPlaceholder: dataType === 'dataElement' ? $translate.instant('search_by_data_element') : $translate.instant('search_by_attribute')};
+    				searchPlaceholder: dataType === 'dataElement' ? $translate.instant('search_by_data_element') : $translate.instant('search_by_attribute'),
+                    auditColumns: ['name', 'auditType', 'value', 'modifiedBy', 'created'], itemList:[], uniqueRows:[]};
 
     $scope.close = function () {
         $modalInstance.close();
     };
     
-    $scope.auditColumns = ['name', 'auditType', 'value', 'modifiedBy', 'created'];    
-
     AuditHistoryDataService.getAuditHistoryData(eventId, dataType).then(function (data) {
 
-        $scope.itemList = [];
-        $scope.uniqueRows = [];
+        $scope.model.itemList = [];
+        $scope.model.uniqueRows = [];
         
         var reponseData = data.trackedEntityDataValueAudits ? data.trackedEntityDataValueAudits :
             data.trackedEntityAttributeValueAudits ? data.trackedEntityAttributeValueAudits : null;
@@ -119,25 +117,15 @@ var d2Controllers = angular.module('d2Controllers', [])
                 audit.modifiedBy = dataValue.modifiedBy;
                 audit.created = DateUtils.formatToHrsMinsSecs(dataValue.created);                
                 
-                $scope.itemList.push(audit);
-                if( $scope.uniqueRows.indexOf(audit.name) === -1){
-                	$scope.uniqueRows.push(audit.name);
+                $scope.model.itemList.push(audit);
+                if( $scope.model.uniqueRows.indexOf(audit.name) === -1){
+                	$scope.model.uniqueRows.push(audit.name);
                 }
                 
-                if($scope.uniqueRows.length > 0){
-                	$scope.uniqueRows = $scope.uniqueRows.sort();
+                if($scope.model.uniqueRows.length > 0){
+                	$scope.model.uniqueRows = $scope.model.uniqueRows.sort();
                 }
             }
         }
     });
-})
-.controller('ExportController', function($scope, $modalInstance) {
-
-    $scope.export = function (format) {
-        $modalInstance.close(format);
-    };
-
-    $scope.close = function() {
-        $modalInstance.close();
-    }
 });

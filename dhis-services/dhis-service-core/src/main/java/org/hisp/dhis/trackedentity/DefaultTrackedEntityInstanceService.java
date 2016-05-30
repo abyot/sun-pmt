@@ -53,6 +53,7 @@ import org.hisp.dhis.relationship.RelationshipTypeService;
 import org.hisp.dhis.system.grid.ListGrid;
 import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValue;
+import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValueAuditService;
 import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValueService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
@@ -111,6 +112,9 @@ public class DefaultTrackedEntityInstanceService
 
     @Autowired
     private CurrentUserService currentUserService;
+    
+    @Autowired
+    private TrackedEntityAttributeValueAuditService attributeValueAuditService;
 
     // -------------------------------------------------------------------------
     // Implementation methods
@@ -574,6 +578,7 @@ public class DefaultTrackedEntityInstanceService
     @Override
     public void deleteTrackedEntityInstance( TrackedEntityInstance instance )
     {
+        attributeValueAuditService.deleteTrackedEntityAttributeValueAudits( instance );
         trackedEntityInstanceStore.delete( instance );
     }
 

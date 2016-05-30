@@ -108,6 +108,15 @@ public class HibernateTrackedEntityAttributeValueStore
             Restrictions.eq( "attribute", attribute ),
             Restrictions.ilike( "plainValue", "%" + searchText + "%" ) ).list();
     }
+    
+    @Override
+    @SuppressWarnings( "unchecked" )
+    public List<TrackedEntityAttributeValue> get( TrackedEntityAttribute attribute, String value )
+    {
+        return getCriteria( 
+            Restrictions.eq( "attribute", attribute ),
+            Restrictions.ilike( "plainValue", value ) ).list();
+    }
 
     @Override
     @SuppressWarnings( "unchecked" )

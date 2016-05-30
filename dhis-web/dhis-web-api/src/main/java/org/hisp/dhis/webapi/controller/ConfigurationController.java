@@ -28,29 +28,24 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.IOException;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.configuration.Configuration;
 import org.hisp.dhis.configuration.ConfigurationService;
 import org.hisp.dhis.dataelement.DataElementGroup;
-import org.hisp.dhis.render.RenderService;
-import org.hisp.dhis.external.conf.ConfigurationKey;
 import org.hisp.dhis.external.conf.DhisConfigurationProvider;
 import org.hisp.dhis.indicator.IndicatorGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
+import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.user.UserAuthorityGroup;
 import org.hisp.dhis.user.UserGroup;
 import org.hisp.dhis.webapi.controller.exception.NotFoundException;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,11 +56,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.Set;
+
 /**
  * @author Lars Helge Overland
  */
 @Controller
 @RequestMapping( "/configuration" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class ConfigurationController
 {
     @Autowired
@@ -167,16 +167,16 @@ public class ConfigurationController
 
         configurationService.setConfiguration( config );
     }
-    
+
     @PreAuthorize( "hasRole('ALL') or hasRole('F_SYSTEM_SETTING')" )
     @ResponseStatus( value = HttpStatus.OK )
     @RequestMapping( value = "/offlineOrganisationUnitLevel", method = RequestMethod.DELETE )
     public void removeOfflineOrganisationUnitLevel()
     {
         Configuration config = configurationService.getConfiguration();
-        
+
         config.setOfflineOrganisationUnitLevel( null );
-        
+
         configurationService.setConfiguration( config );
     }
 
@@ -373,11 +373,11 @@ public class ConfigurationController
 
         configurationService.setConfiguration( config );
     }
-    
+
     @RequestMapping( value = "/systemReadOnlyMode", method = RequestMethod.GET )
     public String getSystemReadOnlyMode( Model model, HttpServletRequest request )
     {
-        return setModel( model, config.getProperty( ConfigurationKey.SYSTEM_READ_ONLY_MODE ) );
+        return setModel( model, config.isReadOnlyMode() );
     }
 
     // -------------------------------------------------------------------------

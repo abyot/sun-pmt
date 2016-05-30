@@ -28,11 +28,14 @@ package org.hisp.dhis.webapi.controller.event;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.program.ProgramDataElement;
 import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.query.QueryParserException;
+import org.hisp.dhis.schema.descriptors.ProgramDataElementSchemaDescriptor;
+import org.hisp.dhis.schema.descriptors.ProgramStageDataElementSchemaDescriptor;
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
 import org.hisp.dhis.webapi.webdomain.WebMetadata;
 import org.hisp.dhis.webapi.webdomain.WebOptions;
@@ -46,7 +49,7 @@ import java.util.List;
  * @author Lars Helge Overland
  */
 @Controller
-@RequestMapping( value = "/programDataElements" )
+@RequestMapping( value = ProgramDataElementSchemaDescriptor.API_ENDPOINT )
 public class ProgramDataElementController
     extends AbstractCrudController<ProgramDataElement>
 {
@@ -55,7 +58,8 @@ public class ProgramDataElementController
 
     @Override
     @SuppressWarnings( "unchecked" )
-    protected List<ProgramDataElement> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders ) throws QueryParserException
+    protected List<ProgramDataElement> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
         List<ProgramDataElement> programDataElements;
         Query query = queryService.getQueryFromUrl( ProgramDataElement.class, filters, orders );

@@ -28,9 +28,6 @@ package org.hisp.dhis.analytics.event.data;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.analytics.AnalyticsService.NAMES_META_KEY;
-import static org.hisp.dhis.analytics.AnalyticsService.OU_HIERARCHY_KEY;
-import static org.hisp.dhis.analytics.AnalyticsService.OU_NAME_HIERARCHY_KEY;
 import static org.hisp.dhis.common.DimensionalObject.ORGUNIT_DIM_ID;
 import static org.hisp.dhis.common.DimensionalObject.PERIOD_DIM_ID;
 import static org.hisp.dhis.common.DimensionalObjectUtils.getDimensionalItemIds;
@@ -45,9 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
 import org.hisp.dhis.analytics.AnalyticsSecurityManager;
-import org.hisp.dhis.analytics.AnalyticsService;
 import org.hisp.dhis.analytics.DataQueryParams;
+import org.hisp.dhis.analytics.Rectangle;
 import org.hisp.dhis.analytics.event.EventAnalyticsManager;
 import org.hisp.dhis.analytics.event.EventAnalyticsService;
 import org.hisp.dhis.analytics.event.EventDataQueryService;
@@ -66,7 +64,6 @@ import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.NameableObjectUtils;
 import org.hisp.dhis.common.Pager;
 import org.hisp.dhis.common.QueryItem;
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramStage;
@@ -200,7 +197,7 @@ public class DefaultEventAnalyticsService
 
             Map<String, String> uidNameMap = getUidNameMap( params );
             
-            metaData.put( NAMES_META_KEY, uidNameMap );
+            metaData.put( AnalyticsMetaDataKey.NAMES.getKey(), uidNameMap );
             metaData.put( PERIOD_DIM_ID, getDimensionalItemIds( params.getDimensionOrFilterItems( PERIOD_DIM_ID ) ) );
             metaData.put( ORGUNIT_DIM_ID, getDimensionalItemIds( params.getDimensionOrFilterItems( ORGUNIT_DIM_ID ) ) );
 
@@ -211,12 +208,12 @@ public class DefaultEventAnalyticsService
             
             if ( params.isHierarchyMeta() )
             {
-                metaData.put( OU_HIERARCHY_KEY, getParentGraphMap( organisationUnits, roots ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_HIERARCHY.getKey(), getParentGraphMap( organisationUnits, roots ) );
             }
 
             if ( params.isShowHierarchy() )
             {
-                metaData.put( OU_NAME_HIERARCHY_KEY, getParentNameGraphMap( organisationUnits, roots, true, params.getDisplayProperty() ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey(), getParentNameGraphMap( organisationUnits, roots, true ) );
             }
 
             grid.setMetaData( metaData );
@@ -226,9 +223,9 @@ public class DefaultEventAnalyticsService
     }
     
     @Override
-    public Grid getAggregatedEventData( AnalyticalObject object, I18nFormat format )
+    public Grid getAggregatedEventData( AnalyticalObject object )
     {
-        EventQueryParams params = eventDataQueryService.getFromAnalyticalObject( (EventAnalyticalObject) object, format );
+        EventQueryParams params = eventDataQueryService.getFromAnalyticalObject( (EventAnalyticalObject) object );
         
         return getAggregatedEventData( params );
     }
@@ -298,7 +295,7 @@ public class DefaultEventAnalyticsService
 
         Map<String, String> uidNameMap = getUidNameMap( params );
 
-        metaData.put( NAMES_META_KEY, uidNameMap );
+        metaData.put( AnalyticsMetaDataKey.NAMES.getKey(), uidNameMap );
 
         User user = currentUserService.getCurrentUser();
 
@@ -306,14 +303,14 @@ public class DefaultEventAnalyticsService
         
         if ( params.isHierarchyMeta() )
         {
-            metaData.put( OU_HIERARCHY_KEY, getParentGraphMap( asTypedList( 
+            metaData.put( AnalyticsMetaDataKey.ORG_UNIT_HIERARCHY.getKey(), getParentGraphMap( asTypedList( 
                 params.getDimensionOrFilterItems( ORGUNIT_DIM_ID ) ), roots ) );
         }
 
         if ( params.isPaging() )
         {
             Pager pager = new Pager( params.getPageWithDefault(), count, params.getPageSizeWithDefault() );
-            metaData.put( AnalyticsService.PAGER_META_KEY, pager );
+            metaData.put( AnalyticsMetaDataKey.PAGER.getKey(), pager );
         }
 
         grid.setMetaData( metaData );
@@ -358,7 +355,7 @@ public class DefaultEventAnalyticsService
     }
     
     @Override
-    public Map<String, Object> getEventCountAndExtent( EventQueryParams params )
+    public Rectangle getRectangle( EventQueryParams params )
     {
         if ( !databaseInfo.isSpatialSupport() )
         {
@@ -373,7 +370,7 @@ public class DefaultEventAnalyticsService
         
         params = queryPlanner.planEventQuery( params );
 
-        return analyticsManager.getCountAndExtent( params );
+        return analyticsManager.getRectangle( params );
     }
 
     // -------------------------------------------------------------------------

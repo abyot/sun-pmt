@@ -64,6 +64,7 @@ import org.hisp.dhis.commons.collection.ListUtils;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementService;
 import org.hisp.dhis.i18n.I18nFormat;
+import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.legend.LegendService;
 import org.hisp.dhis.legend.LegendSet;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
@@ -112,6 +113,9 @@ public class DefaultEventDataQueryService
 
     @Autowired
     private DataQueryService dataQueryService;
+    
+    @Autowired
+    private I18nManager i18nManager;
 
     @Override
     public EventQueryParams getFromUrl( String program, String stage, String startDate, String endDate,
@@ -252,8 +256,10 @@ public class DefaultEventDataQueryService
     }
 
     @Override
-    public EventQueryParams getFromAnalyticalObject( EventAnalyticalObject object, I18nFormat format )
+    public EventQueryParams getFromAnalyticalObject( EventAnalyticalObject object )
     {
+        I18nFormat format = i18nManager.getI18nFormat();
+        
         EventQueryParams params = new EventQueryParams();
         IdScheme idScheme = IdScheme.UID;
 

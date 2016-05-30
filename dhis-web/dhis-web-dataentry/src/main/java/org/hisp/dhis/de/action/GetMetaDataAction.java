@@ -42,7 +42,6 @@ import java.util.Set;
 
 import org.apache.struts2.ServletActionContext;
 import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
@@ -61,6 +60,7 @@ import org.hisp.dhis.user.User;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Sets;
 import com.opensymphony.xwork2.Action;
 
 /**
@@ -197,15 +197,15 @@ public class GetMetaDataAction
     {
         User user = currentUserService.getCurrentUser();
 
-        Date lastUpdated = DateUtils.max( 
+        Date lastUpdated = DateUtils.max( Sets.newHashSet(
             identifiableObjectManager.getLastUpdated( DataElement.class ), 
             identifiableObjectManager.getLastUpdated( OptionSet.class ),
             identifiableObjectManager.getLastUpdated( Indicator.class ),
             identifiableObjectManager.getLastUpdated( DataSet.class ),
             identifiableObjectManager.getLastUpdated( DataElementCategoryCombo.class ),
             identifiableObjectManager.getLastUpdated( DataElementCategory.class ),
-            identifiableObjectManager.getLastUpdated( DataElementCategoryOption.class ));
-        String tag = lastUpdated != null && user != null ? ( DateUtils.LONG_DATE_FORMAT.format( lastUpdated ) + SEP + user.getUid() ): null;
+            identifiableObjectManager.getLastUpdated( DataElementCategoryOption.class ) ) );
+        String tag = lastUpdated != null && user != null ? ( DateUtils.getLongDateString( lastUpdated ) + SEP + user.getUid() ): null;
         
         if ( ContextUtils.isNotModified( ServletActionContext.getRequest(), ServletActionContext.getResponse(), tag ) )
         {
@@ -262,13 +262,13 @@ public class GetMetaDataAction
         for ( DataElementCategory category : categories )
         {
             List<DataElementCategoryOption> categoryOptions = new ArrayList<>( categoryService.getDataElementCategoryOptions( category ) );
-            Collections.sort( categoryOptions, IdentifiableObjectNameComparator.INSTANCE );
+            Collections.sort( categoryOptions );
             categoryOptionMap.put( category.getUid(), categoryOptions );
         }
 
-        Collections.sort( dataSets, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( categoryCombos, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( categories, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataSets );
+        Collections.sort( categoryCombos );
+        Collections.sort( categories );
 
         defaultCategoryCombo = categoryService.getDefaultDataElementCategoryCombo();
 

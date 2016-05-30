@@ -30,9 +30,6 @@ package org.hisp.dhis.jdbc.statementbuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.jdbc.StatementBuilder;
-import org.hisp.dhis.period.Period;
-
-import static org.hisp.dhis.system.util.DateUtils.getSqlDateString;
 
 /**
  * @author Lars Helge Overland
@@ -112,15 +109,6 @@ public abstract class AbstractStatementBuilder
     }
 
     @Override
-    public String getPeriodIdentifierStatement( Period period )
-    {
-        return
-            "SELECT periodid FROM period WHERE periodtypeid=" + period.getPeriodType().getId() + " " +
-                "AND startdate='" + getSqlDateString( period.getStartDate() ) + "' " +
-                "AND enddate='" + getSqlDateString( period.getEndDate() ) + "'";
-    }
-
-    @Override
     public String getNumberOfColumnsInPrimaryKey( String table )
     {
         return
@@ -133,6 +121,18 @@ public abstract class AbstractStatementBuilder
                 "and cu.table_name=tc.table_name " +
                 "where tc.constraint_type='PRIMARY KEY' " +
                 "and cu.table_name='" + table + "';";
+    }
+    
+    @Override
+    public String getCastToDate( String column )
+    {
+        return "cast(" + column + " as date)";
+    }
+    
+    @Override
+    public String getDaysBetweenDates( String fromColumn, String toColumn )
+    {
+        return "datediff(" + toColumn + ", " + fromColumn + ")";
     }
 
     @Override

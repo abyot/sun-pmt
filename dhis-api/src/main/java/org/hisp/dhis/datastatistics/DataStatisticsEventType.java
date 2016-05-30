@@ -36,11 +36,24 @@ package org.hisp.dhis.datastatistics;
  */
 public enum DataStatisticsEventType
 {
-    REPORT_TABLE_VIEW,
-    CHART_VIEW,
-    MAP_VIEW,
-    EVENT_REPORT_VIEW,
-    EVENT_CHART_VIEW,
-    DASHBOARD_VIEW,
-    TOTAL_VIEW
+    REPORT_TABLE_VIEW( "reporttable" ),
+    CHART_VIEW( "chart" ),
+    MAP_VIEW( "map" ),
+    EVENT_REPORT_VIEW( "eventreport" ),
+    EVENT_CHART_VIEW( "eventchart" ),
+    DASHBOARD_VIEW( "dashboard" ),
+    DATA_SET_REPORT_VIEW( null ), //TODO
+    TOTAL_VIEW( "dataset" );
+    
+    private String table;
+    
+    private DataStatisticsEventType( String table )
+    {
+        this.table = table;
+    }
+    
+    public String getTable()
+    {
+        return table;
+    }
 }

@@ -28,6 +28,7 @@ package org.hisp.dhis.webapi.controller.legend;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.http.HttpStatus;
 import org.hisp.dhis.dxf2.common.ImportOptions;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.legend.Legend;
@@ -61,7 +62,7 @@ public class LegendSetController
     @Override
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
     @PreAuthorize( "hasRole('F_GIS_ADMIN') or hasRole('ALL')" )
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         LegendSet legendSet = renderService.fromJson( request.getInputStream(), LegendSet.class );
         legendSet.getLegends().forEach( legendService::addLegend );
@@ -75,7 +76,7 @@ public class LegendSetController
     @Override
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = "application/json" )
     @PreAuthorize( "hasRole('F_GIS_ADMIN') or hasRole('ALL')" )
-    public void putJsonObject( ImportOptions importOptions, @PathVariable String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putJsonObjectLegacy( ImportOptions importOptions, @PathVariable String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         LegendSet legendSet = legendService.getLegendSet( uid );
 

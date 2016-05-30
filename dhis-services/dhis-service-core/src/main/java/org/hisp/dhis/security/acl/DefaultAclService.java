@@ -30,9 +30,9 @@ package org.hisp.dhis.security.acl;
 
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.period.Period;
-import org.hisp.dhis.security.AuthorityType;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
+import org.hisp.dhis.security.AuthorityType;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserGroup;
@@ -40,6 +40,7 @@ import org.hisp.dhis.user.UserGroupAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.springframework.util.CollectionUtils.containsAny;
 
@@ -173,7 +174,17 @@ public class DefaultAclService implements AclService
     public boolean canUpdate( User user, IdentifiableObject object )
     {
         Schema schema = schemaService.getSchema( object.getClass() );
-        return schema != null && canAccess( user, schema.getAuthorityByType( AuthorityType.UPDATE ) ) && (!schema.isShareable() || canWrite( user, object ));
+
+        if ( schema == null )
+        {
+            return false;
+        }
+
+        List<String> anyAuthorities = schema.getAuthorityByType( AuthorityType.UPDATE );
+        anyAuthorities.addAll( schema.getAuthorityByType( AuthorityType.CREATE_PRIVATE ) );
+        anyAuthorities.addAll( schema.getAuthorityByType( AuthorityType.CREATE_PUBLIC ) );
+
+        return schema.isImplicitPrivateAuthority() || canAccess( user, anyAuthorities ) && (!schema.isShareable() || canWrite( user, object ));
     }
 
     @Override
@@ -298,14 +309,14 @@ public class DefaultAclService implements AclService
         return user == null || user.isSuper();
     }
 
-    private boolean canAccess( User user, Collection<String> requiredAuthorities )
+    private boolean canAccess( User user, Collection<String> anyAuthorities )
     {
-        return haveOverrideAuthority( user ) || requiredAuthorities.isEmpty() || haveAuthority( user, requiredAuthorities );
+        return haveOverrideAuthority( user ) || anyAuthorities.isEmpty() || haveAuthority( user, anyAuthorities );
     }
 
-    private boolean haveAuthority( User user, Collection<String> requiredAuthorities )
+    private boolean haveAuthority( User user, Collection<String> anyAuthorities )
     {
-        return containsAny( user.getUserCredentials().getAllAuthorities(), requiredAuthorities );
+        return containsAny( user.getUserCredentials().getAllAuthorities(), anyAuthorities );
     }
 
     @Override

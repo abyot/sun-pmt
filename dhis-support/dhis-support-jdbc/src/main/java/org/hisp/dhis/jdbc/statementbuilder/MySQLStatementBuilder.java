@@ -97,6 +97,12 @@ public class MySQLStatementBuilder
     }
 
     @Override
+    public String getCastToDate( String column )
+    {
+        return "date(" + column + ")";
+    }
+
+    @Override
     public String getDeleteZeroDataValues()
     {
         return
@@ -106,73 +112,6 @@ public class MySQLStatementBuilder
             "AND dataelement.aggregationtype = 'sum' " +
             "AND dataelement.zeroissignificant = false " +
             "AND datavalue.value = '0'";
-    }
-
-    @Override
-    public String getMoveDataValueToDestination( int sourceId, int destinationId )
-    {
-        return "UPDATE datavalue AS d1 SET sourceid=" + destinationId + " " + "WHERE sourceid=" + sourceId + " "
-        + "AND NOT EXISTS ( " + "SELECT * from ( SELECT * FROM datavalue ) AS d2 " + "WHERE d2.sourceid=" + destinationId + " "
-        + "AND d1.dataelementid=d2.dataelementid " + "AND d1.periodid=d2.periodid "
-        + "AND d1.categoryoptioncomboid=d2.categoryoptioncomboid );";
-    }
-
-    @Override
-    public String getSummarizeDestinationAndSourceWhereMatching( int sourceId, int destId )
-    {
-        return "UPDATE datavalue AS d1 SET value=( " + "SELECT SUM( value ) " + "FROM (SELECT * FROM datavalue) as d2 "
-            + "WHERE d1.dataelementid=d2.dataelementid " + "AND d1.periodid=d2.periodid "
-            + "AND d1.categoryoptioncomboid=d2.categoryoptioncomboid " + "AND d2.sourceid IN ( " + destId + ", "
-            + sourceId + " ) ) " + "WHERE d1.sourceid=" + destId + " "
-            + "AND d1.dataelementid in ( SELECT dataelementid FROM dataelement WHERE valuetype='int' );";
-    }
-
-    @Override
-    public String getUpdateDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId )
-    {
-        
-        return "UPDATE datavalue d1 LEFT JOIN datavalue d2 ON d2.dataelementid = " + destDataElementId
-            + " AND d2.categoryoptioncomboid = " + destCategoryOptionComboId
-            + " AND d1.periodid = d2.periodid AND d1.sourceid = d2.sourceid SET d1.dataelementid = "
-            + destDataElementId + ", d1.categoryoptioncomboid = " + destCategoryOptionComboId
-            + " WHERE d1.dataelementid = " + sourceDataElementId + " AND d1.categoryoptioncomboid = "
-            + sourceCategoryOptionComboId + " AND d2.dataelementid IS NULL";
-    }
-
-    @Override
-    public String getMoveFromSourceToDestination( int destDataElementId, int destCategoryOptionComboId,
-        int sourceDataElementId, int sourceCategoryOptionComboId )
-    {
-        return "UPDATE datavalue d1, datavalue d2 SET d1.value=d2.value,d1.storedby=d2.storedby,d1.lastupdated=d2.lastupdated,d1.comment=d2.comment,d1.followup=d2.followup "
-            + "WHERE d1.periodid=d2.periodid "
-            + "AND d1.sourceid=d2.sourceid "
-            + "AND d1.lastupdated<d2.lastupdated "
-            + "AND d1.dataelementid="
-            + destDataElementId
-            + " AND d1.categoryoptioncomboid="
-            + destCategoryOptionComboId
-            + " "
-            + "AND d2.dataelementid="
-            + sourceDataElementId
-            + " AND d2.categoryoptioncomboid=" + sourceCategoryOptionComboId + ";";
-    }
-
-    @Override
-    public String getStandardDeviation( int dataElementId, int categoryOptionComboId, int organisationUnitId ){
-    	
-    	return "SELECT STDDEV( value ) FROM datavalue " +
-            "WHERE dataelementid='" + dataElementId + "' " +
-            "AND categoryoptioncomboid='" + categoryOptionComboId + "' " +
-            "AND sourceid='" + organisationUnitId + "'";        
-    }
-
-    @Override
-    public String getAverage( int dataElementId, int categoryOptionComboId, int organisationUnitId ){
-    	 return "SELECT AVG( value ) FROM datavalue " +
-            "WHERE dataelementid='" + dataElementId + "' " +
-            "AND categoryoptioncomboid='" + categoryOptionComboId + "' " +
-            "AND sourceid='" + organisationUnitId + "'";
     }
 
     @Override

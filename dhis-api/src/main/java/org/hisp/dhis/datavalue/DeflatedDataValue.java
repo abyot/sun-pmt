@@ -30,11 +30,12 @@ package org.hisp.dhis.datavalue;
 
 import static org.hisp.dhis.dataelement.DataElementCategoryOptionCombo.DEFAULT_TOSTRING;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
+import org.joda.time.DateTime;
 
 /**
  * The purpose of this class is to avoid the overhead of creating objects
@@ -45,8 +46,6 @@ import org.hisp.dhis.period.PeriodType;
  */
 public class DeflatedDataValue
 {
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-    
     private int dataElementId;
     
     private int periodId;
@@ -278,8 +277,8 @@ public class DeflatedDataValue
         try
         {
             period.setPeriodType( PeriodType.getPeriodTypeByName( periodTypeName ) );
-            period.setStartDate( dateFormat.parse( startDate ) );
-            period.setEndDate( dateFormat.parse( endDate ) );
+            period.setStartDate( new DateTime( IdentifiableObjectUtils.MEDIUM_DATE_FORMAT.parseDateTime( startDate ) ).toDate() );
+            period.setEndDate( new DateTime( IdentifiableObjectUtils.MEDIUM_DATE_FORMAT.parseDateTime( endDate ) ).toDate() );
         }
         catch ( Exception ex )
         {

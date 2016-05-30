@@ -28,29 +28,7 @@ package org.hisp.dhis.web.ohie.fred.webapi.v1.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
-import java.beans.PropertyEditorSupport;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.validation.groups.Default;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
@@ -58,6 +36,7 @@ import org.hisp.dhis.hierarchy.HierarchyViolationException;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
+import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.web.ohie.fred.webapi.v1.domain.Facilities;
 import org.hisp.dhis.web.ohie.fred.webapi.v1.domain.Facility;
 import org.hisp.dhis.web.ohie.fred.webapi.v1.domain.Identifier;
@@ -90,7 +69,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import javax.validation.groups.Default;
+import java.beans.PropertyEditorSupport;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -122,32 +119,10 @@ public class FacilityController
     {
         binder.registerCustomEditor( Date.class, new PropertyEditorSupport()
         {
-            private SimpleDateFormat[] simpleDateFormats = new SimpleDateFormat[]{
-                new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" ),
-                new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" ),
-                new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm" ),
-                new SimpleDateFormat( "yyyy-MM-dd'T'HH" ),
-                new SimpleDateFormat( "yyyy-MM-dd" ),
-                new SimpleDateFormat( "yyyy-MM" ),
-                new SimpleDateFormat( "yyyy" )
-            };
-
             @Override
             public void setAsText( String value ) throws IllegalArgumentException
             {
-                for ( SimpleDateFormat simpleDateFormat : simpleDateFormats )
-                {
-                    try
-                    {
-                        setValue( simpleDateFormat.parse( value ) );
-                        return;
-                    }
-                    catch ( ParseException ignored )
-                    {
-                    }
-                }
-
-                setValue( null );
+                setValue( DateUtils.parseDate( value ) );
             }
         } );
     }

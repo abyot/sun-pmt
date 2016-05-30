@@ -127,30 +127,50 @@ public class DefaultDataApprovalService
         {
             DataApprovalStatus status = statusMap.get( daKey( da ) );
 
-            if ( status != null && da.getDataApprovalLevel() == null ) // Determine the approval level
+            if ( status == null )
             {
-                if ( status.getState().isApproved() ) // If approved already, approve at next level up (lower level number)
-                {
-                    log.debug( "approveData: approved. Moving up from level " + status.getActionLevel().getLevel() );
+                log.info( "approveData: data may not be approved, status = null " + " " + da );
 
-                    da.setDataApprovalLevel( nextHigherLevel( status.getActionLevel(), da.getWorkflow() ) );
-                }
-                else
+                throw new DataMayNotBeApprovedException();
+            }
+            else if ( status.getState().isApproved() )
+            {
+                if ( da.getDataApprovalLevel().getLevel() >= status.getActionLevel().getLevel() )
                 {
-                    da.setDataApprovalLevel( status.getActionLevel() );
+                    continue; // Already approved at or above the level requested
+                }
+
+                DataApprovalLevel nextLevel = nextHigherLevel( status.getActionLevel(), da.getWorkflow() );
+
+                if ( da.getDataApprovalLevel() == null )
+                {
+                    da.setDataApprovalLevel( nextLevel );
+                }
+                else if ( da.getDataApprovalLevel().getLevel() != nextLevel.getLevel() )
+                {
+                    log.info( "approveData: data approved under workflow " + da.getWorkflow().getName()
+                        + " at level " + status.getActionLevel().getLevel()
+                        + " is ready for level " + nextLevel.getLevel() + ", not level " + da.getDataApprovalLevel().getLevel() );
+
+                    throw new DataMayNotBeApprovedException();
                 }
             }
-            
-            if ( status != null && status.getState().isApproved() && da.getDataApprovalLevel() != null &&
-                da.getDataApprovalLevel().getLevel() >= status.getApprovedLevel().getLevel() )
+            else if ( da.getDataApprovalLevel() == null )
             {
-                continue; // Already approved at or above this level
+                da.setDataApprovalLevel( status.getActionLevel() );
+            }
+            else if ( da.getDataApprovalLevel().getLevel() != status.getActionLevel().getLevel() )
+            {
+                log.info( "approveData: unapproved data in workflow " + da.getWorkflow().getName()
+                    + " must first be approved at level " + status.getActionLevel().getLevel() );
+
+                throw new DataMayNotBeApprovedException();
             }
 
-            if ( status == null || !status.getPermissions().isMayApprove() )
+            if ( !status.getPermissions().isMayApprove() )
             {
                 log.info( "approveData: data may not be approved, state " +
-                    ( status == null ? "(null)" : status.getState().name() ) + " " + da );
+                    status.getState().name() + " " + da );
 
                 throw new DataMayNotBeApprovedException();
             }
@@ -159,7 +179,7 @@ public class DefaultDataApprovalService
             {
                 log.info( "approveData: org unit " + da.getOrganisationUnit().getUid() + " '" + da.getOrganisationUnit().getName() +
                     "' has wrong org unit level " + da.getOrganisationUnit().getLevel() +
-                    " for approval level " + da.getDataApprovalLevel().getLevel());
+                    " for approval level " + da.getDataApprovalLevel().getLevel() );
 
                 throw new DataMayNotBeApprovedException();
             }
@@ -421,7 +441,7 @@ public class DefaultDataApprovalService
 
         for ( int i = 0; i < sortedLevels.size(); i++ )
         {
-            if ( i > 0 && sortedLevels.get( i ) == level )
+            if ( i > 0 && sortedLevels.get( i ).getLevel() == level.getLevel() )
             {
                 return sortedLevels.get( i - 1 );
             }

@@ -31,14 +31,13 @@ package org.hisp.dhis.schema;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Joinable;
-import org.hibernate.type.AssociationType;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.DoubleType;
@@ -60,9 +59,9 @@ import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.NameableObject;
+import org.hisp.dhis.hibernate.HibernateMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,32 +136,30 @@ public abstract class AbstractPropertyIntrospectorService
 
         Map<String, List<String>> joinTableToRoles = new HashMap<>();
 
-        LocalSessionFactoryBean sessionFactoryBean = getLocalSessionFactoryBean();
         SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) sessionFactory;
-        Iterator<?> collectionIterator = sessionFactoryBean.getConfiguration().getCollectionMappings();
+        Iterator<?> collectionIterator = sessionFactory.getAllCollectionMetadata().values().iterator();
 
         while ( collectionIterator.hasNext() )
         {
-            Collection collection = (Collection) collectionIterator.next();
-            CollectionPersister collectionPersister = sessionFactoryImplementor.getCollectionPersister( collection.getRole() );
+            CollectionPersister collectionPersister = (CollectionPersister) collectionIterator.next();
+            CollectionType collectionType = collectionPersister.getCollectionType();
 
-            if ( collectionPersister.isManyToMany() && collection.getType().isAssociationType() )
+            if ( collectionPersister.isManyToMany() && collectionType.isAssociationType() )
             {
-                AssociationType associationType = (AssociationType) collection.getType();
-                Joinable associatedJoinable = associationType.getAssociatedJoinable( sessionFactoryImplementor );
+                Joinable associatedJoinable = collectionType.getAssociatedJoinable( sessionFactoryImplementor );
 
                 if ( !joinTableToRoles.containsKey( associatedJoinable.getTableName() ) )
                 {
                     joinTableToRoles.put( associatedJoinable.getTableName(), new ArrayList<>() );
                 }
 
-                joinTableToRoles.get( associatedJoinable.getTableName() ).add( collection.getRole() );
+                joinTableToRoles.get( associatedJoinable.getTableName() ).add( collectionPersister.getRole() );
             }
-            else if ( collection.isInverse() )
+            else if ( collectionPersister.isInverse() )
             {
-                if ( SetType.class.isInstance( collection.getType() ) )
+                if ( SetType.class.isInstance( collectionType ) )
                 {
-                    SetType setType = (SetType) collection.getType();
+                    SetType setType = (SetType) collectionType;
                     setType.getAssociatedJoinable( sessionFactoryImplementor );
                 }
             }
@@ -195,11 +192,6 @@ public abstract class AbstractPropertyIntrospectorService
      */
     protected abstract Map<String, Property> scanClass( Class<?> klass );
 
-    protected LocalSessionFactoryBean getLocalSessionFactoryBean()
-    {
-        return (LocalSessionFactoryBean) context.getBean( "&sessionFactory" );
-    }
-
     protected Map<String, Property> getPropertiesFromHibernate( Class<?> klass )
     {
         updateJoinTables();
@@ -211,13 +203,20 @@ public abstract class AbstractPropertyIntrospectorService
             return new HashMap<>();
         }
 
-        LocalSessionFactoryBean sessionFactoryBean = getLocalSessionFactoryBean();
-        PersistentClass persistentClass = sessionFactoryBean.getConfiguration().getClassMapping( klass.getName() );
+        Map<String, Property> properties = new HashMap<>();
+
         SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) sessionFactory;
 
-        Iterator<?> propertyIterator = persistentClass.getPropertyClosureIterator();
+        MetadataImplementor metadataImplementor = HibernateMetadata.getMetadataImplementor();
 
-        Map<String, Property> properties = new HashMap<>();
+        if ( metadataImplementor == null )
+        {
+            return new HashMap<>();
+        }
+
+        PersistentClass persistentClass = metadataImplementor.getEntityBinding( klass.getName() );
+
+        Iterator<?> propertyIterator = persistentClass.getPropertyClosureIterator();
 
         while ( propertyIterator.hasNext() )
         {
@@ -239,11 +238,10 @@ public abstract class AbstractPropertyIntrospectorService
             if ( property.isCollection() )
             {
                 CollectionType collectionType = (CollectionType) type;
-                Collection collection = sessionFactoryBean.getConfiguration().getCollectionMapping( collectionType.getRole() );
-                CollectionPersister collectionPersister = sessionFactoryImplementor.getCollectionPersister( collection.getRole() );
+                CollectionPersister persister = sessionFactoryImplementor.getCollectionPersister( collectionType.getRole() );
 
-                property.setOwner( !collection.isInverse() );
-                property.setManyToMany( collectionPersister.isManyToMany() );
+                property.setOwner( !persister.isInverse() );
+                property.setManyToMany( persister.isManyToMany() );
 
                 property.setMin( 0 );
                 property.setMax( Integer.MAX_VALUE );
@@ -258,24 +256,6 @@ public abstract class AbstractPropertyIntrospectorService
                     property.setOwningRole( roleToRole.get( collectionType.getRole() ) );
                     property.setInverseRole( collectionType.getRole() );
                 }
-            }
-
-            if ( ManyToOneType.class.isInstance( type ) )
-            {
-                property.setManyToOne( true );
-
-                if ( property.isOwner() )
-                {
-                    property.setOwningRole( klass.getName() + "." + property.getName() );
-                }
-                else
-                {
-                    property.setInverseRole( klass.getName() + "." + property.getName() );
-                }
-            }
-            else if ( OneToOneType.class.isInstance( type ) )
-            {
-                property.setOneToOne( true );
             }
 
             if ( SingleColumnType.class.isInstance( type ) || CustomType.class.isInstance( type )
@@ -296,6 +276,25 @@ public abstract class AbstractPropertyIntrospectorService
                     property.setMax( Integer.MAX_VALUE );
                     property.setLength( Integer.MAX_VALUE );
                 }
+            }
+
+            if ( ManyToOneType.class.isInstance( type ) )
+            {
+                property.setManyToOne( true );
+                property.setRequired( property.isRequired() && property.isCollection() );
+
+                if ( property.isOwner() )
+                {
+                    property.setOwningRole( klass.getName() + "." + property.getName() );
+                }
+                else
+                {
+                    property.setInverseRole( klass.getName() + "." + property.getName() );
+                }
+            }
+            else if ( OneToOneType.class.isInstance( type ) )
+            {
+                property.setOneToOne( true );
             }
 
             properties.put( property.getName(), property );

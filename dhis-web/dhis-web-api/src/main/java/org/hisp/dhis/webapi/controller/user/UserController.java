@@ -35,6 +35,7 @@ import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.Pager;
 import org.hisp.dhis.dxf2.common.ImportOptions;
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.dxf2.importsummary.ImportStatus;
 import org.hisp.dhis.dxf2.importsummary.ImportSummary;
 import org.hisp.dhis.dxf2.metadata.ImportTypeSummary;
@@ -115,7 +116,8 @@ public class UserController
 
     @Override
     @SuppressWarnings( "unchecked" )
-    protected List<User> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders ) throws QueryParserException
+    protected List<User> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
         UserQueryParams params = new UserQueryParams();
         params.setQuery( options.get( "query" ) );
@@ -180,7 +182,7 @@ public class UserController
 
     @Override
     @RequestMapping( method = RequestMethod.POST, consumes = { "application/xml", "text/xml" } )
-    public void postXmlObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postXmlObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         User user = renderService.fromXml( request.getInputStream(), getEntityClass() );
 
@@ -194,7 +196,7 @@ public class UserController
 
     @Override
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         User user = renderService.fromJson( request.getInputStream(), getEntityClass() );
 
@@ -343,13 +345,13 @@ public class UserController
         }
 
         User userReplica = new User();
-        userReplica.mergeWith( existingUser, MergeMode.MERGE_IF_NOT_NULL );
+        userReplica.mergeWith( existingUser, MergeMode.MERGE );
         userReplica.setUid( CodeGenerator.generateCode() );
         userReplica.setCode( null );
         userReplica.setCreated( new Date() );
 
         UserCredentials credentialsReplica = new UserCredentials();
-        credentialsReplica.mergeWith( existingUser.getUserCredentials(), MergeMode.MERGE_IF_NOT_NULL );
+        credentialsReplica.mergeWith( existingUser.getUserCredentials(), MergeMode.MERGE );
         credentialsReplica.setUid( CodeGenerator.generateCode() );
         credentialsReplica.setCode( null );
         credentialsReplica.setCreated( new Date() );
@@ -390,7 +392,7 @@ public class UserController
 
     @Override
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = { "application/xml", "text/xml" } )
-    public void putXmlObject( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putXmlObjectLegacy( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         List<User> users = getEntity( pvUid, NO_WEB_OPTIONS );
 
@@ -427,7 +429,7 @@ public class UserController
 
     @Override
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = "application/json" )
-    public void putJsonObject( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putJsonObjectLegacy( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         List<User> users = getEntity( pvUid, NO_WEB_OPTIONS );
 

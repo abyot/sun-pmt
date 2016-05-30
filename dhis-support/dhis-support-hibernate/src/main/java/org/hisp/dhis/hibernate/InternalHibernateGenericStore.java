@@ -44,6 +44,8 @@ public interface InternalHibernateGenericStore<T>
     Criteria getCriteria();
     
     Criteria getSharingCriteria();
-    
+
+    Criteria getSharingCriteria( String access );
+
     Criteria getSharingCriteria( User user );
 }

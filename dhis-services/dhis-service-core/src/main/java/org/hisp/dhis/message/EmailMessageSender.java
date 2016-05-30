@@ -40,6 +40,7 @@ import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.hisp.dhis.commons.util.DebugUtils;
+import org.hisp.dhis.program.message.DeliveryChannel;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.system.velocity.VelocityManager;
@@ -49,6 +50,7 @@ import org.hisp.dhis.user.UserSettingService;
 import org.springframework.scheduling.annotation.Async;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 /**
  * @author Lars Helge Overland
@@ -126,16 +128,15 @@ public class EmailMessageSender
 
             for ( User user : users )
             {
-                boolean doSend = forceSend ||
-                    (Boolean) userSettingService.getUserSetting( UserSettingKey.MESSAGE_EMAIL_NOTIFICATION, user );
+                boolean doSend = forceSend
+                    || (Boolean) userSettingService.getUserSetting( UserSettingKey.MESSAGE_EMAIL_NOTIFICATION, user );
 
                 if ( doSend && user.getEmail() != null && !user.getEmail().trim().isEmpty() )
                 {
                     email.addBcc( user.getEmail() );
 
-                    log.info(
-                        "Sending email to user: " + user.getUsername() + " with email address: " + user.getEmail() +
-                            " to host: " + hostName + ":" + port );
+                    log.info( "Sending email to user: " + user.getUsername() + " with email address: " + user.getEmail()
+                        + " to host: " + hostName + ":" + port );
 
                     hasRecipients = true;
                 }
@@ -159,13 +160,95 @@ public class EmailMessageSender
         return null;
     }
 
+    @Override
+    public String sendMessage( String subject, String text, Set<String> recipients )
+    {
+        String hostName = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_HOST_NAME );
+        int port = (int) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PORT );
+        String username = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_USERNAME );
+        String password = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PASSWORD );
+        boolean tls = (boolean) systemSettingManager.getSystemSetting( SettingKey.EMAIL_TLS );
+        String from = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_SENDER );
+
+        if ( hostName == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            HtmlEmail email = getHtmlEmail( hostName, port, username, password, tls, from );
+            email.setSubject( customizeTitle( DEFAULT_SUBJECT_PREFIX ) + subject );
+            email.setTextMsg( text );
+
+            boolean hasRecipients = false;
+
+            for ( String recipient : recipients )
+            {
+                email.addBcc( recipient );
+
+                hasRecipients = true;
+
+                log.info( "Sending email to : " + recipient + " to host: " + hostName + ":" + port );
+            }
+
+            if ( hasRecipients )
+            {
+                email.send();
+                
+                log.info( "Email sent using host: " + hostName + ":" + port + " with TLS: " + tls );
+
+                return "success";
+            }
+        }
+        catch ( EmailException ex )
+        {
+            log.warn( "Could not send email: " + ex.getMessage() + ", " + DebugUtils.getStackTrace( ex ) );
+        }
+        catch ( RuntimeException ex )
+        {
+            log.warn( "Error while sending email: " + ex.getMessage() + ", " + DebugUtils.getStackTrace( ex ) );
+        }
+
+        return null;
+    }
+
+    @Override
+    public String sendMessage( String subject, String text, String recipient )
+    {
+        return sendMessage( subject, text, Sets.newHashSet( recipient ) );
+    }
+
+    @Override
+    public boolean accept( Set<DeliveryChannel> channels )
+    {
+        if ( channels.contains( DeliveryChannel.EMAIL ) )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isServiceReady()
+    {
+        return true;
+    }
+
+    @Override
+    public DeliveryChannel getDeliveryChannel()
+    {
+        return DeliveryChannel.EMAIL;
+    }
+
     // -------------------------------------------------------------------------
     // Supportive methods
     // -------------------------------------------------------------------------
 
     private HtmlEmail getHtmlEmail( String hostName, int port, String username, String password, boolean tls,
         String sender )
-        throws EmailException
+            throws EmailException
     {
         HtmlEmail email = new HtmlEmail();
         email.setHostName( hostName );
@@ -183,11 +266,12 @@ public class EmailMessageSender
 
     private String renderPlainContent( String text, User sender )
     {
-        return sender == null ? text : (text + LB + LB +
-            sender.getName() + LB +
-            (sender.getOrganisationUnitsName() != null ? (sender.getOrganisationUnitsName() + LB) : StringUtils.EMPTY) +
-            (sender.getEmail() != null ? (sender.getEmail() + LB) : StringUtils.EMPTY) +
-            (sender.getPhoneNumber() != null ? (sender.getPhoneNumber() + LB) : StringUtils.EMPTY));
+        return sender == null ? text
+            : (text + LB + LB + sender.getName() + LB
+                + (sender.getOrganisationUnitsName() != null ? (sender.getOrganisationUnitsName() + LB)
+                    : StringUtils.EMPTY)
+                + (sender.getEmail() != null ? (sender.getEmail() + LB) : StringUtils.EMPTY)
+                + (sender.getPhoneNumber() != null ? (sender.getPhoneNumber() + LB) : StringUtils.EMPTY));
     }
 
     private String renderHtmlContent( String text, String footer, User sender )

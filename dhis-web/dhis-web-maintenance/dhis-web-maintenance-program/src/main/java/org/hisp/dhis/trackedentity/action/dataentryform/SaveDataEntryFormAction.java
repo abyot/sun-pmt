@@ -135,7 +135,7 @@ public class SaveDataEntryFormAction
         // Save data-entry-form
         // ---------------------------------------------------------------------
 
-        if ( dataEntryForm == null || dataEntryForm.getHtmlCode() != designTextarea )
+        if ( dataEntryForm == null || !dataEntryForm.getHtmlCode().equals( designTextarea ) )
         {
             program.increaseVersion();
         }

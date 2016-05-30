@@ -435,6 +435,14 @@ public class TableAlteror
         executeSql( "update dataset set timelydays = 15 where timelydays is null" );
         executeSql( "delete from systemsetting where name='completenessOffset'" );
 
+        executeSql( "update report set paramreportingmonth = false where paramreportingmonth is null" );
+        executeSql( "update report set paramparentorganisationunit = false where paramorganisationunit is null" );
+
+        executeSql( "update reporttable set paramreportingmonth = false where paramreportingmonth is null" );
+        executeSql( "update reporttable set paramparentorganisationunit = false where paramparentorganisationunit is null" );
+        executeSql( "update reporttable set paramorganisationunit = false where paramorganisationunit is null" );
+        executeSql( "update reporttable set paramgrandparentorganisationunit = false where paramgrandparentorganisationunit is null" );
+
         executeSql( "update reporttable set reportingmonth = false where reportingmonth is null" );
         executeSql( "update reporttable set reportingbimonth = false where reportingbimonth is null" );
         executeSql( "update reporttable set reportingquarter = false where reportingquarter is null" );
@@ -618,6 +626,8 @@ public class TableAlteror
         executeSql( "UPDATE userroleauthorities SET authority='F_VALIDATIONRULEGROUP_PUBLIC_ADD' WHERE authority='F_VALIDATIONRULEGROUP_ADD'" );
         executeSql( "UPDATE userroleauthorities SET authority='F_TRACKED_ENTITY_ATTRIBUTE_PUBLIC_ADD' WHERE authority='F_TRACKED_ENTITY_ATTRIBUTE_ADD'" );
 
+        executeSql( "UPDATE userroleauthorities SET authority='F_PROGRAM_INDICATOR_PUBLIC_ADD' WHERE authority='F_ADD_PROGRAM_INDICATOR'" );
+
         // remove unused authorities
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_CONCEPT_UPDATE'" );
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_CONSTANT_UPDATE'" );
@@ -653,7 +663,7 @@ public class TableAlteror
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PATIENTIDENTIFIERTYPE_UPDATE'" );
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PROGRAM_ATTRIBUTE_UPDATE'" );
         executeSql( "DELETE FROM userroleauthorities WHERE authority='F_PATIENT_DATAVALUE_UPDATE'" );
-        
+
         // remove unused configurations
         executeSql( "delete from systemsetting where name='keySmsConfig'" );
 
@@ -704,7 +714,7 @@ public class TableAlteror
         executeSql( "update program set categorycomboid = " + defaultCategoryComboId + " where categorycomboid is null" );
 
         executeSql( "update programstageinstance set attributeoptioncomboid = " + defaultOptionComboId + " where attributeoptioncomboid is null" );
-        executeSql( "update programstageinstance set storedby=completedby where storedby is null" );
+        executeSql( "update programstageinstance set storedby=completedby where storedby is null and completedby is not null" );
 
         executeSql( "ALTER TABLE datavalue ALTER COLUMN lastupdated TYPE timestamp" );
         executeSql( "ALTER TABLE completedatasetregistration ALTER COLUMN date TYPE timestamp" );
@@ -850,7 +860,6 @@ public class TableAlteror
         executeSql( "alter table program drop column dateofincidentdescription" );
         executeSql( "alter table programinstance drop column dateofincident" );
 
-        executeSql( "update programstage set excecutiondatelabel = reportdatedescription where excecutiondatelabel is null" );
         executeSql( "update programstage set reportdatetouse = 'indicentDate' where reportdatetouse='dateOfIncident'" );
         executeSql( "update programstage set repeatable = irregular where repeatable is null" );
         executeSql( "update programstage set repeatable = false where repeatable is null" );
@@ -880,7 +889,7 @@ public class TableAlteror
 
         executeSql( "alter table trackedentitydatavalue alter column storedby TYPE character varying(255)" );
         executeSql( "alter table datavalue alter column storedby TYPE character varying(255)" );
-        
+
         executeSql( "alter table datastatisticsevent alter column eventtype type character varying" );
         executeSql( "alter table orgunitlevel drop constraint orgunitlevel_name_key" );
 
@@ -905,7 +914,7 @@ public class TableAlteror
 
         updateRelativePeriods();
         updateNameColumnLengths();
-        
+
         upgradeMapViewsToColumns();
         upgradeDataDimensionItemsToReportingRateMetric();
 
@@ -1185,7 +1194,7 @@ public class TableAlteror
     }
 
     /**
-     * Convert from older releases where the right hand sides of surveillance rules were
+     * Convert from pre-2.22 releases where the right hand sides of surveillance rules were
      * implicitly averaged.  This just wraps the previous expression in a call to AVG().
      * <p>
      * We use the presence of the lowoutliers column to determine whether we need to make the
@@ -1200,12 +1209,17 @@ public class TableAlteror
         }
 
         // Just to be extra sure, we don't modify any expressions which already contain a call to AVG or STDDEV
-        executeSql( "update expression set expression=" + statementBuilder.concatenate( "'AVG('", "expression", "')'" ) + 
-            " from  validationrule where ruletype='SURVEILLANCE' AND rightexpressionid=expressionid " +
+        executeSql( "INSERT INTO expressionsampleelement (expressionid, dataelementid) " +
+            "SELECT ede.expressionid, ede.dataelementid " +
+            "FROM expressiondataelement ede " +
+            "JOIN expression e ON e.expressionid = ede.expressionid " +
+            "JOIN validationrule v ON v.rightexpressionid = e.expressionid " +
+            "WHERE v.ruletype='SURVEILLANCE' " +
+            "AND e.expression NOT LIKE '%AVG%' and e.expression NOT LIKE '%STDDEV%';");
+
+        executeSql( "update expression set expression=" + statementBuilder.concatenate( "'AVG('", "expression", "')'" ) +
+            " from validationrule where ruletype='SURVEILLANCE' AND rightexpressionid=expressionid " +
             "AND expression NOT LIKE '%AVG%' and expression NOT LIKE '%STDDEV%';" );
-        
-        executeSql( "update expression set expression=FORMAT('AVG(%s)',expression) from  validationrule " +
-            "where ruletype='SURVEILLANCE' AND rightexpressionid=expressionid AND expression NOT LIKE '%AVG%' and expression NOT LIKE '%STDDEV%';" );
 
         executeSql( "ALTER TABLE validationrule DROP COLUMN highoutliers" );
         executeSql( "ALTER TABLE validationrule DROP COLUMN lowoutliers" );
@@ -1334,25 +1348,25 @@ public class TableAlteror
             executeSql( "drop table optionsetmembers" );
         }
     }
-    
+
     /**
      * Upgrades existing map views to use mapview_columns for multiple column
      * dimensions.
      */
     private void upgradeMapViewsToColumns()
     {
-        String sql = 
+        String sql =
             "insert into mapview_columns " +
-            "select mapviewid, 'dx', 0 " +
-            "from mapview mv " +
-            "where not exists (" +
+                "select mapviewid, 'dx', 0 " +
+                "from mapview mv " +
+                "where not exists (" +
                 "select mc.mapviewid " +
                 "from mapview_columns mc " +
                 "where mv.mapviewid = mc.mapviewid)";
-        
+
         executeSql( sql );
     }
-    
+
     /**
      * Upgrade data dimension items for legacy data sets to use REPORTING_RATE
      * as metric.
@@ -1363,7 +1377,7 @@ public class TableAlteror
             "set metric='REPORTING_RATE' " +
             "where datasetid is not null " +
             "and metric is null;";
-        
+
         executeSql( sql );
     }
 

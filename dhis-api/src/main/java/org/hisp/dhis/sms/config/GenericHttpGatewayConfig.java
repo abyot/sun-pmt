@@ -1,5 +1,11 @@
 package org.hisp.dhis.sms.config;
 
+import java.util.Map;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.hisp.dhis.common.adapter.ParametersMapXmlAdapter;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -28,12 +34,6 @@ package org.hisp.dhis.sms.config;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.Map;
-
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.hisp.dhis.common.adapter.ParametersMapXmlAdapter;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class GenericHttpGatewayConfig
@@ -41,15 +41,49 @@ public class GenericHttpGatewayConfig
 {
     private static final long serialVersionUID = 6340853488475760213L;
 
-    Map<String, String> parameters;
+    private Map<String, String> keyValueParameters;
 
+    private String messageParameter;
+
+    private String recipientParameter;
+    
     public GenericHttpGatewayConfig()
     {
     }
 
-    public GenericHttpGatewayConfig( Map<String, String> parameters )
+    @JsonProperty( value = "keyValueParameters" )
+    @XmlJavaTypeAdapter( ParametersMapXmlAdapter.class )
+    public Map<String, String> getKeyValueParameters()
     {
-        this.parameters = parameters;
+        return keyValueParameters;
+  
+    }
+
+    public void setKeyValueParameters( Map<String, String> keyValueParameters )
+    {
+        this.keyValueParameters = keyValueParameters;
+    }
+
+    @JsonProperty( value = "messageParameter" )
+    public String getMessageParameter()
+    {
+        return messageParameter;
+    }
+
+    public void setMessageParameter( String messageParameter )
+    {
+        this.messageParameter = messageParameter;
+    }
+
+    @JsonProperty( value = "recipientParameter" )
+    public String getRecipientParameter()
+    {
+        return recipientParameter;
+    }
+
+    public void setRecipientParameter( String recipientParameter )
+    {
+        this.recipientParameter = recipientParameter;
     }
 
     @JsonProperty( value = "name" )
@@ -62,18 +96,6 @@ public class GenericHttpGatewayConfig
     public boolean getStatus()
     {
         return super.isDefault();
-    }
-
-    @JsonProperty( value = "parameters" )
-    @XmlJavaTypeAdapter( ParametersMapXmlAdapter.class )
-    public Map<String, String> getParameters()
-    {
-        return parameters;
-    }
-
-    public void setParameters( Map<String, String> parameters )
-    {
-        this.parameters = parameters;
     }
 
     @Override

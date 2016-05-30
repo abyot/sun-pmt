@@ -28,7 +28,7 @@ package org.hisp.dhis.sms.outbound;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -44,14 +44,14 @@ public class ClickatellRequestEntity
 {
     private String text;
 
-    private List<String> to;
+    private Set<String> to;
 
     public ClickatellRequestEntity()
     {
         super();
     }
 
-    public ClickatellRequestEntity( String text, List<String> to )
+    public ClickatellRequestEntity( String text, Set<String> to )
     {
         super();
         this.text = text;
@@ -78,14 +78,13 @@ public class ClickatellRequestEntity
 
     @JsonProperty( value = "to" )
     @JacksonXmlProperty( localName = "to" )
-    public List<String> getTo()
+    public Set<String> getTo()
     {
         return to;
     }
 
-    public void setTo( List<String> to )
+    public void setTo( Set<String> to )
     {
         this.to = to;
     }
-
 }

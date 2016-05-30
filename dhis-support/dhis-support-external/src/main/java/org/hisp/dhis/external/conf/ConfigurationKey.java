@@ -51,7 +51,9 @@ public enum ConfigurationKey
     FILE_STORE_CONTAINER( "filestore.container", "files" ),
     FILE_STORE_LOCATION( "filestore.location" ),
     FILE_STORE_IDENTITY( "filestore.identity", "" ),
-    FILE_STORE_SECRET( "filestore.secret", "" );
+    FILE_STORE_SECRET( "filestore.secret", "" ),
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID( "google.service.account.client.id" ),
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL( "google.service.account.client.email" );
 
     private final String key;
     

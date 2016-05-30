@@ -103,7 +103,7 @@ public class HibernateInterpretationStore
     {
         String hql = "from Interpretation i where i.chart.id = " + id;
         
-        Query query = sessionFactory.getCurrentSession().createQuery( hql );
+        Query query = getSession().createQuery( hql );
         
         return (Interpretation) query.uniqueResult();
     }

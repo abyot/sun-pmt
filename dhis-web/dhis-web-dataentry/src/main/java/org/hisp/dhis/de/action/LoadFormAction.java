@@ -30,7 +30,6 @@ package org.hisp.dhis.de.action;
 
 import com.opensymphony.xwork2.Action;
 import org.hisp.dhis.common.CodeGenerator;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
@@ -268,7 +267,7 @@ public class LoadFormAction
             return INPUT;
         }
 
-        Collections.sort( dataElements, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataElements );
 
         orderedDataElements = dataElementService.getGroupedDataElementsByCategoryCombo( dataElements );
 
@@ -389,7 +388,7 @@ public class LoadFormAction
                 }
             }
 
-            Collections.sort( organisationUnitChildren, IdentifiableObjectNameComparator.INSTANCE );
+            Collections.sort( organisationUnitChildren );
 
             if ( organisationUnit.getDataSets().contains( dsOriginal ) )
             {

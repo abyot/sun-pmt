@@ -33,9 +33,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.message.MessageService;
-import org.hisp.dhis.sms.SmsMessageSender;
+
 import org.hisp.dhis.sms.command.SMSCommand;
 import org.hisp.dhis.sms.command.SMSCommandService;
 import org.hisp.dhis.sms.incoming.IncomingSms;
@@ -70,10 +73,11 @@ public class UnregisteredSMSListener
 
     @Autowired
     private MessageService messageService;
-
+    
     @Autowired
-    private SmsMessageSender smsMessageSender;
-
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
+    
     @Autowired
     private IncomingSmsService incomingSmsService;
 
@@ -152,11 +156,11 @@ public class UnregisteredSMSListener
                 User sender = new User();
                 sender.setPhoneNumber( senderPhoneNumber );
                 feedbackList.add( sender );
-                smsMessageSender.sendMessage( smsCommand.getName(), smsCommand.getReceivedMessage(), null, null,
-                    feedbackList, true );
-
-                // update the status of the sms after process
+                
+                smsSender.sendMessage( smsCommand.getName(), smsCommand.getReceivedMessage(), null, null, feedbackList, true );
+                
                 sms.setStatus( SmsMessageStatus.PROCESSED );
+                sms.setParsed( true );
                 incomingSmsService.update( sms );
             }
         }

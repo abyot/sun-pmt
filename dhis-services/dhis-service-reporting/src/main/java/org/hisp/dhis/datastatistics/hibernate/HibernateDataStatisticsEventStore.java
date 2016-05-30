@@ -31,6 +31,7 @@ package org.hisp.dhis.datastatistics.hibernate;
 import org.hisp.dhis.datastatistics.DataStatisticsEvent;
 import org.hisp.dhis.datastatistics.DataStatisticsEventStore;
 import org.hisp.dhis.datastatistics.DataStatisticsEventType;
+import org.hisp.dhis.datastatistics.FavoriteStatistics;
 import org.hisp.dhis.hibernate.HibernateGenericStore;
 import org.hisp.dhis.system.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,5 +76,31 @@ public class HibernateDataStatisticsEventStore
         } );
         
         return eventTypeCountMap;
+    }
+
+    @Override
+    public List<FavoriteStatistics> getFavoritesData(DataStatisticsEventType eventType, int pageSize, String sortOrder)
+    {
+        String sql = "select c.uid, views, c.name, c.created from( " +
+            "select favoriteuid as uid, count(favoriteuid) as views from datastatisticsevent " +
+            "group by uid) as events " + getTableSql(eventType) +
+            " order by events.views " + sortOrder + " limit " + pageSize;
+
+        return jdbcTemplate.query( sql, ( resultSet, i ) -> {
+            FavoriteStatistics favoriteStatistics = new FavoriteStatistics();
+
+            favoriteStatistics.setPosition( i + 1 );
+            favoriteStatistics.setId( resultSet.getString( "uid" ) );
+            favoriteStatistics.setName( resultSet.getString( "name" ) );
+            favoriteStatistics.setCreated( resultSet.getDate( "created" ) );
+            favoriteStatistics.setViews( resultSet.getInt( "views" ) );
+
+            return favoriteStatistics;
+        } );
+    }
+
+    private String getTableSql( DataStatisticsEventType eventType )
+    {
+        return "inner join " + eventType.getTable() + " c on c.uid = events.uid";
     }
 }

@@ -28,7 +28,7 @@ package org.hisp.dhis.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -76,6 +76,8 @@ public class ProgramStageSectionStoreTest
     private ProgramStageSection sectionA;
 
     private ProgramStageSection sectionB;
+    
+    private List<ProgramStageDataElement> psDataElements;
 
     @Override
     public void setUpTest()
@@ -86,7 +88,7 @@ public class ProgramStageSectionStoreTest
         Program program = createProgram( 'A', new HashSet<>(), organisationUnit );
         programService.addProgram( program );
 
-        stageA = new ProgramStage( "A", program );
+        stageA = createProgramStage( 'A', program );
         programStageService.saveProgramStage( stageA );
 
         DataElement dataElementA = createDataElement( 'A' );
@@ -95,13 +97,13 @@ public class ProgramStageSectionStoreTest
         dataElementService.addDataElement( dataElementA );
         dataElementService.addDataElement( dataElementB );
 
-        ProgramStageDataElement stageDeA = new ProgramStageDataElement( stageA, dataElementA, false, 1 );
-        ProgramStageDataElement stageDeB = new ProgramStageDataElement( stageA, dataElementB, false, 2 );
+        ProgramStageDataElement stageDeA = createProgramStageDataElement( stageA, dataElementA, false, 1 );
+        ProgramStageDataElement stageDeB = createProgramStageDataElement( stageA, dataElementB, false, 2 );
 
         programStageDataElementService.addProgramStageDataElement( stageDeA );
         programStageDataElementService.addProgramStageDataElement( stageDeB );
 
-        List<ProgramStageDataElement> psDataElements = new ArrayList<>();
+        psDataElements = new ArrayList<>();
         psDataElements.add( stageDeA );
         psDataElements.add( stageDeB );
 
@@ -114,14 +116,10 @@ public class ProgramStageSectionStoreTest
         program.setProgramStages( programStages );
         programService.updateProgram( program );
 
-        sectionA = new ProgramStageSection();
-        sectionA.setName( "A" );
+        sectionA = createProgramStageSection( 'A', 1 );
         sectionA.setProgramStageDataElements( psDataElements );
-        sectionA.setSortOrder( 1 );
 
-        sectionB = new ProgramStageSection();
-        sectionB.setName( "B" );
-        sectionB.setSortOrder( 2 );
+        sectionB = createProgramStageSection( 'B', 2 );
 
         Set<ProgramStageSection> sections = new HashSet<>();
         sections.add( sectionA );
@@ -130,10 +128,13 @@ public class ProgramStageSectionStoreTest
     }
 
     @Test
-    public void testGetProgramStageSectionByNameStage()
+    public void testAddGet()
     {
-        programStageService.updateProgramStage( stageA );
-        assertNotNull( programStageSectionStore.getByNameAndProgramStage( "A", stageA ) );
-    }
+        ProgramStageSection sectionA = createProgramStageSection( 'A', 1 );
+        sectionA.setProgramStageDataElements( psDataElements );
+        
+        int idA = programStageSectionStore.save( sectionA );
+        
+        assertEquals( sectionA, programStageSectionStore.get( idA ) );    }
 
 }

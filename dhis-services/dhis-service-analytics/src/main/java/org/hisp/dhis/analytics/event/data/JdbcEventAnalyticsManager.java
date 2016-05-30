@@ -40,7 +40,6 @@ import static org.hisp.dhis.system.util.MathUtils.getRounded;
 import static org.hisp.dhis.common.DimensionalObjectUtils.COMPOSITE_DIM_OBJECT_PLAIN_SEP;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,6 +49,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.analytics.AggregationType;
 import org.hisp.dhis.analytics.AnalyticsUtils;
 import org.hisp.dhis.analytics.EventOutputType;
+import org.hisp.dhis.analytics.Rectangle;
 import org.hisp.dhis.analytics.event.EventAnalyticsManager;
 import org.hisp.dhis.analytics.event.EventQueryParams;
 import org.hisp.dhis.common.DimensionType;
@@ -76,7 +76,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * TODO could use row_number() and filtering for paging, but not supported on MySQL.
@@ -378,10 +377,8 @@ public class JdbcEventAnalyticsManager
     }
     
     @Override
-    public Map<String, Object> getCountAndExtent( EventQueryParams params )
-    {
-        Map<String, Object> map = Maps.newHashMap();
-        
+    public Rectangle getRectangle( EventQueryParams params )
+    {        
         params.setGeometryOnly( true );
         
         String sql = "select count(psi) as " + COL_COUNT + ", ST_Extent(geom) AS " + COL_EXTENT + " ";
@@ -390,17 +387,19 @@ public class JdbcEventAnalyticsManager
 
         log.debug( "Analytics event count and extent SQL: " + sql );
         
+        Rectangle rectangle = new Rectangle();
+        
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet( sql );
         
         if ( rowSet.next() )
         {
             Object extent = rowSet.getObject( COL_EXTENT );
             
-            map.put( COL_COUNT, rowSet.getLong( COL_COUNT ) );
-            map.put( COL_EXTENT, extent != null ? String.valueOf( rowSet.getObject( COL_EXTENT ) ) : null );
+            rectangle.setCount( rowSet.getLong( COL_COUNT ) );
+            rectangle.setExtent( extent != null ? String.valueOf( rowSet.getObject( COL_EXTENT ) ) : null );
         }
         
-        return map;
+        return rectangle;
     }
     
     // -------------------------------------------------------------------------
@@ -680,7 +679,7 @@ public class JdbcEventAnalyticsManager
             {
                 for ( QueryFilter filter : item.getFilters() )
                 {
-                    sql += "and " + getColumn( item ) + " " + filter.getSqlOperator() + " " + getSqlFilter( filter, item.isNumeric() ) + " ";
+                    sql += "and " + getColumn( item ) + " " + filter.getSqlOperator() + " " + getSqlFilter( filter, item ) + " ";
                 }
             }
         }
@@ -691,7 +690,7 @@ public class JdbcEventAnalyticsManager
             {
                 for ( QueryFilter filter : item.getFilters() )
                 {
-                    sql += "and " + getColumn( item ) + " " + filter.getSqlOperator() + " " + getSqlFilter( filter, item.isNumeric() ) + " ";
+                    sql += "and " + getColumn( item ) + " " + filter.getSqlOperator() + " " + getSqlFilter( filter, item ) + " ";
                 }
             }
         }
@@ -747,25 +746,26 @@ public class JdbcEventAnalyticsManager
     }
     
     /**
-     * Returns an encoded column name wrapped in lower directive if not numeric.
+     * Returns an encoded column name wrapped in lower directive if not numeric
+     * or boolean.
      */
     private String getColumn( QueryItem item )
     {
         String col = statementBuilder.columnQuote( item.getItemName() );
         
-        return item.isNumeric() ? col : "lower(" + col + ")"; 
+        return item.isText() ? "lower(" + col + ")" : col;
     }
     
     /**
      * Returns the filter value for the given query item.
      */
-    private String getSqlFilter( QueryFilter filter, boolean numeric )
+    private String getSqlFilter( QueryFilter filter, QueryItem item )
     {
         String encodedFilter = statementBuilder.encode( filter.getFilter(), false );
         
         String sqlFilter = filter.getSqlFilter( encodedFilter );
         
-        return numeric ? sqlFilter : sqlFilter.toLowerCase();
+        return item.isText() ? sqlFilter.toLowerCase() : sqlFilter;
     }
 
     /**

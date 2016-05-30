@@ -644,6 +644,10 @@ public class DataApprovalServiceCategoryOptionGroupTest
         {
             return false;
         }
+        catch ( Throwable ex )
+        {
+            throw ex;
+        }
     }
 
     private boolean unapprove( CurrentUserService mockUserService, DataApprovalLevel dataApprovalLevel,
@@ -664,6 +668,10 @@ public class DataApprovalServiceCategoryOptionGroupTest
         catch ( DataApprovalException ex )
         {
             return false;
+        }
+        catch ( Throwable ex )
+        {
+            throw ex;
         }
     }
 
@@ -686,6 +694,10 @@ public class DataApprovalServiceCategoryOptionGroupTest
         {
             return false;
         }
+        catch ( Throwable ex )
+        {
+            throw ex;
+        }
     }
 
     private boolean unaccept( CurrentUserService mockUserService, DataApprovalLevel dataApprovalLevel,
@@ -706,6 +718,10 @@ public class DataApprovalServiceCategoryOptionGroupTest
         catch ( DataApprovalException ex )
         {
             return false;
+        }
+        catch ( Throwable ex )
+        {
+            throw ex;
         }
     }
 

@@ -34,7 +34,6 @@ import static org.hisp.dhis.i18n.I18nUtils.i18n;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +44,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
+import org.hisp.dhis.commons.collection.ListUtils;
 import org.hisp.dhis.commons.filter.FilterUtils;
 import org.hisp.dhis.configuration.ConfigurationService;
 import org.hisp.dhis.hierarchy.HierarchyViolationException;
@@ -409,6 +409,12 @@ public class DefaultOrganisationUnitService
     }
 
     @Override
+    public List<OrganisationUnit> getOrganisationUnitsWithCategoryOptions()
+    {
+        return i18n( i18nService, organisationUnitStore.getOrganisationUnitsWithCategoryOptions() );
+    }
+
+    @Override
     public OrganisationUnitDataSetAssociationSet getOrganisationUnitDataSetAssociationSet( Integer maxLevels )
     {
         Map<String, Set<String>> associationSet = Maps.newHashMap( organisationUnitStore.getOrganisationUnitDataSetAssocationMap() );
@@ -621,12 +627,8 @@ public class DefaultOrganisationUnitService
     @Override
     public List<OrganisationUnitLevel> getOrganisationUnitLevels()
     {
-        List<OrganisationUnitLevel> organisationUnitLevels = new ArrayList<>( i18n( i18nService,
-            organisationUnitLevelStore.getAll() ) );
-
-        Collections.sort( organisationUnitLevels, OrganisationUnitLevelComparator.INSTANCE );
-
-        return organisationUnitLevels;
+        return ListUtils.sort( i18n( i18nService, organisationUnitLevelStore.getAll() ), 
+            OrganisationUnitLevelComparator.INSTANCE );
     }
 
     @Override

@@ -41,7 +41,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
@@ -49,7 +48,6 @@ import java.util.List;
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
-@Component
 public class JsonPMessageConverter extends AbstractHttpMessageConverter<RootNode>
 {
     public static final String DEFAULT_CALLBACK_PARAMETER = "callback";

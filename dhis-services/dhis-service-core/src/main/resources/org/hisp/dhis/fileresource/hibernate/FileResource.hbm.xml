@@ -31,6 +31,7 @@
     <property name="storageStatus" length="40" column="storagestatus">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.fileresource.FileResourceStorageStatus</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -38,6 +39,7 @@
     <property name="domain" length="40" column="domain">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.fileresource.FileResourceDomain</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>

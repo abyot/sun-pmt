@@ -67,19 +67,19 @@ public class IdentifiableObjectController
     }
 
     @Override
-    public void postXmlObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postXmlObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         throw new HttpRequestMethodNotSupportedException( "POST" );
     }
 
     @Override
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         throw new HttpRequestMethodNotSupportedException( "POST" );
     }
 
     @Override
-    public void putJsonObject( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putJsonObjectLegacy( ImportOptions importOptions, @PathVariable( "uid" ) String pvUid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         throw new HttpRequestMethodNotSupportedException( "PUT" );
     }

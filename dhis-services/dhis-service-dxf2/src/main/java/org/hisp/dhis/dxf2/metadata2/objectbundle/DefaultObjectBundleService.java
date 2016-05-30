@@ -129,7 +129,7 @@ public class DefaultObjectBundleService implements ObjectBundleService
 
         ObjectBundleValidationReport validation = new ObjectBundleValidationReport();
 
-        if ( bundle.isSkipValidation() )
+        if ( (bundle.getUser() == null || bundle.getUser().isSuper()) && bundle.isSkipValidation() )
         {
             log.warn( "Skipping validation for metadata import by user '" + bundle.getUsername() + "'. Not recommended." );
             return validation;

@@ -28,9 +28,6 @@ package org.hisp.dhis.mobile.action;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.sms.config.GatewayAdministrationService;
 import org.hisp.dhis.sms.config.GenericHttpGatewayConfig;
@@ -60,25 +57,25 @@ public class UpdateGenericHTTPGateWayConfigAction
     // Input
     // -------------------------------------------------------------------------
 
+    private String messageParameter;
+
+    public void setMessageParameter( String messageParameter )
+    {
+        this.messageParameter = messageParameter;
+    }
+
+    private String recipientParameter;
+
+    public void setRecipientParameter( String recipientParameter )
+    {
+        this.recipientParameter = recipientParameter;
+    }
+
     private String name;
 
     public void setName( String name )
     {
         this.name = name;
-    }
-
-    private String password;
-
-    public void setPassword( String password )
-    {
-        this.password = password;
-    }
-
-    private String username;
-
-    public void setUsername( String username )
-    {
-        this.username = username;
     }
 
     private String urlTemplate;
@@ -122,15 +119,13 @@ public class UpdateGenericHTTPGateWayConfigAction
                 {
                     index = config.getGateways().indexOf( gatewayConfig );
                 }
-
-                Map<String, String> map = new HashMap<>();
-
-                map.put( "username", username );
-                map.put( "password", password );
-
-                gatewayConfig.setParameters( map );
+                
+                gatewayConfig.setMessageParameter( messageParameter );
+                gatewayConfig.setRecipientParameter( recipientParameter );
+                
                 gatewayConfig.setName( name );
                 gatewayConfig.setUrlTemplate( urlTemplate );
+
                 gatewayConfig.setUid( CodeGenerator.generateCode( 10 ) );
 
                 if ( config.getGateways() == null || config.getGateways().isEmpty() )

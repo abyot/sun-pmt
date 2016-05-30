@@ -41,7 +41,7 @@ import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.PeriodType;
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.SmsServiceException;
 import org.hisp.dhis.sms.outbound.OutboundSms;
 import org.hisp.dhis.trackedentity.TrackedEntity;
@@ -62,6 +62,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Resource;
 
 import static org.hisp.dhis.common.OrganisationUnitSelectionMode.*;
 
@@ -88,7 +90,8 @@ public class DefaultProgramInstanceService
     private ProgramService programService;
 
     @Autowired
-    private SmsSender smsSender;
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
 
     @Autowired
     private CurrentUserService currentUserService;
@@ -665,7 +668,7 @@ public class DefaultProgramInstanceService
                 outboundSms.setMessage( msg );
                 outboundSms.setRecipients( phoneNumbers );
                 outboundSms.setSender( currentUserService.getCurrentUsername() );
-                smsSender.sendMessage( outboundSms, null );
+                smsSender.sendMessage( null, outboundSms.getMessage(), outboundSms.getRecipients() );
             }
             catch ( SmsServiceException e )
             {

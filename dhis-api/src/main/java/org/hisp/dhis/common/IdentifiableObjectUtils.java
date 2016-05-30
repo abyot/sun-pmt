@@ -37,8 +37,10 @@ import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryOption;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -56,7 +58,9 @@ public class IdentifiableObjectUtils
 {
     public static final String SEPARATOR = "-";
     private static final String SEPARATOR_JOIN = ", ";
-    private static final SimpleDateFormat LONG_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" );
+
+    public static final DateTimeFormatter LONG_DATE_FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss" );
+    public static final DateTimeFormatter MEDIUM_DATE_FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd" );
 
     public static final Map<String, String> CLASS_ALIAS = ImmutableMap.<String, String>builder().
         put( "CategoryOption", DataElementCategoryOption.class.getSimpleName() ).
@@ -240,7 +244,7 @@ public class IdentifiableObjectUtils
             }
         }
 
-        return latest != null && objects != null ? objects.size() + SEPARATOR + LONG_DATE_FORMAT.format( latest ) : null;
+        return latest != null && objects != null ? objects.size() + SEPARATOR + LONG_DATE_FORMAT.print( new DateTime( latest ) ) : null;
     }
 
     /**
@@ -251,7 +255,7 @@ public class IdentifiableObjectUtils
      */
     public static String getLastUpdatedTag( IdentifiableObject object )
     {
-        return object != null ? LONG_DATE_FORMAT.format( object.getLastUpdated() ) : null;
+        return object != null ? LONG_DATE_FORMAT.print( new DateTime( object.getLastUpdated() ) ) : null;
     }
 
     /**

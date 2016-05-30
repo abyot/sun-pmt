@@ -29,35 +29,7 @@
 			<result name="success" type="redirect">index.html</result>
 		</action>
 	</package>
-
-	<package name="dhis-web-event-capture" extends="dhis-web-commons" namespace="/dhis-web-event-capture">
-		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
-			<result name="success" type="redirect">index.html</result>
-		</action>
-
-		<action name="cacheManifest" class="org.hisp.dhis.appcache.CacheManifestAction">
-			<param name="appPath">dhis-web-event-capture</param>
-			<param name="i18nPath">i18n</param>
-			<param name="appCache">event-capture.appcache</param>
-			<result type="stream">
-				<param name="contentType">text/cache-manifest</param>
-				<param name="inputName">inputStream</param>
-			</result>
-		</action>
-	</package>
-
-	<package name="dhis-web-tracker-capture" extends="dhis-web-commons" namespace="/dhis-web-tracker-capture">
-		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
-			<result name="success" type="redirect">index.html</result>
-		</action>
-	</package>
-
-	<package name="dhis-web-cache-cleaner" extends="dhis-web-commons" namespace="/dhis-web-cache-cleaner">
-		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
-			<result name="success" type="redirect">index.html</result>
-		</action>
-	</package>
-
+	
     <!-- Pulled from Maven repository -->
 
 	<package name="dhis-web-settings" extends="dhis-web-commons" namespace="/dhis-web-settings">
@@ -91,6 +63,33 @@
 	</package>
 
 	<package name="dhis-web-usage-analytics" extends="dhis-web-commons" namespace="/dhis-web-usage-analytics">
+		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
+			<result name="success" type="redirect">index.html</result>
+		</action>
+	</package>
+	
+	<package name="dhis-web-event-capture" extends="dhis-web-commons" namespace="/dhis-web-event-capture">
+		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
+			<result name="success" type="redirect">index.html</result>
+		</action>
+		<action name="cacheManifest" class="org.hisp.dhis.appcache.CacheManifestAction">
+			<param name="appPath">dhis-web-event-capture</param>
+			<param name="i18nPath">i18n</param>
+			<param name="appCache">event-capture.appcache</param>
+			<result type="stream">
+				<param name="contentType">text/cache-manifest</param>
+				<param name="inputName">inputStream</param>
+			</result>
+		</action>
+	</package>
+	
+	<package name="dhis-web-tracker-capture" extends="dhis-web-commons" namespace="/dhis-web-tracker-capture">
+		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
+			<result name="success" type="redirect">index.html</result>
+		</action>
+	</package>
+	
+	<package name="dhis-web-cache-cleaner" extends="dhis-web-commons" namespace="/dhis-web-cache-cleaner">
 		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
 			<result name="success" type="redirect">index.html</result>
 		</action>

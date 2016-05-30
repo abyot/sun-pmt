@@ -31,9 +31,6 @@ package org.hisp.dhis.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
@@ -50,6 +47,9 @@ import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.system.database.DatabaseInfo;
 import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.system.util.SystemUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 
@@ -143,15 +143,11 @@ public class DefaultSystemService
 
                 String buildTime = properties.getProperty( "build.time" );
 
-                DateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-
-                info.setBuildTime( dateFormat.parse( buildTime ) );
+                DateTimeFormatter dateFormat = DateTimeFormat.forPattern( "yyyy-MM-dd HH:mm:ss" );
+                
+                info.setBuildTime( new DateTime( dateFormat.parseDateTime( buildTime ) ).toDate() );
             }
             catch ( IOException ex )
-            {
-                // Do nothing
-            }
-            catch ( ParseException ex )
             {
                 // Do nothing
             }

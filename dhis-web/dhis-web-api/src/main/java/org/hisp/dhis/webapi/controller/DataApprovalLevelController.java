@@ -42,7 +42,7 @@ public class DataApprovalLevelController
 {
     @Autowired
     private DataApprovalLevelService dataApprovalLevelService;
-    
+
     @Override
     protected void preCreateEntity( DataApprovalLevel entity )
     {

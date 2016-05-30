@@ -34,11 +34,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.hisp.dhis.common.CodeGenerator;
+import org.hisp.dhis.sms.config.GatewayAdministrationService;
+import org.hisp.dhis.sms.config.SmsConfiguration;
+import org.hisp.dhis.sms.config.SmsConfigurationManager;
+import org.hisp.dhis.sms.config.SmsGatewayConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Zubair <rajazubair.asghar@gmail.com>
  */
+
 public class DefaultGatewayAdministrationService
     implements GatewayAdministrationService
 {
@@ -71,7 +76,7 @@ public class DefaultGatewayAdministrationService
 
         String gatewayName = null;
 
-        if ( !checkGateway( list, uid ) )
+        if ( !exists( list, uid ) )
         {
             return null;
         }
@@ -240,7 +245,7 @@ public class DefaultGatewayAdministrationService
     // Supportive methods
     // -------------------------------------------------------------------------
 
-    private boolean checkGateway( List<SmsGatewayConfig> list, String uid )
+    private boolean exists( List<SmsGatewayConfig> list, String uid )
     {
         for ( SmsGatewayConfig gateway : list )
         {

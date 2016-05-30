@@ -87,7 +87,7 @@ public class ProgramStageSectionServiceTest
         Program program = createProgram( 'A', new HashSet<>(), organisationUnit );
         programService.addProgram( program );
 
-        stageA = new ProgramStage( "A", program );
+        stageA = createProgramStage( 'A', program );
         programStageService.saveProgramStage( stageA );
 
         DataElement dataElementA = createDataElement( 'A' );
@@ -96,8 +96,8 @@ public class ProgramStageSectionServiceTest
         dataElementService.addDataElement( dataElementA );
         dataElementService.addDataElement( dataElementB );
 
-        ProgramStageDataElement stageDeA = new ProgramStageDataElement( stageA, dataElementA, false, 1 );
-        ProgramStageDataElement stageDeB = new ProgramStageDataElement( stageA, dataElementB, false, 2 );
+        ProgramStageDataElement stageDeA = createProgramStageDataElement( stageA, dataElementA, false, 1 );
+        ProgramStageDataElement stageDeB = createProgramStageDataElement( stageA, dataElementB, false, 2 );
 
         programStageDataElementService.addProgramStageDataElement( stageDeA );
         programStageDataElementService.addProgramStageDataElement( stageDeB );
@@ -106,7 +106,7 @@ public class ProgramStageSectionServiceTest
         psDataElements.add( stageDeA );
         psDataElements.add( stageDeB );
 
-        stageB = new ProgramStage( "B", program );
+        stageB = createProgramStage( 'B', program );
         programStageService.saveProgramStage( stageB );
 
         Set<ProgramStage> programStages = new HashSet<>();
@@ -115,14 +115,10 @@ public class ProgramStageSectionServiceTest
         program.setProgramStages( programStages );
         programService.updateProgram( program );
 
-        sectionA = new ProgramStageSection();
-        sectionA.setName( "A" );
+        sectionA = createProgramStageSection( 'A', 1 );
         sectionA.setProgramStageDataElements( psDataElements );
-        sectionA.setSortOrder( 1 );
 
-        sectionB = new ProgramStageSection();
-        sectionB.setName( "B" );
-        sectionB.setSortOrder( 2 );
+        sectionB = createProgramStageSection( 'B', 2 );
 
         Set<ProgramStageSection> sections = new HashSet<>();
         sections.add( sectionA );
@@ -161,12 +157,5 @@ public class ProgramStageSectionServiceTest
 
         assertEquals( sectionA, programStageSectionService.getProgramStageSection( idA ) );
         assertEquals( sectionB, programStageSectionService.getProgramStageSection( idB ) );
-    }
-
-    @Test
-    public void testGetProgramStageSectionByNameStage()
-    {
-        programStageService.updateProgramStage( stageA );
-        assertNotNull( programStageSectionService.getProgramStageSectionByName( "A", stageA ) );
     }
 }

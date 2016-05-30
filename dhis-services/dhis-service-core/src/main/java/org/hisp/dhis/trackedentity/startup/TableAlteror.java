@@ -97,7 +97,6 @@ public class TableAlteror
         executeSql( "DROP TABLE programinstance_attributes" );
         executeSql( "DROP TABLE programattributeoption" );
         executeSql( "DROP TABLE programattribute" );
-        executeSql( "ALTER TABLE programstageinstance ALTER executiondate TYPE date" );
 
         executeSql( "UPDATE programstage_dataelements SET allowProvidedElsewhere=false WHERE allowProvidedElsewhere is null" );
         executeSql( "ALTER TABLE programstageinstance DROP COLUMN providedbyanotherfacility" );
@@ -105,9 +104,11 @@ public class TableAlteror
         executeSql( "ALTER TABLE programstageinstance DROP COLUMN stageInProgram" );
 
         executeSql( "UPDATE programstage SET reportDateDescription='Report date' WHERE reportDateDescription is null" );
-
         executeSql( "UPDATE programstage SET autoGenerateEvent=true WHERE autoGenerateEvent is null" );
 
+        executeSql( "update programstage set executiondatelabel = excecutiondatelabel where executiondatelabel is null" );
+        executeSql( "alter table programstage drop column excecutiondatelabel" );
+        
         executeSql( "UPDATE program SET generatedByEnrollmentDate=false WHERE generatedByEnrollmentDate is null" );
 
         executeSql( "ALTER TABLE programstage DROP COLUMN stageinprogram" );
@@ -165,7 +166,6 @@ public class TableAlteror
         executeSql( "update programstage set openAfterEnrollment=false where openAfterEnrollment is null" );
         executeSql( "update programstage set hideduedate=false where hideduedate is null" );
 
-        executeSql( "update programstageinstance set status=0 where status is null" );
         executeSql( "ALTER TABLE program DROP COLUMN facilityLB" );
         executeSql( "update programstage_dataelements set allowDateInFuture=false where allowDateInFuture is null" );
         executeSql( "update programstage set autoGenerateEvent=true where programid in ( select programid from program where type=2 )" );
@@ -242,11 +242,7 @@ public class TableAlteror
         executeSql( "ALTER TABLE trackedentityattribute DROP COLUMN mandatory" );
         executeSql( "ALTER TABLE trackedentityattribute DROP COLUMN groupBy" );
 
-        executeSql( "update trackedentityattribute set valuetype='string' where valuetype='combo' and optionsetid is null" );
         executeSql( "update trackedentityattribute set aggregationype='AVERAGE' where aggregationtype is null" );
-
-        executeSql( "UPDATE trackedentityattribute SET valuetype='string' WHERE valuetype='localId';" );
-        executeSql( "UPDATE trackedentityattribute SET valuetype='number' WHERE valuetype='age'" );
 
         executeSql( "update trackedentityattribute set searchscope='NOT_SEARCHABLE' where confidential=true" );
         executeSql( "update trackedentityattribute set searchscope='SEARCH_ORG_UNITS' where searchscope is null" );
@@ -255,9 +251,6 @@ public class TableAlteror
 
         executeSql( "DROP TABLE orgunitgroupprograms" );
 
-        executeSql( "UPDATE trackedentityattribute SET valuetype='optionSet' WHERE valuetype='combo'" );
-
-        executeSql( "UPDATE programstageinstance SET status=1 WHERE completed=true" );
         executeSql( "ALTER TABLE programstageinstance DROP COLUMN completed" );
 
         executeSql( "update program_attributes set mandatory = false where mandatory is null;" );
@@ -294,9 +287,6 @@ public class TableAlteror
 
         executeSql( "update program p set dataentryformid = (select dataentryformid from trackedentityform tf where tf.programid=p.programid limit 1)" );
         executeSql( "drop table trackedentityform" );
-
-        executeSql( "alter table trackedentitydatavalue alter column storedby TYPE character varying(255)" );
-        executeSql( "alter table datavalue alter column storedby TYPE character varying(255)" );
 
         updateProgramStageList();
         updateProgramAttributeList();

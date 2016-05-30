@@ -33,15 +33,16 @@ import com.google.common.io.ByteSource;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.dxf2.webmessage.WebMessage;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
-import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.dxf2.webmessage.responses.FileResourceWebMessageResponse;
 import org.hisp.dhis.fileresource.FileResource;
 import org.hisp.dhis.fileresource.FileResourceDomain;
 import org.hisp.dhis.fileresource.FileResourceService;
 import org.hisp.dhis.schema.descriptors.FileResourceSchemaDescriptor;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -67,6 +68,7 @@ import java.util.Date;
  */
 @Controller
 @RequestMapping( value = FileResourceSchemaDescriptor.API_ENDPOINT )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class FileResourceController
 {
     private static final String DEFAULT_FILENAME = "untitled";
@@ -95,7 +97,7 @@ public class FileResourceController
     {
         FileResource fileResource = fileResourceService.getFileResource( uid );
 
-        if ( fileResource == null ) 
+        if ( fileResource == null )
         {
             throw new WebMessageException( WebMessageUtils.notFound( FileResource.class, uid ) );
         }
@@ -142,7 +144,7 @@ public class FileResourceController
 
         return webMessage;
     }
-    
+
     // -------------------------------------------------------------------------
     // Supportive methods
     // -------------------------------------------------------------------------
@@ -180,12 +182,12 @@ public class FileResourceController
         extends ByteSource
     {
         private MultipartFile file;
-        
+
         public MultipartFileByteSource( MultipartFile file )
         {
             this.file = file;
         }
-        
+
         @Override
         public InputStream openStream() throws IOException
         {

@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
  * forwards the request to a {@link OutboundSmsTransportService sms transport
  * service} for sending.
  */
+
 @Transactional
 public class DefaultOutboundSmsService
     implements OutboundSmsService

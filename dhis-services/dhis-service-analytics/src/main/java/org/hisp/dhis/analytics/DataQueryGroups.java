@@ -34,6 +34,17 @@ import java.util.List;
 import org.hisp.dhis.common.ListMap;
 
 /**
+ * Immutable class representing a group of data query parameters. Should be
+ * instantiated using the Builder class. Example usage:
+ * 
+ * <pre>
+ * {@code
+ * DataQueryGroups groups = DataQueryGroups.newBuilder()
+ *     .withQueries( queries )
+ *     .build();
+ * }
+ * </pre>
+ * 
  * @author Lars Helge Overland
  */
 public class DataQueryGroups
@@ -46,10 +57,13 @@ public class DataQueryGroups
     // Constructor
     // -------------------------------------------------------------------------
 
-    public DataQueryGroups( List<DataQueryParams> queries )
+    private DataQueryGroups()
     {
-        this.queries = queries;        
-        this.sequentialQueries.addAll( getListMap( queries ).values() );        
+    }
+    
+    public static Builder newBuilder()
+    {
+        return new Builder();
     }
     
     // -------------------------------------------------------------------------
@@ -57,7 +71,9 @@ public class DataQueryGroups
     // -------------------------------------------------------------------------
     
     /**
-     * Gets all queries for all groups.
+     * Gets all queries.
+     * 
+     * @return all queries.
      */
     public List<DataQueryParams> getAllQueries()
     {
@@ -72,6 +88,8 @@ public class DataQueryGroups
      * will increase if optimal number of queries can be run in parallel for the
      * queries which take most time, which in this case are the ones with sum 
      * aggregation type.
+     * 
+     * @return groups of queries which should be run in sequence
      */
     public List<List<DataQueryParams>> getSequentialQueries()
     {
@@ -79,9 +97,11 @@ public class DataQueryGroups
     }
     
     /**
-     * Indicates whether the current state of the query groups is optimal. Uses
-     * the given optimal query number compared to the size of the largest query
-     * group to determine the outcome.
+     * Indicates whether the current number of queries in this group is optimal. 
+     * Uses the given optimal query number compared to the size of the largest 
+     * query group to determine the outcome.
+     * 
+     * @return true if the current number of queries in this group is optimal.
      */
     public boolean isOptimal( int optimalQueries )
     {
@@ -89,7 +109,9 @@ public class DataQueryGroups
     }
 
     /**
-     * Gets the size of the larges query group.
+     * Gets the size of the largest query group of the sequential queries.
+     * 
+     * @return the size of the largest query group of the sequential queries.
      */
     public int getLargestGroupSize()
     {        
@@ -124,4 +146,30 @@ public class DataQueryGroups
         
         return map;
     }
+
+    // -------------------------------------------------------------------------
+    // Builder
+    // -------------------------------------------------------------------------
+
+    public static class Builder
+    {
+        private DataQueryGroups groups;
+        
+        private Builder()
+        {
+            groups = new DataQueryGroups();
+        }
+        
+        public Builder withQueries( List<DataQueryParams> queries )
+        {
+            this.groups.queries = queries;
+            this.groups.sequentialQueries.addAll( getListMap( queries ).values() );
+            return this;
+        }
+        
+        public DataQueryGroups build()
+        {
+            return groups;
+        }
+    }    
 }

@@ -28,12 +28,16 @@ package org.hisp.dhis.dashboard.message.action;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.opensymphony.xwork2.Action;
+import org.hisp.dhis.message.Message;
 import org.hisp.dhis.message.MessageConversation;
+import org.hisp.dhis.message.MessageConversationStatus;
 import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 
-import com.opensymphony.xwork2.Action;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Lars Helge Overland
@@ -51,7 +55,7 @@ public class ReadMessageAction
     {
         this.messageService = messageService;
     }
-    
+
     private CurrentUserService currentUserService;
 
     public void setCurrentUserService( CurrentUserService currentUserService )
@@ -64,7 +68,7 @@ public class ReadMessageAction
     // -------------------------------------------------------------------------
 
     private String id;
-    
+
     public void setId( String id )
     {
         this.id = id;
@@ -81,6 +85,20 @@ public class ReadMessageAction
         return conversation;
     }
 
+    private List<Message> messages;
+
+    public List<Message> getMessages()
+    {
+        return messages;
+    }
+
+    private boolean showTicketTools;
+
+    public boolean getShowTicketTools()
+    {
+        return showTicketTools;
+    }
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
@@ -95,21 +113,32 @@ public class ReadMessageAction
         }
 
         User user = currentUserService.getCurrentUser();
-
         conversation = messageService.getMessageConversation( id );
+        showTicketTools =
+            messageService.hasAccessToInternalNotes( user ) && conversation.getStatus() !=
+                MessageConversationStatus.NONE;
 
+        if ( showTicketTools )
+        {
+            messages = conversation.getMessages();
+        }
+        else
+        {
+            messages = conversation.getMessages().stream().filter( message -> !message.isInternal() )
+                .collect( Collectors.toList() );
+        }
         if ( conversation == null )
         {
             return ERROR;
         }
-                
+
         if ( conversation.markRead( user ) )
-        {        
+        {
             messageService.updateMessageConversation( conversation );
         }
-        
+
         conversation.setFollowUp( conversation.isFollowUp( user ) );
-        
+
         return SUCCESS;
     }
 }

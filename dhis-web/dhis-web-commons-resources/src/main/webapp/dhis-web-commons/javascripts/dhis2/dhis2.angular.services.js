@@ -279,7 +279,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                         }
                     }
                 }
-                if(val && obj.optionSetValue && obj.optionSet && obj.optionSet.id && optionSets[obj.optionSet.id].options  ){
+                if(val && obj.optionSetValue && obj.optionSet && obj.optionSet.id && optionSets[obj.optionSet.id] && optionSets[obj.optionSet.id].options  ){
                     if(destination === 'USER'){
                         val = OptionSetService.getName(optionSets[obj.optionSet.id].options, String(val));
                     }
@@ -544,8 +544,32 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                             newInputField = newInputField + ' <span ng-messages="outerForm.' + fieldId + '.$error" class="required" ng-if="interacted(outerForm.' + fieldId + ')" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html"></span>';
 
                             htmlCode = htmlCode.replace(inputField, newInputField);
+
                         }
                     }
+                    htmlCode += '<table>' +
+                                    '<tbody>' +
+                                        '<tr>' +
+                                            '<th colspan="2">Status</th>' +
+                                        '</tr>'+
+                                        '<tr>'+
+                                            '<td>'+
+                                                '{{\'event_completed\'| translate}}'+
+                                            '</td>'+
+                                            '<td>'+
+                                                '<div  class="complete-field form-control">'+
+                                                    '<d2-radio-button ' +
+                                                        ' dh-value="currentEvent.status"' +
+                                                        ' dh-name="foo" ' +
+                                                        ' dh-event="currentEvent.event" ' +
+                                                        ' dh-id="\'completetionStatus\'" ' +
+                                                        ' dh-click="saveDatavalue(\'status\', currentEvent, value )" >' +
+                                                    ' </d2-radio-button>'
+                                                '</div>'+
+                                            '</td>'+
+                                        '</tr>'+
+                                    '</tbody>'+
+                                '</table>';
                     htmlCode = addPopOver(htmlCode, programStageDataElements);
                     return {htmlCode: htmlCode, hasEventDate: hasEventDate};
                 }
@@ -1130,9 +1154,8 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                                         //this is a programstage and dataelement specification. translate to program variable:
                                         newVariableObject = {
                                             displayName:variableName,
-                                            programRuleVariableSourceType:'DATAELEMENT_NEWEST_EVENT_PROGRAM_STAGE',
+                                            programRuleVariableSourceType:'DATAELEMENT_CURRENT_EVENT',
                                             dataElement:variableNameParts[1],
-                                            programStage:variableNameParts[0],
                                             program:programUid
                                         };
                                     }
@@ -1607,6 +1630,8 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                         angular.forEach(callsToThisFunction, function(callToThisFunction){
                             //Remove the function name and paranthesis:
                             var justparameters = callToThisFunction.replace(/(^[^\(]+\()|\)$/g,"");
+                            //Remove white spaces before and after parameters:
+                            justparameters = justparameters.trim();
                             //Then split into single parameters:
                             var parameters = justparameters.match(/(('[^']+')|([^,]+))/g);
 
@@ -2137,7 +2162,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                         notes: [],
                         dataValues: newEventDataValues,
                         status: 'ACTIVE',
-                        event: dhis2.util.uid(),
+                        event: dhis2.util.uid()
                     };
 
                     if(programStage && programStage.dontPersistOnCreate){
@@ -2621,6 +2646,8 @@ var d2Services = angular.module('d2Services', ['ngResource'])
         this.fileNames = [];
         this.location = null;
         this.dataElementTranslations = null;
+        this.advancedSearchOptions = null;
+		this.trackedEntities = null;
 
         this.set = function(currentSelection){
             this.currentSelection = currentSelection;
@@ -2698,6 +2725,38 @@ var d2Services = angular.module('d2Services', ['ngResource'])
         this.getDataElementTranslations = function(){
             return this.dataElementTranslations;
         };
+
+        this.setAdvancedSearchOptions = function (searchOptions) {
+            this.advancedSearchOptions = searchOptions;
+        };
+        this.getAdvancedSearchOptions = function () {
+            return this.advancedSearchOptions;
+        };
+
+        this.setTrackedEntities = function (trackedEntities) {
+            this.trackedEntities = trackedEntities;
+        };
+        this.getTrackedEntities = function () {
+            return this.trackedEntities;
+        };
+
+        this.setSortColumn = function (sortColumn) {
+            if (this.advancedSearchOptions) {
+                this.advancedSearchOptions.sortColumn = sortColumn;
+            }
+        };
+
+        this.setColumnReverse = function (reverseSortStatus) {
+            if (this.advancedSearchOptions) {
+                this.advancedSearchOptions.reverse = reverseSortStatus;
+            }
+        };
+
+        this.setGridColumns = function (gridColumns) {
+            if (this.advancedSearchOptions) {
+                this.advancedSearchOptions.gridColumns = gridColumns;
+            }
+        }
     })
 
     .service('AuditHistoryDataService', function( $http, $translate, DialogService) {

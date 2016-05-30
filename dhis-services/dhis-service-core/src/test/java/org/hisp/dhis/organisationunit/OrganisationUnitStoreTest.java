@@ -36,6 +36,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.hisp.dhis.DhisSpringTest;
+import org.hisp.dhis.common.IdentifiableObjectManager;
+import org.hisp.dhis.dataelement.DataElementCategoryOption;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,7 +45,6 @@ import com.google.common.collect.Sets;
 
 /**
  * @author Lars Helge Overland
- * @version $Id$
  */
 public class OrganisationUnitStoreTest
     extends DhisSpringTest
@@ -56,22 +57,46 @@ public class OrganisationUnitStoreTest
     
     @Autowired
     private OrganisationUnitGroupStore orgUnitGroupStore;
+    
+    @Autowired
+    private IdentifiableObjectManager idObjectManager;
 
+    private OrganisationUnit ouA;
+    private OrganisationUnit ouB;
+    private OrganisationUnit ouC;
+    private OrganisationUnit ouD;
+    private OrganisationUnit ouE;
+    private OrganisationUnit ouF;
+    private OrganisationUnit ouG;
+    
+    private DataElementCategoryOption coA;
+    private DataElementCategoryOption coB;
+    
     // -------------------------------------------------------------------------
-    // OrganisationUnitLevel
+    // OrganisationUnit
     // -------------------------------------------------------------------------
 
+    @Override
+    public void setUpTest()
+    {
+        ouA = createOrganisationUnit( 'A' ); // 1
+        ouB = createOrganisationUnit( 'B', ouA ); // 2
+        ouC = createOrganisationUnit( 'C', ouA ); // 2
+        ouD = createOrganisationUnit( 'D', ouB ); // 3
+        ouE = createOrganisationUnit( 'E', ouB ); // 3
+        ouF = createOrganisationUnit( 'F', ouC ); // 3
+        ouG = createOrganisationUnit( 'G', ouC ); // 3
+        
+        coA = createCategoryOption( 'A' );
+        coB = createCategoryOption( 'B' );
+        
+        idObjectManager.save( coA );
+        idObjectManager.save( coB );
+    }
+    
     @Test
     public void testGetOrganisationUnits()
     {
-        OrganisationUnit ouA = createOrganisationUnit( 'A' ); // 1
-        OrganisationUnit ouB = createOrganisationUnit( 'B', ouA ); // 2
-        OrganisationUnit ouC = createOrganisationUnit( 'C', ouA ); // 2
-        OrganisationUnit ouD = createOrganisationUnit( 'D', ouB ); // 3
-        OrganisationUnit ouE = createOrganisationUnit( 'E', ouB ); // 3
-        OrganisationUnit ouF = createOrganisationUnit( 'F', ouC ); // 3
-        OrganisationUnit ouG = createOrganisationUnit( 'G', ouC ); // 3
-        
         orgUnitStore.save( ouA );
         orgUnitStore.save( ouB );
         orgUnitStore.save( ouC );
@@ -223,6 +248,24 @@ public class OrganisationUnitStoreTest
 
         assertEquals( 3, ous.size() );
         assertTrue( ous.containsAll( Sets.newHashSet( ouB, ouD, ouE ) ) );
+    }
+    
+    @Test
+    public void testGetWithCategoryOptions()
+    {
+        ouA.addCategoryOption( coA );
+        ouA.addCategoryOption( coB );
+        ouC.addCategoryOption( coA );
+        
+        orgUnitStore.save( ouA );
+        orgUnitStore.save( ouB );
+        orgUnitStore.save( ouC );
+        
+        List<OrganisationUnit> units = orgUnitStore.getOrganisationUnitsWithCategoryOptions();
+        
+        assertEquals( 2, units.size() );
+        assertTrue( units.contains( ouA ) );
+        assertTrue( units.contains( ouC ) );
     }
     
     // -------------------------------------------------------------------------

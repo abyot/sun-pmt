@@ -60,6 +60,8 @@
 
     <property name="sequentialSampleCount" column="sequentialsamplecount" />
 
+    <property name="annualSampleCount" column="annualsamplecount" />
+
     <property name="sequentialSkipCount" column="sequentialskipcount" />
 
   </class>

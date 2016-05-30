@@ -39,15 +39,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.DimensionItemType;
-import org.hisp.dhis.common.DisplayProperty;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.adapter.JacksonOrganisationUnitChildrenSerializer;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.dataelement.DataElement;
+import org.hisp.dhis.dataelement.DataElementCategoryOption;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.program.Program;
@@ -125,6 +124,8 @@ public class OrganisationUnit
     private Set<Program> programs = new HashSet<>();
 
     private Set<User> users = new HashSet<>();
+    
+    private Set<DataElementCategoryOption> categoryOptions = new HashSet<>();
 
     // -------------------------------------------------------------------------
     // Transient fields
@@ -266,14 +267,26 @@ public class OrganisationUnit
 
     public void addUser( User user )
     {
-        user.getOrganisationUnits().add( this );
         users.add( user );
+        user.getOrganisationUnits().add( this );
     }
 
     public void removeUser( User user )
     {
-        user.getOrganisationUnits().remove( this );
         users.remove( user );
+        user.getOrganisationUnits().remove( this );
+    }
+    
+    public void addCategoryOption( DataElementCategoryOption categoryOption )
+    {
+        categoryOptions.add( categoryOption );
+        categoryOption.getOrganisationUnits().add( this );
+    }
+    
+    public void removeCategoryOption( DataElementCategoryOption categoryOption )
+    {
+        categoryOptions.remove( categoryOption );
+        categoryOption.getOrganisationUnits().remove( this );
     }
 
     public void removeAllUsers()
@@ -290,7 +303,7 @@ public class OrganisationUnit
     {
         List<OrganisationUnit> sortedChildren = new ArrayList<>( children );
 
-        Collections.sort( sortedChildren, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( sortedChildren );
 
         return sortedChildren;
     }
@@ -770,11 +783,11 @@ public class OrganisationUnit
     }
 
     /**
-     * Returns a mapping between the uid and the uid parent graph of the given
+     * Returns a mapping between the uid and the name parent graph of the given
      * organisation units.
      */
     public static Map<String, String> getParentNameGraphMap( List<OrganisationUnit> organisationUnits,
-        Collection<OrganisationUnit> roots, boolean includeThis, DisplayProperty displayProperty )
+        Collection<OrganisationUnit> roots, boolean includeThis )
     {
         Map<String, String> map = new HashMap<>();
 
@@ -782,7 +795,7 @@ public class OrganisationUnit
         {
             for ( OrganisationUnit unit : organisationUnits )
             {
-                map.put( unit.getDisplayProperty( displayProperty ), unit.getParentNameGraph( roots, includeThis ) );
+                map.put( unit.getUid(), unit.getParentNameGraph( roots, includeThis ) );
             }
         }
 
@@ -804,6 +817,15 @@ public class OrganisationUnit
         }
         
         return false;
+    }
+    
+    /**
+     * Indicates whether this organisation unit has at least one associated
+     * category option.
+     */
+    public boolean hasCategoryOptions()
+    {
+        return categoryOptions != null && !categoryOptions.isEmpty();
     }
     
     @Override
@@ -1143,6 +1165,16 @@ public class OrganisationUnit
     public void setUsers( Set<User> users )
     {
         this.users = users;
+    }
+
+    public Set<DataElementCategoryOption> getCategoryOptions()
+    {
+        return categoryOptions;
+    }
+
+    public void setCategoryOptions( Set<DataElementCategoryOption> categoryOptions )
+    {
+        this.categoryOptions = categoryOptions;
     }
 
     // -------------------------------------------------------------------------

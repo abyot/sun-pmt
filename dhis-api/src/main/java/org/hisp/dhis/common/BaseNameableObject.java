@@ -29,7 +29,6 @@ package org.hisp.dhis.common;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -38,14 +37,15 @@ import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.DimensionalView;
 import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.schema.annotation.PropertyRange;
+import org.hisp.dhis.translation.TranslationProperty;
 
 /**
  * @author Bob Jolliffe
  */
 @JacksonXmlRootElement( localName = "nameableObject", namespace = DxfNamespaces.DXF_2_0 )
 public class BaseNameableObject
-    extends BaseIdentifiableObject 
-        implements NameableObject
+    extends BaseIdentifiableObject
+    implements NameableObject
 {
     /**
      * An short name representing this Object. Optional but unique.
@@ -103,9 +103,9 @@ public class BaseNameableObject
     // -------------------------------------------------------------------------
 
     /**
-     * Returns the display property indicated by the given display property. Falls 
+     * Returns the display property indicated by the given display property. Falls
      * back to display name if display short name is null.
-     * 
+     *
      * @param displayProperty the display property.
      * @return the display property.
      */
@@ -121,7 +121,7 @@ public class BaseNameableObject
             return getDisplayName();
         }
     }
-    
+
     // -------------------------------------------------------------------------
     // hashCode and equals
     // -------------------------------------------------------------------------
@@ -196,6 +196,21 @@ public class BaseNameableObject
     }
 
     @Override
+    @JsonView( { DetailedView.class, DimensionalView.class } )
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getDisplayShortName()
+    {
+        displayShortName = getTranslation( TranslationProperty.SHORT_NAME, displayShortName );
+        return displayShortName != null ? displayShortName : getShortName();
+    }
+
+    public void setDisplayShortName( String displayShortName )
+    {
+        this.displayShortName = displayShortName;
+    }
+
+    @Override
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
@@ -214,23 +229,10 @@ public class BaseNameableObject
     @JsonView( { DetailedView.class, DimensionalView.class } )
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public String getDisplayShortName()
-    {
-        return displayShortName != null && !displayShortName.trim().isEmpty() ? displayShortName : getShortName();
-    }
-
-    public void setDisplayShortName( String displayShortName )
-    {
-        this.displayShortName = displayShortName;
-    }
-
-    @Override
-    @JsonView( { DetailedView.class, DimensionalView.class } )
-    @JsonProperty
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getDisplayDescription()
     {
-        return displayDescription != null && !displayDescription.trim().isEmpty() ? displayDescription : getDescription();
+        displayDescription = getTranslation( TranslationProperty.DESCRIPTION, displayDescription );
+        return displayDescription != null ? displayDescription : getDescription();
     }
 
     public void setDisplayDescription( String displayDescription )

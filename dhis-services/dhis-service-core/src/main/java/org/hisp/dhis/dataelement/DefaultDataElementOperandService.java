@@ -33,9 +33,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.expression.ExpressionService;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Abyot Asalefew

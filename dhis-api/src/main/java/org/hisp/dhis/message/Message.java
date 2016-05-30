@@ -45,7 +45,7 @@ import java.util.Date;
 /**
  * @author Lars Helge Overland
  */
-@JacksonXmlRootElement( localName = "message", namespace = DxfNamespaces.DXF_2_0)
+@JacksonXmlRootElement( localName = "message", namespace = DxfNamespaces.DXF_2_0 )
 public class Message
     extends BaseIdentifiableObject
 {
@@ -64,10 +64,16 @@ public class Message
      */
     private User sender;
 
+    /**
+     * Internal message flag. Can only be seen by users in "FeedbackRecipients" group.
+     */
+    private Boolean internal;
+
     public Message()
     {
         this.uid = CodeGenerator.generateCode();
         this.lastUpdated = new Date();
+        this.internal = false;
     }
 
     public Message( String text, String metaData, User sender )
@@ -77,7 +83,17 @@ public class Message
         this.text = text;
         this.metaData = metaData;
         this.sender = sender;
+        this.internal = false;
+    }
 
+    public Message( String text, String metaData, User sender, boolean internal )
+    {
+        this.uid = CodeGenerator.generateCode();
+        this.lastUpdated = new Date();
+        this.text = text;
+        this.metaData = metaData;
+        this.sender = sender;
+        this.internal = internal;
     }
 
     @Override
@@ -130,5 +146,15 @@ public class Message
     public String toString()
     {
         return "[" + text + "]";
+    }
+
+    public boolean isInternal()
+    {
+        return internal;
+    }
+
+    public void setInternal( boolean internal )
+    {
+        this.internal = internal;
     }
 }

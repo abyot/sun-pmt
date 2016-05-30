@@ -37,15 +37,19 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.program.ProgramInstanceService;
-import org.hisp.dhis.sms.SmsSender;
 import org.hisp.dhis.sms.command.SMSCommand;
 import org.hisp.dhis.sms.command.SMSCommandService;
 import org.hisp.dhis.sms.command.code.SMSCode;
 import org.hisp.dhis.sms.incoming.IncomingSms;
 import org.hisp.dhis.sms.incoming.IncomingSmsListener;
+import org.hisp.dhis.sms.incoming.IncomingSmsService;
+import org.hisp.dhis.sms.incoming.SmsMessageStatus;
 import org.hisp.dhis.sms.parse.ParserType;
 import org.hisp.dhis.sms.parse.SMSParserException;
 import org.hisp.dhis.system.util.SmsUtils;
@@ -56,6 +60,7 @@ import org.hisp.dhis.trackedentity.TrackedEntityService;
 import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValue;
 import org.hisp.dhis.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 public class TrackedEntityRegistrationSMSListener
     implements IncomingSmsListener
@@ -81,14 +86,19 @@ public class TrackedEntityRegistrationSMSListener
 
     @Autowired
     private ProgramInstanceService programInstanceService;
-
+    
     @Autowired
-    private SmsSender smsSender;
+    private IncomingSmsService incomingSmsService;
+    
+    @Autowired
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
 
     // -------------------------------------------------------------------------
     // IncomingSmsListener implementation
     // -------------------------------------------------------------------------
 
+    @Transactional
     @Override
     public boolean accept( IncomingSms sms )
     {
@@ -96,6 +106,7 @@ public class TrackedEntityRegistrationSMSListener
             ParserType.TRACKED_ENTITY_REGISTRATION_PARSER ) != null;
     }
 
+    @Transactional
     @Override
     public void receive( IncomingSms sms )
     {
@@ -149,8 +160,12 @@ public class TrackedEntityRegistrationSMSListener
         programInstanceService.enrollTrackedEntityInstance(
             trackedEntityInstanceService.getTrackedEntityInstance( trackedEntityInstanceId ), smsCommand.getProgram(),
             new Date(), date, orgUnit );
-        smsSender.sendMessage( "New User successfully Registered", senderPhoneNumber );
-
+        
+        smsSender.sendMessage( null, "Entity Registered Successfully ", senderPhoneNumber );
+        
+        sms.setStatus( SmsMessageStatus.PROCESSED );
+        sms.setParsed( true );
+        incomingSmsService.update( sms );
     }
 
     private TrackedEntityAttributeValue createTrackedEntityAttributeValue( Map<String, String> parsedMessage,

@@ -31,6 +31,7 @@ package org.hisp.dhis.sms.outbound;
 /**
  * Zubair <rajazubair.asghar@gmail.com>
  */
+
 public enum GatewayResponse
 {
     SUCCESS( "success", "" ), 

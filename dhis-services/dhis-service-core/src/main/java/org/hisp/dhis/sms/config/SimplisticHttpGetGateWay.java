@@ -34,14 +34,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.sms.outbound.GatewayResponse;
 import org.hisp.dhis.sms.outbound.OutboundSms;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 /**
  * Simplistic http gateway sending smses through a get to a url constructed from
@@ -69,47 +74,53 @@ import org.hisp.dhis.sms.outbound.OutboundSms;
  * <li>password
  * </ul>
  */
+
 public class SimplisticHttpGetGateWay
+    implements SmsGateway
 {
     private static final Log log = LogFactory.getLog( SimplisticHttpGetGateWay.class );
 
-    private Map<String, String> parameters;
+    public static final ImmutableMap<Integer, GatewayResponse> SIMPLISTIC_GATEWAY_RESPONSE_MAP = new ImmutableMap.Builder<Integer, GatewayResponse>()
+        .put( HttpURLConnection.HTTP_OK, GatewayResponse.RESULT_CODE_0 )
+        .put( HttpURLConnection.HTTP_CREATED, GatewayResponse.RESULT_CODE_0 )
+        .put( HttpURLConnection.HTTP_ACCEPTED, GatewayResponse.RESULT_CODE_0 )
+        .put( HttpURLConnection.HTTP_CONFLICT, GatewayResponse.FAILED ).build();
 
-    private String urlTemplate;
-
-    public SimplisticHttpGetGateWay( String id, String urlTemplate, Map<String, String> parameters )
+    @Override
+    public GatewayResponse send( List<OutboundSms> sms, SmsGatewayConfig gatewayConfig )
     {
-        this.urlTemplate = urlTemplate;
-        this.parameters = parameters;
+        return null;
     }
 
-    public boolean sendMessage( OutboundSms msg )
-        throws IOException, InterruptedException
+    @Override
+    public boolean accept( SmsGatewayConfig gatewayConfig )
     {
-        log.debug( "Sending message " + msg + " " + getGatewayId() );
+        return gatewayConfig != null && gatewayConfig instanceof GenericHttpGatewayConfig;
+    }
 
-        Map<String, String> requestParameters = new HashMap<>( parameters );
+    @Override
+    public GatewayResponse send( String subject, String text, Set<String> recipients, SmsGatewayConfig config )
+    {
+        GenericHttpGatewayConfig genericHttpConfiguraiton = (GenericHttpGatewayConfig) config;
 
-        String urlString = urlTemplate;
+        UriComponentsBuilder uri = buildUrl( genericHttpConfiguraiton, text, recipients );
 
-        for ( String key : requestParameters.keySet() )
-        {
-            if ( requestParameters.get( key ) != null )
-            {
-                urlString = StringUtils.replace( urlString, "{" + key + "}",
-                    URLEncoder.encode( requestParameters.get( key ), "UTF-8" ) );
-            }
-        }
+        String line = StringUtils.EMPTY;
+        String response = StringUtils.EMPTY; //TODO why is this never used?
 
-        log.info( "RequestURL: " + urlString + " " + getGatewayId() );
-
-        String line, response = "";
         BufferedReader reader = null;
+
+        Set<Integer> okCodes = Sets.newHashSet( HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED,
+            HttpURLConnection.HTTP_CREATED );
 
         try
         {
-            URL requestURL = new URL( urlString );
+            URL requestURL = new URL( uri.build().encode( "ISO-8859-1" ).toUriString() );
+
+            log.info( "Requesting URL: " + uri.build().toString() );
+
             URLConnection conn = requestURL.openConnection();
+
             reader = new BufferedReader( new InputStreamReader( conn.getInputStream() ) );
 
             while ( (line = reader.readLine()) != null )
@@ -119,38 +130,59 @@ public class SimplisticHttpGetGateWay
 
             HttpURLConnection httpConnection = (HttpURLConnection) conn;
 
-            if ( httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK
-                && httpConnection.getResponseCode() != HttpURLConnection.HTTP_ACCEPTED
-                && httpConnection.getResponseCode() != HttpURLConnection.HTTP_CREATED )
-            {
-                log.warn( "Couldn't send message, got response " + response + " " + getGatewayId() );
-                return false;
-            }
+            reader.close();
 
-            if ( reader != null )
-            {
-                reader.close();
-            }
-
+            return okCodes.contains( httpConnection.getResponseCode() ) ? 
+                GatewayResponse.RESULT_CODE_0 : GatewayResponse.FAILED;
         }
         catch ( IOException e )
         {
-            log.warn( "Couldn't send message " + getGatewayId() );
-            return false;
-        }
-        finally
-        {
+            log.error( "Message failed: " + e.getMessage() );
+
             if ( reader != null )
             {
-                reader.close();
+                try
+                {
+                    reader.close();
+                }
+                catch ( IOException e1 )
+                {
+                    log.error( "Error while closing reader " + e1.getMessage() );
+                }
             }
-        }
 
-        return true;
+            return GatewayResponse.FAILED;
+        }
     }
 
-    private String getGatewayId()
+    // -------------------------------------------------------------------------
+    // Supportive methods
+    // -------------------------------------------------------------------------
+
+    private UriComponentsBuilder buildUrl( GenericHttpGatewayConfig config, String text, Set<String> recipients )
     {
-        return null;
+        UriComponentsBuilder uriBuilder = null;
+
+        uriBuilder = UriComponentsBuilder.fromHttpUrl( config.getUrlTemplate() );
+
+        uriBuilder = getUrlParameters( config.getKeyValueParameters(), uriBuilder );
+
+        uriBuilder.queryParam( config.getMessageParameter(), text );
+
+        uriBuilder.queryParam( config.getRecipientParameter(),
+            !recipients.isEmpty() ? recipients.iterator().next() : "" );
+
+        return uriBuilder;
+    }
+
+    private UriComponentsBuilder getUrlParameters( Map<String, String> getValueParameters,
+        UriComponentsBuilder uriBuilder )
+    {
+        for ( String key : getValueParameters.keySet() )
+        {
+            uriBuilder.queryParam( key, getValueParameters.get( key ) );
+        }
+
+        return uriBuilder;
     }
 }

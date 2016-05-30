@@ -40,7 +40,6 @@ import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.common.Grid;
 import org.hisp.dhis.constant.ConstantService;
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.reporttable.ReportTableService;
@@ -73,13 +72,6 @@ public class ExportTableAction
     public void setConstantService( ConstantService constantService )
     {
         this.constantService = constantService;
-    }
-
-    private I18nFormat format;
-
-    public void setFormat( I18nFormat format )
-    {
-        this.format = format;
     }
 
     @Autowired
@@ -183,7 +175,7 @@ public class ExportTableAction
         
         Date date = period != null ? period.getStartDate() : null;
         
-        grid = reportTableService.getReportTableGrid( uid, format, date, ou );
+        grid = reportTableService.getReportTableGrid( uid, date, ou );
 
         return type != null ? type : TYPE_DEFAULT;
     }

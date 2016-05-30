@@ -48,6 +48,7 @@ import static org.hisp.dhis.period.PeriodType.getPeriodTypeFromIsoString;
 import static org.hisp.dhis.reporttable.ReportTable.IRT2D;
 import static org.hisp.dhis.reporttable.ReportTable.addIfEmpty;
 import static org.hisp.dhis.common.DimensionalObjectUtils.getDimensionalItemIds;
+import static org.hisp.dhis.common.ReportingRateMetric.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,12 +59,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.analytics.AggregationType;
 import org.hisp.dhis.analytics.AnalyticsManager;
+import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
 import org.hisp.dhis.analytics.AnalyticsSecurityManager;
 import org.hisp.dhis.analytics.AnalyticsService;
 import org.hisp.dhis.analytics.AnalyticsUtils;
@@ -72,6 +75,7 @@ import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.DataQueryService;
 import org.hisp.dhis.analytics.DimensionItem;
 import org.hisp.dhis.analytics.QueryPlanner;
+import org.hisp.dhis.analytics.QueryPlannerParams;
 import org.hisp.dhis.analytics.event.EventAnalyticsService;
 import org.hisp.dhis.analytics.event.EventQueryParams;
 import org.hisp.dhis.calendar.Calendar;
@@ -97,7 +101,6 @@ import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementOperand;
 import org.hisp.dhis.expression.ExpressionService;
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.i18n.I18nService;
 import org.hisp.dhis.indicator.Indicator;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
@@ -395,6 +398,7 @@ public class DefaultAnalyticsService
                 dataSourceParams.retainDataDimensionReportingRates( metric );
                 dataSourceParams.ignoreDataApproval(); // No approval for reporting rates
                 dataSourceParams.setAggregationType( AggregationType.COUNT );
+                dataSourceParams.setTimely( ( REPORTING_RATE_ON_TIME == metric || ACTUAL_REPORTS_ON_TIME == metric ) );
                 
                 addReportingRates( dataSourceParams, grid, metric );
             }
@@ -436,6 +440,9 @@ public class DefaultAnalyticsService
             targetParams.setDimensions( ListUtils.getAtIndexes( targetParams.getDimensions(), completenessDimIndexes ) );
             targetParams.setFilters( ListUtils.getAtIndexes( targetParams.getFilters(), completenessFilterIndexes ) );
             targetParams.setSkipPartitioning( true );
+            targetParams.setTimely( false ); // No timeliness for targets
+            targetParams.setRestrictByOrgUnitOpeningClosedDate( true );
+            targetParams.setRestrictByCategoryOptionStartEndDate( true );
             targetParams.setAggregationType( AggregationType.SUM );
 
             Map<String, Double> targetMap = getAggregatedCompletenessTargetMap( targetParams );
@@ -451,6 +458,9 @@ public class DefaultAnalyticsService
             // Join data maps, calculate completeness and add to grid
             // -----------------------------------------------------------------
 
+            //FIXME If target value exists, but not actual reports exist we must still display target
+            //FIXME avoid duplicate requests for actual reports
+            
             for ( Map.Entry<String, Double> entry : aggregatedDataMap.entrySet() )
             {
                 List<String> dataRow = Lists.newArrayList( entry.getKey().split( DIMENSION_SEP ) );
@@ -478,18 +488,20 @@ public class DefaultAnalyticsService
                     // ---------------------------------------------------------
                     // Calculate reporting rate and replace data set with rate
                     // ---------------------------------------------------------
-
-                    double rate = actual * PERCENT / target;
                     
-                    Double value = rate;
+                    Double value = 0d;
                     
-                    if ( ReportingRateMetric.ACTUAL_REPORTS == metric )
+                    if ( ACTUAL_REPORTS == metric || ACTUAL_REPORTS_ON_TIME == metric )
                     {
                         value = actual;
                     }
-                    else if ( ReportingRateMetric.EXPECTED_REPORTS == metric )
+                    else if ( EXPECTED_REPORTS == metric )
                     {
                         value = target;
+                    }
+                    else if ( !MathUtils.isEqual( target, MathUtils.ZERO ) ) // REPORTING_RATE
+                    {
+                        value = ( actual * PERCENT ) / target;
                     }
                     
                     String reportingRate = DimensionalObjectUtils.getDimensionItem( dataRow.get( DX_INDEX ), metric );
@@ -572,7 +584,7 @@ public class DefaultAnalyticsService
             uidNameMap.putAll( cocNameMap );
             uidNameMap.put( DATA_X_DIM_ID, DISPLAY_NAME_DATA_X );
 
-            metaData.put( NAMES_META_KEY, uidNameMap );
+            metaData.put( AnalyticsMetaDataKey.NAMES.getKey(), uidNameMap );
 
             // -----------------------------------------------------------------
             // Item order elements
@@ -606,12 +618,12 @@ public class DefaultAnalyticsService
             
             if ( params.isHierarchyMeta() )
             {
-                metaData.put( OU_HIERARCHY_KEY, getParentGraphMap( organisationUnits, roots ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_HIERARCHY.getKey(), getParentGraphMap( organisationUnits, roots ) );
             }
 
             if ( params.isShowHierarchy() )
             {
-                metaData.put( OU_NAME_HIERARCHY_KEY, getParentNameGraphMap( organisationUnits, roots, true, params.getDisplayProperty() ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey(), getParentNameGraphMap( organisationUnits, roots, true ) );
             }
             
             grid.setMetaData( metaData );
@@ -707,9 +719,9 @@ public class DefaultAnalyticsService
     }
 
     @Override
-    public Grid getAggregatedDataValues( AnalyticalObject object, I18nFormat format )
+    public Grid getAggregatedDataValues( AnalyticalObject object )
     {
-        DataQueryParams params = dataQueryService.getFromAnalyticalObject( object, format );
+        DataQueryParams params = dataQueryService.getFromAnalyticalObject( object );
         
         return getAggregatedDataValues( params );
     }
@@ -723,9 +735,9 @@ public class DefaultAnalyticsService
     }
 
     @Override
-    public Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object, I18nFormat format )
+    public Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object )
     {
-        DataQueryParams params = dataQueryService.getFromAnalyticalObject( object, format );
+        DataQueryParams params = dataQueryService.getFromAnalyticalObject( object );
 
         return getAggregatedDataValueMapping( params );
     }
@@ -805,7 +817,7 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedDataValueMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, ANALYTICS_TABLE_NAME ) );
+        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, ANALYTICS_TABLE_NAME, Lists.newArrayList() ) );
     }
 
     /**
@@ -818,7 +830,7 @@ public class DefaultAnalyticsService
      */
     private Map<String, Object> getAggregatedDataValueMapObjectTyped( DataQueryParams params )
     {
-        return getAggregatedValueMap( params, ANALYTICS_TABLE_NAME );
+        return getAggregatedValueMap( params, ANALYTICS_TABLE_NAME, Lists.newArrayList() );
     }
 
     /**
@@ -831,7 +843,7 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedCompletenessValueMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, COMPLETENESS_TABLE_NAME ) );
+        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, COMPLETENESS_TABLE_NAME, Lists.newArrayList() ) );
     }
 
     /**
@@ -844,7 +856,10 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedCompletenessTargetMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, COMPLETENESS_TARGET_TABLE_NAME ) );
+        List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers = Lists.newArrayList();
+        queryGroupers.add( q -> queryPlanner.groupByStartEndDate( q ) );
+        
+        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, COMPLETENESS_TARGET_TABLE_NAME, queryGroupers ) );
     }
 
     /**
@@ -858,7 +873,7 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedOrganisationUnitTargetMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, ORGUNIT_TARGET_TABLE_NAME ) );
+        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, ORGUNIT_TARGET_TABLE_NAME, Lists.newArrayList() ) );
     }
 
     /**
@@ -867,19 +882,27 @@ public class DefaultAnalyticsService
      * separated by "-".
      *
      * @param params the data query parameters.
+     * @param tableName the table name to use for the query.
+     * @param queryPlanners the list of additional query groupers to use for 
+     *        query planning, use empty list for none.
      * @return a mapping between a dimension key and aggregated values.
      */
-    private Map<String, Object> getAggregatedValueMap( DataQueryParams params, String tableName )
+    private Map<String, Object> getAggregatedValueMap( DataQueryParams params, String tableName, List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers )
     {
         queryPlanner.validateMaintenanceMode();
 
         int optimalQueries = MathUtils.getWithin( getProcessNo(), 1, MAX_QUERIES );
 
-        int maxLimit = (Integer) systemSettingManager.getSystemSetting( SettingKey.ANALYTICS_MAX_LIMIT );
-        
+        int maxLimit = params.isIgnoreLimit() ? 0 : (Integer) systemSettingManager.getSystemSetting( SettingKey.ANALYTICS_MAX_LIMIT );
+                
         Timer timer = new Timer().start().disablePrint();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, optimalQueries, tableName );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( optimalQueries ).
+            withTableName( tableName ).
+            withQueryGroupers( queryGroupers ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         timer.getSplitTime( "Planned analytics query, got: " + queryGroups.getLargestGroupSize() + " for optimal: " + optimalQueries );
 
@@ -893,7 +916,7 @@ public class DefaultAnalyticsService
             {
                 futures.add( analyticsManager.getAggregatedDataValues( query, maxLimit ) );
             }
-
+            
             for ( Future<Map<String, Object>> future : futures )
             {
                 try

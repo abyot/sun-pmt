@@ -377,7 +377,7 @@ public class AddProgramStageAction
         programStage.setDescription( StringUtils.trimToNull( description ) );
         programStage.setProgram( program );
         programStage.setStandardInterval( standardInterval );
-        programStage.setExcecutionDateLabel( StringUtils.trimToNull( excecutionDateLabel ) );
+        programStage.setExecutionDateLabel( StringUtils.trimToNull( excecutionDateLabel ) );
         programStage.setRepeatable( repeatable );
         programStage.setMinDaysFromStart( minDaysFromStart );
         programStage.setDisplayGenerateEventBox( displayGenerateEventBox );

@@ -17,7 +17,8 @@
     
     <property name="date" not-null="true" />
 
-    <property name="message" />
+    <property name="message" length="500" />
+
 
     <property name="status" not-null="true" index="outbound_sms_status_index">
       <type name="org.hibernate.type.EnumType">

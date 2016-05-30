@@ -32,7 +32,6 @@ import com.opensymphony.xwork2.Action;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeService;
 import org.hisp.dhis.attribute.comparator.AttributeSortOrderComparator;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataapproval.DataApprovalWorkflow;
 import org.hisp.dhis.dataapproval.DataApprovalWorkflowService;
 import org.hisp.dhis.dataelement.DataElement;
@@ -220,11 +219,11 @@ public class EditDataSetFormAction
 
         attributes = new ArrayList<>( attributeService.getAttributes( DataSet.class ) );
 
-        Collections.sort( userGroups, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( dataElements, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( workflows, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( indicators, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( legendSets, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( userGroups );
+        Collections.sort( dataElements );
+        Collections.sort( workflows );
+        Collections.sort( indicators );
+        Collections.sort( legendSets );
         Collections.sort( attributes, AttributeSortOrderComparator.INSTANCE );
 
         return SUCCESS;

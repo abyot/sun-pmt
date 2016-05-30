@@ -28,15 +28,14 @@ package org.hisp.dhis.mock;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.period.Period.DEFAULT_DATE_FORMAT;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
 import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.period.Period;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * @author Lars Helge Overland
@@ -45,36 +44,25 @@ import org.hisp.dhis.period.Period;
 public class MockI18nFormat
     extends I18nFormat
 {
-    private static SimpleDateFormat FORMAT = new SimpleDateFormat( "yyyy-MM-dd" );
+    private static final DateTimeFormatter FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd" );
     
     @Override
     public String formatPeriod( Period period )
     {
         Random random = new Random();        
-        return "Period_" + FORMAT.format( period.getStartDate() ) + "_" + random.nextInt( 1000 );
+        return "Period_" + FORMAT.print( new DateTime( period.getStartDate() ) ) + "_" + random.nextInt( 1000 );
     }
     
     @Override
     public String formatDate( Date date )
     {
         Random random = new Random();
-        return "Date_"  + FORMAT.format( date ) + "_" + random.nextInt( 1000 );
+        return "Date_"  + FORMAT.print( new DateTime( date ) ) + "_" + random.nextInt( 1000 );
     }
     
     @Override
-    public Date parseDate( String dateString )
+    public Date parseDate( String string )
     {
-        try
-        {
-            final SimpleDateFormat format = new SimpleDateFormat();
-
-            format.applyPattern( DEFAULT_DATE_FORMAT );
-
-            return dateString != null ? format.parse( dateString ) : null;
-        }
-        catch ( ParseException ex )
-        {
-            throw new RuntimeException( "Failed to parse medium date", ex );
-        }
+        return string != null ? FORMAT.parseDateTime( string ).toDate() : null;
     }
 }

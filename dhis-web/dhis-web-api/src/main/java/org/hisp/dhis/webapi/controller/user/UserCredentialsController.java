@@ -49,13 +49,13 @@ public class UserCredentialsController
     extends AbstractCrudController<UserCredentials>
 {
     @Override
-    public void postXmlObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postXmlObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         throw new HttpServerErrorException( HttpStatus.BAD_REQUEST );
     }
 
     @Override
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         throw new HttpServerErrorException( HttpStatus.BAD_REQUEST );
     }

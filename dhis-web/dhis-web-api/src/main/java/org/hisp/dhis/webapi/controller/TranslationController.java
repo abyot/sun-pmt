@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @RequestMapping( value = TranslationSchemaDescriptor.API_ENDPOINT )
-public class TranslationController extends AbstractCrudController<Translation>
+public class TranslationController
+    extends AbstractCrudController<Translation>
 {
 }

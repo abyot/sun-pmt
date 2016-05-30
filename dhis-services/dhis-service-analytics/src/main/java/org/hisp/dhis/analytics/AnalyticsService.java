@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.hisp.dhis.common.AnalyticalObject;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.i18n.I18nFormat;
 
 /**
  * <p>
@@ -59,7 +58,7 @@ import org.hisp.dhis.i18n.I18nFormat;
  * </p>
  * 
  * <pre>
- * <code>
+ * {@code
  * DataQueryParams params = new DataQueryParams();
  * 
  * params.setIndicators( indicators );
@@ -67,8 +66,12 @@ import org.hisp.dhis.i18n.I18nFormat;
  * params.setFilterOrganisationUnit( organisationUnit );
  * 
  * Grid grid = analyticsService.getAggregatedDataValues( params );
- * </code>
+ * }
  * </pre>
+ * 
+ * <p>The returned grid has a metaData object which contains metadata about the
+ * response, such as a mapping between the UIDs and names of metadata objects.
+ * For valid keys refer to the key property of {@link AnalyticsMetaDataKey}.</p>
  * 
  * <p>
  * Example usage for including category option combos in the response. Note that
@@ -82,27 +85,21 @@ import org.hisp.dhis.i18n.I18nFormat;
  * </p>
  * 
  * <pre>
- * <code>
- * DataQueryParams params = new DataQueryParams();
- * 
- * params.setDataElement( dataElement );
- * params.enableCategoryOptionCombos();
- * params.setOrganisationUnits( organisationUnits );
- * params.setFilterPeriod( period );
+ * {@code
+ * DataQueryParams params = DataQueryParams.newBuilder();
+ *      .withDataElements( deA, deB )
+ *      .withOrganisationUnits( ouA, ouB )
+ *      .withFilterPeriods( peA, peB )
+ *      .build();
  * 
  * Map<String, Double> map = analyticsService.getAggregatedDataValueMapping( params );
- * </code>
+ * }
  * </pre>
  * 
  * @author Lars Helge Overland
  */
 public interface AnalyticsService
 {
-    final String NAMES_META_KEY = "names";
-    final String PAGER_META_KEY = "pager";
-    final String OU_HIERARCHY_KEY = "ouHierarchy";
-    final String OU_NAME_HIERARCHY_KEY = "ouNameHierarchy";
-
     /**
      * Generates aggregated values for the given query.
      * 
@@ -129,10 +126,9 @@ public interface AnalyticsService
      * analytical object.
      * 
      * @param object the analytical object.
-     * @param format the i18n format.
      * @return aggregated data as a Grid object.
      */
-    Grid getAggregatedDataValues( AnalyticalObject object, I18nFormat format );
+    Grid getAggregatedDataValues( AnalyticalObject object );
     
     /**
      * Generates a mapping where the key represents the dimensional item
@@ -150,8 +146,7 @@ public interface AnalyticsService
      * aggregated data value based on the given AnalyticalObject.
      * 
      * @param object the BaseAnalyticalObject.
-     * @param format the I18nFormat, can be null.
      * @return a mapping of dimensional items and aggregated data values.
      */
-    Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object, I18nFormat format );
+    Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object );
 }

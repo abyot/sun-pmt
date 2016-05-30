@@ -95,7 +95,9 @@ public interface AdxDataService
      * @param id the task id, can be null.
      * 
      * @return an ImportSummaries collection of ImportSummary for each DataValueSet.
+     * @throws AdxException for conflicts during export process.
      */
-    void writeDataValueSet( DataExportParams params, OutputStream out );
+    void writeDataValueSet( DataExportParams params, OutputStream out )
+        throws AdxException;
 
 }

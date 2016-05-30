@@ -37,10 +37,13 @@ import java.util.concurrent.Future;
 
 import org.hisp.dhis.analytics.AnalyticsTable;
 import org.hisp.dhis.analytics.AnalyticsTableColumn;
+import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Lars Helge Overland
@@ -118,61 +121,40 @@ public class JdbcCompletenessTargetTableManager
             {
                 break taskLoop;
             }
+
+            final String tableName = table.getTempTableName();
+
+            String sql = "insert into " + table.getTempTableName() + " (";
+
+            List<AnalyticsTableColumn> columns = getDimensionColumns( table );
             
-            populateTable( table, 
-                "1 as value", 
-                "cc.name = 'default'" );
+            validateDimensionColumns( columns );
+
+            for ( AnalyticsTableColumn col : columns )
+            {
+                sql += col.getName() + ",";
+            }
+
+            sql += "value) select ";
+
+            for ( AnalyticsTableColumn col : columns )
+            {
+                sql += col.getAlias() + ",";
+            }
             
-            populateTable( table, 
-                "(select count(*) from categoryoption_organisationunits coou " +
-                "inner join categories_categoryoptions cco on coou.categoryoptionid=cco.categoryoptionid " +
-                "inner join categorycombos_categories ccco on cco.categoryid=ccco.categoryid " +
-                "where ds.categorycomboid=ccco.categorycomboid " +
-                "and dss.sourceid=coou.organisationunitid) as value", 
-                "cc.name != 'default'" );
+            sql += 
+                "1 as value " +
+                "from _datasetorganisationunitcategory doc " +
+                "inner join dataset ds on doc.datasetid=ds.datasetid " +
+                "inner join organisationunit ou on doc.organisationunitid=ou.organisationunitid " +
+                "left join _orgunitstructure ous on doc.organisationunitid=ous.organisationunitid " +
+                "left join _organisationunitgroupsetstructure ougs on doc.organisationunitid=ougs.organisationunitid " +
+                "left join _categorystructure acs on doc.attributeoptioncomboid=acs.categoryoptioncomboid ";
+
+            populateAndLog( sql, tableName );
         }
         
         return null;
-    }
-    
-    /**
-     * Populates the given analytics table.
-     * 
-     * @param table the analytics table.
-     * @param valueClause the value part of the select clause.
-     * @param categoryComboWhereClause the category condition for the where clause.
-     */
-    private void populateTable( AnalyticsTable table, String valueClause, String categoryComboWhereClause )
-    {
-        final String tableName = table.getTempTableName();
-
-        String sql = "insert into " + table.getTempTableName() + " (";
-
-        List<AnalyticsTableColumn> columns = getDimensionColumns( table );
-        
-        validateDimensionColumns( columns );
-
-        for ( AnalyticsTableColumn col : columns )
-        {
-            sql += col.getName() + ",";
-        }
-
-        sql += "value) select ";
-
-        for ( AnalyticsTableColumn col : columns )
-        {
-            sql += col.getAlias() + ",";
-        }
-                    
-        sql += valueClause + " " +
-            "from datasetsource dss " +
-            "inner join dataset ds on dss.datasetid=ds.datasetid " +
-            "inner join categorycombo cc on ds.categorycomboid=cc.categorycomboid " +
-            "left join _orgunitstructure ous on dss.sourceid=ous.organisationunitid " +
-            "left join _organisationunitgroupsetstructure ougs on dss.sourceid=ougs.organisationunitid " +
-            "where " + categoryComboWhereClause;
-
-        populateAndLog( sql, tableName );
     }
     
     @Override
@@ -186,6 +168,9 @@ public class JdbcCompletenessTargetTableManager
         List<OrganisationUnitLevel> levels =
             organisationUnitService.getFilledOrganisationUnitLevels();
         
+        List<DataElementCategory> attributeCategories =
+            categoryService.getAttributeDataDimensionCategoriesNoAcl();
+        
         for ( OrganisationUnitGroupSet groupSet : orgUnitGroupSets )
         {
             columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "ougs." + quote( groupSet.getUid() ) ) );
@@ -196,10 +181,19 @@ public class JdbcCompletenessTargetTableManager
             String column = quote( PREFIX_ORGUNITLEVEL + level.getLevel() );
             columns.add( new AnalyticsTableColumn( column, "character(11)", "ous." + column ) );
         }
+        
+        for ( DataElementCategory category : attributeCategories )
+        {
+            columns.add( new AnalyticsTableColumn( quote( category.getUid() ), "character(11)", "acs." + quote( category.getUid() ) ) );
+        }
 
+        AnalyticsTableColumn ouOpening = new AnalyticsTableColumn( quote( "ouopeningdate"), "date", "ou.openingdate" );
+        AnalyticsTableColumn ouClosed = new AnalyticsTableColumn( quote( "oucloseddate"), "date", "ou.closeddate" );
+        AnalyticsTableColumn coStart = new AnalyticsTableColumn( quote( "costartdate" ), "date", "doc.costartdate" );
+        AnalyticsTableColumn coEnd = new AnalyticsTableColumn( quote( "coenddate" ), "date", "doc.coenddate" );
         AnalyticsTableColumn ds = new AnalyticsTableColumn( quote( "dx" ), "character(11) not null", "ds.uid" );
         
-        columns.add( ds );
+        columns.addAll( Lists.newArrayList( ouOpening, ouClosed, coStart, coEnd, ds ) );
         
         return columns;
     }

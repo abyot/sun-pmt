@@ -28,9 +28,9 @@ package org.hisp.dhis.commons.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Class for functions to be used in JEXL expression evaluation.
@@ -40,6 +40,8 @@ import java.util.Date;
 public class ExpressionFunctions
 {
     public static final String NAMESPACE = "d2";
+    
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern( "yyyy-MM-dd" );
     
     /**
      * Function which will return zero if the argument is a negative number.
@@ -85,7 +87,7 @@ public class ExpressionFunctions
     {
         if ( values == null || values.length == 0 )
         {
-            throw new IllegalArgumentException( "Argument is null or empty: " + values );
+            throw new IllegalArgumentException( "Argument is null or empty" );
         }
         
         int count = 0;
@@ -123,15 +125,11 @@ public class ExpressionFunctions
      * @return number of days between dates.
      * @throws ParseException if start or end could not be parsed.
      */
-    public static Integer daysBetween( String start, String end )
-        throws ParseException
+    public static Long daysBetween( String start, String end )
     {
-        SimpleDateFormat format = new SimpleDateFormat();
-        format.applyPattern( "yyyy-MM-dd" );
+        LocalDate st = LocalDate.parse( start, DATE_FORMAT );
+        LocalDate en = LocalDate.parse( end, DATE_FORMAT );
         
-        Date startDate = format.parse( start );
-        Date endDate = format.parse( end );
-        
-        return new Long( ( endDate.getTime() - startDate.getTime() ) / 86400000 ).intValue();
+        return ChronoUnit.DAYS.between( st, en );
     }
 }

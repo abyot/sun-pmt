@@ -58,18 +58,6 @@
 			</tr>
 		</tbody>
 		
-		<tbody id="anonymousProgramParser">
-			<tr>
-				<td><label for="programId">$i18n.getString( "program" ) <em title="$i18n.getString( 'required' )" class="required">*</em></label></td>
-				<td>
-					<select id="programId" name="programId" class="{validate:{required:true}}" disabled >
-					#foreach( $anonymousProgram in $anonymousProgramList )
-						<option value="$userGroup.id">$anonymousProgram.name</option>
-					#end
-					</select>
-				</td>
-			</tr>
-		</tbody>
 		
 		<tbody id="registrationParser">
 			<tr>
@@ -83,6 +71,24 @@
 				</td>
 			</tr>
 		</tbody>
+		
+		
+	<tbody id="eventRegistrationParser">
+			<tr>
+				<td><label for="selectedProgramId">$i18n.getString( "program" ) <em title="$i18n.getString( 'required' )" class="required">*</em></label></td>
+				<td>
+					<select id="selectedProgramIdWithoutRegistration" name="selectedProgramIdWithoutRegistration" class="{validate:{required:true}}" disabled >
+					#foreach( $program in $programWithoutRegistration )
+						<option value="$program.id">$program.name</option>
+					#end
+					</select>
+				</td>
+			</tr>
+		</tbody>
+		
+		
+		
+		
 		<tr><td>&nbsp;</td></tr>
 		<tr>
 			<td></td>

@@ -106,6 +106,7 @@ public class DefaultSchemaService
         add( new ProgramRuleSchemaDescriptor() ).
         add( new ProgramRuleVariableSchemaDescriptor() ).
         add( new ProgramSchemaDescriptor() ).
+        add( new ProgramDataElementSchemaDescriptor() ).
         add( new ProgramStageDataElementSchemaDescriptor() ).
         add( new ProgramStageSchemaDescriptor() ).
         add( new ProgramStageSectionSchemaDescriptor() ).

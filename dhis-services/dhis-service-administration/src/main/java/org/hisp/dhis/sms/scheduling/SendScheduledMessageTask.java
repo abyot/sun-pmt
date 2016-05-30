@@ -38,7 +38,7 @@ import java.util.List;
 import org.hisp.dhis.program.ProgramInstanceService;
 import org.hisp.dhis.program.ProgramStageInstanceService;
 import org.hisp.dhis.program.SchedulingProgramObject;
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.SmsServiceException;
 import org.hisp.dhis.sms.outbound.OutboundSms;
 import org.hisp.dhis.sms.outbound.OutboundSmsService;
@@ -54,6 +54,7 @@ import org.hisp.dhis.scheduling.TaskId;
  * 
  * @version SendScheduledMessageTask.java 12:57:53 PM Sep 10, 2012 $
  */
+
 public class SendScheduledMessageTask
     implements Runnable
 {
@@ -78,9 +79,9 @@ public class SendScheduledMessageTask
         this.outboundSmsService = outboundSmsService;
     }
 
-    private SmsSender smsSender;
+    private MessageSender smsSender;
 
-    public void setSmsSender( SmsSender smsSender )
+    public void setSmsSender( MessageSender smsSender )
     {
         this.smsSender = smsSender;
     }
@@ -154,7 +155,7 @@ public class SendScheduledMessageTask
 
             clock.logTime( "Sending messages in outbound completed" );
             notifier.notify( taskId, INFO, "Sending messages in outbound completed", true );
-            
+
             return;
         }
 
@@ -287,7 +288,7 @@ public class SendScheduledMessageTask
             {
                 outboundSms.setDate( new Date() );
                 outboundSms.setStatus( OutboundSmsStatus.SENT );
-                smsSender.sendMessage( outboundSms, null );
+                smsSender.sendMessage( null, outboundSms.getMessage(), outboundSms.getRecipients() );
             }
         }
     }

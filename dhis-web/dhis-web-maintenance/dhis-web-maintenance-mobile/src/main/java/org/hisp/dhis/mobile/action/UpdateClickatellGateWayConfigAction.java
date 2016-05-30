@@ -1,7 +1,5 @@
 package org.hisp.dhis.mobile.action;
 
-import org.hisp.dhis.common.CodeGenerator;
-
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -37,6 +35,8 @@ import org.hisp.dhis.sms.config.SmsConfigurationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.Action;
+
+import org.hisp.dhis.common.CodeGenerator;
 
 /**
  * @author Dang Duy Hieu
@@ -79,25 +79,11 @@ public class UpdateClickatellGateWayConfigAction
         this.username = username;
     }
     
-    private String urlTemplate;
-
-    public void setUrlTemplate( String url )
-    {
-        this.urlTemplate = url;
-    }
-    
     private String authToken;
 
     public void setAuthToken( String authToken )
     {
         this.authToken = authToken;
-    }
-
-    private String apiId;
-
-    public void setApiId( String apiId )
-    {
-        this.apiId = apiId;
     }
 
     private String gatewayType;
@@ -138,8 +124,6 @@ public class UpdateClickatellGateWayConfigAction
                 gatewayConfig.setName( name );
                 gatewayConfig.setPassword( password );
                 gatewayConfig.setUsername( username );
-                gatewayConfig.setApiId( apiId );
-                gatewayConfig.setUrlTemplate( urlTemplate );
                 gatewayConfig.setUid( CodeGenerator.generateCode( 10 ) );
                 gatewayConfig.setAuthToken( authToken );
 

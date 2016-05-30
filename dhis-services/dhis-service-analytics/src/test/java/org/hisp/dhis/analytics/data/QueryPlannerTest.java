@@ -34,6 +34,7 @@ import org.hisp.dhis.analytics.DataQueryGroups;
 import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.DimensionItem;
 import org.hisp.dhis.analytics.QueryPlanner;
+import org.hisp.dhis.analytics.QueryPlannerParams;
 import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.BaseDimensionalObject;
 import org.hisp.dhis.common.DimensionType;
@@ -67,11 +68,14 @@ import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.hisp.dhis.analytics.AnalyticsTableManager.ANALYTICS_TABLE_NAME;
 import static org.hisp.dhis.common.DimensionalObject.*;
@@ -229,10 +233,10 @@ public class QueryPlannerTest
         List<DimensionalItemObject> pesA = getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ) );
         List<DimensionalItemObject> pesB = getList( createPeriod( "200001" ), createPeriod( "200002" ) );
 
-        DataQueryParams paramsA = new DataQueryParams();
-        paramsA.setDataElements( desA );
-        paramsA.setOrganisationUnits( ousA );
-        paramsA.setPeriods( pesA );
+        DataQueryParams paramsA = DataQueryParams.newBuilder()
+            .withDataElements( desA )
+            .withOrganisationUnits( ousA )
+            .withPeriods( pesA ).build();
 
         DataQueryParams paramsB = paramsA.instance();
         paramsB.setOrganisationUnits( ousB );
@@ -426,10 +430,10 @@ public class QueryPlannerTest
     @Test
     public void testGetDimensionOptionPermutations()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ) ) ).build();
 
         List<List<DimensionItem>> permutations = params.getDimensionItemPermutations();
 
@@ -448,12 +452,12 @@ public class QueryPlannerTest
     @Test
     public void testGetDataPeriodAggregationPeriodMap()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC, deD ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
-        params.setPeriodType( QuarterlyPeriodType.NAME );
-        params.setDataPeriodType( new YearlyPeriodType() );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC, deD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) )
+            .withPeriodType( QuarterlyPeriodType.NAME )
+            .withDataPeriodType( new YearlyPeriodType() ).build();
 
         ListMap<DimensionalItemObject, DimensionalItemObject> map = params.getDataPeriodAggregationPeriodMap();
 
@@ -482,12 +486,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryA()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC, deD ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ), createPeriod( "2002Q3" ), createPeriod( "2002Q4" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC, deD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ), createPeriod( "2002Q3" ), createPeriod( "2002Q4" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 8, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -509,12 +516,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryB()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 6, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 6 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 6, queryGroups.getAllQueries().size() );
         assertEquals( 1, queryGroups.getSequentialQueries().size() );
@@ -550,12 +560,15 @@ public class QueryPlannerTest
         organisationUnitService.updateOrganisationUnit( ouD );
         organisationUnitService.updateOrganisationUnit( ouE );
 
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 6, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 6 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 5, queryGroups.getAllQueries().size() );
         assertEquals( 1, queryGroups.getSequentialQueries().size() );
@@ -576,13 +589,16 @@ public class QueryPlannerTest
     @Test
     public void planQueryD()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC ) );
-        params.setOrganisationUnits( getList( ouA ) );
-        params.setPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
-            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
+            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 4, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -604,12 +620,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryE()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC ) );
-        params.setPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
-            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC ) )
+            .withPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
+            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 4, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -630,12 +649,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryF()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
-            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "200001" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ),
+            createPeriod( "200005" ), createPeriod( "200006" ), createPeriod( "200007" ), createPeriod( "200008" ), createPeriod( "200009" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 3, queryGroups.getAllQueries().size() );
         assertEquals( 1, queryGroups.getSequentialQueries().size() );
@@ -655,11 +677,14 @@ public class QueryPlannerTest
     @Test( expected = IllegalQueryException.class )
     public void planQueryG()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) ).build();
 
-        queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        queryPlanner.planQuery( params, plannerParams );
     }
 
     /**
@@ -670,12 +695,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryH()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC, deD ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setFilterPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC, deD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withFilterPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 8, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -698,12 +726,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryI()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deE, deF ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deE, deF ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000" ), createPeriod( "200002" ), createPeriod( "200003" ), createPeriod( "200004" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 6, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 6 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 12, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -723,11 +754,14 @@ public class QueryPlannerTest
     @Test( expected = IllegalQueryException.class )
     public void planQueryJ()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deC, deD ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deC, deD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) ).build();
 
-        queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        queryPlanner.planQuery( params, plannerParams );
     }
 
     /**
@@ -738,12 +772,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryK()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setReportingRates( getList( rrA, rrB, rrC, rrD ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        params.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withReportingRates( getList( rrA, rrB, rrC, rrD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) ).build();
 
-        List<DataQueryParams> queries = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME ).getAllQueries();
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        List<DataQueryParams> queries = queryPlanner.planQuery( params, plannerParams ).getAllQueries();
 
         assertEquals( 4, queries.size() );
 
@@ -763,12 +800,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryL()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deE, deF ) );
-        params.setOrganisationUnits( getList( ouA, ouB, ouC, ouD ) );
-        params.setFilterPeriods( getList( createPeriod( "2000Q1" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deE, deF ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD ) )
+            .withFilterPeriods( getList( createPeriod( "2000Q1" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 8, queryGroups.getAllQueries().size() );
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
@@ -788,12 +828,15 @@ public class QueryPlannerTest
     @Test
     public void planQueryM()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB, deG, deH ) );
-        params.setOrganisationUnits( getList( ouA ) );
-        params.setPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB, deG, deH ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ) ) ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 4, queryGroups.getAllQueries().size() );
         assertEquals( 1, queryGroups.getSequentialQueries().size() );
@@ -806,7 +849,86 @@ public class QueryPlannerTest
             assertDimensionNameNotNull( query );
         }
     }
-    
+
+    /**
+     * Splits in 4 queries for each period to satisfy optimal for a total
+     * of 4 queries, because all queries have different periods.
+     */
+    @Test
+    public void planQueryStartEndDateQueryGrouperA()
+    {
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withPeriods( getList( createPeriod( "200101" ), createPeriod( "200102" ), createPeriod( "200103" ), createPeriod( "200104" ) ) ).build();
+
+        List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers = Lists.newArrayList();
+        queryGroupers.add( q -> queryPlanner.groupByStartEndDate( q ) );
+        
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).
+            withTableName( ANALYTICS_TABLE_NAME ).
+            withQueryGroupers( queryGroupers ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
+
+        List<DataQueryParams> queries = queryGroups.getAllQueries();
+        
+        assertEquals( 4, queries.size() );
+        assertEquals( 1, queryGroups.getSequentialQueries().size() );
+        assertEquals( 4, queryGroups.getLargestGroupSize() );
+        
+        for ( DataQueryParams query : queries )
+        {
+            assertNotNull( query.getStartDate() );
+            assertNotNull( query.getEndDate() );
+            assertDimensionNameNotNull( query );
+            
+            DimensionalObject periodDim = query.getDimension( PERIOD_DIM_ID );
+            
+            assertNotNull( periodDim.getDimensionName() );
+            assertTrue( periodDim.isFixed() );
+        }
+    }
+
+    /**
+     * Splits in 4 queries for each period to satisfy optimal for a total
+     * of 4 queries, because all queries have different periods.
+     */
+    @Test
+    public void planQueryStartEndDateQueryGrouperB()
+    {
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withFilterPeriods( getList( createPeriod( "200101" ), createPeriod( "200102" ), createPeriod( "200103" ), createPeriod( "200104" ) ) ).build();
+
+        List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers = Lists.newArrayList();
+        queryGroupers.add( q -> queryPlanner.groupByStartEndDate( q ) );
+        
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).
+            withTableName( ANALYTICS_TABLE_NAME ).
+            withQueryGroupers( queryGroupers ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
+
+        List<DataQueryParams> queries = queryGroups.getAllQueries();
+        
+        assertEquals( 2, queries.size() );
+        assertEquals( 1, queryGroups.getSequentialQueries().size() );
+        assertEquals( 2, queryGroups.getLargestGroupSize() );
+        
+        for ( DataQueryParams query : queries )
+        {
+            assertNotNull( query.getStartDate() );
+            assertNotNull( query.getEndDate() );
+            assertDimensionNameNotNull( query );
+            
+            assertNull( query.getFilter( PERIOD_DIM_ID ) );
+        }
+    }
+
     /**
      * Split on two data elements. Set aggregation type average and value type
      * integer on query. Convert aggregation type from data elements to average 
@@ -818,13 +940,16 @@ public class QueryPlannerTest
         DataElement deA = createDataElement( 'A', ValueType.INTEGER, AggregationType.SUM );
         DataElement deB = createDataElement( 'B', ValueType.INTEGER, AggregationType.COUNT );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB ) );
-        params.setOrganisationUnits( getList( ouA ) );
-        params.setPeriods( getList( createPeriod( "200101" ) ) );
-        params.setAggregationType( AggregationType.AVERAGE );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withPeriods( getList( createPeriod( "200101" ) ) )
+            .withAggregationType( AggregationType.AVERAGE ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 2, queryGroups.getAllQueries().size() );
         
@@ -846,13 +971,16 @@ public class QueryPlannerTest
         DataElement deA = createDataElement( 'A', ValueType.BOOLEAN, AggregationType.SUM );
         DataElement deB = createDataElement( 'B', ValueType.BOOLEAN, AggregationType.COUNT );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( getList( deA, deB ) );
-        params.setOrganisationUnits( getList( ouA ) );
-        params.setPeriods( getList( createPeriod( "200101" ) ) );
-        params.setAggregationType( AggregationType.AVERAGE );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA ) )
+            .withPeriods( getList( createPeriod( "200101" ) ) )
+            .withAggregationType( AggregationType.AVERAGE ).build();
 
-        DataQueryGroups queryGroups = queryPlanner.planQuery( params, 4, ANALYTICS_TABLE_NAME );
+        QueryPlannerParams plannerParams = QueryPlannerParams.newBuilder().
+            withOptimalQueries( 4 ).withTableName( ANALYTICS_TABLE_NAME ).build();
+        
+        DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
         assertEquals( 2, queryGroups.getAllQueries().size() );
         
@@ -866,10 +994,10 @@ public class QueryPlannerTest
     @Test
     public void validateSuccesA()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.getDimensions().add( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) );
-        params.getDimensions().add( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, getList( peA, peB ) ) );
-        params.getFilters().add( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, deB ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addDimension( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) )
+            .addDimension( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, getList( peA, peB ) ) )
+            .addDimension( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, deB ) ) ).build();
         
         queryPlanner.validate( params );
     }
@@ -877,10 +1005,10 @@ public class QueryPlannerTest
     @Test
     public void validateSuccesB()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.getDimensions().add( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, deB, pdeA, pdeB ) ) );
-        params.getFilters().add( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) );
-        params.getDimensions().add( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, getList( peA, peB ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addDimension( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, deB, pdeA, pdeB ) ) )
+            .addFilter( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) )
+            .addDimension( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, getList( peA, peB ) ) ).build();
         
         queryPlanner.validate( params );
     }
@@ -888,9 +1016,9 @@ public class QueryPlannerTest
     @Test( expected = IllegalQueryException.class )
     public void validateFailureA()
     {
-        DataQueryParams params = new DataQueryParams();
-        params.getDimensions().add( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) );
-        params.getFilters().add( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, inA ) ) );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addDimension( new BaseDimensionalObject( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB ) ) )
+            .addFilter( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, inA ) ) ).build();
         
         queryPlanner.validate( params );
     }

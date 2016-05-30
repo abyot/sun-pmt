@@ -36,12 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.Grid;
 import org.hisp.dhis.common.GridHeader;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.databrowser.DataBrowserGridService;
 import org.hisp.dhis.databrowser.MetaValue;
 import org.hisp.dhis.dataelement.DataElementGroup;
@@ -56,7 +54,6 @@ import org.hisp.dhis.oust.manager.SelectionTreeManager;
 import org.hisp.dhis.paging.ActionPagingSupport;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
-import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.util.SessionUtils;
 
 /**
@@ -353,7 +350,7 @@ public class DataBrowserAction
                 list.add( o );
             }
         }
-        Collections.sort( list, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( list );
 
         return list;
     }
@@ -415,16 +412,6 @@ public class DataBrowserAction
         // ---------------------------------------------------------------------
 
         boolean isZeroAdded = (showZeroCheckBox != null) && showZeroCheckBox.equals( TRUE );
-
-        // Check if the second selected date is later than the first
-        
-        if ( StringUtils.trimToNull( fromDate ) == null && StringUtils.trimToNull( toDate ) == null )
-        {
-            if ( DateUtils.checkDates( fromDate, toDate ) )
-            {
-                return ERROR;
-            }
-        }
 
         // If set, change the current selected unit
         

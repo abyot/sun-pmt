@@ -181,7 +181,7 @@ public class ProcessingSendSMSAction
 
         // Set<User> recipientsList = new HashSet<User>();
 
-        if ( sendTarget != null && sendTarget.equals( "phone" ) )
+        if ( "phone".equals( sendTarget ) )
         {
             ObjectMapper mapper = new ObjectMapper().setVisibility( PropertyAccessor.FIELD,
                 JsonAutoDetect.Visibility.ANY );
@@ -190,11 +190,6 @@ public class ProcessingSendSMSAction
 
             for ( String each : recipients )
             {
-                if ( !each.startsWith( "+" ) )
-                {
-                    each = "+" + each;
-                }
-
                 User user = new User();
                 user.setPhoneNumber( each );
                 recipientsList.add( user );
@@ -202,7 +197,7 @@ public class ProcessingSendSMSAction
             // message = messageSender.sendMessage( smsSubject, smsMessage,
             // currentUser, true, recipients, gatewayId );
         }
-        else if ( sendTarget.equals( "userGroup" ) )
+        else if ( "userGroup".equals( sendTarget ) )
         {
             UserGroup group = userGroupService.getUserGroup( userGroup );
 
@@ -222,7 +217,7 @@ public class ProcessingSendSMSAction
 
             recipientsList = new ArrayList<>( group.getMembers());
         }
-        else if ( sendTarget.equals( "user" ) )
+        else if ( "user".equals( sendTarget ) )
         {
             Collection<OrganisationUnit> units = selectionTreeManager.getReloadedSelectedOrganisationUnits();
 
@@ -244,7 +239,7 @@ public class ProcessingSendSMSAction
                 // currentUser, false, users, gatewayId );
             }
         }
-        else if ( sendTarget.equals( "unit" ) )
+        else if ( "unit".equals( sendTarget ) )
         {
             for ( OrganisationUnit unit : selectionTreeManager.getSelectedOrganisationUnits() )
             {

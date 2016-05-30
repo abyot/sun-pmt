@@ -20,6 +20,7 @@
     <property name="type" length="50">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.report.ReportType</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -40,6 +41,7 @@
     <property name="cacheStrategy" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.common.cache.CacheStrategy</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>

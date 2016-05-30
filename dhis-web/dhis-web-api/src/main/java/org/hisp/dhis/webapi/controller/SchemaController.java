@@ -41,6 +41,7 @@ import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
 import org.hisp.dhis.schema.Schemas;
 import org.hisp.dhis.schema.validation.SchemaValidator;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.service.LinkService;
 import org.hisp.dhis.webapi.service.WebMessageService;
@@ -66,6 +67,7 @@ import java.util.List;
  */
 @Controller
 @RequestMapping( value = "/schemas", method = RequestMethod.GET )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class SchemaController
 {
     @Autowired

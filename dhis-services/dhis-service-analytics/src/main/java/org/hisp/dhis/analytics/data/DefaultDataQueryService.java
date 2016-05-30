@@ -36,6 +36,7 @@ import static org.hisp.dhis.analytics.DataQueryParams.DISPLAY_NAME_LONGITUDE;
 import static org.hisp.dhis.analytics.DataQueryParams.DISPLAY_NAME_ORGUNIT;
 import static org.hisp.dhis.analytics.DataQueryParams.DISPLAY_NAME_PERIOD;
 import static org.hisp.dhis.analytics.DataQueryParams.KEY_DE_GROUP;
+import static org.hisp.dhis.analytics.DataQueryParams.KEY_IN_GROUP;
 import static org.hisp.dhis.common.DimensionalObject.ATTRIBUTEOPTIONCOMBO_DIM_ID;
 import static org.hisp.dhis.common.DimensionalObject.CATEGORYOPTIONCOMBO_DIM_ID;
 import static org.hisp.dhis.common.DimensionalObject.DATA_X_DIM_ID;
@@ -67,10 +68,11 @@ import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.DataQueryService;
 import org.hisp.dhis.calendar.Calendar;
 import org.hisp.dhis.common.*;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementGroup;
 import org.hisp.dhis.i18n.I18nFormat;
+import org.hisp.dhis.i18n.I18nManager;
+import org.hisp.dhis.indicator.IndicatorGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
@@ -102,6 +104,9 @@ public class DefaultDataQueryService
 
     @Autowired
     private CurrentUserService currentUserService;
+    
+    @Autowired
+    private I18nManager i18nManager;
 
     public void setCurrentUserService( CurrentUserService currentUserService )
     {
@@ -118,11 +123,9 @@ public class DefaultDataQueryService
         boolean hideEmptyRows, boolean showHierarchy, DisplayProperty displayProperty, IdentifiableProperty outputIdScheme, IdScheme inputIdScheme,
         String approvalLevel, Date relativePeriodDate, String userOrgUnit, I18nFormat format )
     {
-        DataQueryParams params = new DataQueryParams();
+        DataQueryParams.Builder params = DataQueryParams.newBuilder();
 
         inputIdScheme = ObjectUtils.firstNonNull( inputIdScheme, IdScheme.UID );
-
-        params.setIgnoreLimit( ignoreLimit );
 
         if ( dimensionParams != null && !dimensionParams.isEmpty() )
         {
@@ -131,34 +134,36 @@ public class DefaultDataQueryService
 
         if ( filterParams != null && !filterParams.isEmpty() )
         {
-            params.getFilters().addAll( getDimensionalObjects( filterParams, relativePeriodDate, userOrgUnit, format, inputIdScheme ) );
+            params.addFilters( getDimensionalObjects( filterParams, relativePeriodDate, userOrgUnit, format, inputIdScheme ) );
         }
 
         if ( measureCriteria != null && !measureCriteria.isEmpty() )
         {
-            params.setMeasureCriteria( DataQueryParams.getMeasureCriteriaFromParam( measureCriteria ) );
+            params.withMeasureCriteria( DataQueryParams.getMeasureCriteriaFromParam( measureCriteria ) );
         }
 
-        params.setAggregationType( aggregationType );
-        params.setSkipMeta( skipMeta );
-        params.setSkipData( skipData );
-        params.setSkipRounding( skipRounding );
-        params.setCompletedOnly( completedOnly );
-        params.setHierarchyMeta( hierarchyMeta );
-        params.setHideEmptyRows( hideEmptyRows );
-        params.setShowHierarchy( showHierarchy );
-        params.setDisplayProperty( displayProperty );
-        params.setOutputIdScheme( outputIdScheme );
-        params.setApprovalLevel( approvalLevel );
-
-        return params;
+        return params
+            .withAggregationType( aggregationType )
+            .withSkipMeta( skipMeta )
+            .withSkipData( skipData )
+            .withSkipRounding( skipRounding )
+            .withCompletedOnly( completedOnly )
+            .withIgnoreLimit( ignoreLimit )
+            .withHierarchyMeta( hierarchyMeta )
+            .withHideEmptyRows( hideEmptyRows )
+            .withShowHierarchy( showHierarchy )
+            .withDisplayProperty( displayProperty )
+            .withOutputIdScheme( outputIdScheme )
+            .withApprovalLevel( approvalLevel ).build();
     }
 
     @Override
-    public DataQueryParams getFromAnalyticalObject( AnalyticalObject object, I18nFormat format )
+    public DataQueryParams getFromAnalyticalObject( AnalyticalObject object )
     {
-        DataQueryParams params = new DataQueryParams();
-
+        DataQueryParams.Builder params = DataQueryParams.newBuilder();
+        
+        I18nFormat format = i18nManager.getI18nFormat();
+        
         IdScheme idScheme = IdScheme.UID;
 
         if ( object != null )
@@ -181,11 +186,11 @@ public class DefaultDataQueryService
 
             for ( DimensionalObject filter : object.getFilters() )
             {
-                params.getFilters().add( getDimension( filter.getDimension(), getDimensionalItemIds( filter.getItems() ), date, userOrgUnits, format, false, idScheme ) );
+                params.addFilter( getDimension( filter.getDimension(), getDimensionalItemIds( filter.getItems() ), date, userOrgUnits, format, false, idScheme ) );
             }
         }
 
-        return params;
+        return params.build();
     }
 
     @Override
@@ -232,6 +237,17 @@ public class DefaultDataQueryService
                     String groupUid = DimensionalObjectUtils.getUidFromGroupParam( uid );
 
                     DataElementGroup group = idObjectManager.getObject( DataElementGroup.class, inputIdScheme, groupUid );
+
+                    if ( group != null )
+                    {
+                        dataDimensionItems.addAll( group.getMembers() );
+                    }
+                }
+                else if ( uid.startsWith( KEY_IN_GROUP ) )
+                {
+                    String groupUid = DimensionalObjectUtils.getUidFromGroupParam( uid );
+
+                    IndicatorGroup group = idObjectManager.getObject( IndicatorGroup.class, inputIdScheme, groupUid );
 
                     if ( group != null )
                     {
@@ -405,12 +421,12 @@ public class DefaultDataQueryService
 
             if ( !levels.isEmpty() )
             {
-                orgUnits.addAll( sort( organisationUnitService.getOrganisationUnitsAtLevels( levels, ousList ), IdentifiableObjectNameComparator.INSTANCE ) );
+                orgUnits.addAll( sort( organisationUnitService.getOrganisationUnitsAtLevels( levels, ousList ) ) );
             }
 
             if ( !groups.isEmpty() )
             {
-                orgUnits.addAll( sort( organisationUnitService.getOrganisationUnits( groups, ousList ), IdentifiableObjectNameComparator.INSTANCE ) );
+                orgUnits.addAll( sort( organisationUnitService.getOrganisationUnits( groups, ousList ) ) );
             }
 
             // -----------------------------------------------------------------

@@ -71,4 +71,10 @@ public class DefaultTrackedEntityAttributeValueAuditService
     {
         return trackedEntityAttributeValueAuditStore.countTrackedEntityAttributeValueAudits( trackedEntityAttributes, trackedEntityInstances, auditType );
     }
+    
+    @Override
+    public void deleteTrackedEntityAttributeValueAudits( TrackedEntityInstance trackedEntityInstance )
+    {
+        trackedEntityAttributeValueAuditStore.deleteTrackedEntityAttributeValueAudits( trackedEntityInstance );
+    }
 }

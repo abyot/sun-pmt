@@ -172,16 +172,16 @@ public class UpdateValidationRuleAction
 
     private String skipTestExpression;
 
-    public void setSkipTestExpression( String rightSideExpression )
+    public void setSkipTestExpression( String skipTestExpression )
     {
-        this.rightSideExpression = rightSideExpression;
+        this.skipTestExpression = skipTestExpression;
     }
 
     private String skipTestDescription;
 
-    public void setSkipTestDescription( String rightSideDescription )
+    public void setSkipTestDescription( String skipTestDescription )
     {
-        this.rightSideDescription = rightSideDescription;
+        this.skipTestDescription = skipTestDescription;
     }
 
     private String periodTypeName;
@@ -221,7 +221,7 @@ public class UpdateValidationRuleAction
     {
         ValidationRule validationRule = validationRuleService.getValidationRule( id );
         Expression leftSide = validationRule.getLeftSide();
-        Expression rightSide = validationRule.getLeftSide();
+        Expression rightSide = validationRule.getRightSide();
         Expression skipTest = validationRule.getSampleSkipTest();
 
         validationRule.setName( StringUtils.trimToNull( name ) );

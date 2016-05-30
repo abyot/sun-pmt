@@ -119,13 +119,21 @@ public class ObjectBundleValidationReport
 
     public List<ObjectReport> getObjectReports( Class<?> klass )
     {
-        if ( !typeReportMap.containsKey( klass ) ) new ArrayList<>();
+        if ( !typeReportMap.containsKey( klass ) )
+        {
+            return new ArrayList<>();
+        }
+        
         return typeReportMap.get( klass ).getObjectReports();
     }
 
     public List<ErrorReport> getErrorReports( Class<?> klass )
     {
-        if ( !typeReportMap.containsKey( klass ) ) new ArrayList<>();
+        if ( !typeReportMap.containsKey( klass ) )
+        {
+            return new ArrayList<>();
+        }
+        
         return typeReportMap.get( klass ).getErrorReports().stream().collect( Collectors.toList() );
     }
 

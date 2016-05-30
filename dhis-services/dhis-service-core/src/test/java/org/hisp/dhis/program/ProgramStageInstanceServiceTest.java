@@ -175,14 +175,15 @@ public class ProgramStageInstanceServiceTest
         programA = createProgram( 'A', new HashSet<>(), organisationUnitA );
         programService.addProgram( programA );
 
-        stageA = new ProgramStage( "A", programA );
+        stageA = createProgramStage( 'A', 0 );
+        stageA.setProgram( programA );
         stageA.setSortOrder( 1 );
 
-        TrackedEntityInstanceReminder reminderA = new TrackedEntityInstanceReminder( "A", 0,
+        TrackedEntityInstanceReminder reminderA = createTrackedEntityInstanceReminder( 'A', 0,
             "Test program stage message template", TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE,
             TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, null, TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
 
-        TrackedEntityInstanceReminder reminderB = new TrackedEntityInstanceReminder( "B", 0,
+        TrackedEntityInstanceReminder reminderB = createTrackedEntityInstanceReminder( 'B', 0,
             "Test program stage message template", TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE,
             TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT,
             TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
@@ -196,7 +197,7 @@ public class ProgramStageInstanceServiceTest
 
         stageB = new ProgramStage( "B", programA );
         stageB.setSortOrder( 2 );
-        TrackedEntityInstanceReminder reminderC = new TrackedEntityInstanceReminder( "C", 0,
+        TrackedEntityInstanceReminder reminderC = createTrackedEntityInstanceReminder( 'C', 0,
             "Test program stage message template", TrackedEntityInstanceReminder.DUE_DATE_TO_COMPARE,
             TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT,
             TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );

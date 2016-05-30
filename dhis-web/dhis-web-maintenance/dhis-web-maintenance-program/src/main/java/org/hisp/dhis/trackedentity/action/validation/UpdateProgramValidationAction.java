@@ -30,7 +30,6 @@ package org.hisp.dhis.trackedentity.action.validation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.expression.Operator;
-import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramExpression;
 import org.hisp.dhis.program.ProgramValidation;
 import org.hisp.dhis.program.ProgramValidationService;
@@ -106,13 +105,6 @@ public class UpdateProgramValidationAction
     public void setRightSideDescription( String rightSideDescription )
     {
         this.rightSideDescription = rightSideDescription;
-    }
-
-    private Program program;
-
-    public Program getProgram()
-    {
-        return program;
     }
 
     private Integer programId;

@@ -30,15 +30,52 @@ package org.hisp.dhis.message;
 
 import java.util.Set;
 
+import org.hisp.dhis.program.message.DeliveryChannel;
 import org.hisp.dhis.user.User;
 
 public class MockMessageSender
     implements MessageSender
 {
     @Override
-    public String sendMessage( String subject, String text, String footer, User sender, Set<User> users, boolean forceSend )
+    public String sendMessage( String subject, String text, String footer, User sender, Set<User> users,
+        boolean forceSend )
     {
         // Do nothing
+        return null;
+    }
+
+    @Override
+    public boolean accept( Set<DeliveryChannel> channels )
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isServiceReady()
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public String sendMessage( String subject, String text, Set<String> recipient )
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String sendMessage( String subject, String text, String recipient )
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public DeliveryChannel getDeliveryChannel()
+    {
+        // TODO Auto-generated method stub
         return null;
     }
 }

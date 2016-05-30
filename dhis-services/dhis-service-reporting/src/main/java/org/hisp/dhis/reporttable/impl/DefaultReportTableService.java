@@ -40,6 +40,7 @@ import org.hisp.dhis.common.GenericAnalyticalObjectService;
 import org.hisp.dhis.common.GenericIdentifiableObjectStore;
 import org.hisp.dhis.common.Grid;
 import org.hisp.dhis.i18n.I18nFormat;
+import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.report.Report;
@@ -95,7 +96,14 @@ public class DefaultReportTableService
     {
         this.currentUserService = currentUserService;
     }
-
+    
+    private I18nManager i18nManager;
+    
+    public void setI18nManager( I18nManager i18nManager )
+    {
+        this.i18nManager = i18nManager;
+    }
+    
     // -------------------------------------------------------------------------
     // ReportTableService implementation
     // -------------------------------------------------------------------------
@@ -107,8 +115,10 @@ public class DefaultReportTableService
     }    
     
     @Override
-    public Grid getReportTableGrid( String uid, I18nFormat format, Date reportingPeriod, String organisationUnitUid )
+    public Grid getReportTableGrid( String uid, Date reportingPeriod, String organisationUnitUid )
     {
+        I18nFormat format = i18nManager.getI18nFormat();
+        
         ReportTable reportTable = getReportTable( uid );
                 
         OrganisationUnit organisationUnit = organisationUnitService.getOrganisationUnit( organisationUnitUid );
@@ -128,7 +138,7 @@ public class DefaultReportTableService
         
         reportTable.init( currentUserService.getCurrentUser(), reportingPeriod, organisationUnit, atLevels, inGroups, format );
 
-        Map<String, Object> valueMap = analyticsService.getAggregatedDataValueMapping( reportTable, format );
+        Map<String, Object> valueMap = analyticsService.getAggregatedDataValueMapping( reportTable );
 
         return reportTable.getGrid( new ListGrid(), valueMap, DisplayProperty.SHORTNAME, true );
     }

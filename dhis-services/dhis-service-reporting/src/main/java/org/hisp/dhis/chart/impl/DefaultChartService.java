@@ -796,11 +796,11 @@ public class DefaultChartService
         
         if ( chart.isAnalyticsType( AnalyticsType.AGGREGATE ) )
         {
-            valueMap = analyticsService.getAggregatedDataValueMapping( chart, chart.getFormat() );
+            valueMap = analyticsService.getAggregatedDataValueMapping( chart );
         }
         else if ( chart.isAnalyticsType( AnalyticsType.EVENT ) )
         {
-            Grid grid = eventAnalyticsService.getAggregatedEventData( chart, chart.getFormat() );
+            Grid grid = eventAnalyticsService.getAggregatedEventData( chart );
                         
             chart.setDataItemGrid( grid );
                         

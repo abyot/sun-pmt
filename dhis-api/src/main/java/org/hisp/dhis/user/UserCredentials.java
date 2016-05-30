@@ -774,6 +774,7 @@ public class UserCredentials
             restoreExpiry = userCredentials.getRestoreExpiry();
             selfRegistered = userCredentials.isSelfRegistered();
             disabled = userCredentials.isDisabled();
+            externalAuth = userCredentials.isExternalAuth();
 
             if ( mergeMode.isReplace() )
             {

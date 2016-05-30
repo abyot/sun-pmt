@@ -118,14 +118,14 @@ public class DefaultTrackedEntityAttributeValueService
     @Override
     public void addTrackedEntityAttributeValue( TrackedEntityAttributeValue attributeValue )
     {
-        if ( attributeValue.getAttribute().isConfidential() && !dhisConfigurationProvider.isEncryptionConfigured().isOk() )
-        {
-            throw new EncryptionOperationNotPossibleException( "Unable to encrypt data, encryption is not correctly configured" );
-        }
-        
         if ( attributeValue == null || attributeValue.getAttribute() == null || attributeValue.getAttribute().getValueType() == null )
         {
             throw new IllegalQueryException( "Attribute or type is null or empty" );
+        }
+
+        if ( attributeValue.getAttribute().isConfidentialBool() && !dhisConfigurationProvider.isEncryptionConfigured().isOk() )
+        {
+            throw new EncryptionOperationNotPossibleException( "Unable to encrypt data, encryption is not correctly configured" );
         }
         
         String result = dataValueIsValid( attributeValue.getValue(), attributeValue.getAttribute().getValueType() );
@@ -146,18 +146,18 @@ public class DefaultTrackedEntityAttributeValueService
     @Override
     public void updateTrackedEntityAttributeValue( TrackedEntityAttributeValue attributeValue )
     {
-        attributeValue.setAutoFields();
-
-        if ( StringUtils.isEmpty( attributeValue.getValue() ) )
+        if ( attributeValue != null && StringUtils.isEmpty( attributeValue.getValue() ) )
         {
             attributeValueStore.delete( attributeValue );
         }
         else
-        {            
+        {
             if ( attributeValue == null || attributeValue.getAttribute() == null || attributeValue.getAttribute().getValueType() == null )
             {
                 throw new IllegalQueryException( "Attribute or type is null or empty" );
             }
+            
+            attributeValue.setAutoFields();
             
             String result = dataValueIsValid( attributeValue.getValue(), attributeValue.getAttribute().getValueType() );
 
@@ -179,6 +179,13 @@ public class DefaultTrackedEntityAttributeValueService
         String searchText )
     {
         return attributeValueStore.searchByValue( attribute, searchText );
+    }
+    
+    @Override
+    public boolean exists( TrackedEntityAttribute attribute, String value )
+    {
+        List<TrackedEntityAttributeValue> values = attributeValueStore.get( attribute, value );
+        return values != null && values.size() > 0;
     }
 
     @Override

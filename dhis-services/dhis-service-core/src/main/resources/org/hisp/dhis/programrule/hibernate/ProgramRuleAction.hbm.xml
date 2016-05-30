@@ -21,6 +21,7 @@
     <property name="programRuleActionType" column="actiontype" not-null="true">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.programrule.ProgramRuleActionType</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>

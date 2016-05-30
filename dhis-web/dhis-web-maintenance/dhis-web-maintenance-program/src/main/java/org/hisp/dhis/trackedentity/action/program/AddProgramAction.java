@@ -402,7 +402,7 @@ public class AddProgramAction
             programStage.setProgram( program );
             programStage.setMinDaysFromStart( 0 );
             programStage.setAutoGenerateEvent( true );
-            programStage.setExcecutionDateLabel( REPORT_DATE_DESCRIPTION );
+            programStage.setExecutionDateLabel( REPORT_DATE_DESCRIPTION );
 
             programStageService.saveProgramStage( programStage );
         }

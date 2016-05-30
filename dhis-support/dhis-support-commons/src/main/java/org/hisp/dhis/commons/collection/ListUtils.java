@@ -336,17 +336,29 @@ public class ListUtils
     }
     
     /**
-     * Creates a copy of and sorts the given list.
+     * Sorts the given list according to its natural sort order and returns it.
      * 
      * @param <T> type.
      * @param list the list to sort.
-     * @param comparator the comparator to use when sorting.
      * @return a sorted list.
      */
-    public static <T> List<T> sort( List<T> list, Comparator<? super T> comparator )
+    public static <T extends Comparable<? super T>> List<T> sort( List<T> list ) 
     {
-        List<T> copy = new ArrayList<>( list );
-        Collections.sort( copy, comparator );
-        return copy;
+        Collections.sort( list );
+        return list;
+    }
+
+    /**
+     * Sorts the given list using the given comparator and returns it.
+     * 
+     * @param <T> type.
+     * @param list the list to sort.
+     * @param comparator the comparator.
+     * @return a sorted list.
+     */
+    public static <T> List<T> sort( List<T> list, Comparator<? super T> comparator ) 
+    {
+        Collections.sort( list, comparator );
+        return list;
     }
 }

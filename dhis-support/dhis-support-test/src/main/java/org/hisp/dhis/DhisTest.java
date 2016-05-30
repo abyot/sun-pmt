@@ -28,8 +28,6 @@ package org.hisp.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.lang.reflect.Method;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hisp.dhis.dbms.DbmsManager;
@@ -39,20 +37,22 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.orm.hibernate4.SessionFactoryUtils;
-import org.springframework.orm.hibernate4.SessionHolder;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
+import org.springframework.orm.hibernate5.SessionHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.lang.reflect.Method;
+
 /**
  * TODO remove this class and its usage, too slow.
- * 
+ *
  * @author Lars Helge Overland
  * @version $Id$
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath*:/META-INF/dhis/beans.xml"})
+@RunWith( SpringJUnit4ClassRunner.class )
+@ContextConfiguration( locations = { "classpath*:/META-INF/dhis/beans.xml" } )
 public abstract class DhisTest
     extends DhisConvenienceTest implements ApplicationContextAware
 {
@@ -148,9 +148,9 @@ public abstract class DhisTest
         {
             Object object = context.getBean( id );
 
-            Method method = object.getClass().getMethod( "executeForTesting", new Class[ 0 ] );
+            Method method = object.getClass().getMethod( "executeForTesting", new Class[0] );
 
-            method.invoke( object, new Object[ 0 ] );
+            method.invoke( object, new Object[0] );
         }
     }
 

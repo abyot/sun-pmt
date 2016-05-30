@@ -140,6 +140,7 @@
     <property name="aggregationType" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.analytics.AggregationType</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -149,6 +150,7 @@
     <property name="digitGroupSeparator" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.common.DigitGroupSeparator</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -156,6 +158,7 @@
     <property name="displayDensity" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.common.DisplayDensity</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -163,6 +166,7 @@
     <property name="fontSize" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.common.FontSize</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>

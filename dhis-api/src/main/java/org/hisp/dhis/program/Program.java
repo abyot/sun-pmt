@@ -71,8 +71,6 @@ public class Program
     extends BaseNameableObject
     implements VersionedObject
 {
-    private String description;
-
     private int version;
 
     private String enrollmentDateLabel;
@@ -156,9 +154,8 @@ public class Program
 
     public Program()
     {
-
     }
-
+    
     public Program( String name, String description )
     {
         this.name = name;
@@ -256,7 +253,7 @@ public class Program
      */
     public List<TrackedEntityAttribute> getNonConfidentialTrackedEntityAttributes()
     {
-        return getTrackedEntityAttributes().stream().filter( a -> !a.isConfidential() ).collect( Collectors.toList() );
+        return getTrackedEntityAttributes().stream().filter( a -> !a.isConfidentialBool() ).collect( Collectors.toList() );
     }
 
     /**
@@ -265,7 +262,7 @@ public class Program
      */
     public List<TrackedEntityAttribute> getNonConfidentialTrackedEntityAttributesWithLegendSet()
     {
-        return getTrackedEntityAttributes().stream().filter( a -> !a.isConfidential() && a.hasLegendSet() && a.isNumericType() ).collect( Collectors.toList() );
+        return getTrackedEntityAttributes().stream().filter( a -> !a.isConfidentialBool() && a.hasLegendSet() && a.isNumericType() ).collect( Collectors.toList() );
     }
 
     public ProgramStage getProgramStageByStage( int stage )
@@ -304,16 +301,6 @@ public class Program
     // -------------------------------------------------------------------------
     // Getters and setters
     // -------------------------------------------------------------------------
-
-    @Override
-    @JsonProperty
-    @JsonView( { DetailedView.class, ExportView.class } )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    @PropertyRange( min = 2 )
-    public String getDescription()
-    {
-        return description;
-    }
 
     @Override
     @JsonProperty
@@ -739,7 +726,6 @@ public class Program
 
             if ( mergeMode.isReplace() )
             {
-                description = program.getDescription();
                 enrollmentDateLabel = program.getEnrollmentDateLabel();
                 incidentDateLabel = program.getIncidentDateLabel();
                 programType = program.getProgramType();
@@ -758,7 +744,6 @@ public class Program
             }
             else if ( mergeMode.isMerge() )
             {
-                description = program.getDescription() == null ? description : program.getDescription();
                 enrollmentDateLabel = program.getEnrollmentDateLabel() == null ? enrollmentDateLabel : program.getEnrollmentDateLabel();
                 incidentDateLabel = program.getIncidentDateLabel() == null ? incidentDateLabel : program.getIncidentDateLabel();
                 programType = program.getProgramType() == null ? programType : program.getProgramType();

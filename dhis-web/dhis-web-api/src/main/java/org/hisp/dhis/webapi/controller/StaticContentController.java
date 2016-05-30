@@ -28,23 +28,18 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
+import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.dxf2.webmessage.WebMessage;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
-import org.hisp.dhis.dxf2.common.Status;
 import org.hisp.dhis.external.location.LocationManager;
 import org.hisp.dhis.external.location.LocationManagerException;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.StyleManager;
 import org.hisp.dhis.setting.SystemSettingManager;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,10 +47,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.ImmutableMap;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Serves and uploads custom images for the logo on the front page (logo_front)
@@ -65,6 +69,7 @@ import com.google.common.collect.ImmutableMap;
  */
 @Controller
 @RequestMapping( "/staticContent" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class StaticContentController
 {
     @Autowired
@@ -125,7 +130,7 @@ public class StaticContentController
             catch ( LocationManagerException e )
             {
                 throw new WebMessageException(
-                    WebMessageUtils.notFound( "The requested file could not be found." ));
+                    WebMessageUtils.notFound( "The requested file could not be found." ) );
             }
             catch ( IOException e )
             {
@@ -143,7 +148,7 @@ public class StaticContentController
     /**
      * Uploads PNG images based on a key. Only accepts PNG and white listed keys.
      *
-     * @param key the key.
+     * @param key  the key.
      * @param file the image file.
      */
     @PreAuthorize( "hasRole('ALL') or hasRole('F_SYSTEM_SETTING')" )
@@ -160,16 +165,16 @@ public class StaticContentController
         }
 
         // Only PNG is accepted at the current time
-        
+
         MimeType mimeType = MimeTypeUtils.parseMimeType( file.getContentType() );
 
-        if( !mimeType.isCompatibleWith( MimeTypeUtils.IMAGE_PNG ))
+        if ( !mimeType.isCompatibleWith( MimeTypeUtils.IMAGE_PNG ) )
         {
             throw new WebMessageException( new WebMessage( Status.WARNING, HttpStatus.UNSUPPORTED_MEDIA_TYPE ) );
         }
 
         // Only keys in the white list are accepted at the current time
-        
+
         if ( !KEY_WHITELIST_MAP.containsKey( key ) )
         {
             throw new WebMessageException(
@@ -182,7 +187,7 @@ public class StaticContentController
         {
             out = locationManager.getFileForWriting( key + ".png", "static" );
         }
-        catch( LocationManagerException e)
+        catch ( LocationManagerException e )
         {
             throw new WebMessageException( WebMessageUtils.error( e.getMessage() ) );
         }
@@ -191,7 +196,7 @@ public class StaticContentController
         {
             file.transferTo( out );
         }
-        catch( IOException e)
+        catch ( IOException e )
         {
             throw new WebMessageException( WebMessageUtils.error( "Could not save file." ) );
         }
@@ -205,7 +210,7 @@ public class StaticContentController
      */
     private String getDefaultLogoUrl( HttpServletRequest request, String key )
     {
-        String relativeUrlToImage = request.getContextPath();        
+        String relativeUrlToImage = ContextUtils.getContextPath( request );
 
         if ( key.equals( LOGO_BANNER ) )
         {

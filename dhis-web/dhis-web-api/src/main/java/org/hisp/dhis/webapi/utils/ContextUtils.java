@@ -140,6 +140,11 @@ public class ContextUtils
             response.setHeader( HEADER_CONTENT_DISPOSITION, type + "; filename=\"" + filename + "\"" );
         }
     }
+    
+    public static void setCacheControl( HttpServletResponse response, CacheControl value )
+    {
+        response.setHeader( HEADER_CACHE_CONTROL, value.getHeaderValue() );
+    }
 
     public static void okResponse( HttpServletResponse response, String message ) //TODO remove message
     {
@@ -359,7 +364,7 @@ public class ContextUtils
      * @return whether the given requests indicates that it accepts a compressed
      * response.
      */
-    public static boolean isAcceptGzip( HttpServletRequest request )
+    public static boolean isAcceptCsvGzip( HttpServletRequest request )
     {
         return request != null && ((request.getPathInfo() != null && request.getPathInfo().endsWith( ".gz" ))
             || (request.getHeader( "Accept" ) != null && request.getHeader( "Accept" ).contains( "application/csv+gzip" )));

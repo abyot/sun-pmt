@@ -78,6 +78,12 @@ public class MessageConversation
     @Scanned
     private List<Message> messages = new ArrayList<>();
 
+    private int messageCount;
+
+    private MessageConversationPriority priority;
+
+    private MessageConversationStatus status;
+
     // --------------------------------------------------------------------------
     // Transient fields
     // --------------------------------------------------------------------------
@@ -85,16 +91,14 @@ public class MessageConversation
     private transient boolean read;
 
     private transient boolean followUp;
-    
+
     private transient String userSurname;
-    
+
     private transient String userFirstname;
 
     private transient String lastSenderSurname;
 
     private transient String lastSenderFirstname;
-
-    private transient int messageCount;
 
     // --------------------------------------------------------------------------
     // Constructors
@@ -102,6 +106,8 @@ public class MessageConversation
 
     public MessageConversation()
     {
+        this.priority = MessageConversationPriority.NONE;
+        this.status = MessageConversationStatus.NONE;
     }
 
     public MessageConversation( String subject, User lastSender )
@@ -109,6 +115,8 @@ public class MessageConversation
         this.subject = subject;
         this.lastSender = lastSender;
         this.lastMessage = new Date();
+        this.priority = MessageConversationPriority.NONE;
+        this.status = MessageConversationStatus.NONE;
     }
 
     // --------------------------------------------------------------------------
@@ -145,6 +153,10 @@ public class MessageConversation
         }
 
         this.messages.add( message );
+        if ( !message.isInternal() )
+        {
+            setMessageCount( getMessageCount() + 1 );
+        }
     }
 
     public boolean toggleFollowUp( User user )
@@ -226,7 +238,9 @@ public class MessageConversation
     {
         for ( UserMessage userMessage : userMessages )
         {
-            if ( userMessage.getUser() != null && !userMessage.getUser().equals( sender ) )
+            User user = userMessage.getUser();
+            if ( user != null && !user.equals( sender ) && (!message.isInternal() ||
+                (message.isInternal() && (user.isAuthorized( "F_MANAGE_TICKETS" ) || user.isAuthorized( "ALL" )))) )
             {
                 userMessage.setRead( false );
             }
@@ -271,13 +285,14 @@ public class MessageConversation
     public void removeAllMessages()
     {
         messages.clear();
+        setMessageCount( 0 );
     }
 
     public void removeAllUserMessages()
     {
         userMessages.clear();
     }
-    
+
     public String getSenderDisplayName()
     {
         String userDisplayName = getFullNameNullSafe( userFirstname, userSurname );
@@ -502,8 +517,10 @@ public class MessageConversation
             else if ( mergeMode.isMerge() )
             {
                 subject = messageConversation.getSubject() == null ? subject : messageConversation.getSubject();
-                lastSender = messageConversation.getLastSender() == null ? lastSender : messageConversation.getLastSender();
-                lastMessage = messageConversation.getLastMessage() == null ? lastMessage : messageConversation.getLastMessage();
+                lastSender =
+                    messageConversation.getLastSender() == null ? lastSender : messageConversation.getLastSender();
+                lastMessage =
+                    messageConversation.getLastMessage() == null ? lastMessage : messageConversation.getLastMessage();
             }
 
             removeAllUserMessages();
@@ -521,6 +538,30 @@ public class MessageConversation
     private String getFullNameNullSafe( String firstName, String surname )
     {
         return StringUtils.defaultString( firstName ) +
-            ( StringUtils.isBlank( firstName ) ? StringUtils.EMPTY : " " ) + StringUtils.defaultString( surname );
+            (StringUtils.isBlank( firstName ) ? StringUtils.EMPTY : " ") + StringUtils.defaultString( surname );
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public MessageConversationPriority getPriority()
+    {
+        return priority;
+    }
+
+    public void setPriority( MessageConversationPriority messagePriority )
+    {
+        this.priority = messagePriority;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public MessageConversationStatus getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus( MessageConversationStatus messageConversationStatus )
+    {
+        this.status = messageConversationStatus;
     }
 }

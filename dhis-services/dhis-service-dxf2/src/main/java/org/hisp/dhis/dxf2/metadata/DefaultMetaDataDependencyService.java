@@ -218,8 +218,7 @@ public class DefaultMetaDataDependencyService
     private List<IdentifiableObject> computeAllDependencies( IdentifiableObject identifiableObject )
     {
         List<IdentifiableObject> finalDependencies = new ArrayList<>();
-
-        List<IdentifiableObject> dependencies = getDependencies( identifiableObject );
+        Set<IdentifiableObject> dependencies = new HashSet<>( getDependencies( identifiableObject ) );
 
         if ( dependencies.isEmpty() )
         {

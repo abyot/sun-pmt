@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:aop="http://www.springframework.org/schema/aop"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
-    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd">
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd">
 
   <!-- DataStatistics -->
 
@@ -29,6 +29,7 @@
     <property name="reportStore" ref="org.hisp.dhis.report.ReportStore" />
     <property name="organisationUnitService" ref="org.hisp.dhis.organisationunit.OrganisationUnitService" />
     <property name="currentUserService" ref="org.hisp.dhis.user.CurrentUserService" />
+    <property name="i18nManager" ref="org.hisp.dhis.i18n.I18nManager" />
   </bean>
 
   <!-- Report -->
@@ -39,6 +40,7 @@
     <property name="constantService" ref="org.hisp.dhis.constant.ConstantService" />
     <property name="organisationUnitService" ref="org.hisp.dhis.organisationunit.OrganisationUnitService" />
     <property name="periodService" ref="org.hisp.dhis.period.PeriodService" />
+    <property name="i18nManager" ref="org.hisp.dhis.i18n.I18nManager" />
     <property name="dataSource" ref="dataSource" />
   </bean>
 

@@ -171,7 +171,7 @@ public class StAXNodeSerializer extends AbstractNodeSerializer
     @Override
     protected void startWriteCollectionNode( CollectionNode collectionNode ) throws Exception
     {
-        if ( collectionNode.isWrapping() )
+        if ( collectionNode.isWrapping() && !collectionNode.getChildren().isEmpty() )
         {
             writeStartElement( collectionNode );
         }
@@ -180,7 +180,7 @@ public class StAXNodeSerializer extends AbstractNodeSerializer
     @Override
     protected void endWriteCollectionNode( CollectionNode collectionNode ) throws Exception
     {
-        if ( collectionNode.isWrapping() )
+        if ( collectionNode.isWrapping() && !collectionNode.getChildren().isEmpty() )
         {
             writer.writeEndElement();
         }

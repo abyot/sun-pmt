@@ -28,10 +28,6 @@ package org.hisp.dhis.validation.hibernate;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.common.hibernate.HibernateIdentifiableObjectStore;
 import org.hisp.dhis.dataelement.DataElement;
@@ -39,6 +35,10 @@ import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.validation.ValidationRule;
 import org.hisp.dhis.validation.ValidationRuleStore;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Chau Thu Tran
@@ -73,7 +73,7 @@ public class HibernateValidationRuleStore
 
         return super.save( validationRule );
     }
-    
+
     @Override
     public void update( ValidationRule validationRule )
     {
@@ -85,21 +85,21 @@ public class HibernateValidationRuleStore
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     public List<ValidationRule> getValidationRulesByDataElements( Collection<DataElement> dataElements )
     {
         List<ValidationRule> validationRules = new ArrayList<>();
-        
+
         Collection<Integer> ids = IdentifiableObjectUtils.getIdentifiers( dataElements );
-        
+
         String hql = "select distinct v from ValidationRule v join v.leftSide ls join ls.dataElementsInExpression lsd where lsd.id in (:ids)";
-        
-        validationRules.addAll( sessionFactory.getCurrentSession().createQuery( hql ).setParameterList( "ids", ids ).list() );
-        
+
+        validationRules.addAll( getSession().createQuery( hql ).setParameterList( "ids", ids ).list() );
+
         hql = "select distinct v from ValidationRule v join v.rightSide rs join rs.dataElementsInExpression rsd where rsd.id in (:ids)";
 
         validationRules.addAll( getQuery( hql ).setParameterList( "ids", ids ).list() );
-        
+
         return validationRules;
     }
 }

@@ -28,7 +28,10 @@ package org.hisp.dhis.attribute;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.attribute.exception.MissingMandatoryAttributeValueException;
 import org.hisp.dhis.attribute.exception.NonUniqueAttributeValueException;
 import org.hisp.dhis.common.IdentifiableObject;
@@ -38,8 +41,8 @@ import org.hisp.dhis.feedback.ErrorReport;
 import org.hisp.dhis.i18n.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -353,6 +356,7 @@ public class DefaultAttributeService
             .collect( Collectors.toMap( av -> av.getAttribute().getUid(), av -> av ) );
 
         Iterator<AttributeValue> iterator = object.getAttributeValues().iterator();
+
         List<Attribute> mandatoryAttributes = getMandatoryAttributes( object.getClass() );
 
         while ( iterator.hasNext() )
@@ -405,25 +409,33 @@ public class DefaultAttributeService
     // Helpers
     //--------------------------------------------------------------------------------------------------
 
-    private Set<AttributeValue> getJsonAttributeValues( List<String> jsonAttributeValues )
+    private Set<AttributeValue> getJsonAttributeValues( List<String> jsonAttributeValues ) throws IOException
     {
         Set<AttributeValue> attributeValues = new HashSet<>();
 
+        ObjectMapper mapper = new ObjectMapper();
+
         for ( String jsonValue : jsonAttributeValues )
         {
-            JSONObject json = JSONObject.fromObject( jsonValue );
-            Integer id = json.getInt( "id" );
-            String value = json.getString( "value" );
+            JsonNode node = mapper.readValue( jsonValue, JsonNode.class );
 
-            Attribute attribute = getAttribute( id );
+            JsonNode nId = node.get( "id" );
+            JsonNode nValue = node.get( "value" );
 
-            if ( attribute == null || StringUtils.isEmpty( value ) )
+            if ( nId == null || nValue == null  || StringUtils.isEmpty( nValue.asText() ) )
             {
                 continue;
             }
 
-            AttributeValue attributeValue = new AttributeValue( value, attribute );
-            attributeValue.setId( id );
+            Attribute attribute = getAttribute( nId.asInt() );
+
+            if ( attribute == null )
+            {
+                continue;
+            }
+
+            AttributeValue attributeValue = new AttributeValue( nValue.asText(), attribute );
+            attributeValue.setId( nId.asInt());
 
             attributeValues.add( attributeValue );
         }

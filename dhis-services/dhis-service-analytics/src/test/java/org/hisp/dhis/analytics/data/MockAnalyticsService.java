@@ -36,7 +36,6 @@ import org.hisp.dhis.analytics.AnalyticsService;
 import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.common.AnalyticalObject;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.i18n.I18nFormat;
 
 /**
  * Configurable mock implementation of AnalyticsService for testing purposes.
@@ -64,7 +63,7 @@ public class MockAnalyticsService
     }
 
     @Override
-    public Grid getAggregatedDataValues( AnalyticalObject object, I18nFormat format )
+    public Grid getAggregatedDataValues( AnalyticalObject object )
     {
         throw new NotImplementedException( "" );
     }
@@ -76,7 +75,7 @@ public class MockAnalyticsService
     }
 
     @Override
-    public Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object, I18nFormat format )
+    public Map<String, Object> getAggregatedDataValueMapping( AnalyticalObject object )
     {
         return valueMap;
     }

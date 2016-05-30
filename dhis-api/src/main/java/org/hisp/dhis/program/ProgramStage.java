@@ -83,7 +83,7 @@ public class ProgramStage
 
     private Integer standardInterval;
 
-    private String excecutionDateLabel;
+    private String executionDateLabel;
 
     @Scanned
     private Set<TrackedEntityInstanceReminder> reminders = new HashSet<>();
@@ -336,14 +336,14 @@ public class ProgramStage
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     @PropertyRange( min = 2 )
-    public String getExcecutionDateLabel()
+    public String getExecutionDateLabel()
     {
-        return excecutionDateLabel;
+        return executionDateLabel;
     }
 
-    public void setExcecutionDateLabel( String excecutionDateLabel )
+    public void setExecutionDateLabel( String executionDateLabel )
     {
-        this.excecutionDateLabel = excecutionDateLabel;
+        this.executionDateLabel = executionDateLabel;
     }
 
     @JsonProperty
@@ -520,7 +520,7 @@ public class ProgramStage
                 program = programStage.getProgram();
                 dataEntryForm = programStage.getDataEntryForm();
                 standardInterval = programStage.getStandardInterval();
-                excecutionDateLabel = programStage.getExcecutionDateLabel();
+                executionDateLabel = programStage.getExecutionDateLabel();
                 validCompleteOnly = programStage.getValidCompleteOnly();
                 displayGenerateEventBox = programStage.getDisplayGenerateEventBox();
                 captureCoordinates = programStage.getCaptureCoordinates();
@@ -541,8 +541,8 @@ public class ProgramStage
                     .getDataEntryForm();
                 standardInterval = programStage.getStandardInterval() == null ? standardInterval : programStage
                     .getStandardInterval();
-                excecutionDateLabel = programStage.getExcecutionDateLabel() == null ? excecutionDateLabel
-                    : programStage.getExcecutionDateLabel();
+                executionDateLabel = programStage.getExecutionDateLabel() == null ? executionDateLabel
+                    : programStage.getExecutionDateLabel();
                 validCompleteOnly = programStage.getValidCompleteOnly() == null ? validCompleteOnly : programStage
                     .getValidCompleteOnly();
                 displayGenerateEventBox = programStage.getDisplayGenerateEventBox() == null ? displayGenerateEventBox

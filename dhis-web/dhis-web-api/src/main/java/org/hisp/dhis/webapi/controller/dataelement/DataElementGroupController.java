@@ -29,9 +29,10 @@ package org.hisp.dhis.webapi.controller.dataelement;
  */
 
 import com.google.common.collect.Lists;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.Pager;
 import org.hisp.dhis.common.PagerUtils;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataelement.DataElementGroup;
 import org.hisp.dhis.dataelement.DataElementOperand;
@@ -45,7 +46,6 @@ import org.hisp.dhis.webapi.webdomain.WebOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -86,9 +86,9 @@ public class DataElementGroupController
         WebMetadata metadata = new WebMetadata();
         List<DataElementOperand> dataElementOperands = Lists.newArrayList( dataElementCategoryService.getOperands( dataElementGroups.get( 0 ).getMembers() ) );
 
-        Collections.sort( dataElementOperands, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataElementOperands );
 
-        Collections.sort( dataElementOperands, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( dataElementOperands );
 
         metadata.setDataElementOperands( dataElementOperands );
 

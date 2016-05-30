@@ -158,4 +158,10 @@ public interface DimensionalObject
      * Persistent property.
      */
     boolean isDataDimension();
+    
+    /**
+     * Indicates whether this dimension is fixed, meaning that the name of the
+     * dimension will be returned as is for all dimension items in the response.
+     */
+    boolean isFixed();
 }

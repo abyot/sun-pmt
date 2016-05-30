@@ -41,7 +41,6 @@ import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.annotation.Scanned;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
@@ -198,7 +197,7 @@ public class User
     {
         List<OrganisationUnit> sortedOrgUnits = new ArrayList<>( organisationUnits );
 
-        Collections.sort( sortedOrgUnits, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( sortedOrgUnits );
 
         return sortedOrgUnits;
     }

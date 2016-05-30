@@ -819,7 +819,6 @@
       <param name="page">/dhis-web-maintenance-program/programIndicator.vm</param>
       <param name="menu">/dhis-web-maintenance-program/menu.vm</param>
       <param name="javascripts">javascript/programIndicator.js</param>
-      <param name="requiredAuthorities">F_PROGRAM_INDICATOR_MANAGEMENT</param>
     </action>
 
     <action name="getProgramIndicator"
@@ -835,14 +834,14 @@
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-program/addProgramIndicator.vm</param>
       <param name="javascripts">javascript/programIndicator.js</param>
-      <param name="requiredAuthorities">F_ADD_PROGRAM_INDICATOR</param>
+      <param name="anyAuthorities">F_PROGRAM_INDICATOR_PUBLIC_ADD, F_PROGRAM_INDICATOR_PRIVATE_ADD</param>
     </action>
 
     <action name="addProgramIndicator"
       class="org.hisp.dhis.trackedentity.action.programindicator.AddProgramIndicatorAction">
       <result name="success" type="redirect">programIndicator.action?programId=${programId}
       </result>
-      <param name="requiredAuthorities">F_ADD_PROGRAM_INDICATOR</param>
+      <param name="anyAuthorities">F_PROGRAM_INDICATOR_PUBLIC_ADD, F_PROGRAM_INDICATOR_PRIVATE_ADD</param>
     </action>
 
     <action name="showUpdateProgramIndicator"
@@ -850,14 +849,14 @@
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-program/updateProgramIndicator.vm</param>
       <param name="javascripts">javascript/programIndicator.js</param>
-      <param name="requiredAuthorities">F_ADD_PROGRAM_INDICATOR</param>
+      <param name="anyAuthorities">F_PROGRAM_INDICATOR_PUBLIC_ADD, F_PROGRAM_INDICATOR_PRIVATE_ADD</param>
     </action>
 
     <action name="updateProgramIndicator"
       class="org.hisp.dhis.trackedentity.action.programindicator.UpdateProgramIndicatorAction">
       <result name="success" type="redirect">programIndicator.action?programId=${programId}
       </result>
-      <param name="requiredAuthorities">F_ADD_PROGRAM_INDICATOR</param>
+      <param name="anyAuthorities">F_PROGRAM_INDICATOR_PUBLIC_ADD, F_PROGRAM_INDICATOR_PRIVATE_ADD</param>
     </action>
 
     <action name="removeProgramIndicator"
@@ -865,7 +864,7 @@
       <result name="success" type="velocity-json">
         /dhis-web-commons/ajax/jsonResponseSuccess.vm
       </result>
-      <param name="requiredAuthorities">F_ADD_PROGRAM_INDICATOR</param>
+      <param name="requiredAuthorities">F_PROGRAM_INDICATOR_DELETE</param>
     </action>
 
     <action name="validateProgramIndicator"
@@ -1071,10 +1070,10 @@
         /dhis-web-commons/ajax/jsonResponseError.vm
       </result>
     </action>
-    
-    <!-- Program Rule -->    
-    
-     <action name="programRule"
+
+    <!-- Program Rule -->
+
+    <action name="programRule"
       class="org.hisp.dhis.trackedentity.action.programrule.GetProgramRuleListAction">
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-program/programRule.vm</param>
@@ -1082,15 +1081,15 @@
       <param name="javascripts">javascript/programRule.js</param>
       <param name="requiredAuthorities">F_PROGRAM_RULE_MANAGEMENT</param>
     </action>
-    
+
     <action name="showAddProgramRuleForm" class="org.hisp.dhis.trackedentity.action.programrule.ShowAddProgramRuleFormAction">
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-program/addProgramRule.vm</param>
       <param name="javascripts">javascript/programRule.js</param>
       <param name="stylesheets">style/basic.css</param>
       <param name="requiredAuthorities">F_PROGRAM_RULE_ADD</param>
-    </action> 
-    
+    </action>
+
     <action name="showUpdateProgramRuleForm" class="org.hisp.dhis.trackedentity.action.programrule.GetProgramRuleAction">
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-program/updateProgramRule.vm</param>
@@ -1098,7 +1097,7 @@
       <param name="stylesheets">style/basic.css</param>
       <param name="requiredAuthorities">F_PROGRAM_RULE_UPDATE</param>
     </action>
-    
+
     <action name="validateProgramRule"
       class="org.hisp.dhis.trackedentity.action.programrule.ValidateProgramRuleAction">
       <result name="success" type="velocity-json">
@@ -1107,8 +1106,8 @@
       <result name="error" type="velocity-json">
         /dhis-web-commons/ajax/jsonResponseError.vm
       </result>
-    </action> 
-    
+    </action>
+
     <action name="getProgramRule"
       class="org.hisp.dhis.trackedentity.action.programrule.GetProgramRuleAction">
       <result name="success" type="velocity-json">

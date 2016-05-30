@@ -45,7 +45,6 @@ import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.annotation.Scanned;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.DimensionalView;
 import org.hisp.dhis.common.view.ExportView;
@@ -180,7 +179,7 @@ public class DataElementGroupSet
     {
         List<DataElementGroup> sortedGroups = new ArrayList<>( members );
 
-        Collections.sort( sortedGroups, new IdentifiableObjectNameComparator() );
+        Collections.sort( sortedGroups );
 
         return sortedGroups;
     }

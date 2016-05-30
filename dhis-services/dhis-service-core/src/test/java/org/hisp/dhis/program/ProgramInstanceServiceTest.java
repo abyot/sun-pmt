@@ -110,11 +110,11 @@ public class ProgramInstanceServiceTest
 
         programA = createProgram( 'A', new HashSet<>(), organisationUnitA );
 
-        TrackedEntityInstanceReminder reminderA = new TrackedEntityInstanceReminder( "A", 0,
+        TrackedEntityInstanceReminder reminderA = createTrackedEntityInstanceReminder( 'A', 0,
             "Test program message template", TrackedEntityInstanceReminder.ENROLLEMENT_DATE_TO_COMPARE,
             TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, null, TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
 
-        TrackedEntityInstanceReminder reminderB = new TrackedEntityInstanceReminder( "B", 0,
+        TrackedEntityInstanceReminder reminderB = createTrackedEntityInstanceReminder( 'B', 0,
             "Test program message template", TrackedEntityInstanceReminder.ENROLLEMENT_DATE_TO_COMPARE,
             TrackedEntityInstanceReminder.SEND_TO_TRACKED_ENTITY_INSTANCE, TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT,
             TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH );
@@ -126,11 +126,11 @@ public class ProgramInstanceServiceTest
 
         programService.addProgram( programA );
 
-        ProgramStage stageA = new ProgramStage( "StageA", programA );
+        ProgramStage stageA = createProgramStage( 'A', programA );
         stageA.setSortOrder( 1 );
         programStageService.saveProgramStage( stageA );
 
-        ProgramStage stageB = new ProgramStage( "StageB", programA );
+        ProgramStage stageB = createProgramStage( 'B', programA );
         stageB.setSortOrder( 2 );
         programStageService.saveProgramStage( stageB );
 

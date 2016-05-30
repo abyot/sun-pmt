@@ -30,10 +30,10 @@ package org.hisp.dhis.schema.descriptors;
 
 import com.google.common.collect.Lists;
 import org.hisp.dhis.eventreport.EventReport;
-import org.hisp.dhis.security.Authority;
-import org.hisp.dhis.security.AuthorityType;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaDescriptor;
+import org.hisp.dhis.security.Authority;
+import org.hisp.dhis.security.AuthorityType;
 
 public class EventReportSchemaDescriptor implements SchemaDescriptor
 {
@@ -50,6 +50,7 @@ public class EventReportSchemaDescriptor implements SchemaDescriptor
         schema.setRelativeApiEndpoint( API_ENDPOINT );
         schema.setShareable( true );
         schema.setOrder( 1540 );
+        schema.setImplicitPrivateAuthority( true );
 
         schema.getAuthorities().add( new Authority( AuthorityType.CREATE_PUBLIC, Lists.newArrayList( "F_EVENTREPORT_PUBLIC_ADD" ) ) );
         schema.getAuthorities().add( new Authority( AuthorityType.EXTERNALIZE, Lists.newArrayList( "F_EVENTREPORT_EXTERNAL" ) ) );

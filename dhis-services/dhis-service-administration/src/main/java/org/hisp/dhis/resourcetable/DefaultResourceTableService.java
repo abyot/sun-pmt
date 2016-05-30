@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataapproval.DataApprovalLevelService;
 import org.hisp.dhis.dataelement.CategoryOptionGroupSet;
 import org.hisp.dhis.dataelement.DataElement;
@@ -41,6 +40,7 @@ import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementGroupSet;
+import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.indicator.IndicatorGroupSet;
 import org.hisp.dhis.jdbc.StatementBuilder;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
@@ -54,6 +54,7 @@ import org.hisp.dhis.resourcetable.table.CategoryResourceTable;
 import org.hisp.dhis.resourcetable.table.DataApprovalMinLevelResourceTable;
 import org.hisp.dhis.resourcetable.table.DataElementGroupSetResourceTable;
 import org.hisp.dhis.resourcetable.table.DataElementResourceTable;
+import org.hisp.dhis.resourcetable.table.DataSetOrganisationUnitCategoryResourceTable;
 import org.hisp.dhis.resourcetable.table.DatePeriodResourceTable;
 import org.hisp.dhis.resourcetable.table.IndicatorGroupSetResourceTable;
 import org.hisp.dhis.resourcetable.table.OrganisationUnitGroupSetResourceTable;
@@ -135,6 +136,14 @@ public class DefaultResourceTableService
         resourceTableStore.generateResourceTable( new OrganisationUnitStructureResourceTable( 
             null, statementBuilder.getColumnQuote(), 
             organisationUnitService, organisationUnitService.getNumberOfOrganisationalLevels() ) );
+    }
+    
+    @Override
+    @Transactional
+    public void generateDataSetOrganisationUnitCategoryTable()
+    {
+        resourceTableStore.generateResourceTable( new DataSetOrganisationUnitCategoryResourceTable( 
+            idObjectManager.getAllNoAcl( DataSet.class ) ) );
     }
     
     @Override
@@ -246,7 +255,7 @@ public class DefaultResourceTableService
     public void createAllSqlViews()
     {
         List<SqlView> views = new ArrayList<>( sqlViewService.getAllSqlViewsNoAcl() );
-        Collections.sort( views, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( views );
         
         for ( SqlView view : views )
         {
@@ -261,7 +270,7 @@ public class DefaultResourceTableService
     public void dropAllSqlViews()
     {
         List<SqlView> views = new ArrayList<>( sqlViewService.getAllSqlViewsNoAcl() );
-        Collections.sort( views, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( views );
         Collections.reverse( views );
 
         for ( SqlView view : views )

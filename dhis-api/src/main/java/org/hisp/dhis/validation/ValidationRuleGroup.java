@@ -66,7 +66,7 @@ public class ValidationRuleGroup
 
     // -------------------------------------------------------------------------
     // Constructors
-    // -------------------------------------------------------------------------     
+    // -------------------------------------------------------------------------
 
     public ValidationRuleGroup()
     {
@@ -111,7 +111,7 @@ public class ValidationRuleGroup
 
     // -------------------------------------------------------------------------
     // Getters and setters
-    // -------------------------------------------------------------------------     
+    // -------------------------------------------------------------------------
 
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
@@ -178,6 +178,8 @@ public class ValidationRuleGroup
         if ( other.getClass().isInstance( this ) )
         {
             ValidationRuleGroup validationRuleGroup = (ValidationRuleGroup) other;
+
+            alertByOrgUnits = validationRuleGroup.isAlertByOrgUnits();
 
             if ( mergeMode.isReplace() )
             {

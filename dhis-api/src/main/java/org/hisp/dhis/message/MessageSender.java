@@ -30,6 +30,7 @@ package org.hisp.dhis.message;
 
 import java.util.Set;
 
+import org.hisp.dhis.program.message.DeliveryChannel;
 import org.hisp.dhis.user.User;
 
 /**
@@ -38,13 +39,26 @@ import org.hisp.dhis.user.User;
 public interface MessageSender
 {
     /**
-     * Sends a message. The given message will be sent to the given set of users.
+     * Sends a message. The given message will be sent to the given set of
+     * users.
      * 
      * @param subject the message subject.
      * @param text the message text.
-     * @param footer the message footer. Optionally included by the implementation.
+     * @param footer the message footer. Optionally included by the
+     *        implementation.
      * @param users the users to send the message to.
-     * @param forceSend force sending the message despite potential user settings.
+     * @param forceSend force sending the message despite potential user
+     *        settings.
      */
     String sendMessage( String subject, String text, String footer, User sender, Set<User> users, boolean forceSend );
+
+    String sendMessage( String subject, String text, Set<String> recipient );
+
+    String sendMessage( String subject, String text, String recipient );
+
+    boolean accept( Set<DeliveryChannel> channels );
+
+    boolean isServiceReady();
+
+    DeliveryChannel getDeliveryChannel();
 }

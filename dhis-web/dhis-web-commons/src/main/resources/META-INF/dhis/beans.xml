@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="
-		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd">
+		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
   <!-- Web Portal -->
 
@@ -29,12 +29,9 @@
         <value>dhis-web-dataentry</value>
         <value>dhis-web-event-capture</value>
         <value>dhis-web-tracker-capture</value>
-        <value>dhis-web-maintenance-appmanager</value>
         <value>dhis-web-maintenance-dataadmin</value>
-        <value>dhis-web-maintenance-datadictionary</value>
         <value>dhis-web-maintenance-dataset</value>
         <value>dhis-web-importexport</value>
-        <value>dhis-web-caseentry</value>
         <value>dhis-web-maintenance-mobile</value>
         <value>dhis-web-maintenance-organisationunit</value>
         <value>dhis-web-maintenance-program</value>

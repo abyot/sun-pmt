@@ -31,7 +31,6 @@ package org.hisp.dhis.light.dashboard.action;
 import java.util.Date;
 
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.reporttable.ReportTableService;
 import org.hisp.dhis.system.util.DateUtils;
 
@@ -50,14 +49,7 @@ public class GetReportAction
     {
         this.reportTableService = reportTableService;
     }
-    
-    private I18nFormat format;
-
-    public void setFormat( I18nFormat format )
-    {
-        this.format = format;
-    }
-    
+        
     // -------------------------------------------------------------------------
     // Input
     // -------------------------------------------------------------------------
@@ -104,7 +96,7 @@ public class GetReportAction
     {
         Date date = pe != null ? DateUtils.getMediumDate( pe ) : new Date();
         
-        grid = reportTableService.getReportTableGrid( uid, format, date, ou );
+        grid = reportTableService.getReportTableGrid( uid, date, ou );
         
         return SUCCESS;
     }

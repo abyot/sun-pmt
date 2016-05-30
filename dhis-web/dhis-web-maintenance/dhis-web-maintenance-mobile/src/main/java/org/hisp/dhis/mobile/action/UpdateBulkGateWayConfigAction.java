@@ -92,20 +92,6 @@ public class UpdateBulkGateWayConfigAction
         this.region = region;
     }
 
-    private String urlTemplate;
-
-    public void setUrlTemplate( String url )
-    {
-        this.urlTemplate = url;
-    }
-    
-    private String urlTemplateForBatchSms;
-
-    public void setUrlTemplateForBatchSms( String urlTemplateForBatchSms )
-    {
-        this.urlTemplateForBatchSms = urlTemplateForBatchSms;
-    }
-
     private String gatewayType;
 
     public void setGatewayType( String gatewayType )
@@ -145,8 +131,6 @@ public class UpdateBulkGateWayConfigAction
                 bulkGatewayConfig.setPassword( password );
                 bulkGatewayConfig.setUsername( username );
                 bulkGatewayConfig.setRegion( region );
-                bulkGatewayConfig.setUrlTemplate( urlTemplate );
-                bulkGatewayConfig.setUrlTemplateForBatchSms( urlTemplateForBatchSms );
                 bulkGatewayConfig.setUid( CodeGenerator.generateCode( 10 ) );
 
                 if ( smsConfig.getGateways() == null || smsConfig.getGateways().isEmpty() )

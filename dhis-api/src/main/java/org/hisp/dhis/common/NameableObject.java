@@ -33,18 +33,13 @@ public interface NameableObject
 {
     String[] I18N_PROPERTIES = { "name", "shortName", "description" };
 
-    enum NameableProperty
-    {
-        SHORT_NAME
-    }
-
     String getShortName();
-
-    String getDescription();
 
     String getDisplayShortName();
 
+    String getDescription();
+
     String getDisplayDescription();
-    
+
     String getDisplayProperty( DisplayProperty property );
 }

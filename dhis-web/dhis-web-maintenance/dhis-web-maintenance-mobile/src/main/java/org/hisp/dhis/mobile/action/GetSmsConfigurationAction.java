@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.hisp.dhis.sms.config.BulkSmsGatewayConfig;
 import org.hisp.dhis.sms.config.ClickatellGatewayConfig;
-import org.hisp.dhis.sms.config.SMPPGatewayConfig;
 import org.hisp.dhis.sms.config.SmsConfiguration;
 import org.hisp.dhis.sms.config.SmsConfigurationManager;
 import org.hisp.dhis.sms.config.SmsGatewayConfig;
@@ -87,13 +86,6 @@ public class GetSmsConfigurationAction
         return smsConfig;
     }
 
-    private String smsServiceStatus;
-
-    public String getSmsServiceStatus()
-    {
-        return this.smsServiceStatus;
-    }
-
     public Integer bulkIndex;
 
     public Integer getBulkIndex()
@@ -108,25 +100,11 @@ public class GetSmsConfigurationAction
         return clickatellIndex;
     }
 
-    public Integer modemIndex;
-
-    public Integer getModemIndex()
-    {
-        return modemIndex;
-    }
-
     public Integer httpIndex;
 
     public Integer getHttpIndex()
     {
         return httpIndex;
-    }
-
-    public Integer smppIndex;
-
-    public Integer getSmppIndex()
-    {
-        return smppIndex;
     }
 
     // -------------------------------------------------------------------------
@@ -157,10 +135,6 @@ public class GetSmsConfigurationAction
                 else if ( gw instanceof ClickatellGatewayConfig )
                 {
                     clickatellIndex = index;
-                }
-                else if ( gw instanceof SMPPGatewayConfig )
-                {
-                    smppIndex = index;
                 }
                 else
                 {

@@ -65,7 +65,8 @@ public class DefaultTranslateSystemSettingManager
         translations.put( SettingKey.APPLICATION_INTRO.getName(), getSystemSettingWithFallbacks( SettingKey.APPLICATION_INTRO.getName(), localeStr, EMPTY ) );
         translations.put( SettingKey.APPLICATION_NOTIFICATION.getName(), getSystemSettingWithFallbacks( SettingKey.APPLICATION_NOTIFICATION.getName(), localeStr, EMPTY ) );
         translations.put( SettingKey.APPLICATION_FOOTER.getName(), getSystemSettingWithFallbacks( SettingKey.APPLICATION_FOOTER.getName(), localeStr, EMPTY ) );
-                
+        translations.put( SettingKey.APPLICATION_RIGHT_FOOTER.getName(), getSystemSettingWithFallbacks( SettingKey.APPLICATION_RIGHT_FOOTER.getName(), localeStr, EMPTY ) );
+
         return translations;
     }
 

@@ -34,9 +34,11 @@ import org.hisp.dhis.dashboard.Dashboard;
 import org.hisp.dhis.dashboard.DashboardItem;
 import org.hisp.dhis.dashboard.DashboardItemShape;
 import org.hisp.dhis.dashboard.DashboardService;
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.hibernate.exception.UpdateAccessDeniedException;
 import org.hisp.dhis.query.Order;
+import org.hisp.dhis.query.QueryParserException;
 import org.hisp.dhis.schema.descriptors.DashboardItemSchemaDescriptor;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.webapi.webdomain.WebMetadata;
@@ -63,7 +65,8 @@ public class DashboardItemController
     private DashboardService dashboardService;
 
     @Override
-    protected List<DashboardItem> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders )
+    protected List<DashboardItem> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
         List<DashboardItem> entityList;
 

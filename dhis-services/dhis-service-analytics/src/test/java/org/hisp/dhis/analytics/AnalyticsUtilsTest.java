@@ -90,9 +90,8 @@ public class AnalyticsUtilsTest
     @Test
     public void testGetRoundedValueObject()
     {
-        DataQueryParams paramsA = new DataQueryParams();
-        DataQueryParams paramsB = new DataQueryParams();
-        paramsB.setSkipRounding( true );
+        DataQueryParams paramsA = DataQueryParams.newBuilder().build();
+        DataQueryParams paramsB = DataQueryParams.newBuilder().withSkipRounding( true ).build();
         
         assertEquals( null, AnalyticsUtils.getRoundedValueObject( paramsA, null ) );
         assertEquals( "Car", AnalyticsUtils.getRoundedValueObject( paramsA, "Car" ) );
@@ -104,9 +103,8 @@ public class AnalyticsUtilsTest
     @Test
     public void testGetRoundedValueDouble()
     {
-        DataQueryParams paramsA = new DataQueryParams();
-        DataQueryParams paramsB = new DataQueryParams();
-        paramsB.setSkipRounding( true );
+        DataQueryParams paramsA = DataQueryParams.newBuilder().build();
+        DataQueryParams paramsB = DataQueryParams.newBuilder().withSkipRounding( true ).build();
         
         assertEquals( null, AnalyticsUtils.getRoundedValue( paramsA, null, null ) );
         assertEquals( 3d, AnalyticsUtils.getRoundedValue( paramsA, null, 3d ), 0.01 );

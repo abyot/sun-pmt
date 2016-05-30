@@ -30,6 +30,7 @@ package org.hisp.dhis.security;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.i18n.locale.LocaleManager;
 import org.hisp.dhis.security.acl.AclService;
 import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.common.IdentifiableObject;
@@ -47,6 +48,7 @@ import org.hisp.dhis.user.UserCredentials;
 import org.hisp.dhis.user.UserService;
 import org.hisp.dhis.user.UserSettingKey;
 import org.hisp.dhis.user.UserSettingService;
+import org.hisp.dhis.util.ObjectUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -231,6 +233,7 @@ public class DefaultSecurityService
 
         User user = credentials.getUserInfo();
         Locale locale = (Locale) userSettingService.getUserSetting( UserSettingKey.UI_LOCALE, user );
+        locale = ObjectUtils.firstNonNull( locale, LocaleManager.DEFAULT_LOCALE );
 
         I18n i18n = i18nManager.getI18n( locale );
         vars.put( "i18n", i18n );

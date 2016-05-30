@@ -33,5 +33,5 @@ package org.hisp.dhis.sms.incoming;
  */
 public enum SmsMessageStatus
 {
-    INCOMING, PROCESSING, UNHANDLED, FAILED, PROCESSED
+    INCOMING, PROCESSING, UNHANDLED, FAILED, PROCESSED, SENT, 
 }

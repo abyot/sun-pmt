@@ -28,7 +28,7 @@ package org.hisp.dhis.dxf2.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.hisp.dhis.dxf2.common.FilterOptions;
 import org.hisp.dhis.dxf2.common.Options;
 import org.hisp.dhis.common.filter.MetaDataFilter;
@@ -53,9 +53,9 @@ public interface ExportService
 
     List<MetaDataFilter> getFilters();
 
-    void saveFilter( JSONObject json ) throws IOException;
+    void saveFilter( JsonNode json ) throws IOException;
 
-    void updateFilter( JSONObject json ) throws IOException;
+    void updateFilter( JsonNode json ) throws IOException;
 
-    void deleteFilter( JSONObject json ) throws IOException;
+    void deleteFilter( JsonNode json ) throws IOException;
 }

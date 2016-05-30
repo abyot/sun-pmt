@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataanalysis.DataAnalysisService;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
@@ -229,7 +228,7 @@ public class ValidationAction
             organisationUnits.addAll( orgUnit.getChildren() );
         }
 
-        Collections.sort( organisationUnits, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( organisationUnits );
 
         Date from = new DateTime( period.getStartDate() ).minusYears( 2 ).toDate();
         

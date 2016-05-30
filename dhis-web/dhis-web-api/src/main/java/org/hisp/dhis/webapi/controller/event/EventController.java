@@ -32,6 +32,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteSource;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
 import org.hisp.dhis.commons.util.StreamUtils;
@@ -80,6 +81,7 @@ import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
 import org.hisp.dhis.system.scheduling.Scheduler;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.ContextUtils;
@@ -90,7 +92,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -117,6 +118,7 @@ import java.util.zip.GZIPOutputStream;
  */
 @Controller
 @RequestMapping( value = EventController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class EventController
 {
     public static final String RESOURCE_PATH = "/events";
@@ -313,7 +315,7 @@ public class EventController
         OutputStream outputStream = response.getOutputStream();
         response.setContentType( "application/csv" );
 
-        if ( ContextUtils.isAcceptGzip( request ) )
+        if ( ContextUtils.isAcceptCsvGzip( request ) )
         {
             response.addHeader( ContextUtils.HEADER_CONTENT_TRANSFER_ENCODING, "binary" );
             outputStream = new GZIPOutputStream( outputStream );
@@ -446,7 +448,7 @@ public class EventController
 
         for ( DataValue value : event.getDataValues() )
         {
-            if ( value.getDataElement() == dataElement.getUid() )
+            if ( value.getDataElement() != null && value.getDataElement().equals( dataElement.getUid() ) )
             {
                 uid = value.getValue();
                 break;
@@ -507,7 +509,7 @@ public class EventController
         // ---------------------------------------------------------------------
 
         response.setContentType( fileResource.getContentType() );
-        response.setContentLength( Math.round( fileResource.getContentLength() ) );
+        response.setContentLength( new Long( fileResource.getContentLength() ).intValue() );
         response.setHeader( HttpHeaders.CONTENT_DISPOSITION, "filename=" + fileResource.getName() );
 
         // ---------------------------------------------------------------------
@@ -646,7 +648,7 @@ public class EventController
     public void postCsvEvents( @RequestParam( required = false, defaultValue = "false" ) boolean skipFirst,
         HttpServletResponse response, HttpServletRequest request, ImportOptions importOptions ) throws IOException
     {
-        InputStream inputStream = ContextUtils.isAcceptGzip( request ) ? new GZIPInputStream( request.getInputStream() ) : request.getInputStream();
+        InputStream inputStream = ContextUtils.isAcceptCsvGzip( request ) ? new GZIPInputStream( request.getInputStream() ) : request.getInputStream();
 
         Events events = csvEventService.readEvents( inputStream, skipFirst );
 

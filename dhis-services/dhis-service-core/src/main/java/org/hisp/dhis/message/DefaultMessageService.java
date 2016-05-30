@@ -1,5 +1,25 @@
 package org.hisp.dhis.message;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.configuration.ConfigurationService;
+import org.hisp.dhis.dataset.CompleteDataSetRegistration;
+import org.hisp.dhis.dataset.DataSet;
+import org.hisp.dhis.email.Email;
+import org.hisp.dhis.email.EmailService;
+import org.hisp.dhis.i18n.I18nManager;
+import org.hisp.dhis.i18n.locale.LocaleManager;
+import org.hisp.dhis.setting.SystemSettingManager;
+import org.hisp.dhis.system.velocity.VelocityManager;
+import org.hisp.dhis.user.*;
+import org.hisp.dhis.util.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -28,33 +48,6 @@ package org.hisp.dhis.message;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hisp.dhis.configuration.ConfigurationService;
-import org.hisp.dhis.dataset.CompleteDataSetRegistration;
-import org.hisp.dhis.dataset.DataSet;
-import org.hisp.dhis.email.Email;
-import org.hisp.dhis.email.EmailService;
-import org.hisp.dhis.i18n.I18nManager;
-import org.hisp.dhis.i18n.locale.LocaleManager;
-import org.hisp.dhis.setting.SystemSettingManager;
-import org.hisp.dhis.system.velocity.VelocityManager;
-import org.hisp.dhis.user.CurrentUserService;
-import org.hisp.dhis.user.User;
-import org.hisp.dhis.user.UserGroup;
-import org.hisp.dhis.user.UserSettingKey;
-import org.hisp.dhis.user.UserSettingService;
-import org.hisp.dhis.util.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 /**
  * @author Lars Helge Overland
  */
@@ -65,7 +58,9 @@ public class DefaultMessageService
     private static final Log log = LogFactory.getLog( DefaultMessageService.class );
 
     private static final String COMPLETE_SUBJECT = "Form registered as complete";
+
     private static final String COMPLETE_TEMPLATE = "completeness_message";
+
     private static final String MESSAGE_EMAIL_FOOTER_TEMPLATE = "message_email_footer";
 
     // -------------------------------------------------------------------------
@@ -204,7 +199,53 @@ public class DefaultMessageService
     @Override
     public int sendFeedback( String subject, String text, String metaData )
     {
-        return sendMessage( subject, text, metaData, new HashSet<User>(), null, true, false );
+
+        Set<User> users = new HashSet<>();
+
+        // ---------------------------------------------------------------------
+        // Add feedback recipients to users if they are not there
+        // ---------------------------------------------------------------------
+
+        UserGroup userGroup = configurationService.getConfiguration().getFeedbackRecipients();
+
+        if ( userGroup != null && userGroup.getMembers().size() > 0 )
+        {
+            users.addAll( userGroup.getMembers() );
+        }
+
+        User sender = currentUserService.getCurrentUser();
+
+        if ( sender != null )
+        {
+            users.add( sender );
+        }
+
+        // ---------------------------------------------------------------------
+        // Instantiate message, content and user messages
+        // ---------------------------------------------------------------------
+
+        MessageConversation conversation = new MessageConversation( subject, sender );
+
+        conversation.setStatus( MessageConversationStatus.OPEN );
+
+        conversation.addMessage( new Message( text, metaData, sender ) );
+
+        for ( User user : users )
+        {
+            boolean read = user != null && user.equals( sender );
+
+            conversation.addUserMessage( new UserMessage( user, read ) );
+        }
+
+        int id = saveMessageConversation( conversation );
+
+        users.remove( sender );
+
+        String footer = getMessageFooter( conversation );
+
+        invokeMessageSenders( subject, text, footer, sender, users, false );
+
+        return id;
     }
 
     @Override
@@ -216,18 +257,25 @@ public class DefaultMessageService
     }
 
     @Override
-    public void sendReply( MessageConversation conversation, String text, String metaData )
+    public void sendReply( MessageConversation conversation, String text, String metaData, boolean internal )
     {
         User sender = currentUserService.getCurrentUser();
 
-        Message message = new Message( text, metaData, sender );
+        Message message = new Message( text, metaData, sender, internal );
 
         conversation.markReplied( sender, message );
 
         updateMessageConversation( conversation );
 
-        invokeMessageSenders( conversation.getSubject(), text, null, sender, new HashSet<>( conversation.getUsers() ),
-            false );
+        Set<User> users = conversation.getUsers();
+
+        if ( internal )
+        {
+            users = users.stream().filter( this::hasAccessToInternalNotes )
+                .collect( Collectors.toSet() );
+        }
+
+        invokeMessageSenders( conversation.getSubject(), text, null, sender, new HashSet<>( users ), false );
     }
 
     @Override
@@ -276,8 +324,8 @@ public class DefaultMessageService
         {
             int id = saveMessageConversation( conversation );
 
-            invokeMessageSenders( COMPLETE_SUBJECT, text, null, sender, new HashSet<>( conversation.getUsers() ),
-                false );
+            invokeMessageSenders( COMPLETE_SUBJECT, text, null, sender,
+                new HashSet<>( conversation.getUsers() ), false );
 
             return id;
         }
@@ -336,27 +384,31 @@ public class DefaultMessageService
     @Override
     public List<MessageConversation> getMessageConversations()
     {
-        return messageConversationStore.getMessageConversations( currentUserService.getCurrentUser(), false, false,
-            null, null );
+        return messageConversationStore
+            .getMessageConversations( currentUserService.getCurrentUser(), null, false, false,
+                null, null );
     }
 
     @Override
     public List<MessageConversation> getMessageConversations( int first, int max )
     {
-        return messageConversationStore.getMessageConversations( currentUserService.getCurrentUser(), false, false,
-            first, max );
+        return messageConversationStore
+            .getMessageConversations( currentUserService.getCurrentUser(), null, false, false,
+                first, max );
     }
 
     @Override
-    public List<MessageConversation> getMessageConversations( boolean followUpOnly, boolean unreadOnly, int first,
+    public List<MessageConversation> getMessageConversations( MessageConversationStatus status, boolean followUpOnly,
+        boolean unreadOnly, int first,
         int max )
     {
-        return messageConversationStore.getMessageConversations( currentUserService.getCurrentUser(), followUpOnly,
-            unreadOnly, first, max );
+        return messageConversationStore
+            .getMessageConversations( currentUserService.getCurrentUser(), status, followUpOnly,
+                unreadOnly, first, max );
     }
 
     @Override
-    public List<MessageConversation> getMessageConversations( User user, String[] messageConversationUids )
+    public List<MessageConversation> getMessageConversations( User user, Collection<String> messageConversationUids )
     {
         List<MessageConversation> conversations = messageConversationStore
             .getMessageConversations( messageConversationUids );
@@ -375,15 +427,15 @@ public class DefaultMessageService
     @Override
     public int getMessageConversationCount()
     {
-        return messageConversationStore.getMessageConversationCount( currentUserService.getCurrentUser(), false,
-            false );
+        return messageConversationStore.getMessageConversationCount( currentUserService.getCurrentUser(),
+            false, false );
     }
 
     @Override
     public int getMessageConversationCount( boolean followUpOnly, boolean unreadOnly )
     {
-        return messageConversationStore.getMessageConversationCount( currentUserService.getCurrentUser(), followUpOnly,
-            unreadOnly );
+        return messageConversationStore.getMessageConversationCount( currentUserService.getCurrentUser(),
+            followUpOnly, unreadOnly );
     }
 
     @Override
@@ -400,6 +452,12 @@ public class DefaultMessageService
         return messageConversationStore.getLastRecipients( currentUserService.getCurrentUser(), first, max );
     }
 
+    @Override
+    public boolean hasAccessToInternalNotes( User user )
+    {
+        return (user.isAuthorized( "F_MANAGE_TICKETS" ) || user.isAuthorized( "ALL" ));
+    }
+
     // -------------------------------------------------------------------------
     // Supportive methods
     // -------------------------------------------------------------------------
@@ -410,8 +468,6 @@ public class DefaultMessageService
         for ( MessageSender messageSender : messageSenders )
         {
             log.debug( "Invoking message sender: " + messageSender.getClass().getSimpleName() );
-            
-            log.info( "Invoking message sender: " + messageSender.getClass().getSimpleName() );
 
             messageSender.sendMessage( subject, text, footer, sender, new HashSet<>( users ), forceSend );
         }
@@ -420,19 +476,20 @@ public class DefaultMessageService
     private String getMessageFooter( MessageConversation conversation )
     {
         HashMap<String, Object> values = new HashMap<>( 2 );
-        
+
         String baseUrl = systemSettingManager.getInstanceBaseUrl();
 
         if ( baseUrl == null )
         {
             return StringUtils.EMPTY;
         }
-        
+
         Locale locale = (Locale) userSettingService.getUserSetting( UserSettingKey.UI_LOCALE, conversation.getUser() );
-        
+
         locale = ObjectUtils.firstNonNull( locale, LocaleManager.DEFAULT_LOCALE );
-        
-        values.put( "responseUrl", baseUrl + "/dhis-web-dashboard-integration/readMessage.action?id=" + conversation.getUid() );        
+
+        values.put( "responseUrl",
+            baseUrl + "/dhis-web-dashboard-integration/readMessage.action?id=" + conversation.getUid() );
         values.put( "i18n", i18nManager.getI18n( locale ) );
 
         return new VelocityManager().render( values, MESSAGE_EMAIL_FOOTER_TEMPLATE );

@@ -92,6 +92,6 @@ public class MockJRField
     @Override
     public Object clone()
     {
-        return null;
+        return this;
     }
 }

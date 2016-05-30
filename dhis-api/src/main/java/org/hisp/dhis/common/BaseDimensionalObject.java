@@ -1,5 +1,7 @@
 package org.hisp.dhis.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -89,7 +91,7 @@ public class BaseDimensionalObject
      * Operator and filter pairs can be repeated any number of times.
      */
     private String filter;
-
+    
     //--------------------------------------------------------------------------
     // Persistent properties
     //--------------------------------------------------------------------------
@@ -98,6 +100,12 @@ public class BaseDimensionalObject
      * Indicates whether this object should be handled as a data dimension.
      */
     protected boolean dataDimension = true;
+
+    /**
+     * Indicates whether this dimension is fixed, meaning that the name of the
+     * dimension will be returned as is for all dimension items in the response.
+     */
+    private boolean fixed;
 
     //--------------------------------------------------------------------------
     // Constructors
@@ -154,7 +162,10 @@ public class BaseDimensionalObject
             this.dimensionType, this.dimensionName, this.displayName, this.items, this.allItems );
         
         object.legendSet = this.legendSet;
+        object.aggregationType = this.aggregationType;
         object.filter = this.filter;
+        object.dataDimension = this.dataDimension;
+        object.fixed = this.fixed;
         
         return object;
     }
@@ -236,6 +247,11 @@ public class BaseDimensionalObject
     public void setDimensionType( DimensionType dimensionType )
     {
         this.dimensionType = dimensionType;
+    }
+
+    public void setDimensionName( String dimensionName )
+    {
+        this.dimensionName = dimensionName;
     }
 
     @Override
@@ -323,6 +339,18 @@ public class BaseDimensionalObject
     public void setDataDimension( boolean dataDimension )
     {
         this.dataDimension = dataDimension;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isFixed()
+    {
+        return fixed;
+    }
+
+    public void setFixed( boolean fixed )
+    {
+        this.fixed = fixed;
     }
 
     //--------------------------------------------------------------------------

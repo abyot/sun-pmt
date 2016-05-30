@@ -35,7 +35,6 @@ import java.util.List;
 
 import net.sf.jasperreports.engine.JasperPrint;
 
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.period.Period;
 
 /**
@@ -76,10 +75,9 @@ public interface ReportService
      * @param period              the period to use as parameter.
      * @param organisationUnitUid the uid of the org unit to use as parameter.
      * @param type                the type of the report, can be "xls" and "pdf".
-     * @param format              the I18nFormat to use.
      */
     JasperPrint renderReport( OutputStream out, String reportUid, Period period,
-        String organisationUnitUid, String type, I18nFormat format );
+        String organisationUnitUid, String type );
     
     /**
      * Renders and writes a HTML-based standard report to the given Writer.
@@ -88,9 +86,8 @@ public interface ReportService
      * @param uid the report uid.
      * @param date the date.
      * @param ou the organisation unit uid.
-     * @param format the I18nFormat.
      */
-    void renderHtmlReport( Writer writer, String uid, Date date, String ou, I18nFormat format );
+    void renderHtmlReport( Writer writer, String uid, Date date, String ou );
 
     /**
      * Saves a Report.

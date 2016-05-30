@@ -34,6 +34,7 @@ import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataelement.DataElementGroup;
 import org.hisp.dhis.dataelement.DataElementOperand;
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.query.QueryParserException;
@@ -61,9 +62,10 @@ public class DataElementOperandController
 
     @Override
     @SuppressWarnings( "unchecked" )
-    protected List<DataElementOperand> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders ) throws QueryParserException
+    protected List<DataElementOperand> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
-        List<DataElementOperand> dataElementOperands = new ArrayList<>();
+        List<DataElementOperand> dataElementOperands;
 
         if ( options.isTrue( "persisted" ) )
         {

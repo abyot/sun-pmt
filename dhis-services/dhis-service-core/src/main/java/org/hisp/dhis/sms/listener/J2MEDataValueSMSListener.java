@@ -45,7 +45,7 @@ import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.period.YearlyPeriodType;
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.command.SMSCommand;
 import org.hisp.dhis.sms.command.SMSCommandService;
 import org.hisp.dhis.sms.command.code.SMSCode;
@@ -53,20 +53,21 @@ import org.hisp.dhis.sms.incoming.IncomingSms;
 import org.hisp.dhis.sms.incoming.IncomingSmsListener;
 import org.hisp.dhis.sms.parse.ParserType;
 import org.hisp.dhis.sms.parse.SMSParserException;
+import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.system.util.SmsUtils;
 import org.hisp.dhis.system.util.ValidationUtils;
 import org.hisp.dhis.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
 
 public class J2MEDataValueSMSListener
     implements IncomingSmsListener
@@ -92,7 +93,8 @@ public class J2MEDataValueSMSListener
     private CompleteDataSetRegistrationService registrationService;
 
     @Autowired
-    private SmsSender smsSender;
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
 
     // -------------------------------------------------------------------------
     // IncomingSmsListener implementation
@@ -325,7 +327,7 @@ public class J2MEDataValueSMSListener
             reportBack = command.getSuccessMessage();
         }
 
-        smsSender.sendMessage( reportBack, sender );
+        smsSender.sendMessage( null, reportBack, sender );
     }
 
     public Period getPeriod( String periodName, PeriodType periodType )
@@ -333,40 +335,12 @@ public class J2MEDataValueSMSListener
     {
         if ( periodType instanceof DailyPeriodType )
         {
-            String pattern = "yyyy-MM-dd";
-            SimpleDateFormat formatter = new SimpleDateFormat( pattern );
-            Date date = null;
-
-            try
-            {
-                date = formatter.parse( periodName );
-            }
-            catch ( ParseException e )
-            {
-                throw new IllegalArgumentException(
-                    "Couldn't make a period of type " + periodType.getName() + " and name " + periodName, e );
-            }
-
-            return periodType.createPeriod( date );
+            return periodType.createPeriod( DateUtils.getMediumDate( periodName ) );
         }
 
         if ( periodType instanceof WeeklyPeriodType )
         {
-            String pattern = "yyyy-MM-dd";
-            SimpleDateFormat formatter = new SimpleDateFormat( pattern );
-            Date date = null;
-
-            try
-            {
-                date = formatter.parse( periodName );
-            }
-            catch ( ParseException e )
-            {
-                throw new IllegalArgumentException(
-                    "Couldn't make a period of type " + periodType.getName() + " and name " + periodName, e );
-            }
-
-            return periodType.createPeriod( date );
+            return periodType.createPeriod( DateUtils.getMediumDate( periodName ) );
         }
 
         if ( periodType instanceof MonthlyPeriodType )

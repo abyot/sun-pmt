@@ -29,6 +29,8 @@ package org.hisp.dhis.webapi.controller.mapping;
  */
 
 import com.google.common.collect.Lists;
+import org.hisp.dhis.common.cache.CacheStrategy;
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.mapgeneration.MapGenerationService;
 import org.hisp.dhis.mapping.MapView;
@@ -36,10 +38,10 @@ import org.hisp.dhis.mapping.MappingService;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.query.Order;
+import org.hisp.dhis.query.QueryParserException;
 import org.hisp.dhis.schema.descriptors.MapViewSchemaDescriptor;
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
 import org.hisp.dhis.webapi.utils.ContextUtils;
-import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.webapi.webdomain.WebMetadata;
 import org.hisp.dhis.webapi.webdomain.WebOptions;
@@ -118,7 +120,8 @@ public class MapViewController
     //--------------------------------------------------------------------------
 
     @Override
-    protected List<MapView> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters, List<Order> orders )
+    protected List<MapView> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
         List<MapView> entityList;
 

@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 
-import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.report.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,14 +46,7 @@ public class GetReportAndParamsAction
 {
     @Autowired
     private ReportService reportService;
-    
-    private I18nFormat format;
-
-    public void setFormat( I18nFormat format )
-    {
-        this.format = format;
-    }
-    
+        
     // -------------------------------------------------------------------------
     // Input
     // -------------------------------------------------------------------------
@@ -103,7 +95,7 @@ public class GetReportAndParamsAction
         
         Date date = pe != null ? PeriodType.getPeriodFromIsoString( pe ).getStartDate() : null; 
         
-        reportService.renderHtmlReport( writer, uid, date, ou, format );
+        reportService.renderHtmlReport( writer, uid, date, ou );
         
         content = writer.toString();
         

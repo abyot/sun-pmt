@@ -101,5 +101,5 @@ public interface EventDataQueryService
         OrganisationUnitSelectionMode ouMode, Set<String> asc, Set<String> desc, boolean skipMeta, boolean skipData, boolean completedOnly, boolean hierarchyMeta, boolean coordinatesOnly, 
         DisplayProperty displayProperty, String userOrgUnit, Integer page, Integer pageSize, I18nFormat format );
     
-    EventQueryParams getFromAnalyticalObject( EventAnalyticalObject object, I18nFormat format );
+    EventQueryParams getFromAnalyticalObject( EventAnalyticalObject object );
 }

@@ -44,25 +44,27 @@ public class AggregatedStatistics
     private Integer day;
     private Integer mapViews;
     private Integer chartViews;
-    private Integer reportTableViews;
+    private Integer pivotTableViews;
     private Integer eventReportViews;
     private Integer eventChartViews;
     private Integer dashboardViews;
+    private Integer dataSetReportViews;
     private Integer totalViews;
     private Integer averageViews;
     private Integer averageMapViews;
     private Integer averageChartViews;
-    private Integer averageReportTableViews;
+    private Integer averagePivotTableViews;
     private Integer averageEventReportViews;
     private Integer averageEventChartViews;
     private Integer averageDashboardViews;
     private Integer savedMaps;
     private Integer savedCharts;
-    private Integer savedReportTables;
+    private Integer savedPivotTables;
     private Integer savedEventReports;
     private Integer savedEventCharts;
     private Integer savedDashboards;
     private Integer savedIndicators;
+    private Integer savedDataValues;
     private Integer activeUsers;
     private Integer users;
 
@@ -148,14 +150,14 @@ public class AggregatedStatistics
     }
 
     @JsonProperty
-    public Integer getReportTableViews()
+    public Integer getPivotTableViews()
     {
-        return reportTableViews;
+        return pivotTableViews;
     }
 
-    public void setReportTableViews( Integer reportTableViews )
+    public void setPivotTableViews( Integer pivotTableViews )
     {
-        this.reportTableViews = reportTableViews;
+        this.pivotTableViews = pivotTableViews;
     }
 
     @JsonProperty
@@ -189,6 +191,17 @@ public class AggregatedStatistics
     public void setDashboardViews( Integer dashboardViews )
     {
         this.dashboardViews = dashboardViews;
+    }
+
+    @JsonProperty
+    public Integer getDataSetReportViews()
+    {
+        return dataSetReportViews;
+    }
+
+    public void setDataSetReportViews( Integer dataSetReportViews )
+    {
+        this.dataSetReportViews = dataSetReportViews;
     }
 
     @JsonProperty
@@ -247,14 +260,14 @@ public class AggregatedStatistics
     }
 
     @JsonProperty
-    public Integer getAverageReportTableViews()
+    public Integer getAveragePivotTableViews()
     {
-        return averageReportTableViews;
+        return averagePivotTableViews;
     }
 
-    public void setAverageReportTableViews( Integer averageReportTableViews )
+    public void setAveragePivotTableViews( Integer averagePivotTableViews )
     {
-        this.averageReportTableViews = averageReportTableViews;
+        this.averagePivotTableViews = averagePivotTableViews;
     }
 
     @JsonProperty
@@ -302,14 +315,14 @@ public class AggregatedStatistics
     }
 
     @JsonProperty
-    public Integer getSavedReportTables()
+    public Integer getSavedPivotTables()
     {
-        return savedReportTables;
+        return savedPivotTables;
     }
 
-    public void setSavedReportTables( Integer savedReportTables )
+    public void setSavedPivotTables( Integer savedPivotTables )
     {
-        this.savedReportTables = savedReportTables;
+        this.savedPivotTables = savedPivotTables;
     }
 
     @JsonProperty
@@ -357,6 +370,17 @@ public class AggregatedStatistics
     }
 
     @JsonProperty
+    public Integer getSavedDataValues()
+    {
+        return savedDataValues;
+    }
+
+    public void setSavedDataValues( Integer savedDataValues )
+    {
+        this.savedDataValues = savedDataValues;
+    }
+
+    @JsonProperty
     public Integer getUsers()
     {
         return users;
@@ -376,25 +400,27 @@ public class AggregatedStatistics
             ", day=" + day +
             ", mapViews=" + mapViews +
             ", chartViews=" + chartViews +
-            ", reportTableViews=" + reportTableViews +
+            ", pivotTableViews=" + pivotTableViews +
             ", eventReportViews=" + eventReportViews +
             ", eventChartViews=" + eventChartViews +
             ", dashboardViews=" + dashboardViews +
+            ", dataSetReportViews=" + dataSetReportViews +
             ", totalViews=" + totalViews +
             ", averageViews=" + averageViews +
             ", averageMapViews=" + averageMapViews +
             ", averageChartViews=" + averageChartViews +
-            ", averageReportTableViews=" + averageReportTableViews +
+            ", averagePivotTableViews=" + averagePivotTableViews +
             ", averageEventReportViews=" + averageEventReportViews +
             ", averageEventChartViews=" + averageEventChartViews +
             ", averageDashboardViews=" + averageDashboardViews +
             ", savedMaps=" + savedMaps +
             ", savedCharts=" + savedCharts +
-            ", savedReportTables=" + savedReportTables +
+            ", savedPivotTables=" + savedPivotTables +
             ", savedEventReports=" + savedEventReports +
             ", savedEventCharts=" + savedEventCharts +
             ", savedDashboards=" + savedDashboards +
             ", savedIndicators=" + savedIndicators +
+            ", savedDataValues=" + savedDataValues +
             ", activeUsers=" + activeUsers +
             ", users=" + users +
             '}';

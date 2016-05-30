@@ -1,5 +1,11 @@
 package org.hisp.dhis.message;
 
+import org.hisp.dhis.common.GenericIdentifiableObjectStore;
+import org.hisp.dhis.user.User;
+
+import java.util.Collection;
+import java.util.List;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -28,11 +34,6 @@ package org.hisp.dhis.message;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-
-import org.hisp.dhis.common.GenericIdentifiableObjectStore;
-import org.hisp.dhis.user.User;
-
 /**
  * @author Lars Helge Overland
  */
@@ -48,7 +49,7 @@ public interface MessageConversationStore
      * @param max the max number of records to return, or all if null.
      * @return a list of MessageConversations.
      */
-    List<MessageConversation> getMessageConversations( User user, boolean followUpOnly, boolean unreadOnly, Integer first, Integer max );
+    List<MessageConversation> getMessageConversations( User user, MessageConversationStatus status, boolean followUpOnly, boolean unreadOnly, Integer first, Integer max );
 
     /**
      * Returns the MessageConversations given by the supplied UIDs.
@@ -56,7 +57,7 @@ public interface MessageConversationStore
      * @param messageConversationUids the UIDs of the MessageConversations to get.
      * @return a collection of MessageConversations.
      */
-    List<MessageConversation> getMessageConversations( String[] messageConversationUids );
+    List<MessageConversation> getMessageConversations( Collection<String> messageConversationUids );
     
     int getMessageConversationCount( User user, boolean followUpOnly, boolean unreadOnly );
     

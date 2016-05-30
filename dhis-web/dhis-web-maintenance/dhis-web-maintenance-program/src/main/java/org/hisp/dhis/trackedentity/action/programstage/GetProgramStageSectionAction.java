@@ -106,13 +106,6 @@ public class GetProgramStageSectionAction
         return availableDataElements;
     }
 
-    private List<ProgramIndicator> programIndicators;
-
-    public List<ProgramIndicator> getProgramIndicators()
-    {
-        return programIndicators;
-    }
-
     private List<ProgramIndicator> availableProgramIndicators;
 
     public List<ProgramIndicator> getAvailableProgramIndicators()

@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
-import org.hisp.dhis.system.util.DateUtils;
 
 /**
  * @author Lars Helge Overland
@@ -115,7 +114,6 @@ public class ContextUtils
         if ( disallowCache )
         {
             response.setHeader( "Cache-Control", "no-cache, no-store" );
-            response.setHeader( "Expires", DateUtils.getExpiredHttpDateString() );
         }
 
         if ( filename != null )

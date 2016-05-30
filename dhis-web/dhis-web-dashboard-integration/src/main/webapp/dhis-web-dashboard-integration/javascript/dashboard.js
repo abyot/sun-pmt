@@ -1207,7 +1207,9 @@ dhis2.db.hideSearch = function()
 
 dhis2.db.registerDashboardViewEvent = function()
 {
-	$.post( "../api/dataStatistics?eventType=DASHBOARD_VIEW" );
+	var fav = dhis2.db.current() || "";
+	
+	$.post( "../api/dataStatistics?eventType=DASHBOARD_VIEW&favorite=" + fav );
 }
 
 //------------------------------------------------------------------------------

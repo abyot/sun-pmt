@@ -28,7 +28,8 @@ package org.hisp.dhis.dxf2.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import net.sf.json.JSONObject;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * @author Ovidiu Rosu <rosu.ovi@gmail.com>
@@ -36,7 +37,7 @@ import net.sf.json.JSONObject;
 public class FilterOptions
     extends Options
 {
-    private JSONObject restrictionsJson;
+    private JsonNode restrictionsJson;
 
     //--------------------------------------------------------------------------
     // Constructors
@@ -45,8 +46,8 @@ public class FilterOptions
     public FilterOptions()
     {
     }
-    
-    public FilterOptions( JSONObject restrictionsJson )
+
+    public FilterOptions( JsonNode restrictionsJson )
     {
         this.restrictionsJson = restrictionsJson;
     }
@@ -55,12 +56,12 @@ public class FilterOptions
     // Getters & Setters
     //--------------------------------------------------------------------------
 
-    public JSONObject getRestrictionsJson()
+    public JsonNode getRestrictionsJson()
     {
         return restrictionsJson;
     }
 
-    public void setRestrictionsJson( JSONObject restrictionsJson )
+    public void setRestrictionsJson( JsonNode restrictionsJson )
     {
         this.restrictionsJson = restrictionsJson;
     }

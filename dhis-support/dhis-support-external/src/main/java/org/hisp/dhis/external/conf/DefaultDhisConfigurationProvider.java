@@ -31,13 +31,23 @@ package org.hisp.dhis.external.conf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.encryption.EncryptionStatus;
 import org.hisp.dhis.external.location.LocationManager;
 import org.hisp.dhis.external.location.LocationManagerException;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import javax.crypto.Cipher;
 
@@ -50,7 +60,8 @@ public class DefaultDhisConfigurationProvider
     private static final Log log = LogFactory.getLog( DefaultDhisConfigurationProvider.class );
 
     private static final String CONF_FILENAME = "dhis.conf";
-
+    private static final String GOOGLE_AUTH_FILENAME = "dhis-google-auth.json";
+    private static final String GOOGLE_EE_SCOPE = "https://www.googleapis.com/auth/earthengine";
     private static final String ENABLED_VALUE = "on";
 
     // -------------------------------------------------------------------------
@@ -68,9 +79,18 @@ public class DefaultDhisConfigurationProvider
      * Cache for properties.
      */
     private Properties properties;
+    
+    /**
+     * Cache for Google credential.
+     */
+    private Optional<GoogleCredential> googleCredential = Optional.empty();
 
     public void init()
     {
+        // ---------------------------------------------------------------------
+        // Load DHIS 2 configuration file into properties bundle
+        // ---------------------------------------------------------------------
+
         InputStream in = null;
 
         try
@@ -97,7 +117,7 @@ public class DefaultDhisConfigurationProvider
         {
             try
             {
-                properties.load( in );
+                properties.load( in );                
             }
             catch ( IOException ex )
             {
@@ -105,7 +125,50 @@ public class DefaultDhisConfigurationProvider
             }
         }
 
+        // ---------------------------------------------------------------------
+        // Load Google JSON authentication file into properties bundle
+        // ---------------------------------------------------------------------
+        
+        try ( InputStream jsonIn = locationManager.getInputStream( GOOGLE_AUTH_FILENAME ) )
+        {
+            Map<String, String> json = new ObjectMapper().readValue( jsonIn, new TypeReference<HashMap<String,Object>>() {} );
+            
+            properties.put( ConfigurationKey.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID.getKey(), json.get( "client_id" ) );
+            properties.put( ConfigurationKey.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL.getKey(), json.get( "client_email" ) );
+        }
+        catch ( LocationManagerException ex )
+        {
+            log.info( "Could not find dhis-google-auth.json" );
+        }
+        catch ( IOException ex )
+        {
+            log.warn( "Could not load credential from dhis-google-auth.json", ex );
+        }
+        
         this.properties = properties;
+
+        // ---------------------------------------------------------------------
+        // Load Google JSON authentication file into GoogleCredential
+        // ---------------------------------------------------------------------
+        
+        try ( InputStream credentialIn = locationManager.getInputStream( GOOGLE_AUTH_FILENAME ) )
+        {
+            GoogleCredential credential = GoogleCredential
+                .fromStream( credentialIn )
+                .createScoped( Collections.singleton( GOOGLE_EE_SCOPE ) );
+            
+            this.googleCredential = Optional.of( credential );
+            
+            log.info( "Loaded dhis-google-auth.json authentication file" );
+        }
+        catch ( LocationManagerException ex )
+        {
+            log.info( "Could not find dhis-google-auth.json" );
+        }
+        catch ( IOException ex )
+        {
+            log.warn( "Could not load credential from dhis-google-auth.json", ex );
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -131,15 +194,61 @@ public class DefaultDhisConfigurationProvider
     }
 
     @Override
+    public boolean hasProperty( ConfigurationKey key )
+    {        
+        return StringUtils.isNotEmpty( properties.getProperty( key.getKey() ) );
+    }
+
+    @Override
     public boolean isEnabled( ConfigurationKey key )
     {
         return ENABLED_VALUE.equals( getProperty( key ) );
     }
 
     @Override
+    public Optional<GoogleCredential> getGoogleCredential()
+    {
+        return googleCredential;
+    }
+
+    @Override
+    public Optional<GoogleAccessToken> getGoogleAccessToken()
+    {        
+        if ( !getGoogleCredential().isPresent() )
+        {
+            return Optional.empty();
+        }
+        
+        GoogleCredential credential = getGoogleCredential().get();
+        
+        try
+        {
+            if ( !credential.refreshToken() || credential.getExpiresInSeconds() == null )
+            {
+                log.warn( "There is no refresh token to be retrieved" );
+                
+                return Optional.empty();
+            }            
+        }
+        catch( IOException ex )
+        {
+            throw new IllegalStateException( "Could not retrieve refresh token: " + ex.getMessage(), ex );
+        }
+        
+        GoogleAccessToken token = new GoogleAccessToken();
+        
+        token.setAccessToken( credential.getAccessToken() );        
+        token.setClientId( getProperty( ConfigurationKey.GOOGLE_SERVICE_ACCOUNT_CLIENT_ID ) );
+        token.setExpiresInSeconds( credential.getExpiresInSeconds() );
+        token.setExpiresOn( LocalDateTime.now().plusSeconds( token.getExpiresInSeconds() ) );
+        
+        return Optional.of( token );
+    }
+    
+    @Override
     public boolean isReadOnlyMode()
     {
-        return ENABLED_VALUE.equals( getProperty( ConfigurationKey.SYSTEM_READ_ONLY_MODE ) );
+        return isEnabled( ConfigurationKey.SYSTEM_READ_ONLY_MODE );
     }
 
     @Override

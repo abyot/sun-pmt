@@ -362,11 +362,6 @@ public class DataValue
         this.comment = comment;
     }
 
-    public Boolean getFollowup()
-    {
-        return followup;
-    }
-
     public void setFollowup( Boolean followup )
     {
         this.followup = followup;

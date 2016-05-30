@@ -84,6 +84,33 @@
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-usage-analytics</outputDirectory>
                   <includes>**/*.*</includes>
                 </artifactItem>
+                <!--  Tracker capture -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-tracker-capture</artifactId>
+                  <version>2.24-SNAPSHOT</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-tracker-capture</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
+                <!--  Event capture -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-event-capture</artifactId>
+                  <version>2.24-SNAPSHOT</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-event-capture</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
+                <!--  Cache cleaner -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-cache-cleaner</artifactId>
+                  <version>${apps.version}</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-cache-cleaner</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
@@ -137,6 +164,6 @@
 
   <properties>
     <rootDir>../../</rootDir>
-    <apps.version>2.23-SNAPSHOT</apps.version>
+    <apps.version>2.24-SNAPSHOT</apps.version>
   </properties>
 </project>

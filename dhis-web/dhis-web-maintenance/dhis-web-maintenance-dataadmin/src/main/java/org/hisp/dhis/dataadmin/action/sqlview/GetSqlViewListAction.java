@@ -33,7 +33,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.util.Collections;
 import java.util.List;
 
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.paging.ActionPagingSupport;
 import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.sqlview.SqlViewService;
@@ -100,7 +99,7 @@ public class GetSqlViewListAction
                 paging.getStartPos(), paging.getPageSize() );
         }
 
-        Collections.sort( sqlViewObjectList, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( sqlViewObjectList );
         
         return SUCCESS;
     }

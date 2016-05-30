@@ -41,6 +41,8 @@ import java.util.Date;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
+
 /**
  * @author Lars Helge Overland
  */
@@ -103,7 +105,7 @@ public class DateUtilsTest
     }
     
     @Test
-    public void testMaxArray()
+    public void testMaxCollection()
     {
         Date date1 = new DateTime( 2014, 5, 15, 3, 3 ).toDate();
         Date date2 = new DateTime( 2014, 5, 18, 1, 1 ).toDate();
@@ -112,15 +114,52 @@ public class DateUtilsTest
         Date date5 = null;
         Date date6 = null;
         
-        assertEquals( date2, DateUtils.max( date1, date2, date4 ) );
-        assertEquals( date2, DateUtils.max( date2, date1, date4 ) );
-        assertEquals( date3, DateUtils.max( date1, date2, date3 ) );
-        assertEquals( date3, DateUtils.max( date1, date2, date3 ) );
-        assertEquals( date3, DateUtils.max( date3, date4, date5 ) );
-        assertEquals( date4, DateUtils.max( date4, date5, date6 ) );
-        assertEquals( date1, DateUtils.max( date1, date5, date4 ) );
+        assertEquals( date2, DateUtils.max( Sets.newHashSet( date1, date2, date4 ) ) );
+        assertEquals( date2, DateUtils.max( Sets.newHashSet( date2, date1, date4 ) ) );
+        assertEquals( date3, DateUtils.max( Sets.newHashSet( date1, date2, date3 ) ) );
+        assertEquals( date3, DateUtils.max( Sets.newHashSet( date1, date2, date3 ) ) );
+        assertEquals( date3, DateUtils.max( Sets.newHashSet( date3, date4, date5 ) ) );
+        assertEquals( null, DateUtils.max( Sets.newHashSet( date4, date5, date6 ) ) );
+        assertEquals( date1, DateUtils.max( Sets.newHashSet( date1, date5, date4 ) ) );
         
-        assertNull( DateUtils.max( date4, date5, date6 ) );
+        assertNull( DateUtils.max( Sets.newHashSet( date4, date5, date6 ) ) );
+    }
+    
+    @Test
+    public void testMin()
+    {
+        Date date1 = new DateTime( 2014, 5, 15, 3, 3 ).toDate();
+        Date date2 = new DateTime( 2014, 5, 18, 1, 1 ).toDate();
+        Date date3 = null;
+        Date date4 = null;
+        
+        assertEquals( date1, DateUtils.min( date1, date2 ) );
+        assertEquals( date1, DateUtils.min( date2, date1 ) );
+        assertEquals( date1, DateUtils.min( date1, date3 ) );
+        assertEquals( date1, DateUtils.min( date3, date1 ) );
+        
+        assertNull( DateUtils.max( date3, date4 ) );
+    }
+
+    @Test
+    public void testMinCollection()
+    {
+        Date date1 = new DateTime( 2014, 5, 15, 3, 3 ).toDate();
+        Date date2 = new DateTime( 2014, 5, 18, 1, 1 ).toDate();
+        Date date3 = new DateTime( 2014, 6, 10, 1, 1 ).toDate();
+        Date date4 = null;
+        Date date5 = null;
+        Date date6 = null;
+        
+        assertEquals( date1, DateUtils.min( Sets.newHashSet( date1, date2, date4 ) ) );
+        assertEquals( date1, DateUtils.min( Sets.newHashSet( date2, date1, date4 ) ) );
+        assertEquals( date1, DateUtils.min( Sets.newHashSet( date1, date2, date3 ) ) );
+        assertEquals( date1, DateUtils.min( Sets.newHashSet( date1, date2, date3 ) ) );
+        assertEquals( date3, DateUtils.min( Sets.newHashSet( date3, date4, date5 ) ) );
+        assertEquals( null, DateUtils.min( Sets.newHashSet( date4, date5, date6 ) ) );
+        assertEquals( date1, DateUtils.min( Sets.newHashSet( date1, date5, date4 ) ) );
+        
+        assertNull( DateUtils.max( Sets.newHashSet( date4, date5, date6 ) ) );
     }
     
     @Test
@@ -132,5 +171,47 @@ public class DateUtilsTest
         String interval = DateUtils.getPrettyInterval( start, end );
         
         assertNotNull( interval );
+    }
+
+    @Test
+    public void testGetMediumDate()
+    {        
+        assertEquals( new DateTime( 2014, 5, 18, 0, 0, 0, 0 ).toDate(), DateUtils.getMediumDate( "2014-05-18" ) );
+        assertEquals( new DateTime( 2015, 11, 3, 0, 0, 0, 0 ).toDate(), DateUtils.getMediumDate( "2015-11-03" ) );
+        
+        assertNull( DateUtils.getMediumDate( null ) );
+    }
+    
+    @Test( expected = IllegalArgumentException.class )
+    public void testGetInvalidMediumDate()
+    {
+        DateUtils.getMediumDate( "StringWhichIsNotADate" );
+    }
+    
+    @Test
+    public void testGetMediumDateString()
+    {
+        Date date = new DateTime( 2014, 5, 18, 15, 10, 5, 12 ).toDate();
+        
+        assertEquals( "2014-05-18", DateUtils.getMediumDateString( date ) );
+        assertNull( DateUtils.getMediumDateString( null ) );
+    }
+
+    @Test
+    public void testGetLongDateString()
+    {
+        Date date = new DateTime( 2014, 5, 18, 15, 10, 5, 12 ).toDate();
+        
+        assertEquals( "2014-05-18T15:10:05", DateUtils.getLongDateString( date ) );
+        assertNull( DateUtils.getLongDateString( null ) );
+    }
+    
+    @Test
+    public void testGetHttpDateString()
+    {
+        Date date = new DateTime( 2014, 5, 18, 15, 10, 5, 12 ).toDate();
+        
+        assertEquals( "Sun, 18 May 2014 15:10:05 GMT", DateUtils.getHttpDateString( date ) );
+        assertNull( DateUtils.getLongDateString( null ) );        
     }
 }

@@ -1,5 +1,7 @@
 package org.hisp.dhis.sms.task;
 
+import java.util.HashSet;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -30,9 +32,11 @@ package org.hisp.dhis.sms.task;
 
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.hisp.dhis.i18n.I18n;
 import org.hisp.dhis.scheduling.TaskId;
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.system.notification.Notifier;
 import org.hisp.dhis.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +45,8 @@ public class SendSmsTask
     implements Runnable
 {
     @Autowired
-    private SmsSender smsSender;
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
 
     @Autowired
     private Notifier notifier;
@@ -58,7 +63,7 @@ public class SendSmsTask
 
     private List<User> recipientsList;
 
-    private String message = "success";
+    private String message;
 
     private TaskId taskId;
 
@@ -77,7 +82,9 @@ public class SendSmsTask
     public void run()
     {
         notifier.notify( taskId, "Sending SMS" );
-        message = smsSender.sendMessage( smsSubject, text, currentUser, recipientsList, false );
+
+        message = smsSender.sendMessage( smsSubject, text, null, currentUser, new HashSet<>( recipientsList ), false );
+        
         notifier.notify( taskId, "All Message Sent" );
     }
 
@@ -145,5 +152,4 @@ public class SendSmsTask
     {
         return i18n;
     }
-
 }

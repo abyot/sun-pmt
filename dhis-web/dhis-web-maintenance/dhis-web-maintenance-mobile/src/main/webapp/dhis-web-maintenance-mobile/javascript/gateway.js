@@ -1,6 +1,8 @@
 currentType = '';
 function changeValueType( value )
 {
+	var saveSettingsInput = jQuery("#savesettings");
+	var addMoreButton = jQuery("#addmore");
 	hideAll();
     if ( value == 'bulksms' ) {
     	showById( "bulksmsFields" );
@@ -10,6 +12,16 @@ function changeValueType( value )
     	showById( "smppFields" );
     } else {
 	    showById( "genericHTTPFields" );
+	}
+
+	if (value === "http") {
+		saveSettingsInput.prop("type","button");
+		saveSettingsInput.attr("onclick","saveSettings()");
+		addMoreButton.show();
+	} else {
+		saveSettingsInput.prop("type","submit");
+		saveSettingsInput.removeAttr("onclick");
+		addMoreButton.hide();
 	}
 	currentType = value;
 }
@@ -99,30 +111,6 @@ function saveGatewayConfig()
 			} );
 		}
 	}
-	else if ( currentType == 'smpp_gw' )
-	{
-		var username = getFieldValue( 'smppFields input[id=username]' );
-		var password = getFieldValue( 'smppFields input[id=password]' );
-		if ( username == "" || password == "")
-		{	
-			showErrorMessage( i18n_required_data_error );
-		}
-		else
-		{
-			lockScreen();
-			jQuery.postJSON( "updateSMPPConfig.action", {
-				gatewayType: getFieldValue( 'gatewayType' ),
-				name: getFieldValue( 'smppFields input[id=name]' ),
-				username: getFieldValue( 'smppFields input[id=username]' ),
-				password: getFieldValue( 'smppFields input[id=password]' ),
-				port: getFieldValue( 'smppFields input[id=port]' ),
-				address: getFieldValue( 'smppFields input[id=address]' ),
-			}, function ( json ) {
-				unLockScreen();
-				showMessage( json );
-			} );
-		}
-	}
 	else if ( currentType == 'clickatell' )
 	{
 		var username = getFieldValue( 'clickatellFields input[id=username]' );
@@ -151,10 +139,18 @@ function saveGatewayConfig()
 	}
 	else
 	{
+		var usernameParameter = getFieldValue( 'genericHTTPFields input[id=usernameParameter]' );
+		var passwordParameter = getFieldValue( 'genericHTTPFields input[id=passwordParameter]' );
 		var username = getFieldValue( 'genericHTTPFields input[id=username]' );
 		var password = getFieldValue( 'genericHTTPFields input[id=password]' );
+
+		var messageParameter = getFieldValue( 'genericHTTPFields input[id=messageParameter]' );
+		var recipientParameter = getFieldValue( 'genericHTTPFields input[id=recipientParameter]' );
+		
+		
 		var URL = getFieldValue( 'genericHTTPFields input[id=urlTemplate]' );
-		if( username == "" || password == "" || URL == "" )
+
+		if( usernameParameter == "" || passwordParameter == "" || URL == "" ||  username == "" || password == "" || messageParameter == "" || recipientParameter == "")
 		{	
 			showErrorMessage( i18n_required_data_error );
 		}
@@ -164,8 +160,16 @@ function saveGatewayConfig()
 			jQuery.postJSON( "saveHTTPConfig.action", {
 				gatewayType: getFieldValue( 'gatewayType' ),
 				name: getFieldValue( 'genericHTTPFields input[id=name]' ),
+				
+				usernameParameter: getFieldValue( 'genericHTTPFields input[id=usernameParameter]' ),
 				username: getFieldValue( 'genericHTTPFields input[id=username]' ),
+				
+				passwordParameter: getFieldValue( 'genericHTTPFields input[id=passwordParameter]' ),
 				password: getFieldValue( 'genericHTTPFields input[id=password]' ),
+				
+				messageParameter: getFieldValue( 'genericHTTPFields input[id=messageParameter]' ),
+				recipientParameter: getFieldValue( 'genericHTTPFields input[id=recipientParameter]' ),
+				
 				urlTemplate: getFieldValue( 'genericHTTPFields input[id=urlTemplate]' )
 			}, function ( json ) {
 				unLockScreen();
@@ -223,4 +227,81 @@ function removeItem( itemId, itemName, confirmation, action, success )
     	    }
     	);
     }
+}
+
+function generateaddKeyValueParamForm()
+{
+	var rowId = jQuery('.trNewParam').length + 1;
+	var contend = '<tr id="trNewParam' + rowId + '" name="trNewParam' + rowId + '" class="trNewParam">'
+		+	'<td><input id="name' + rowId + '" name="name' + rowId + '" style="width:9em" type="text" onblur="checkDuplicatedKeyName(this.value,' + rowId + ')" placeholder="' + i18_new_key + '" />:</td>'
+		+	'<td><input id="value' + rowId + '" name="value' + rowId + '" type="text" style="width: 10em" placeholder="' + i18_value + '"/>'
+		+   	'<input type="radio" name="inputType'+rowId+'" onclick="updateInputType(' + rowId + ',\'text\')" checked>'+i18_text+'</input>'
+		+   	'<input type="radio" name="inputType'+rowId+'" onclick="updateInputType(' + rowId + ',\'password\')" style="margin-left: 1em" >'+i18_password+'</input>'
+		+   	'<input style="margin-left: 3em" type="button" value="remove" onclick="removeNewParamForm(' + rowId + ')"/></td>'
+		+ '</tr>';
+	jQuery('#genericHTTPFields').append(contend);
+}
+
+function removeNewParamForm( rowId )
+{
+	jQuery("[name=trNewParam" + rowId + "]").remove();
+}
+
+function updateInputType( rowId, type )
+{
+	jQuery('#value'+rowId).prop('type', type);
+}
+
+function saveSettings ()
+{
+	var url = "../api/gateways/generichttp";
+	var httpFields = jQuery('#genericHTTPFields');
+	var data = {
+		name: httpFields.find("#name")[0].value,
+		messageParameter: httpFields.find("#messageParameter")[0].value,
+		recipientParameter: httpFields.find("#recipientParameter")[0].value,
+		urltemplate: httpFields.find("#urlTemplate")[0].value
+	};
+
+	var newParams = getHttpKeyValueParamsAddedByTheUser(httpFields);
+
+	if (data.name == "" || data.messageParameter == "" || data.recipientParameter == "" || data.urltemplate == "") {
+		showErrorMessage(i18n_required_data_error);
+	} else {
+
+		if (newParams) {
+			data['keyValueParameters'] = newParams;
+		}
+
+		jQuery.ajax({
+			url: url,
+			type: 'POST',
+			dataType: 'json',
+			data: JSON.stringify(data),
+			contentType: "application/json"
+
+		}).done(function (response) {
+			console.log(response);
+			showSuccessMessage(i18n_add_update_success);
+		}).fail(function (error) {
+			console.log(error);
+			showErrorMessage("Error - status:"+error.status+" message:"+error.statusText);
+		});
+	}
+}
+
+function getHttpKeyValueParamsAddedByTheUser(allFields)
+{
+	var newParamName, newParamValue;
+	var newParamsCount = jQuery('.trNewParam').length;
+	var newParams = {};
+	for (var rowIndex = 1; rowIndex <= newParamsCount; rowIndex++) {
+		newParamName = allFields.find('#trNewParam'+rowIndex).find('#name'+rowIndex)[0].value;
+		newParamValue = allFields.find('#trNewParam'+rowIndex).find('#value'+rowIndex)[0].value;
+		newParams[newParamName] = newParamValue;
+	}
+	if (Object.keys(newParams).length === 0) {
+		return null;
+	}
+	return newParams;
 }

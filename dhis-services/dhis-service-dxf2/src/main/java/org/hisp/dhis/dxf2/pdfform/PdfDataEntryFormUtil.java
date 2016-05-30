@@ -30,9 +30,7 @@ package org.hisp.dhis.dxf2.pdfform;
 
 import java.awt.Color;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +38,7 @@ import org.hisp.dhis.common.exception.InvalidIdentifierReferenceException;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSet;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
+import org.hisp.dhis.system.util.DateUtils;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -99,11 +98,7 @@ public class PdfDataEntryFormUtil
 
     private static final String DATAVALUE_IMPORT_COMMENT = "Imported by PDF Data Entry Form";
 
-    private static final String DATAVALUE_IMPORT_TIMESTAMP_DATEFORMAT = "yyyy-MM-dd";
-
     private static final String FOOTERTEXT_DEFAULT = "PDF Template [v 1.00] generated from DHIS %s on %s";
-
-    private static final String DATEFORMAT_FOOTER_DEFAULT = "MMMM dd, yyyy";
 
     private static final String ERROR_INVALID_PERIOD = "Invalid period: ";
 
@@ -127,8 +122,7 @@ public class PdfDataEntryFormUtil
 
     public static void setDefaultFooterOnDocument( Document document, String serverName, Font font )
     {
-        String strFooterText = String.format( FOOTERTEXT_DEFAULT, serverName, (new SimpleDateFormat(
-            DATEFORMAT_FOOTER_DEFAULT )).format( new Date() ) );
+        String strFooterText = String.format( FOOTERTEXT_DEFAULT, serverName, DateUtils.getMediumDateString() );
 
         setFooterOnDocument( document, strFooterText, font );
     }
@@ -258,8 +252,7 @@ public class PdfDataEntryFormUtil
                         dataValue.setStoredBy( DATAVALUE_IMPORT_STOREBY );
                         dataValue.setComment( DATAVALUE_IMPORT_COMMENT );
                         dataValue.setFollowup( false );
-                        dataValue.setLastUpdated( new SimpleDateFormat( DATAVALUE_IMPORT_TIMESTAMP_DATEFORMAT )
-                            .format( new Date() ) );
+                        dataValue.setLastUpdated( DateUtils.getMediumDateString() );
 
                         dataValueList.add( dataValue );
                     }

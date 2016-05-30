@@ -28,8 +28,6 @@ package org.hisp.dhis.dxf2.adx;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -46,6 +44,7 @@ import org.hisp.dhis.period.SixMonthlyAprilPeriodType;
 import org.hisp.dhis.period.SixMonthlyPeriodType;
 import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.period.YearlyPeriodType;
+import org.hisp.dhis.system.util.DateUtils;
 
 /**
  * ADXPeriod
@@ -67,8 +66,6 @@ public class AdxPeriod
         P1Y  // yearly, financialApril, financialJuly, financialOctober
     }
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd" );
-
     public static Period parse( String periodString ) 
         throws AdxException
     {
@@ -83,7 +80,7 @@ public class AdxPeriod
         {
             Period period = null;
             PeriodType periodType = null;
-            Date startDate = DATE_FORMAT.parse( tokens[0] );
+            Date startDate = DateUtils.getMediumDate( tokens[0] );
             Calendar cal = Calendar.getInstance();
             cal.setTime( startDate );
             Duration duration = Duration.valueOf( tokens[1] );
@@ -148,11 +145,7 @@ public class AdxPeriod
 
             return period;
 
-        } 
-        catch ( ParseException ex )
-        {
-            throw new AdxException( tokens[0] + "is not a valid date in YYYY-MM-dd format" );
-        } 
+        }
         catch ( IllegalArgumentException ex )
         {
             throw new AdxException( tokens[1] + " is not a supported duration type" );
@@ -161,7 +154,7 @@ public class AdxPeriod
 
     public static String serialize( Period period )
     {
-        return DATE_FORMAT.format( period.getStartDate() ) + "/"
+        return DateUtils.getMediumDateString( period.getStartDate() ) + "/"
             + period.getPeriodType().getIso8601Duration();
     }
 }

@@ -28,15 +28,10 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.analytics.AnalyticsService.NAMES_META_KEY;
-
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.hisp.dhis.analytics.AggregationType;
+import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
 import org.hisp.dhis.analytics.EventOutputType;
+import org.hisp.dhis.analytics.Rectangle;
 import org.hisp.dhis.analytics.SortOrder;
 import org.hisp.dhis.analytics.event.EventAnalyticsService;
 import org.hisp.dhis.analytics.event.EventDataQueryService;
@@ -44,10 +39,11 @@ import org.hisp.dhis.analytics.event.EventQueryParams;
 import org.hisp.dhis.common.DisplayProperty;
 import org.hisp.dhis.common.Grid;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
+import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.system.grid.GridUtils;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.ContextUtils;
-import org.hisp.dhis.common.cache.CacheStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -56,17 +52,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Lars Helge Overland
  */
 @Controller
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class EventAnalyticsController
 {
     private static final String RESOURCE_PATH = "/analytics/events";
 
     @Autowired
     private EventDataQueryService eventDataQueryService;
-    
+
     @Autowired
     private EventAnalyticsService analyticsService;
 
@@ -319,12 +320,12 @@ public class EventAnalyticsController
         Model model,
         HttpServletResponse response ) throws Exception
     {
-        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter, 
+        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter,
             ouMode, asc, desc, skipMeta, skipData, completedOnly, hierarchyMeta, coordinatesOnly, displayProperty, userOrgUnit, page, pageSize, i18nManager.getI18nFormat() );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_JSON, CacheStrategy.RESPECT_SYSTEM_SETTING );
-        Map<String, Object> map = analyticsService.getEventCountAndExtent( params );
-        model.addAttribute( "model", map );
+        Rectangle rectangle = analyticsService.getRectangle( params );
+        model.addAttribute( "model", rectangle );
         model.addAttribute( "viewClass", "detailed" );
         return "grid";
     }
@@ -359,13 +360,13 @@ public class EventAnalyticsController
         Model model,
         HttpServletResponse response ) throws Exception
     {
-        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter, 
+        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter,
             ouMode, asc, desc, skipMeta, skipData, completedOnly, hierarchyMeta, coordinatesOnly, displayProperty, userOrgUnit, page, pageSize, i18nManager.getI18nFormat() );
 
         params.setClusterSize( clusterSize );
         params.setBbox( bbox );
         params.setIncludeClusterPoints( includeClusterPoints );
-        
+
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_JSON, CacheStrategy.RESPECT_SYSTEM_SETTING );
         Grid grid = analyticsService.getEventClusters( params );
         model.addAttribute( "model", grid );
@@ -400,7 +401,7 @@ public class EventAnalyticsController
         Model model,
         HttpServletResponse response ) throws Exception
     {
-        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter, 
+        EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter,
             ouMode, asc, desc, skipMeta, skipData, completedOnly, hierarchyMeta, coordinatesOnly, displayProperty, userOrgUnit, page, pageSize, i18nManager.getI18nFormat() );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_JSON, CacheStrategy.RESPECT_SYSTEM_SETTING );
@@ -572,9 +573,9 @@ public class EventAnalyticsController
     @SuppressWarnings( "unchecked" )
     private Grid substituteMetaData( Grid grid )
     {
-        if ( grid.getMetaData() != null && grid.getMetaData().containsKey( NAMES_META_KEY ) )
+        if ( grid.getMetaData() != null && grid.getMetaData().containsKey( AnalyticsMetaDataKey.NAMES.getKey() ) )
         {
-            grid.substituteMetaData( (Map<Object, Object>) grid.getMetaData().get( NAMES_META_KEY ) );
+            grid.substituteMetaData( (Map<Object, Object>) grid.getMetaData().get( AnalyticsMetaDataKey.NAMES.getKey() ) );
         }
 
         return grid;

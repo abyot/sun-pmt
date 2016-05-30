@@ -34,6 +34,9 @@ import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.MaintenanceModeException;
 
 /**
+ * Service interface which provides methods for validating and planning 
+ * analytics queries.
+ * 
  * @author Lars Helge Overland
  */
 public interface QueryPlanner
@@ -43,7 +46,7 @@ public interface QueryPlanner
      * is not valid with a descriptive message. Returns normally if the query is
      * valid.
      * 
-     * @param params the query.
+     * @param params the data query parameters.
      * @throws IllegalQueryException if the query is invalid.
      */
     void validate( DataQueryParams params )
@@ -54,7 +57,7 @@ public interface QueryPlanner
      * Throws an IllegalQueryException if the query is not valid with a 
      * descriptive message. Returns normally if the query is valid.
      * 
-     * @param params the query.
+     * @param params the data query parameters.
      * @param columns the column dimension identifiers.
      * @param rows the row dimension identifiers.
      * @throws IllegalQueryException if the query is invalid.
@@ -87,12 +90,10 @@ public interface QueryPlanner
      * with low cardinality typically does not improve performance.
      * 
      * @param params the data query parameters.
-     * @param optimalQueries the number of optimal queries for the planner to 
-     *        return for each query group.
-     * @param tableName the base table name.
+     * @param plannerParams the query planner parameters.
      * @return a DataQueryGroups object.
      */
-    DataQueryGroups planQuery( DataQueryParams params, int optimalQueries, String tableName )
+    DataQueryGroups planQuery( DataQueryParams params, QueryPlannerParams plannerParams  )
         throws IllegalQueryException;
 
     /**
@@ -101,6 +102,9 @@ public interface QueryPlanner
      * unit level on each query. If organisation units appear as filter; replaces
      * the organisation unit filter with one filter for each level. Sets the dimension
      * names and filter names respectively.
+     * 
+     * @param params the data query parameters.
+     * @return a list of data query parameters.
      */
     List<DataQueryParams> groupByOrgUnitLevel( DataQueryParams params );
     
@@ -109,6 +113,10 @@ public interface QueryPlanner
      * partition it should be executed against. Sets the partition table name on
      * each query. Queries are grouped based on periods if appearing as a 
      * dimension.
+     * 
+     * @param params the data query parameters.
+     * @param plannerParams the query planner parameters.
+     * @return a list of data query parameters.
      */
     List<DataQueryParams> groupByPartition( DataQueryParams params, QueryPlannerParams plannerParams );
     
@@ -118,6 +126,22 @@ public interface QueryPlanner
      * name on each query. If periods appear as filters; replaces the period filter
      * with one filter for each period type. Sets the dimension names and filter
      * names respectively.
+     * 
+     * @param params the data query parameters.
+     * @return a list of data query parameters.
      */
-    List<DataQueryParams> groupByPeriodType( DataQueryParams params );
+    List<DataQueryParams> groupByPeriodType( DataQueryParams params );    
+
+    /**
+     * If periods appear as dimensions in the given query; groups the given query 
+     * into sub queries based on start and end dates, i.e. one query per period. 
+     * Marks the period dimension as fixed and sets the dimension name to the period
+     * ISO name. Sets the start date and end date properties. If periods appear
+     * as filters in the given query; sets the start date and end date properties
+     * based on the first period and removes the period dimension.
+     * 
+     * @param params the data query parameters.
+     * @return a list of data query parameters.
+     */
+    List<DataQueryParams> groupByStartEndDate( DataQueryParams params );
 }

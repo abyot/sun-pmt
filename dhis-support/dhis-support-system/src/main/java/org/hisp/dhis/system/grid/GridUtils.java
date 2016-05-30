@@ -486,9 +486,10 @@ public class GridUtils
      * for table-based HTML documents.
      * 
      * @param html the HTML string.
+     * @param title the title to use for the grids.
      * @return a list of Grids.
      */
-    public static List<Grid> fromHtml( String html )
+    public static List<Grid> fromHtml( String html, String title )
         throws Exception
     {
         if ( html == null || html.trim().isEmpty() )
@@ -505,6 +506,8 @@ public class GridUtils
         for ( Node t : tables )
         {
             Grid grid = new ListGrid();
+            
+            grid.setTitle( title );
 
             TableTag table = (TableTag) t;
             

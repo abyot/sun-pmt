@@ -46,6 +46,7 @@ import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_ORGUNIT_GROUP;
 import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_USER_ORGUNIT;
 import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_USER_ORGUNIT_CHILDREN;
 import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_USER_ORGUNIT_GRANDCHILDREN;
+import static org.apache.commons.lang3.EnumUtils.isValidEnum;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -318,7 +319,7 @@ public class DefaultDimensionService
         DimensionalObject dimension = identifiableObjectManager.get( DimensionalObject.DYNAMIC_DIMENSION_CLASSES, uid );
 
         BaseDimensionalObject copy = new BaseDimensionalObject();
-        copy.mergeWith( dimension, MergeMode.MERGE_IF_NOT_NULL );
+        copy.mergeWith( dimension, MergeMode.MERGE );
 
         if ( filterCanRead )
         {
@@ -347,8 +348,8 @@ public class DefaultDimensionService
             {
                 return operand;
             }
-            else if ( ( dataSet = identifiableObjectManager.getObject( DataSet.class, idScheme, id0 ) ) != null )
-            {
+            else if ( ( dataSet = identifiableObjectManager.getObject( DataSet.class, idScheme, id0 ) ) != null && isValidEnum( ReportingRateMetric.class, id1 ) )
+            {                
                 return new ReportingRate( dataSet, ReportingRateMetric.valueOf( id1 ) );
             }
             else if ( ( programDataElement = programService.getOrAddProgramDataElement( id0, id1 ) ) != null )
@@ -400,7 +401,7 @@ public class DefaultDimensionService
             {
                 return operand;
             }
-            else if ( ( dataSet = identifiableObjectManager.get( DataSet.class, id0 ) ) != null )
+            else if ( ( dataSet = identifiableObjectManager.get( DataSet.class, id0 ) ) != null && isValidEnum( ReportingRateMetric.class, id1 ) )
             {
                 return new ReportingRate( dataSet, ReportingRateMetric.valueOf( id1 ) );
             }

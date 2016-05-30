@@ -49,4 +49,6 @@ public interface TrackedEntityAttributeValueAuditService
 
     int countTrackedEntityAttributeValueAudits( List<TrackedEntityAttribute> trackedEntityAttributes,
         List<TrackedEntityInstance> trackedEntityInstances, AuditType auditType );
+    
+    void deleteTrackedEntityAttributeValueAudits( TrackedEntityInstance trackedEntityInstance );
 }

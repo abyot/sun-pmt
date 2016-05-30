@@ -96,7 +96,6 @@ import java.util.Set;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.hisp.dhis.system.notification.NotificationLevel.ERROR;
 import static org.hisp.dhis.system.notification.NotificationLevel.INFO;
-import static org.hisp.dhis.system.util.DateUtils.getDefaultDate;
 import static org.hisp.dhis.system.util.DateUtils.parseDate;
 
 /**
@@ -167,7 +166,8 @@ public class DefaultDataValueSetService
 
         if ( dataSets != null )
         {
-            params.getDataSets().addAll( identifiableObjectManager.getByUid( DataSet.class, dataSets ) );
+            params.getDataSets().addAll( identifiableObjectManager.getObjects( 
+                DataSet.class, idSchemes.getIdScheme().getIdentifiableProperty(), dataSets ) );
         }
 
         if ( periods != null && !periods.isEmpty() )
@@ -182,7 +182,8 @@ public class DefaultDataValueSetService
 
         if ( organisationUnits != null )
         {
-            params.getOrganisationUnits().addAll( identifiableObjectManager.getByUid( OrganisationUnit.class, organisationUnits ) );
+            params.getOrganisationUnits().addAll( identifiableObjectManager.getObjects( 
+                OrganisationUnit.class, idSchemes.getOrgUnitIdScheme().getIdentifiableProperty(), organisationUnits ) );
         }
 
         params.setIncludeChildren( includeChildren );
@@ -613,7 +614,7 @@ public class DefaultDataValueSetService
 
         DataSet dataSet = dataValueSet.getDataSet() != null ? identifiableObjectManager.getObject( DataSet.class, idScheme, dataValueSet.getDataSet() ) : null;
 
-        Date completeDate = getDefaultDate( dataValueSet.getCompleteDate() );
+        Date completeDate = DateUtils.getMediumDate( dataValueSet.getCompleteDate() );
 
         Period outerPeriod = periodMap.get( trimToNull( dataValueSet.getPeriod() ), periodCallable );
 

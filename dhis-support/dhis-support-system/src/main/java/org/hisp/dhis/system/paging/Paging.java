@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hisp.dhis.common.IdentifiableObject;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 
 /**
  * @author Quang Nguyen
@@ -191,7 +190,7 @@ public class Paging
     {
         final List<T> list = new ArrayList<>( objects );
 
-        Collections.sort( list, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( list );
         
         int last = first + max;
         
@@ -215,7 +214,7 @@ public class Paging
             }
         }
         
-        Collections.sort( list, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( list );
 
         int last = first + max;
 

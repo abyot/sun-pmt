@@ -50,6 +50,7 @@ import static org.hisp.dhis.common.IdentifiableObjectUtils.getUids;
 import static org.hisp.dhis.commons.util.TextUtils.getQuotedCommaDelimitedString;
 import static org.hisp.dhis.commons.util.TextUtils.removeLastOr;
 import static org.hisp.dhis.commons.util.TextUtils.trimEnd;
+import static org.hisp.dhis.system.util.DateUtils.getMediumDateString;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -324,15 +325,23 @@ public class JdbcAnalyticsManager
 
         String sql = "from " + partition + " ";
 
+        // ---------------------------------------------------------------------
+        // Dimensions
+        // ---------------------------------------------------------------------
+
         for ( DimensionalObject dim : params.getDimensions() )
         {
-            if ( !dim.getItems().isEmpty() )
+            if ( !dim.getItems().isEmpty() && !dim.isFixed() )
             {
                 String col = statementBuilder.columnQuote( dim.getDimensionName() );
 
                 sql += sqlHelper.whereAnd() + " " + col + " in (" + getQuotedCommaDelimitedString( getUids( dim.getItems() ) ) + ") ";
             }
         }
+
+        // ---------------------------------------------------------------------
+        // Filters
+        // ---------------------------------------------------------------------
 
         ListMap<String, DimensionalObject> filterMap = params.getDimensionFilterMap();
 
@@ -358,6 +367,10 @@ public class JdbcAnalyticsManager
             }
         }
 
+        // ---------------------------------------------------------------------
+        // Data approval
+        // ---------------------------------------------------------------------
+
         if ( params.isDataApproval() )
         {
             sql += sqlHelper.whereAnd() + " ( ";
@@ -371,6 +384,29 @@ public class JdbcAnalyticsManager
             }
 
             sql = removeLastOr( sql ) + ") ";
+        }
+
+        // ---------------------------------------------------------------------
+        // Restrictions
+        // ---------------------------------------------------------------------
+        
+        if ( params.isRestrictByOrgUnitOpeningClosedDate() && params.hasStartEndDate() )
+        {
+            sql += sqlHelper.whereAnd() + " (" +
+                "(ouopeningdate <= '" + getMediumDateString( params.getStartDate() ) + "' or ouopeningdate is null) and " +
+                "(oucloseddate >= '" + getMediumDateString( params.getEndDate() ) + "' or oucloseddate is null)) ";
+        }
+        
+        if ( params.isRestrictByCategoryOptionStartEndDate() && params.hasStartEndDate() )
+        {
+            sql += sqlHelper.whereAnd() + " (" +
+                "(costartdate <= '" + getMediumDateString( params.getStartDate() ) + "' or costartdate is null) and " +
+                "(coenddate >= '" + getMediumDateString( params.getEndDate() ) + "' or coenddate is null)) ";
+        }
+
+        if ( params.isTimely() )
+        {
+            sql += sqlHelper.whereAnd() + " timely is true ";
         }
 
         return sql;
@@ -416,7 +452,9 @@ public class JdbcAnalyticsManager
 
             for ( DimensionalObject dim : params.getDimensions() )
             {
-                key.append( rowSet.getString( dim.getDimensionName() ) ).append( DIMENSION_SEP );
+                String value = dim.isFixed() ? dim.getDimensionName() : rowSet.getString( dim.getDimensionName() );
+                
+                key.append( value ).append( DIMENSION_SEP );
             }
 
             key.deleteCharAt( key.length() - 1 );
@@ -502,7 +540,10 @@ public class JdbcAnalyticsManager
         {
             for ( DimensionalObject dimension : dimensions )
             {
-                builder.append( statementBuilder.columnQuote( dimension.getDimensionName() ) ).append( "," );
+                if ( !dimension.isFixed() )
+                {
+                    builder.append( statementBuilder.columnQuote( dimension.getDimensionName() ) ).append( "," );
+                }
             }
 
             return builder.substring( 0, builder.length() - 1 );

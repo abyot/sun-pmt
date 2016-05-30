@@ -53,7 +53,6 @@ import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.program.ProgramStage;
-import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramStageDataElementService;
 import org.hisp.dhis.program.ProgramStageService;
 import org.hisp.dhis.system.grid.ListGrid;
@@ -145,7 +144,7 @@ public class EventDataQueryServiceTest
         attributeService.addTrackedEntityAttribute( atA );
         attributeService.addTrackedEntityAttribute( atB );
 
-        prA = createProgram( 'A', new HashSet<ProgramStage>(), Sets.newHashSet( atA, atB ), Sets.newHashSet( ouA, ouB ) );
+        prA = createProgram( 'A', null, Sets.newHashSet( atA, atB ), Sets.newHashSet( ouA, ouB ) );
         programService.addProgram( prA );
 
         psA = createProgramStage( 'A', 0 );
@@ -153,8 +152,8 @@ public class EventDataQueryServiceTest
 
         programStageService.saveProgramStage( psA );
 
-        programStageDataElementService.addProgramStageDataElement( new ProgramStageDataElement( psA, deA, false ) );
-        programStageDataElementService.addProgramStageDataElement( new ProgramStageDataElement( psA, deB, false ) );
+        programStageDataElementService.addProgramStageDataElement( createProgramStageDataElement( psA, deA, false, 1 ) );
+        programStageDataElementService.addProgramStageDataElement( createProgramStageDataElement( psA, deB, false, 2 ) );
 
         legendA = createLegend( 'A', 0d, 10d );
         legendB = createLegend( 'B', 10d, 20d );
@@ -229,7 +228,7 @@ public class EventDataQueryServiceTest
         eventChart.getOrganisationUnits().add( ouA );
         eventChart.getOrganisationUnits().add( ouB );
 
-        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart, null );
+        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart );
 
         assertNotNull( params );
         assertEquals( 1, params.getItems().size() );
@@ -256,7 +255,7 @@ public class EventDataQueryServiceTest
         eventChart.getOrganisationUnits().add( ouA );
         eventChart.getOrganisationUnits().add( ouB );
 
-        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart, null );
+        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart );
 
         assertNotNull( params );
         assertEquals( 2, params.getItems().size() );
@@ -282,7 +281,7 @@ public class EventDataQueryServiceTest
         eventChart.getPeriods().add( peB );
         eventChart.getOrganisationUnits().add( ouA );
 
-        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart, null );
+        EventQueryParams params = dataQueryService.getFromAnalyticalObject( eventChart );
 
         assertNotNull( params );
         assertEquals( 2, params.getItems().size() );

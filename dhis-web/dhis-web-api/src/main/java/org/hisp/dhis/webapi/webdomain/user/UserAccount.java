@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class UserAccount
 {
+    private String id;
+    
     // user account
     private String username;
     
@@ -72,6 +74,17 @@ public class UserAccount
     
     public UserAccount()
     {
+    }
+
+    @JsonProperty
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId( String id )
+    {
+        this.id = id;
     }
 
     @JsonProperty

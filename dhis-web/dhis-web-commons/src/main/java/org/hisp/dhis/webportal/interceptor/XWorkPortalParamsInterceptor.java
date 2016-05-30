@@ -31,9 +31,10 @@ package org.hisp.dhis.webportal.interceptor;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.interceptor.Interceptor;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.system.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;

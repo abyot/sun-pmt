@@ -74,13 +74,6 @@ public class ShowAddProgramStageSectionAction
         return programStage;
     }
 
-    private ProgramStageSection section;
-
-    public ProgramStageSection getSection()
-    {
-        return section;
-    }
-
     private List<ProgramStageDataElement> availableDataElements;
 
     public List<ProgramStageDataElement> getAvailableDataElements()

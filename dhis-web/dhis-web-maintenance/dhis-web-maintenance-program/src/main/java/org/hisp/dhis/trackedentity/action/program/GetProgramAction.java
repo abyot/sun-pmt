@@ -33,8 +33,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
-import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
-import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.oust.manager.SelectionTreeManager;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
@@ -106,20 +104,6 @@ public class GetProgramAction
     public Program getProgram()
     {
         return program;
-    }
-
-    private List<OrganisationUnitLevel> levels;
-
-    public List<OrganisationUnitLevel> getLevels()
-    {
-        return levels;
-    }
-
-    private List<OrganisationUnitGroup> groups;
-
-    public List<OrganisationUnitGroup> getGroups()
-    {
-        return groups;
     }
 
     private Integer level;

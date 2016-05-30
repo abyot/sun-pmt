@@ -230,13 +230,6 @@ public class UpdateUserAction
         this.ouwtSelected = ouwtSelected;
     }
 
-    private String message;
-
-    public String getMessage()
-    {
-        return message;
-    }
-
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------

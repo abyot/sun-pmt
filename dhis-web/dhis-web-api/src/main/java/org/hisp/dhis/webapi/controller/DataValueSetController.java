@@ -28,7 +28,11 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.io.IOUtils;
+import org.hibernate.SessionFactory;
 import org.hisp.dhis.common.IdSchemes;
+import org.hisp.dhis.dxf2.adx.AdxDataService;
+import org.hisp.dhis.dxf2.adx.AdxException;
 import org.hisp.dhis.dxf2.common.ImportOptions;
 import org.hisp.dhis.dxf2.datavalueset.DataExportParams;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSetService;
@@ -40,6 +44,7 @@ import org.hisp.dhis.scheduling.TaskCategory;
 import org.hisp.dhis.scheduling.TaskId;
 import org.hisp.dhis.system.scheduling.Scheduler;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,11 +53,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.hisp.dhis.dxf2.adx.AdxDataService;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,9 +64,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
-import org.hibernate.SessionFactory;
-
 import static org.hisp.dhis.webapi.utils.ContextUtils.*;
 
 /**
@@ -72,6 +71,7 @@ import static org.hisp.dhis.webapi.utils.ContextUtils.*;
  */
 @Controller
 @RequestMapping( value = DataValueSetController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class DataValueSetController
 {
     public static final String RESOURCE_PATH = "/dataValueSets";
@@ -84,13 +84,13 @@ public class DataValueSetController
 
     @Autowired
     private RenderService renderService;
-    
+
     @Autowired
     private CurrentUserService currentUserService;
-    
+
     @Autowired
     private Scheduler scheduler;
-    
+
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -128,7 +128,7 @@ public class DataValueSetController
         @RequestParam( required = false ) boolean children,
         @RequestParam( required = false ) Date lastUpdated,
         @RequestParam( required = false ) Integer limit,
-        IdSchemes idSchemes, HttpServletResponse response ) throws IOException
+        IdSchemes idSchemes, HttpServletResponse response ) throws IOException, AdxException
     {
         response.setContentType( CONTENT_TYPE_XML_ADX );
 
@@ -195,7 +195,7 @@ public class DataValueSetController
         else
         {
             ImportSummary summary = dataValueSetService.saveDataValueSet( request.getInputStream(), importOptions );
-    
+
             response.setContentType( CONTENT_TYPE_XML );
             renderService.toXml( response.getOutputStream(), summary );
         }
@@ -213,7 +213,7 @@ public class DataValueSetController
         else
         {
             ImportSummaries summaries = adxDataService.saveDataValueSet( request.getInputStream(), importOptions, null );
-    
+
             response.setContentType( CONTENT_TYPE_XML );
             renderService.toXml( response.getOutputStream(), summaries );
         }
@@ -231,7 +231,7 @@ public class DataValueSetController
         else
         {
             ImportSummary summary = dataValueSetService.saveDataValueSetJson( request.getInputStream(), importOptions );
-    
+
             response.setContentType( CONTENT_TYPE_JSON );
             renderService.toJson( response.getOutputStream(), summary );
         }
@@ -249,7 +249,7 @@ public class DataValueSetController
         else
         {
             ImportSummary summary = dataValueSetService.saveDataValueSetCsv( request.getInputStream(), importOptions );
-    
+
             response.setContentType( CONTENT_TYPE_XML );
             renderService.toXml( response.getOutputStream(), summary );
         }
@@ -261,11 +261,11 @@ public class DataValueSetController
 
     /**
      * Starts an asynchronous import task.
-     * 
+     *
      * @param importOptions the ImportOptions.
-     * @param format the resource representation format.
-     * @param request the HttpRequest.
-     * @param response the HttpResponse.
+     * @param format        the resource representation format.
+     * @param request       the HttpRequest.
+     * @param response      the HttpResponse.
      * @throws IOException
      */
     private void startAsyncImport( ImportOptions importOptions, String format, HttpServletRequest request, HttpServletResponse response )
@@ -279,11 +279,11 @@ public class DataValueSetController
         response.setHeader( "Location", ContextUtils.getRootPath( request ) + "/system/tasks/" + TaskCategory.DATAVALUE_IMPORT );
         response.setStatus( HttpServletResponse.SC_ACCEPTED );
     }
-    
+
     /**
      * Writes the input stream to a temporary file, and returns a new input
      * stream connected to the file.
-     * 
+     *
      * @param in the InputStream.
      * @return an InputStream.
      * @throws IOException
@@ -292,14 +292,14 @@ public class DataValueSetController
         throws IOException
     {
         File tmpFile = File.createTempFile( "dvs", null );
-        
+
         tmpFile.deleteOnExit();
-        
+
         try ( FileOutputStream out = new FileOutputStream( tmpFile ) )
         {
             IOUtils.copy( in, out );
         }
-        
+
         return new BufferedInputStream( new FileInputStream( tmpFile ) );
     }
 }

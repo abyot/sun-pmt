@@ -37,12 +37,14 @@ public class ClickatellGatewayConfig
     extends SmsGatewayConfig
 {
     private static final long serialVersionUID = -4286107769356591957L;
+    
+    private final String TOKEN_PREFIX = "Bearer ";
+    
+    private final String URL_TEMPLATE = "https://api.clickatell.com/rest/message";
 
     private String username;
 
     private String password;
-
-    private String apiId;
     
     private String authToken;
 
@@ -54,7 +56,7 @@ public class ClickatellGatewayConfig
 
     public void setAuthToken( String authToken )
     {
-        this.authToken = authToken;
+        this.authToken = TOKEN_PREFIX + authToken;
     }
 
     @JsonProperty( value = "username" )
@@ -85,21 +87,10 @@ public class ClickatellGatewayConfig
         this.password = password;
     }
 
-    @JsonProperty( value = "apiid" )
-    public String getApiId()
-    {
-        return apiId;
-    }
-
     @JsonProperty( value = "name" )
     public String getName()
     {
         return super.getName();
-    }
-
-    public void setApiId( String apiId )
-    {
-        this.apiId = apiId;
     }
 
     @Override
@@ -112,5 +103,12 @@ public class ClickatellGatewayConfig
     public boolean isOutbound()
     {
         return true;
+    }
+    
+    @Override
+    @JsonProperty( value = "urlTemplate" )
+    public String getUrlTemplate()
+    {
+        return this.URL_TEMPLATE;
     }
 }

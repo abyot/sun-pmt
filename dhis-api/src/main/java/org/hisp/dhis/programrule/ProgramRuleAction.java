@@ -249,14 +249,6 @@ public class ProgramRuleAction
         this.programIndicator = programIndicator;
     }
 
-    @JsonProperty
-    @JsonSerialize( as = BaseIdentifiableObject.class )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public ProgramStageSection getProgramStageSection()
-    {
-        return programStageSection;
-    }
-
     public void setProgramStage( ProgramStage programStage )
     {
         this.programStage = programStage;
@@ -268,6 +260,14 @@ public class ProgramRuleAction
     public ProgramStage getProgramStage()
     {
         return programStage;
+    }
+
+    @JsonProperty
+    @JsonSerialize( as = BaseIdentifiableObject.class )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public ProgramStageSection getProgramStageSection()
+    {
+        return programStageSection;
     }
 
     public void setProgramStageSection( ProgramStageSection programStageSection )
@@ -326,6 +326,7 @@ public class ProgramRuleAction
                 programRuleActionType = programRuleAction.getProgramRuleActionType();
                 dataElement = programRuleAction.getDataElement();
                 programStageSection = programRuleAction.getProgramStageSection();
+                programStage = programRuleAction.getProgramStage();
                 location = programRuleAction.getLocation();
                 content = programRuleAction.getContent();
                 data = programRuleAction.getData();
@@ -337,6 +338,7 @@ public class ProgramRuleAction
                 programRuleActionType = programRuleAction.getProgramRuleActionType() == null ? programRuleActionType : programRuleAction.getProgramRuleActionType();
                 dataElement = programRuleAction.getDataElement() == null ? dataElement : programRuleAction.getDataElement();
                 programStageSection = programRuleAction.getProgramStageSection() == null ? programStageSection : programRuleAction.getProgramStageSection();
+                programStage = programRuleAction.getProgramStage() == null ? programStage : programRuleAction.getProgramStage();
                 location = programRuleAction.getLocation() == null ? location : programRuleAction.getLocation();
                 content = programRuleAction.getContent() == null ? content : programRuleAction.getContent();
                 data = programRuleAction.getData() == null ? data : programRuleAction.getData();

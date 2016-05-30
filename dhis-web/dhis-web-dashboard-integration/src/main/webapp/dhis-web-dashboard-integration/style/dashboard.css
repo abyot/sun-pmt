@@ -455,6 +455,12 @@ a.alert, .alert
 {
   margin-top: 8px;
   float: left;
+  padding-left: 5px;
+}
+
+.internalMessage
+{
+  background-color: antiquewhite;
 }
 
 .replyArea
@@ -465,6 +471,20 @@ a.alert, .alert
   resize: none;
   overflow: auto;
   padding: 5px 6px;
+}
+
+.internalMessageButtonLink
+{
+  padding: 6px 12px;
+  height: 25px;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  margin-right: 4px;
+  font-weight: bold;
+  font-size: 13px;
+  background-color: antiquewhite;
+  color: #333 !important;
+  text-decoration: none !important;
 }
 
 .replyDiv
@@ -480,6 +500,50 @@ div#selectionTree
 .userLink
 {
   font-size: 10pt;
+}
+
+.message-priority
+{
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+}
+
+.message-priority-HIGH
+{
+  background-color: #d9534f;
+}
+
+.message-priority-MEDIUM
+{
+  background-color: #f0ad4e;
+}
+
+.message-priority-LOW
+{
+  background-color: #5bc0de;
+}
+
+.message-status
+{
+  padding: .2em .6em .3em;
+  font-weight: 700;
+  line-height: 1;
+  color: #333;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+  background: antiquewhite;
+  width: 100px;
+  display: block;
 }
 
 /*----------------------------------------------------------------------------*/

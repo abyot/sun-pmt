@@ -51,18 +51,20 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
         Session session = sessionFactory.getCurrentSession();
         handleAttributeValues( session, identifiableObject, bundle, schema );
         handleUserGroupAccesses( session, identifiableObject, bundle, schema );
+        handleObjectTranslations( session, identifiableObject, bundle, schema );
     }
 
     @Override
-    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle objectBundle )
+    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
     {
         Schema schema = schemaService.getDynamicSchema( identifiableObject.getClass() );
         Session session = sessionFactory.getCurrentSession();
-        handleAttributeValues( session, identifiableObject, objectBundle, schema );
-        handleUserGroupAccesses( session, identifiableObject, objectBundle, schema );
+        handleAttributeValues( session, identifiableObject, bundle, schema );
+        handleUserGroupAccesses( session, identifiableObject, bundle, schema );
+        handleObjectTranslations( session, identifiableObject, bundle, schema );
     }
 
-    public void handleAttributeValues( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
+    private void handleAttributeValues( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
     {
         if ( !schema.havePersistedProperty( "attributeValues" ) ) return;
 
@@ -74,7 +76,7 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
         }
     }
 
-    public void handleUserGroupAccesses( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
+    private void handleUserGroupAccesses( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
     {
         if ( !schema.havePersistedProperty( "userGroupAccesses" ) ) return;
 
@@ -90,5 +92,11 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
             userGroupAccess.setUserGroup( userGroup );
             session.save( userGroupAccess );
         }
+    }
+
+    private void handleObjectTranslations( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
+    {
+        if ( !schema.havePersistedProperty( "translations" ) ) return;
+        identifiableObject.getTranslations().forEach( session::save );
     }
 }

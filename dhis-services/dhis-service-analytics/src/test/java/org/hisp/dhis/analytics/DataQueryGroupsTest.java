@@ -93,29 +93,29 @@ public class DataQueryGroupsTest
     @Test
     public void planQueryA()
     {
-        DataQueryParams paramsA = new DataQueryParams();
-        paramsA.setDataElements( getList( deA, deB ) );
-        paramsA.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        paramsA.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
-        paramsA.setAggregationType( AggregationType.SUM );
+        DataQueryParams paramsA = DataQueryParams.newBuilder()
+            .withDataElements( getList( deA, deB ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) )
+            .withAggregationType( AggregationType.SUM ).build();
 
-        DataQueryParams paramsB = new DataQueryParams();
-        paramsB.setDataElements( getList( deC, deD ) );
-        paramsB.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        paramsB.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
-        paramsB.setAggregationType( AggregationType.SUM );
+        DataQueryParams paramsB = DataQueryParams.newBuilder()
+            .withDataElements( getList( deC, deD ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) )
+            .withAggregationType( AggregationType.SUM ).build();
 
-        DataQueryParams paramsC = new DataQueryParams();
-        paramsC.setDataElements( getList( deE ) );
-        paramsC.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        paramsC.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
-        paramsC.setAggregationType( AggregationType.SUM );
+        DataQueryParams paramsC = DataQueryParams.newBuilder()
+            .withDataElements( getList( deE ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) )
+            .withAggregationType( AggregationType.SUM ).build();
 
-        DataQueryParams paramsD = new DataQueryParams();
-        paramsD.setDataElements( getList( deF, deG ) );
-        paramsD.setOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) );
-        paramsD.setPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) );
-        paramsD.setAggregationType( AggregationType.AVERAGE_SUM_INT );
+        DataQueryParams paramsD = DataQueryParams.newBuilder()
+            .withDataElements( getList( deF, deG ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC, ouD, ouE ) )
+            .withPeriods( getList( createPeriod( "2000Q1" ), createPeriod( "2000Q2" ), createPeriod( "2000Q3" ), createPeriod( "2000Q4" ), createPeriod( "2001Q1" ), createPeriod( "2001Q2" ) ) )
+            .withAggregationType( AggregationType.AVERAGE_SUM_INT ).build();
 
         List<DataQueryParams> queries = new ArrayList<>();
         queries.add( paramsA );
@@ -123,7 +123,7 @@ public class DataQueryGroupsTest
         queries.add( paramsC );
         queries.add( paramsD );
 
-        DataQueryGroups queryGroups = new DataQueryGroups( queries );
+        DataQueryGroups queryGroups = DataQueryGroups.newBuilder().withQueries( queries ).build();
 
         assertEquals( 2, queryGroups.getSequentialQueries().size() );
         assertEquals( 4, queryGroups.getAllQueries().size() );

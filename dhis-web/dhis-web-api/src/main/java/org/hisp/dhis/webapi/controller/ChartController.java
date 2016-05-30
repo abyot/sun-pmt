@@ -106,7 +106,7 @@ public class ChartController
 
     @Override
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         Chart chart = renderService.fromJson( request.getInputStream(), Chart.class );
 
@@ -121,7 +121,7 @@ public class ChartController
 
     @Override
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = "application/json" )
-    public void putJsonObject( ImportOptions importOptions, @PathVariable( "uid" ) String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putJsonObjectLegacy( ImportOptions importOptions, @PathVariable( "uid" ) String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         Chart chart = chartService.getChart( uid );
 

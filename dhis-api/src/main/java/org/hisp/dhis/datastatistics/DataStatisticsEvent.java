@@ -39,19 +39,28 @@ import java.util.Date;
 public class DataStatisticsEvent
 {
     private int id;
-    private DataStatisticsEventType type;
+    private DataStatisticsEventType eventType;
     private Date timestamp;
     private String userName;
+    private String favoriteUid;
 
     public DataStatisticsEvent()
     {
     }
 
-    public DataStatisticsEvent( DataStatisticsEventType type, Date timestamp, String userName )
+    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String userName )
     {
-        this.type = type;
+        this.eventType = eventType;
         this.timestamp = timestamp;
         this.userName = userName;
+    }
+
+    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String userName, String favoriteUid )
+    {
+        this.eventType = eventType;
+        this.timestamp = timestamp;
+        this.userName = userName;
+        this.favoriteUid = favoriteUid;
     }
 
     public int getId()
@@ -59,24 +68,24 @@ public class DataStatisticsEvent
         return id;
     }
 
-    public Date getTimestamp()
-    {
-        return timestamp;
-    }
-
-    public DataStatisticsEventType getType()
-    {
-        return type;
-    }
-
-    public String getUserName()
-    {
-        return userName;
-    }
-
     public void setId( int id )
     {
         this.id = id;
+    }
+
+    public DataStatisticsEventType getEventType()
+    {
+        return eventType;
+    }
+
+    public void setEventType( DataStatisticsEventType eventType )
+    {
+        this.eventType = eventType;
+    }
+
+    public Date getTimestamp()
+    {
+        return timestamp;
     }
 
     public void setTimestamp( Date timestamp )
@@ -84,13 +93,23 @@ public class DataStatisticsEvent
         this.timestamp = timestamp;
     }
 
-    public void setType( DataStatisticsEventType type )
+    public String getUserName()
     {
-        this.type = type;
+        return userName;
     }
 
     public void setUserName( String userName )
     {
         this.userName = userName;
+    }
+
+    public String getFavoriteUid()
+    {
+        return favoriteUid;
+    }
+
+    public void setFavoriteUid( String favoriteUid )
+    {
+        this.favoriteUid = favoriteUid;
     }
 }

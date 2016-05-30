@@ -34,7 +34,7 @@ import org.hisp.dhis.message.MessageConversation;
 import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.PeriodType;
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.SmsServiceException;
 import org.hisp.dhis.sms.outbound.OutboundSms;
 import org.hisp.dhis.system.util.DateUtils;
@@ -79,9 +79,9 @@ public class DefaultProgramStageInstanceService
         this.programInstanceService = programInstanceService;
     }
 
-    private SmsSender smsSender;
+    private MessageSender smsSender;
 
-    public void setSmsSender( SmsSender smsSender )
+    public void setSmsSender( MessageSender smsSender )
     {
         this.smsSender = smsSender;
     }
@@ -167,7 +167,8 @@ public class DefaultProgramStageInstanceService
     }
 
     @Override
-    public List<ProgramStageInstance> getProgramStageInstances( TrackedEntityInstance entityInstance, EventStatus status )
+    public List<ProgramStageInstance> getProgramStageInstances( TrackedEntityInstance entityInstance,
+        EventStatus status )
     {
         return programStageInstanceStore.get( entityInstance, status );
     }
@@ -188,7 +189,8 @@ public class DefaultProgramStageInstanceService
     }
 
     @Override
-    public void completeProgramStageInstance( ProgramStageInstance programStageInstance, boolean sendNotifications, I18nFormat format )
+    public void completeProgramStageInstance( ProgramStageInstance programStageInstance, boolean sendNotifications,
+        I18nFormat format )
     {
         Calendar today = Calendar.getInstance();
         PeriodType.clearTimeOfDay( today );
@@ -203,28 +205,28 @@ public class DefaultProgramStageInstanceService
             // ---------------------------------------------------------------------
             // Send SMS message when to completed the event
             // ---------------------------------------------------------------------
-    
+
             List<OutboundSms> outboundSms = programStageInstance.getOutboundSms();
-    
+
             if ( outboundSms == null )
             {
                 outboundSms = new ArrayList<>();
             }
-    
+
             outboundSms.addAll( sendMessages( programStageInstance,
                 TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT, format ) );
-    
+
             // ---------------------------------------------------------------------
             // Send DHIS message when to completed the event
             // ---------------------------------------------------------------------
-    
+
             List<MessageConversation> messageConversations = programStageInstance.getMessageConversations();
-    
+
             if ( messageConversations == null )
             {
                 messageConversations = new ArrayList<>();
             }
-    
+
             messageConversations.addAll( sendMessageConversations( programStageInstance,
                 TrackedEntityInstanceReminder.SEND_WHEN_TO_C0MPLETED_EVENT, format ) );
         }
@@ -242,9 +244,9 @@ public class DefaultProgramStageInstanceService
 
         if ( programStageInstance.getProgramInstance().getProgram().isRegistration() )
         {
-            boolean canComplete = programInstanceService.canAutoCompleteProgramInstanceStatus( 
-                programStageInstance.getProgramInstance() );
-            
+            boolean canComplete = programInstanceService
+                .canAutoCompleteProgramInstanceStatus( programStageInstance.getProgramInstance() );
+
             if ( canComplete )
             {
                 programInstanceService.completeProgramInstanceStatus( programStageInstance.getProgramInstance() );
@@ -359,7 +361,7 @@ public class DefaultProgramStageInstanceService
                 outboundSms.setMessage( msg );
                 outboundSms.setRecipients( phoneNumbers );
                 outboundSms.setSender( currentUserService.getCurrentUsername() );
-                smsSender.sendMessage( outboundSms, null );
+                smsSender.sendMessage( null, outboundSms.getMessage(), outboundSms.getRecipients() );
             }
             catch ( SmsServiceException e )
             {
@@ -379,10 +381,9 @@ public class DefaultProgramStageInstanceService
         Collection<TrackedEntityInstanceReminder> reminders = programStageInstance.getProgramStage().getReminders();
         for ( TrackedEntityInstanceReminder rm : reminders )
         {
-            if ( rm != null
-                && rm.getWhenToSend() != null
-                && rm.getWhenToSend() == status
-                && (rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_DIRECT_SMS || rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH) )
+            if ( rm != null && rm.getWhenToSend() != null && rm.getWhenToSend() == status
+                && (rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_DIRECT_SMS
+                    || rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH) )
             {
                 OutboundSms outboundSms = sendEventMessage( rm, programStageInstance, entityInstance, format );
                 if ( outboundSms != null )
@@ -403,16 +404,14 @@ public class DefaultProgramStageInstanceService
         Collection<TrackedEntityInstanceReminder> reminders = programStageInstance.getProgramStage().getReminders();
         for ( TrackedEntityInstanceReminder rm : reminders )
         {
-            if ( rm != null
-                && rm.getWhenToSend() != null
-                && rm.getWhenToSend() == status
-                && (rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_DHIS_MESSAGE || rm
-                .getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH) )
+            if ( rm != null && rm.getWhenToSend() != null && rm.getWhenToSend() == status
+                && (rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_DHIS_MESSAGE
+                    || rm.getMessageType() == TrackedEntityInstanceReminder.MESSAGE_TYPE_BOTH) )
             {
                 int id = messageService.sendMessage( programStageInstance.getProgramStage().getDisplayName(),
                     reminderService.getMessageFromTemplate( rm, programStageInstance, format ), null,
-                    reminderService.getUsers( rm, programStageInstance.getProgramInstance().getEntityInstance() ),
-                    null, false, true );
+                    reminderService.getUsers( rm, programStageInstance.getProgramInstance().getEntityInstance() ), null,
+                    false, true );
                 messageConversations.add( messageService.getMessageConversation( id ) );
             }
         }

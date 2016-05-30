@@ -39,6 +39,7 @@ import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramService;
+import org.hisp.dhis.program.ProgramStage;
 import org.hisp.dhis.program.ProgramType;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.sms.parse.ParserType;
@@ -114,7 +115,21 @@ public class SMSCommandAction
         this.programList = programList;
     }
 
+    private List<Program> programWithoutRegistration;
+
+    public List<Program> getProgramWithoutRegistration()
+    {
+        return programWithoutRegistration;
+    }
+
+    public void setProgramWithoutRegistration( List<Program> programWithoutRegistration )
+    {
+        this.programWithoutRegistration = programWithoutRegistration;
+    }
+
     private List<TrackedEntityAttribute> trackedEntityAttributeList;
+
+    private Collection<DataElement> programStageDataElementList = new ArrayList<>();
 
     private int selectedCommandID = -1;
 
@@ -172,26 +187,38 @@ public class SMSCommandAction
 
         if ( smsCommand != null && smsCommand.getCodes() != null )
         {
-            for ( SMSCode x : smsCommand.getCodes() )
+
+            for ( SMSCode smsCode : smsCommand.getCodes() )
             {
-                if ( smsCommand.getParserType() == ParserType.TRACKED_ENTITY_REGISTRATION_PARSER )
+                if ( smsCommand.getParserType() == ParserType.TRACKED_ENTITY_REGISTRATION_PARSER
+                    && smsCode.getTrackedEntityAttribute() != null )
                 {
-                    codes.put( "" + x.getTrackedEntityAttribute().getId(), x.getCode() );
+                    codes.put( "" + smsCode.getTrackedEntityAttribute().getId(), smsCode.getCode() );
                 }
-                else
+                else if ( smsCode.getDataElement() != null )
                 {
-                    codes.put( "" + x.getDataElement().getId() + x.getOptionId(), x.getCode() );
+                    codes.put( "" + smsCode.getDataElement().getId() + smsCode.getOptionId(), smsCode.getCode() );
                 }
 
-                if ( x.getFormula() != null )
+                if ( smsCode.getFormula() != null )
                 {
-                    formulas.put( "" + x.getDataElement().getId() + x.getOptionId(), x.getFormula() );
+                    formulas.put( "" + smsCode.getDataElement().getId() + smsCode.getOptionId(), smsCode.getFormula() );
+                }
+
+                if ( smsCommand.getParserType().equals(ParserType.EVENT_REGISTRATION_PARSER ))
+                {
+                    codes.put( "" + smsCode.getDataElement().getId(), smsCode.getCode() );
                 }
 
             }
         }
+
         userGroupList = new ArrayList<>( userGroupService.getAllUserGroups() );
+
         programList = new ArrayList<>( programService.getPrograms( ProgramType.WITH_REGISTRATION ) );
+
+        programWithoutRegistration = new ArrayList<>( programService.getPrograms( ProgramType.WITHOUT_REGISTRATION ) );
+
         return SUCCESS;
     }
 
@@ -245,6 +272,26 @@ public class SMSCommandAction
 
         }
         return null;
+    }
+
+    public Collection<DataElement> getProgramStageDataElementList()
+    {
+        if ( smsCommand != null )
+        {
+
+            Program program = smsCommand.getProgram();
+
+            ProgramStage programStage = program.getProgramStages().iterator().next();
+
+            if ( programStage != null )
+            {
+                programStageDataElementList = programStage.getAllDataElements();
+            }
+
+            return programStageDataElementList;
+        }
+
+        return new ArrayList<DataElement>();
     }
 
     public void setTrackedEntityAttributeList( List<TrackedEntityAttribute> trackedEntityAttributeList )

@@ -33,7 +33,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.util.Collections;
 import java.util.List;
 
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.paging.ActionPagingSupport;
@@ -104,7 +103,7 @@ public class DataSetListAction
             dataSets = dataSetService.getDataSetsBetween( paging.getStartPos(), paging.getPageSize() );
         }
 
-        Collections.sort( dataSets, new IdentifiableObjectNameComparator() );
+        Collections.sort( dataSets );
 
         return SUCCESS;
     }

@@ -129,6 +129,18 @@ public class DataElementCategoryOption
         categoryOptionCombos.remove( dataElementCategoryOptionCombo );
         dataElementCategoryOptionCombo.getCategoryOptions().remove( this );
     }
+    
+    public void addOrganisationUnit( OrganisationUnit organisationUnit )
+    {
+        organisationUnits.add( organisationUnit );
+        organisationUnit.getCategoryOptions().add( this );
+    }
+    
+    public void removeOrganisationUnit( OrganisationUnit organisationUnit )
+    {
+        organisationUnits.remove( organisationUnit );
+        organisationUnit.getCategoryOptions().remove( this );
+    }
 
     public boolean includes( Period period )
     {

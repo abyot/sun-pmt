@@ -28,11 +28,24 @@ package org.hisp.dhis.webapi.controller.event;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.hisp.dhis.schema.descriptors.TrackedEntityAttributeSchemaDescriptor;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
+import org.hisp.dhis.trackedentity.TrackedEntityAttributeService;
+import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeReservedValue;
+import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeReservedValueService;
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
+import org.hisp.dhis.webapi.utils.ContextUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -42,4 +55,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class TrackedEntityAttributeController
     extends AbstractCrudController<TrackedEntityAttribute>
 {
+    @Autowired
+    TrackedEntityAttributeReservedValueService trackedEntityAttributeReservedValueService;
+    
+    @Autowired
+    TrackedEntityAttributeService trackedEntityAttributeService;
+    
+    @RequestMapping( value = "/{id}/generate", method = RequestMethod.GET, produces = { ContextUtils.CONTENT_TYPE_JSON, ContextUtils.CONTENT_TYPE_JAVASCRIPT } )
+    public String queryTrackedEntityInstancesJson(
+        @RequestParam( required = false ) Integer numberOfIdsToGenerate,
+        @PathVariable String id,
+        Model model,
+        HttpServletResponse response ) throws Exception
+    {
+        if ( numberOfIdsToGenerate == null || numberOfIdsToGenerate < 1 ) {
+            numberOfIdsToGenerate = 1;
+        }
+        
+        TrackedEntityAttribute attribute = trackedEntityAttributeService.getTrackedEntityAttribute( id );
+        if ( attribute == null ) {
+            throw new Exception("No attribute found with id " + id);
+        }
+        
+        List<TrackedEntityAttributeReservedValue> generated =
+            trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( 
+                attribute, numberOfIdsToGenerate );
+
+        model.addAttribute( "model", generated );
+        model.addAttribute( "viewClass", "detailed" );
+
+        return "generated";
+    }
+    
 }

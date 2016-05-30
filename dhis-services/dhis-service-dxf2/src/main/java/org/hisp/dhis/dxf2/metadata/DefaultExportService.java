@@ -29,8 +29,10 @@ package org.hisp.dhis.dxf2.metadata;
  */
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.sf.json.JSONObject;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.security.acl.AclService;
@@ -50,7 +52,6 @@ import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -196,7 +197,7 @@ public class DefaultExportService
             notifier.notify( taskId, "Exporting meta-data" );
         }
 
-        Object jsonFilter = filterOptions.getRestrictionsJson().get( "jsonFilter" );
+        JsonNode jsonFilter = filterOptions.getRestrictionsJson().get( "jsonFilter" );
         String json;
 
         if ( jsonFilter == null )
@@ -205,7 +206,7 @@ public class DefaultExportService
         }
         else
         {
-            json = jsonFilter.toString();
+            json = jsonFilter.asText();
         }
 
 
@@ -215,7 +216,9 @@ public class DefaultExportService
 
         Map<String, List<IdentifiableObject>> identifiableObjectMap;
 
-        if ( filterOptions.getRestrictionsJson().get( "exportDependencies" ).equals( "true" ) )
+        JsonNode exportDependencies = filterOptions.getRestrictionsJson().get( "exportDependencies" );
+
+        if ( exportDependencies != null && exportDependencies.asBoolean() )
         {
             identifiableObjectMap = metaDataDependencyService.getIdentifiableObjectWithDependencyMap( identifiableObjectUidMap );
         }
@@ -258,32 +261,33 @@ public class DefaultExportService
     }
 
     @Override
-    public void saveFilter( JSONObject json ) throws IOException
+    public void saveFilter( JsonNode json ) throws IOException
     {
-        MetaDataFilter metaDataFilter = new MetaDataFilter( json.getString( "name" ) );
-        metaDataFilter.setDescription( json.getString( "description" ) );
-        metaDataFilter.setJsonFilter( json.getString( "jsonFilter" ) );
+
+        MetaDataFilter metaDataFilter = new MetaDataFilter( json.get( "name" ).asText() );
+        metaDataFilter.setDescription( json.get( "description" ).asText() );
+        metaDataFilter.setJsonFilter( json.get( "jsonFilter" ).asText() );
         metaDataFilter.setAutoFields();
 
         metaDataFilterService.saveFilter( metaDataFilter );
     }
 
     @Override
-    public void updateFilter( JSONObject json ) throws IOException
+    public void updateFilter( JsonNode json ) throws IOException
     {
-        MetaDataFilter metaDataFilter = metaDataFilterService.getFilterByUid( json.getString( "uid" ) );
-        metaDataFilter.setName( json.getString( "name" ) );
-        metaDataFilter.setDescription( json.getString( "description" ) );
-        metaDataFilter.setJsonFilter( json.getString( "jsonFilter" ) );
+        MetaDataFilter metaDataFilter = metaDataFilterService.getFilterByUid( json.get( "uid" ).asText() );
+        metaDataFilter.setName( json.get( "name" ).asText() );
+        metaDataFilter.setDescription( json.get( "description" ).asText() );
+        metaDataFilter.setJsonFilter( json.get( "jsonFilter" ).asText() );
         metaDataFilter.setLastUpdated( new Date() );
 
         metaDataFilterService.updateFilter( metaDataFilter );
     }
 
     @Override
-    public void deleteFilter( JSONObject json ) throws IOException
+    public void deleteFilter( JsonNode json ) throws IOException
     {
-        MetaDataFilter metaDataFilter = metaDataFilterService.getFilterByUid( json.getString( "uid" ) );
+        MetaDataFilter metaDataFilter = metaDataFilterService.getFilterByUid( json.get( "uid" ).asText() );
 
         metaDataFilterService.deleteFilter( metaDataFilter );
     }

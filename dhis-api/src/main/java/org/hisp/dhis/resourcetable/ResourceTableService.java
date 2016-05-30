@@ -42,6 +42,12 @@ public interface ResourceTableService
     void generateOrganisationUnitStructures();
     
     /**
+     * Generates a resource table containing data sets and organisation units 
+     * with their associated attribute option combinations.
+     */
+    void generateDataSetOrganisationUnitCategoryTable();
+    
+    /**
      * Generates a resource table containing id and a derived name for
      * all DataElementCategoryOptionCombos.
      */

@@ -30,6 +30,9 @@ package org.hisp.dhis.external.conf;
 
 import org.hisp.dhis.encryption.EncryptionStatus;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -67,12 +70,37 @@ public interface DhisConfigurationProvider
     String getPropertyOrDefault( ConfigurationKey key, String defaultValue );
     
     /**
+     * Indicates whether it exists a value which is not null or blank for the
+     * given key.
+     * 
+     * @param key the configuration key.
+     * @return true if a value exists.
+     */
+    boolean hasProperty( ConfigurationKey key );
+    
+    /**
      * Indicates whether a value for the given key is equal to "on".
      * 
      * @param key the configuration key.
      * @return true if the configuration key is enabled.
      */
     boolean isEnabled( ConfigurationKey key );
+    
+    /**
+     * Returns a GoogleCredential, if a Google service account has been configured.
+     * 
+     * @return a GoogleCredential
+     */
+    Optional<GoogleCredential> getGoogleCredential();
+    
+    /**
+     * Returns a GoogleAccessToken. Returns empty if no Google service account
+     * has been configured, or if no refresh token could be retrieved.
+     * 
+     * @return a GoogleAccessToken.
+     * @throws IllegalStateException if an error occurred while retrieving a token.
+     */
+    Optional<GoogleAccessToken> getGoogleAccessToken();
     
     /**
      * Indicates whether the system is set to read-only mode.

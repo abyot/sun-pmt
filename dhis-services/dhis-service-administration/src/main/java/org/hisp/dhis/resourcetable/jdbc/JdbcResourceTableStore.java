@@ -36,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.dbms.DbmsManager;
 import org.hisp.dhis.resourcetable.ResourceTable;
 import org.hisp.dhis.resourcetable.ResourceTableStore;
+import org.hisp.dhis.system.util.Clock;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -70,6 +71,7 @@ public class JdbcResourceTableStore
 
     public void generateResourceTable( ResourceTable<?> resourceTable )
     {
+        final Clock clock = new Clock().startClock();
         final String createTableSql = resourceTable.getCreateTempTableStatement();
         final Optional<String> populateTableSql = resourceTable.getPopulateTempTableStatement();
         final Optional<List<Object[]>> populateTableContent = resourceTable.getPopulateTempTableContent();
@@ -138,7 +140,7 @@ public class JdbcResourceTableStore
         
         jdbcTemplate.execute( resourceTable.getRenameTempTableStatement() );
         
-        log.info( "Swapped resource table, done: " + resourceTable.getTableName() );
+        log.info( "Swapped resource table, done: " + resourceTable.getTableName() + " in: " + clock.time() );
     }
     
     @Override

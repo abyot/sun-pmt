@@ -28,6 +28,12 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.appstore.AppStore;
+import org.hisp.dhis.appstore.AppStoreManager;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,25 +41,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
-
-import org.hisp.dhis.appstore.AppStore;
-import org.hisp.dhis.appstore.AppStoreManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
+import java.io.IOException;
 
 /**
  * @author Lars Helge Overland
  */
 @Controller
 @RequestMapping( AppStoreController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class AppStoreController
 {
     public static final String RESOURCE_PATH = "/appStore";
-    
+
     @Autowired
     private AppStoreManager appStoreManager;
 
@@ -63,7 +63,7 @@ public class AppStoreController
     {
         return appStoreManager.getAppStore();
     }
-    
+
     @ResponseStatus( value = HttpStatus.OK )
     @RequestMapping( value = "/{versionId}", method = RequestMethod.POST )
     @PreAuthorize( "hasRole('ALL') or hasRole('M_dhis-web-maintenance-appmanager')" )

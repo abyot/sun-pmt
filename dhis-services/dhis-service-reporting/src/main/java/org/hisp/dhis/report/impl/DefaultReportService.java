@@ -57,6 +57,7 @@ import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.commons.util.Encoder;
 import org.hisp.dhis.constant.ConstantService;
 import org.hisp.dhis.i18n.I18nFormat;
+import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.Period;
@@ -122,6 +123,13 @@ public class DefaultReportService
     {
         this.periodService = periodService;
     }
+    
+    private I18nManager i18nManager;
+
+    public void setI18nManager( I18nManager i18nManager )
+    {
+        this.i18nManager = i18nManager;
+    }
 
     private DataSource dataSource;
 
@@ -136,8 +144,10 @@ public class DefaultReportService
 
     @Override
     public JasperPrint renderReport( OutputStream out, String reportUid, Period period,
-        String organisationUnitUid, String type, I18nFormat format )
+        String organisationUnitUid, String type )
     {
+        I18nFormat format = i18nManager.getI18nFormat();
+        
         Report report = getReport( reportUid );
 
         Map<String, Object> params = new HashMap<>();
@@ -175,7 +185,7 @@ public class DefaultReportService
             {
                 ReportTable reportTable = report.getReportTable();
 
-                Grid grid = reportTableService.getReportTableGrid( reportTable.getUid(), format, reportDate, organisationUnitUid );
+                Grid grid = reportTableService.getReportTableGrid( reportTable.getUid(), reportDate, organisationUnitUid );
 
                 print = JasperFillManager.fillReport( jasperReport, params, grid );
             }
@@ -224,14 +234,16 @@ public class DefaultReportService
     }
 
     @Override
-    public void renderHtmlReport( Writer writer, String uid, Date date, String ou, I18nFormat format )
+    public void renderHtmlReport( Writer writer, String uid, Date date, String ou )
     {
         Report report = getReport( uid );
         OrganisationUnit organisationUnit = null;
         List<OrganisationUnit> organisationUnitHierarchy = new ArrayList<>();
         List<OrganisationUnit> organisationUnitChildren = new ArrayList<>();
         List<String> periods = new ArrayList<>();
-
+        
+        I18nFormat format = i18nManager.getI18nFormat();
+        
         if ( ou != null )
         {
             organisationUnit = organisationUnitService.getOrganisationUnit( ou );

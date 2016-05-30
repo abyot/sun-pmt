@@ -39,7 +39,7 @@ import org.hisp.dhis.sms.config.GatewayAdministrationService;
 import org.hisp.dhis.sms.config.GenericHttpGatewayConfig;
 import org.hisp.dhis.sms.config.SMPPGatewayConfig;
 import org.hisp.dhis.sms.config.SmsGatewayConfig;
-import org.hisp.dhis.sms.outbound.OutboundSmsTransportService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 
@@ -57,14 +57,16 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping( value = "/sms/gateways" )
+@RequestMapping( value = "/gateways" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class SmsGatewayController
 {
+    // -------------------------------------------------------------------------
+    // Dependencies
+    // -------------------------------------------------------------------------
+    
     @Autowired
     private WebMessageService webMessageService;
-
-    @Autowired
-    private OutboundSmsTransportService outboundSmsTransportService;
 
     @Autowired
     private RenderService renderService;
@@ -94,11 +96,6 @@ public class SmsGatewayController
     public void getDefault( HttpServletRequest request, HttpServletResponse response )
         throws WebMessageException
     {
-        if ( outboundSmsTransportService == null )
-        {
-            throw new WebMessageException( WebMessageUtils.conflict( "Transport service is not available" ) );
-        }
-
         String defaultGateway = gatewayAdminService.getDefaultGateway().getName();
 
         webMessageService.send( WebMessageUtils.ok( "Default Gateway " + defaultGateway ), response, request );
@@ -175,7 +172,7 @@ public class SmsGatewayController
         throws WebMessageException, IOException
     {
         if ( gatewayAdminService == null )
-        {
+        {       
             throw new WebMessageException( WebMessageUtils.conflict( "Gateway admin service is not available" ) );
         }
 

@@ -122,16 +122,19 @@ public class CacheManifestAction
             File folder = new File( fullPath );
             File[] files = folder.listFiles();
 
-            for ( int i = 0; i < files.length; i++ )
+            if ( files != null )
             {
-                if ( files[i].isFile() && files[i].getName().equalsIgnoreCase( appCache ) )
+                for ( int i = 0; i < files.length; i++ )
                 {
-                    cacheManifest = new File( files[i].getAbsolutePath() );
-                }
-
-                if ( i18nPath != null && files[i].isDirectory() && files[i].getName().equalsIgnoreCase( i18nPath ) )
-                {
-                    i18nFolder = new File( files[i].getAbsolutePath() );
+                    if ( files[i].isFile() && files[i].getName().equalsIgnoreCase( appCache ) )
+                    {
+                        cacheManifest = new File( files[i].getAbsolutePath() );
+                    }
+    
+                    if ( i18nPath != null && files[i].isDirectory() && files[i].getName().equalsIgnoreCase( i18nPath ) )
+                    {
+                        i18nFolder = new File( files[i].getAbsolutePath() );
+                    }
                 }
             }
         }
@@ -142,26 +145,33 @@ public class CacheManifestAction
             {
                 builder = new StringBuilder();
                 String line;
+                
                 while ( (line = bufferedReader.readLine()) != null )
                 {
                     builder.append( line );
                     builder.append( "\n" );
                 }
+                
                 builder.append( revisionTag );
                 builder.append( "\n" );
 
                 if ( i18nFolder != null )
                 {
-                    File[] i18nfiles = i18nFolder.listFiles();
                     Boolean fileExists = false;
-                    for ( int i = 0; i < i18nfiles.length; i++ )
+                    
+                    File[] files = i18nFolder.listFiles();
+                    
+                    if ( files != null )
                     {
-                        if ( i18nfiles[i].isFile() && i18nfiles[i].getName().equalsIgnoreCase( translationFile ) )
+                        for ( int i = 0; i < files.length; i++ )
                         {
-                            fileExists = true;
-                            builder.append( i18nPath + "/" + translationFile );
-                            builder.append( "\n" );
-                            break;
+                            if ( files[i].isFile() && files[i].getName().equalsIgnoreCase( translationFile ) )
+                            {
+                                fileExists = true;
+                                builder.append( i18nPath + "/" + translationFile );
+                                builder.append( "\n" );
+                                break;
+                            }
                         }
                     }
 
@@ -169,7 +179,6 @@ public class CacheManifestAction
                     {
                         builder.append( i18nPath + "/" + defaultTranslationFile );
                         builder.append( "\n" );
-
                     }
                 }
 

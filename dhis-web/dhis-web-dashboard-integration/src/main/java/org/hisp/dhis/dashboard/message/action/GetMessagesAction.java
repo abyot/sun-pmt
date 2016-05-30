@@ -28,11 +28,14 @@ package org.hisp.dhis.dashboard.message.action;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-
 import org.hisp.dhis.message.MessageConversation;
+import org.hisp.dhis.message.MessageConversationStatus;
 import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.paging.ActionPagingSupport;
+import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.user.User;
+
+import java.util.List;
 
 /**
  * @author Lars Helge Overland
@@ -49,6 +52,13 @@ public class GetMessagesAction
     public void setMessageService( MessageService messageService )
     {
         this.messageService = messageService;
+    }
+
+    private CurrentUserService currentUserService;
+
+    public void setCurrentUserService( CurrentUserService currentUserService )
+    {
+        this.currentUserService = currentUserService;
     }
 
     // -------------------------------------------------------------------------
@@ -69,6 +79,13 @@ public class GetMessagesAction
         this.unread = unread;
     }
 
+    private MessageConversationStatus ticketStatus;
+
+    public void setTicketStatus( MessageConversationStatus messageConversationStatus )
+    {
+        this.ticketStatus = messageConversationStatus;
+    }
+
     // -------------------------------------------------------------------------
     // Output
     // -------------------------------------------------------------------------
@@ -80,6 +97,13 @@ public class GetMessagesAction
         return conversations;
     }
 
+    private boolean showTicketTools;
+
+    public boolean getShowTicketTools()
+    {
+        return showTicketTools;
+    }
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
@@ -87,10 +111,19 @@ public class GetMessagesAction
     @Override
     public String execute()
     {
+        showTicketTools = showTicketTools();
+
         this.paging = createPaging( messageService.getMessageConversationCount( followUp, unread ) );
-        
-        conversations = messageService.getMessageConversations( followUp, unread, paging.getStartPos(), paging.getPageSize() );
-        
+
+        conversations = messageService
+            .getMessageConversations( ticketStatus, followUp, unread, paging.getStartPos(), paging.getPageSize() );
+
         return SUCCESS;
+    }
+
+    private boolean showTicketTools()
+    {
+        User user = currentUserService.getCurrentUser();
+        return user.isAuthorized( "F_MANAGE_TICKETS" ) || user.isAuthorized( "ALL" );
     }
 }

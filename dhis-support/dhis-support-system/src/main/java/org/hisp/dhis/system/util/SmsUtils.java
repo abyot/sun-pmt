@@ -43,10 +43,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
-import org.hisp.dhis.sms.incoming.IncomingSms;
+import org.hisp.dhis.program.message.DeliveryChannel;
+import org.hisp.dhis.program.message.ProgramMessage;
+import org.hisp.dhis.program.message.ProgramMessageRecipients;
 import org.hisp.dhis.sms.parse.SMSParserException;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.sms.command.SMSCommand;
+import org.hisp.dhis.sms.incoming.IncomingSms;
 
 /**
  * @author Zubair <rajazubair.asghar@gmail.com>
@@ -72,7 +75,7 @@ public class SmsUtils
             }
         }
 
-        return commandString;
+        return commandString.trim();
     }
 
     public static Collection<OrganisationUnit> getOrganisationUnitsByPhoneNumber( String sender,
@@ -88,6 +91,22 @@ public class SmsUtils
         }
 
         return orgUnits;
+    }
+
+    public static ProgramMessage createProgramMessage( String subject, String text, String footer, User sender,
+        Set<User> users, boolean forceSend, Set<DeliveryChannel> channels )
+    {
+        ProgramMessageRecipients recipients = new ProgramMessageRecipients();
+        recipients.setPhoneNumbers( SmsUtils.getRecipientsPhoneNumber( users ) );
+
+        ProgramMessage message = new ProgramMessage();
+
+        message.setText( text );
+        message.setSubject( subject );
+        message.setDeliveryChannels( channels );
+        message.setRecipients( recipients );
+
+        return message;
     }
 
     public static Date lookForDate( String message )
@@ -133,21 +152,18 @@ public class SmsUtils
         OrganisationUnit orgunit = null;
         User user = null;
 
-        // Need to be edited
         for ( User u : userList )
         {
             OrganisationUnit ou = u.getOrganisationUnit();
 
             if ( ou != null )
             {
-                // Might be undefined if the user has more than one org units
                 if ( orgunit == null )
                 {
                     orgunit = ou;
                 }
                 else if ( orgunit.getId() == ou.getId() )
                 {
-                    // Same org unit
                 }
                 else
                 {
@@ -200,6 +216,36 @@ public class SmsUtils
         }
     }
 
+    public static ProgramMessage createProgramMessage( String text, String recipient, String subject,
+        Set<DeliveryChannel> channels, boolean storeCopy )
+    {
+        ProgramMessage programMessage = new ProgramMessage();
+        programMessage.setText( text );
+        programMessage.setSubject( subject );
+        programMessage.setDeliveryChannels( channels );
+        programMessage.setRecipients( getRecipients( recipient, channels ) );
+        programMessage.setStoreCopy( storeCopy );
+
+        return programMessage;
+    }
+
+    public static ProgramMessageRecipients getRecipients( Set<User> users, Set<DeliveryChannel> channels )
+    {
+        ProgramMessageRecipients to = new ProgramMessageRecipients();
+
+        if ( channels.contains( DeliveryChannel.SMS ) )
+        {
+            to.setPhoneNumbers( getRecipientsPhoneNumber( users ) );
+        }
+
+        if ( channels.contains( DeliveryChannel.EMAIL ) )
+        {
+            to.setEmailAddresses( getRecipientsEmail( users ) );
+        }
+
+        return to;
+    }
+
     public static String createMessage( String subject, String text, User sender )
     {
         String name = "DHIS";
@@ -236,6 +282,22 @@ public class SmsUtils
             if ( StringUtils.trimToNull( phoneNumber ) != null )
             {
                 recipients.add( phoneNumber );
+            }
+        }
+        return recipients;
+    }
+
+    public static Set<String> getRecipientsEmail( Collection<User> users )
+    {
+        Set<String> recipients = new HashSet<>();
+
+        for ( User user : users )
+        {
+            String email = user.getEmail();
+
+            if ( StringUtils.trimToNull( email ) != null )
+            {
+                recipients.add( email );
             }
         }
         return recipients;
@@ -278,5 +340,25 @@ public class SmsUtils
         }
 
         return orgUnit;
+    }
+
+    public static ProgramMessageRecipients getRecipients( String recipient, Set<DeliveryChannel> channels )
+    {
+        ProgramMessageRecipients to = new ProgramMessageRecipients();
+
+        Set<String> recipientsList = new HashSet<>();
+        recipientsList.add( recipient );
+
+        if ( channels.contains( DeliveryChannel.SMS ) )
+        {
+            to.setPhoneNumbers( recipientsList );
+        }
+
+        if ( channels.contains( DeliveryChannel.EMAIL ) )
+        {
+            to.setEmailAddresses( recipientsList );
+        }
+
+        return to;
     }
 }

@@ -117,6 +117,13 @@ public class HibernateOrganisationUnitStore
 
     @Override
     @SuppressWarnings( "unchecked" )
+    public List<OrganisationUnit> getOrganisationUnitsWithCategoryOptions()
+    {
+        return getQuery( "from OrganisationUnit o where o.categoryOptions.size > 0" ).list();
+    }
+
+    @Override
+    @SuppressWarnings( "unchecked" )
     public List<OrganisationUnit> getOrganisationUnits( OrganisationUnitQueryParams params )
     {
         SqlHelper hlp = new SqlHelper();
@@ -249,14 +256,15 @@ public class HibernateOrganisationUnitStore
     @SuppressWarnings( "unchecked" )
     public List<OrganisationUnit> getWithinCoordinateArea( double[] box )
     {
-        return getQuery( "from OrganisationUnit o " +
-                "where o.featureType='Point' " +
-                "and o.coordinates is not null " +
-                "and cast( substring(o.coordinates, 2, locate(',', o.coordinates) - 2) AS big_decimal ) >= " + box[3] + " " +
-                "and cast( substring(o.coordinates, 2, locate(',', o.coordinates) - 2) AS big_decimal ) <= " + box[1] + " " +
-                "and cast( substring(coordinates, locate(',', o.coordinates) + 1, locate(']', o.coordinates) - locate(',', o.coordinates) - 1 ) AS big_decimal ) >= " + box[2] + " " +
-                "and cast( substring(coordinates, locate(',', o.coordinates) + 1, locate(']', o.coordinates) - locate(',', o.coordinates) - 1 ) AS big_decimal ) <= " + box[0]
-        ).list();
+        final String sql = "from OrganisationUnit o " +
+            "where o.featureType='Point' " +
+            "and o.coordinates is not null " +
+            "and cast( substring(o.coordinates, 2, locate(',', o.coordinates) - 2) AS big_decimal ) >= " + box[3] + " " +
+            "and cast( substring(o.coordinates, 2, locate(',', o.coordinates) - 2) AS big_decimal ) <= " + box[1] + " " +
+            "and cast( substring(coordinates, locate(',', o.coordinates) + 1, locate(']', o.coordinates) - locate(',', o.coordinates) - 1 ) AS big_decimal ) >= " + box[2] + " " +
+            "and cast( substring(coordinates, locate(',', o.coordinates) + 1, locate(']', o.coordinates) - locate(',', o.coordinates) - 1 ) AS big_decimal ) <= " + box[0];
+        
+        return getQuery( sql ).list();
     }
 
     // -------------------------------------------------------------------------
@@ -296,9 +304,19 @@ public class HibernateOrganisationUnitStore
         updatePaths( organisationUnits );
     }
 
+    @Override
+    public int getMaxLevel()
+    {
+        String hql = "select max(ou.hierarchyLevel) from OrganisationUnit ou";
+
+        Integer maxLength = (Integer) getQuery( hql ).uniqueResult();
+
+        return maxLength != null ? maxLength.intValue() : 0;
+    }
+
     private void updatePaths( List<OrganisationUnit> organisationUnits )
     {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         int counter = 0;
 
         for ( OrganisationUnit organisationUnit : organisationUnits )
@@ -312,15 +330,5 @@ public class HibernateOrganisationUnitStore
 
             counter++;
         }
-    }
-
-    @Override
-    public int getMaxLevel()
-    {
-        String hql = "select max(ou.hierarchyLevel) from OrganisationUnit ou";
-
-        Integer maxLength = (Integer) getQuery( hql ).uniqueResult();
-
-        return maxLength != null ? maxLength.intValue() : 0;
     }
 }

@@ -51,7 +51,8 @@ login.changeLocale = function( locale )
 		$( '#titleArea' ).html( json.applicationTitle );		
 		$( '#introArea' ).html( json.keyApplicationIntro );
 		$( '#notificationArea' ).html( json.keyApplicationNotification );
-		$( '#applicationFooter' ).html( json.keyApplicationFooter );	
-	} );	
+		$( '#applicationFooter' ).html( json.keyApplicationFooter );
+		$( '#applicationRightFooter' ).html( json.keyApplicationRightFooter );
+	} );
 }
 

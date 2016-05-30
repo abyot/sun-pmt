@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.ListMap;
 import org.hisp.dhis.common.SetMap;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
@@ -199,7 +198,7 @@ public class DefaultDataIntegrityService
 
         Collection<DataSet> dataSets = dataSetService.getAllDataSets();
 
-        SortedMap<DataElement, Collection<DataSet>> targets = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<DataElement, Collection<DataSet>> targets = new TreeMap<>();
 
         for ( DataElement element : dataElements )
         {
@@ -229,12 +228,12 @@ public class DefaultDataIntegrityService
     {
         Collection<DataElementGroupSet> groupSets = dataElementService.getAllDataElementGroupSets();
 
-        SortedMap<DataElement, Collection<DataElementGroup>> targets = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<DataElement, Collection<DataElementGroup>> targets = new TreeMap<>();
 
         for ( DataElementGroupSet groupSet : groupSets )
         {
             Collection<DataElement> duplicates = getDuplicates(
-                new ArrayList<>( groupSet.getDataElements() ), IdentifiableObjectNameComparator.INSTANCE );
+                new ArrayList<>( groupSet.getDataElements() ) );
 
             for ( DataElement duplicate : duplicates )
             {
@@ -248,7 +247,7 @@ public class DefaultDataIntegrityService
     @Override
     public SortedMap<DataSet, Collection<DataElement>> getDataElementsInDataSetNotInForm()
     {
-        SortedMap<DataSet, Collection<DataElement>> map = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<DataSet, Collection<DataElement>> map = new TreeMap<>();
 
         Collection<DataSet> dataSets = dataSetService.getAllDataSets();
 
@@ -417,7 +416,7 @@ public class DefaultDataIntegrityService
     @Override
     public SortedMap<Indicator, String> getInvalidIndicatorNumerators()
     {
-        SortedMap<Indicator, String> invalids = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<Indicator, String> invalids = new TreeMap<>();
 
         for ( Indicator indicator : indicatorService.getAllIndicators() )
         {
@@ -435,7 +434,7 @@ public class DefaultDataIntegrityService
     @Override
     public SortedMap<Indicator, String> getInvalidIndicatorDenominators()
     {
-        SortedMap<Indicator, String> invalids = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<Indicator, String> invalids = new TreeMap<>();
 
         for ( Indicator indicator : indicatorService.getAllIndicators() )
         {
@@ -455,12 +454,12 @@ public class DefaultDataIntegrityService
     {
         Collection<IndicatorGroupSet> groupSets = indicatorService.getAllIndicatorGroupSets();
 
-        SortedMap<Indicator, Collection<IndicatorGroup>> targets = new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<Indicator, Collection<IndicatorGroup>> targets = new TreeMap<>();
 
         for ( IndicatorGroupSet groupSet : groupSets )
         {
             Collection<Indicator> duplicates = getDuplicates(
-                new ArrayList<>( groupSet.getIndicators() ), IdentifiableObjectNameComparator.INSTANCE );
+                new ArrayList<>( groupSet.getIndicators() ) );
 
             for ( Indicator duplicate : duplicates )
             {
@@ -569,12 +568,12 @@ public class DefaultDataIntegrityService
         Collection<OrganisationUnitGroupSet> groupSets = organisationUnitGroupService.getAllOrganisationUnitGroupSets();
 
         TreeMap<OrganisationUnit, Collection<OrganisationUnitGroup>> targets =
-            new TreeMap<>( IdentifiableObjectNameComparator.INSTANCE );
+            new TreeMap<>();
 
         for ( OrganisationUnitGroupSet groupSet : groupSets )
         {
             Collection<OrganisationUnit> duplicates = getDuplicates(
-                new ArrayList<>( groupSet.getOrganisationUnits() ), IdentifiableObjectNameComparator.INSTANCE );
+                new ArrayList<>( groupSet.getOrganisationUnits() ) );
 
             for ( OrganisationUnit duplicate : duplicates )
             {
@@ -608,8 +607,7 @@ public class DefaultDataIntegrityService
     @Override
     public SortedMap<ValidationRule, String> getInvalidValidationRuleLeftSideExpressions()
     {
-        SortedMap<ValidationRule, String> invalids = new TreeMap<>(
-            IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<ValidationRule, String> invalids = new TreeMap<>();
 
         for ( ValidationRule rule : validationRuleService.getAllValidationRules() )
         {
@@ -627,8 +625,7 @@ public class DefaultDataIntegrityService
     @Override
     public SortedMap<ValidationRule, String> getInvalidValidationRuleRightSideExpressions()
     {
-        SortedMap<ValidationRule, String> invalids = new TreeMap<>(
-            IdentifiableObjectNameComparator.INSTANCE );
+        SortedMap<ValidationRule, String> invalids = new TreeMap<>();
 
         for ( ValidationRule rule : validationRuleService.getAllValidationRules() )
         {
@@ -689,16 +686,16 @@ public class DefaultDataIntegrityService
 
         log.info( "Checked validation rules" );
 
-        Collections.sort( report.getDataElementsWithoutDataSet(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getDataElementsWithoutGroups(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getDataSetsNotAssignedToOrganisationUnits(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getSectionsWithInvalidCategoryCombinations(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getIndicatorsWithoutGroups(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getOrganisationUnitsWithCyclicReferences(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getOrphanedOrganisationUnits(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getOrganisationUnitsWithoutGroups(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getOrganisationUnitGroupsWithoutGroupSets(), IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( report.getValidationRulesWithoutGroups(), IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( report.getDataElementsWithoutDataSet() );
+        Collections.sort( report.getDataElementsWithoutGroups() );
+        Collections.sort( report.getDataSetsNotAssignedToOrganisationUnits() );
+        Collections.sort( report.getSectionsWithInvalidCategoryCombinations() );
+        Collections.sort( report.getIndicatorsWithoutGroups() );
+        Collections.sort( report.getOrganisationUnitsWithCyclicReferences() );
+        Collections.sort( report.getOrphanedOrganisationUnits() );
+        Collections.sort( report.getOrganisationUnitsWithoutGroups() );
+        Collections.sort( report.getOrganisationUnitGroupsWithoutGroupSets() );
+        Collections.sort( report.getValidationRulesWithoutGroups() );
 
         return report;
     }

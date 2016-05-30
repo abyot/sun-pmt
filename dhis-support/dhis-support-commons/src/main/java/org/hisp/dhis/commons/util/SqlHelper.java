@@ -36,6 +36,8 @@ package org.hisp.dhis.commons.util;
 public class SqlHelper
 {
     private boolean invoked = false;
+    
+    private boolean isBetweenInvoked = false;
 
     private boolean includeSpaces = false;
 
@@ -49,7 +51,8 @@ public class SqlHelper
     }
 
     /**
-     * Returns "where" the first time it is invoked, then "and" for subsequent invocations.
+     * Returns "where" the first time it is invoked, then "and" for subsequent
+     * invocations.
      * 
      * @return "where" or "and".
      */
@@ -63,7 +66,8 @@ public class SqlHelper
     }
 
     /**
-     * Returns "where" the first time it is invoked, then "or" for subsequent invocations.
+     * Returns "where" the first time it is invoked, then "or" for subsequent
+     * invocations.
      * 
      * @return "where" or "or".
      */
@@ -77,7 +81,8 @@ public class SqlHelper
     }
 
     /**
-     * Returns "" the first time it is invoked, then "and" for subsequent invocations.
+     * Returns "" the first time it is invoked, then "and" for subsequent
+     * invocations.
      * 
      * @return empty or "and".
      */
@@ -91,7 +96,8 @@ public class SqlHelper
     }
 
     /**
-     * Returns "" the first time it is invoked, then "or" for subsequent invocations.
+     * Returns "" the first time it is invoked, then "or" for subsequent
+     * invocations.
      * 
      * @return empty or "or".
      */
@@ -100,6 +106,15 @@ public class SqlHelper
         String str = invoked ? "or" : "";
 
         invoked = true;
+
+        return includeSpaces ? " " + str + " " : str;
+    }
+    
+    public String betweenAnd()
+    {
+        String str = isBetweenInvoked ? "and" : "BETWEEN";
+
+        isBetweenInvoked = true;
 
         return includeSpaces ? " " + str + " " : str;
     }

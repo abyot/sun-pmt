@@ -111,7 +111,8 @@ public class ResourceTableTask
     private void generateAll()
     {
         resourceTableService.dropAllSqlViews();
-        resourceTableService.generateOrganisationUnitStructures();   
+        resourceTableService.generateOrganisationUnitStructures();
+        resourceTableService.generateDataSetOrganisationUnitCategoryTable();
         resourceTableService.generateCategoryOptionComboNames();
         resourceTableService.generateCategoryOptionGroupSetTable();
         resourceTableService.generateDataElementGroupSetTable();

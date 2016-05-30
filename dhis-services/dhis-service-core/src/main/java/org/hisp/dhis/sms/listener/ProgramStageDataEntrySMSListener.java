@@ -45,6 +45,7 @@ import org.hisp.dhis.sms.parse.SMSParserException;
 import org.hisp.dhis.system.util.SmsUtils;
 import org.hisp.dhis.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ProgramStageDataEntrySMSListener
     implements IncomingSmsListener
@@ -65,6 +66,7 @@ public class ProgramStageDataEntrySMSListener
     // IncomingSmsListener implementation
     // -------------------------------------------------------------------------
 
+    @Transactional
     @Override
     public boolean accept( IncomingSms sms )
     {
@@ -72,12 +74,13 @@ public class ProgramStageDataEntrySMSListener
             ParserType.PROGRAM_STAGE_DATAENTRY_PARSER ) != null;
     }
 
+    @Transactional
     @Override
     public void receive( IncomingSms sms )
     {
         String message = sms.getText();
         SMSCommand smsCommand = smsCommandService.getSMSCommand( SmsUtils.getCommandString( sms ),
-            ParserType.TRACKED_ENTITY_REGISTRATION_PARSER );
+            ParserType.PROGRAM_STAGE_DATAENTRY_PARSER );
 
         this.parse( message, smsCommand );
 

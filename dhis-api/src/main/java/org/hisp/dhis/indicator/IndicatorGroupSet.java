@@ -39,7 +39,6 @@ import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.annotation.Scanned;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.schema.annotation.PropertyRange;
@@ -145,7 +144,7 @@ public class IndicatorGroupSet
     {
         List<IndicatorGroup> sortedGroups = new ArrayList<>( members );
 
-        Collections.sort( sortedGroups, new IdentifiableObjectNameComparator() );
+        Collections.sort( sortedGroups );
 
         return sortedGroups;
     }

@@ -37,11 +37,14 @@ import java.util.concurrent.Future;
 
 import org.hisp.dhis.analytics.AnalyticsTable;
 import org.hisp.dhis.analytics.AnalyticsTableColumn;
+import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.system.util.DateUtils;
 import org.springframework.scheduling.annotation.Async;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Lars Helge Overland
@@ -136,18 +139,19 @@ public class JdbcCompletenessTableManager
                 select += col.getAlias() + ",";
             }
             
-            select = select.replace( "organisationunitid", "sourceid" ); // Legacy fix TODO remove
+            select = select.replace( "organisationunitid", "sourceid" ); // Legacy fix
             
             select += 
                 "cdr.date as value " +
                 "from completedatasetregistration cdr " +
+                "inner join dataset ds on cdr.datasetid=ds.datasetid " +
                 "left join _organisationunitgroupsetstructure ougs on cdr.sourceid=ougs.organisationunitid " +
                 "left join _orgunitstructure ous on cdr.sourceid=ous.organisationunitid " +
+                "left join _categorystructure acs on cdr.attributeoptioncomboid=acs.categoryoptioncomboid " +
                 "inner join period pe on cdr.periodid=pe.periodid " +
                 "left join _periodstructure ps on cdr.periodid=ps.periodid " +
-                "inner join dataset ds on cdr.datasetid=ds.datasetid " +
                 "where pe.startdate >= '" + start + "' " +
-                "and pe.startdate <= '" + end + "'" +
+                "and pe.startdate <= '" + end + "' " +
                 "and cdr.date is not null";
     
             final String sql = insert + select;
@@ -169,6 +173,9 @@ public class JdbcCompletenessTableManager
         List<OrganisationUnitLevel> levels =
             organisationUnitService.getFilledOrganisationUnitLevels();
         
+        List<DataElementCategory> attributeCategories =
+            categoryService.getAttributeDataDimensionCategoriesNoAcl();
+        
         for ( OrganisationUnitGroupSet groupSet : orgUnitGroupSets )
         {
             columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "ougs." + quote( groupSet.getUid() ) ) );
@@ -180,15 +187,25 @@ public class JdbcCompletenessTableManager
             columns.add( new AnalyticsTableColumn( column, "character(11)", "ous." + column ) );
         }
         
+        for ( DataElementCategory category : attributeCategories )
+        {
+            columns.add( new AnalyticsTableColumn( quote( category.getUid() ), "character(11)", "acs." + quote( category.getUid() ) ) );
+        }
+        
         for ( PeriodType periodType : PeriodType.getAvailablePeriodTypes() )
         {
             String column = quote( periodType.getName().toLowerCase() );
             columns.add( new AnalyticsTableColumn( column, "character varying(15)", "ps." + column ) );
         }
         
+        String timelyDateDiff = statementBuilder.getDaysBetweenDates( "pe.enddate", statementBuilder.getCastToDate( "cdr.date" ) );        
+        String timelyAlias = "(select (" + timelyDateDiff + ") <= ds.timelydays) as timely";
+        
+        AnalyticsTableColumn tm = new AnalyticsTableColumn( quote( "timely" ), "boolean", timelyAlias );
+
         AnalyticsTableColumn ds = new AnalyticsTableColumn( quote( "dx" ), "character(11) not null", "ds.uid" );
         
-        columns.add( ds );
+        columns.addAll( Lists.newArrayList( ds, tm ) );
         
         return columns;
     }

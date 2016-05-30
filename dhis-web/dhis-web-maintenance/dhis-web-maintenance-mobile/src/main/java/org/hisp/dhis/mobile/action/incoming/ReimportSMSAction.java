@@ -113,7 +113,7 @@ public class ReimportSMSAction
     public String execute()
         throws Exception
     {
-        incomingSMS = incomingSmsService.findBy( Integer.parseInt( incomingSMSId ) );
+        incomingSMS = incomingSmsService.findBy( Integer.parseInt( incomingSMSId ) );        
 
         if ( incomingSMS == null )
         {
@@ -127,8 +127,10 @@ public class ReimportSMSAction
                 if ( listener.accept( incomingSMS ) )
                 {
                     listener.receive( incomingSMS );
+                   
                     incomingSMS.setStatus( SmsMessageStatus.PROCESSED );
                     incomingSmsService.update( incomingSMS );
+                    
                     message = "SMS imported";
                     return SUCCESS;
                 }
@@ -143,5 +145,4 @@ public class ReimportSMSAction
 
         return SUCCESS;
     }
-
 }

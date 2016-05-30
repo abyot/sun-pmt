@@ -60,11 +60,9 @@ public class JacksonUtils
     static
     {
         ObjectMapper[] objectMappers = new ObjectMapper[]{ JSON_MAPPER, XML_MAPPER };
-        // DateFormat format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
 
         for ( ObjectMapper objectMapper : objectMappers )
         {
-            // objectMapper.setDateFormat( format );
             objectMapper.setSerializationInclusion( JsonInclude.Include.NON_NULL );
             objectMapper.configure( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false );
             objectMapper.configure( SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false );
@@ -160,16 +158,14 @@ public class JacksonUtils
         return JSON_MAPPER.writerWithView( viewClass ).writeValueAsString( value );
     }
 
-    @SuppressWarnings( "unchecked" )
-    public static <T> T fromJson( InputStream input, Class<?> clazz ) throws IOException
+    public static <T> T fromJson( InputStream input, Class<T> clazz ) throws IOException
     {
-        return (T) JSON_MAPPER.readValue( input, clazz );
+        return JSON_MAPPER.readValue( input, clazz );
     }
 
-    @SuppressWarnings( "unchecked" )
-    public static <T> T fromJson( String input, Class<?> clazz ) throws IOException
+    public static <T> T fromJson( String input, Class<T> clazz ) throws IOException
     {
-        return (T) JSON_MAPPER.readValue( input, clazz );
+        return JSON_MAPPER.readValue( input, clazz );
     }
 
     //--------------------------------------------------------------------------
@@ -202,16 +198,14 @@ public class JacksonUtils
         return XML_MAPPER.writerWithView( viewClass ).writeValueAsString( value );
     }
 
-    @SuppressWarnings( "unchecked" )
-    public static <T> T fromXml( InputStream input, Class<?> clazz ) throws IOException
+    public static <T> T fromXml( InputStream input, Class<T> clazz ) throws IOException
     {
-        return (T) XML_MAPPER.readValue( input, clazz );
+        return XML_MAPPER.readValue( input, clazz );
     }
 
-    @SuppressWarnings( "unchecked" )
-    public static <T> T fromXml( String input, Class<?> clazz ) throws IOException
+    public static <T> T fromXml( String input, Class<T> clazz ) throws IOException
     {
-        return (T) XML_MAPPER.readValue( input, clazz );
+        return XML_MAPPER.readValue( input, clazz );
     }
 
     @SuppressWarnings( "unchecked" )

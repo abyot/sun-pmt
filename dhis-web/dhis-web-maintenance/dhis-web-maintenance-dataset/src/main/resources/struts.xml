@@ -153,8 +153,7 @@
       <result name="success" type="velocity">/main.vm</result>
       <param name="page">/dhis-web-maintenance-dataset/viewDataEntryForm.vm</param>
       <param name="javascripts">../dhis-web-commons/ckeditor/ckeditor.js,
-        ../dhis-web-commons/ckeditor/adapters/jquery.js,
-        javascript/dataEntryForm.js
+        ../dhis-web-commons/ckeditor/adapters/jquery.js
       </param>
       <param name="hideMenu">true</param>
       <param name="anyAuthorities">F_DATASET_PUBLIC_ADD, F_DATASET_PRIVATE_ADD</param>

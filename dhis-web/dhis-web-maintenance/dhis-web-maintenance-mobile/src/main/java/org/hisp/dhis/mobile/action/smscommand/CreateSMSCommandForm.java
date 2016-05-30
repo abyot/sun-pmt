@@ -68,12 +68,12 @@ public class CreateSMSCommandForm
         this.userGroupService = userGroupService;
     }
 
-     private ProgramService programService;
-    
-     public void setProgramService( ProgramService programService )
-     {
-     this.programService = programService;
-     }
+    private ProgramService programService;
+
+    public void setProgramService( ProgramService programService )
+    {
+        this.programService = programService;
+    }
 
     // -------------------------------------------------------------------------
     // Input && Output
@@ -106,9 +106,9 @@ public class CreateSMSCommandForm
     {
         this.userGroupID = userGroupID;
     }
-    
+
     private Integer selectedProgramId;
-    
+
     public Integer getSelectedProgramId()
     {
         return selectedProgramId;
@@ -117,19 +117,28 @@ public class CreateSMSCommandForm
     public void setSelectedProgramId( Integer selectedProgramId )
     {
         this.selectedProgramId = selectedProgramId;
-    }    
-    
-    
+    }
+
+    private Integer selectedProgramIdWithoutRegistration;
+
+    public Integer getSelectedProgramIdWithoutRegistration()
+    {
+        return selectedProgramIdWithoutRegistration;
+    }
+
+    public void setSelectedProgramIdWithoutRegistration( Integer selectedProgramIdWithoutRegistration )
+    {
+        this.selectedProgramIdWithoutRegistration = selectedProgramIdWithoutRegistration;
+    }
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
-
 
     @Override
     public String execute()
         throws Exception
     {
-
         SMSCommand command = new SMSCommand();
         command.setName( name );
         command.setParserType( parserType );
@@ -149,12 +158,17 @@ public class CreateSMSCommandForm
             Program program = programService.getProgram( selectedProgramId );
             command.setProgram( program );
         }
-        else if ( parserType.equals( ParserType.ANONYMOUS_PROGRAM_PARSER ) )
+        else if ( parserType.equals( ParserType.EVENT_REGISTRATION_PARSER ) )
         {
+            Program program = programService.getProgram( selectedProgramIdWithoutRegistration );
 
+            command.setProgram( program );
+
+            command.setProgramStage( program.getProgramStages().iterator().next() );
         }
 
         smsCommandService.save( command );
+
         return SUCCESS;
     }
 }

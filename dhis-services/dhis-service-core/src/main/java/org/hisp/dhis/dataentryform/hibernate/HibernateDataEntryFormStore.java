@@ -29,7 +29,6 @@ package org.hisp.dhis.dataentryform.hibernate;
  */
 
 import org.hibernate.Criteria;
-import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hisp.dhis.common.hibernate.HibernateIdentifiableObjectStore;
@@ -54,9 +53,7 @@ public class HibernateDataEntryFormStore
     @Override
     public DataEntryForm getDataEntryFormByName( String name )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( DataEntryForm.class );
+        Criteria criteria = getSession().createCriteria( DataEntryForm.class );
         criteria.add( Restrictions.eq( "name", name ) );
 
         return (DataEntryForm) criteria.uniqueResult();
@@ -64,9 +61,7 @@ public class HibernateDataEntryFormStore
 
     public DataEntryForm getDataEntryFormByDataSet( DataSet dataSet )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( DataEntryForm.class );
+        Criteria criteria = getSession().createCriteria( DataEntryForm.class );
         criteria.add( Restrictions.eq( "dataSet", dataSet ) );
 
         return (DataEntryForm) criteria.uniqueResult();
@@ -76,9 +71,7 @@ public class HibernateDataEntryFormStore
     @SuppressWarnings( "unchecked" )
     public List<DataEntryForm> listDistinctDataEntryFormByProgramStageIds( List<Integer> programStageIds )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( ProgramStage.class );
+        Criteria criteria = getSession().createCriteria( ProgramStage.class );
         criteria.add( Restrictions.in( "id", programStageIds ) ).add( Restrictions.isNotNull( "dataEntryForm" ) );
         criteria.setProjection( Projections.groupProperty( "dataEntryForm" ) );
 
@@ -89,9 +82,7 @@ public class HibernateDataEntryFormStore
     @SuppressWarnings( "unchecked" )
     public List<DataEntryForm> listDistinctDataEntryFormByDataSetIds( List<Integer> dataSetIds )
     {
-        Session session = sessionFactory.getCurrentSession();
-
-        Criteria criteria = session.createCriteria( DataSet.class ).add(
+        Criteria criteria = getSession().createCriteria( DataSet.class ).add(
             Restrictions.in( "dataEntryForm.id", dataSetIds ) ).setProjection(
             Projections.distinct( Projections.property( "dataEntryForm" ) ) );
 

@@ -28,8 +28,8 @@ package org.hisp.dhis.webapi.controller.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.sf.json.JSONObject;
 import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.common.filter.MetaDataFilter;
 import org.hisp.dhis.dxf2.common.FilterOptions;
@@ -39,6 +39,7 @@ import org.hisp.dhis.dxf2.metadata.ExportService;
 import org.hisp.dhis.dxf2.metadata.ImportService;
 import org.hisp.dhis.dxf2.metadata.Metadata;
 import org.hisp.dhis.dxf2.metadata.tasks.ImportMetaDataTask;
+import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.importexport.ImportStrategy;
 import org.hisp.dhis.scheduling.TaskCategory;
 import org.hisp.dhis.scheduling.TaskId;
@@ -47,6 +48,7 @@ import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.webapi.utils.ContextUtils;
+import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.webapi.webdomain.WebOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -96,6 +98,8 @@ public class FilteredMetaDataController
 
     private ImportStrategy strategy;
 
+    private ObjectMapper jsonMapper = new ObjectMapper();
+
     //--------------------------------------------------------------------------
     // Getters & Setters
     //--------------------------------------------------------------------------
@@ -131,7 +135,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportXml( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_XML, CacheStrategy.NO_CACHE, "metaData.xml", true );
@@ -142,7 +146,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportJson( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_JSON, CacheStrategy.NO_CACHE, "metaData.json", true );
@@ -153,7 +157,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportZippedXML( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_ZIP, CacheStrategy.NO_CACHE, "metaData.xml.zip", true );
@@ -169,7 +173,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportZippedJSON( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_ZIP, CacheStrategy.NO_CACHE, "metaData.json.zip", true );
@@ -185,7 +189,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportGZippedXML( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_GZIP, CacheStrategy.NO_CACHE, "metaData.xml.gz", true );
@@ -199,7 +203,7 @@ public class FilteredMetaDataController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
     public void exportGZippedJSON( @RequestParam String exportJsonValue, HttpServletResponse response ) throws IOException
     {
-        FilterOptions filterOptions = new FilterOptions( JSONObject.fromObject( exportJsonValue ) );
+        FilterOptions filterOptions = new FilterOptions( jsonMapper.readValue( exportJsonValue, JsonNode.class ) );
         Metadata metadata = exportService.getFilteredMetaData( filterOptions );
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_GZIP, CacheStrategy.NO_CACHE, "metaData.json.gz", true );
@@ -224,21 +228,34 @@ public class FilteredMetaDataController
 
     @RequestMapping( method = RequestMethod.POST, value = FilteredMetaDataController.RESOURCE_PATH + "/saveFilter" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
-    public void saveFilter( @RequestBody JSONObject json, HttpServletResponse response ) throws IOException
+    public void saveFilter( @RequestBody JsonNode json, HttpServletResponse response ) throws IOException, WebMessageException
     {
+
+        if ( json.get( "name" ) == null || json.get( "description" ) == null || json.get( "jsonFilter"  ) == null )
+        {
+            throw new WebMessageException( WebMessageUtils.error( "Missing one of those parameters: name, description, jsonFilter" ));
+        }
+
         exportService.saveFilter( json );
     }
 
     @RequestMapping( method = RequestMethod.POST, value = FilteredMetaDataController.RESOURCE_PATH + "/updateFilter" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
-    public void updateFilter( @RequestBody JSONObject json, HttpServletResponse response ) throws IOException
+    public void updateFilter( @RequestBody JsonNode json, HttpServletResponse response ) throws IOException, WebMessageException
     {
+
+        if ( json.get( "name" ) == null || json.get( "description" ) == null || json.get( "jsonFilter"  ) == null
+            || json.get( "uid" ) == null )
+        {
+            throw new WebMessageException( WebMessageUtils.error( "Missing one of those parameters: name, description, jsonFilter" ));
+        }
+
         exportService.updateFilter( json );
     }
 
     @RequestMapping( method = RequestMethod.POST, value = FilteredMetaDataController.RESOURCE_PATH + "/deleteFilter" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_EXPORT')" )
-    public void deleteFilter( @RequestBody JSONObject json, HttpServletResponse response ) throws IOException
+    public void deleteFilter( @RequestBody JsonNode json, HttpServletResponse response ) throws IOException
     {
         exportService.deleteFilter( json );
     }
@@ -249,15 +266,20 @@ public class FilteredMetaDataController
 
     @RequestMapping( method = RequestMethod.POST, value = FilteredMetaDataController.RESOURCE_PATH + "/importDetailedMetaData" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_METADATA_IMPORT')" )
-    public void importDetailedMetaData( @RequestBody JSONObject json, HttpServletResponse response ) throws IOException
+    public void importDetailedMetaData( @RequestBody JsonNode json, HttpServletResponse response ) throws IOException, WebMessageException
     {
-        strategy = ImportStrategy.valueOf( json.getString( "strategy" ) );
-        dryRun = json.getBoolean( "dryRun" );
+        if ( json.get( "strategy" ) == null || json.get( "dryRun" ) == null || json.get( "metaData") == null )
+        {
+            throw new WebMessageException( WebMessageUtils.error( "Missing one of those parameters: strategy, dryRun, metaData" ));
+        }
+
+        strategy = ImportStrategy.valueOf( json.get( "strategy" ).asText() );
+        dryRun = json.get( "dryRun" ).asBoolean();
 
         TaskId taskId = new TaskId( TaskCategory.METADATA_IMPORT, currentUserService.getCurrentUser() );
         User user = currentUserService.getCurrentUser();
 
-        Metadata metadata = new ObjectMapper().readValue( json.getString( "metaData" ), Metadata.class );
+        Metadata metadata = jsonMapper.readValue( json.get( "metaData" ).asText(), Metadata.class );
 
         ImportOptions importOptions = new ImportOptions();
         importOptions.setStrategy( strategy );

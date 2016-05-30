@@ -63,7 +63,6 @@ public class IndicatorGroup
 
     public IndicatorGroup()
     {
-
     }
 
     public IndicatorGroup( String name )

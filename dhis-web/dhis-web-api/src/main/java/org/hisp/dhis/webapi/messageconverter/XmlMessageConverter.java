@@ -38,14 +38,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
-@Component
 public class XmlMessageConverter extends AbstractHttpMessageConverter<RootNode>
 {
     public static final ImmutableList<MediaType> SUPPORTED_MEDIA_TYPES = ImmutableList.<MediaType>builder()
@@ -53,12 +52,20 @@ public class XmlMessageConverter extends AbstractHttpMessageConverter<RootNode>
         .add( new MediaType( "text", "xml" ) )
         .build();
 
+    public static final ImmutableList<MediaType> COMPRESSED_SUPPORTED_MEDIA_TYPES = ImmutableList.<MediaType>builder()
+        .add( new MediaType( "application", "xml+gzip" ) )
+        .add( new MediaType( "text", "xml+gzip" ) )
+        .build();
+
     @Autowired
     private NodeService nodeService;
 
-    public XmlMessageConverter()
+    private boolean compressed;
+
+    public XmlMessageConverter( boolean compressed )
     {
-        setSupportedMediaTypes( SUPPORTED_MEDIA_TYPES );
+        setSupportedMediaTypes( compressed ? COMPRESSED_SUPPORTED_MEDIA_TYPES : SUPPORTED_MEDIA_TYPES );
+        this.compressed = compressed;
     }
 
     @Override
@@ -82,6 +89,15 @@ public class XmlMessageConverter extends AbstractHttpMessageConverter<RootNode>
     @Override
     protected void writeInternal( RootNode rootNode, HttpOutputMessage outputMessage ) throws IOException, HttpMessageNotWritableException
     {
-        nodeService.serialize( rootNode, "application/xml", outputMessage.getBody() );
+        if ( compressed )
+        {
+            GZIPOutputStream outputStream = new GZIPOutputStream( outputMessage.getBody() );
+            nodeService.serialize( rootNode, "application/xml", outputStream );
+            outputStream.close();
+        }
+        else
+        {
+            nodeService.serialize( rootNode, "application/xml", outputMessage.getBody() );
+        }
     }
 }

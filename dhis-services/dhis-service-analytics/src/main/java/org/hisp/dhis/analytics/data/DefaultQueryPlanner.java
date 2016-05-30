@@ -50,6 +50,7 @@ import org.hisp.dhis.commons.collection.PaginatedList;
 import org.hisp.dhis.commons.filter.FilterUtils;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementGroup;
+import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.program.ProgramDataElement;
 import org.hisp.dhis.setting.SettingKey;
@@ -65,7 +66,7 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.hisp.dhis.analytics.AggregationType.SUM;
 import static org.hisp.dhis.analytics.DataQueryParams.LEVEL_PREFIX;
@@ -214,43 +215,46 @@ public class DefaultQueryPlanner
     }
 
     @Override
-    public DataQueryGroups planQuery( DataQueryParams params, final int optimalQueries, final String tableName )
+    public DataQueryGroups planQuery( DataQueryParams params, QueryPlannerParams plannerParams )
     {
         validate( params );
-        
+
         // ---------------------------------------------------------------------
         // Group queries which can be executed together
         // ---------------------------------------------------------------------
 
         params = params.instance();
 
-        final QueryPlannerParams plannerParams = QueryPlannerParams.instance().setTableName( tableName );
-
         final List<DataQueryParams> queries = new ArrayList<>( groupByPartition( params, plannerParams ) );
         
-        List<Consumer<DataQueryParams>> groupers = new ImmutableList.Builder<Consumer<DataQueryParams>>().
-            add( q -> queries.addAll( groupByOrgUnitLevel( q ) ) ).
-            add( q -> queries.addAll( groupByPeriodType( q ) ) ).
-            add( q -> queries.addAll( groupByDataType( q ) ) ).
-            add( q -> queries.addAll( groupByAggregationType( q ) ) ).
-            add( q -> queries.addAll( groupByDaysInPeriod( q ) ) ).
-            add( q -> queries.addAll( groupByDataPeriodType( q ) ) ).build();
+        List<Function<DataQueryParams, List<DataQueryParams>>> groupers = new ImmutableList.Builder<Function<DataQueryParams, List<DataQueryParams>>>().
+            add( q -> groupByOrgUnitLevel( q ) ).
+            add( q -> groupByPeriodType( q ) ).
+            add( q -> groupByDataType( q ) ).
+            add( q -> groupByAggregationType( q ) ).
+            add( q -> groupByDaysInPeriod( q ) ).
+            add( q -> groupByDataPeriodType( q ) ).
+            addAll( plannerParams.getQueryGroupers() ).
+            build();
         
-        for ( Consumer<DataQueryParams> grouper : groupers )
+        for ( Function<DataQueryParams, List<DataQueryParams>> grouper : groupers )
         {
-            final List<DataQueryParams> currentQueries = Lists.newArrayList( queries );
+            List<DataQueryParams> currentQueries = Lists.newArrayList( queries );
             queries.clear();
             
-            currentQueries.stream().forEach( grouper );
+            for ( DataQueryParams query : currentQueries )
+            {
+                queries.addAll( grouper.apply( query ) );
+            }
         }
 
         // ---------------------------------------------------------------------
         // Split queries until optimal number
         // ---------------------------------------------------------------------
 
-        DataQueryGroups queryGroups = new DataQueryGroups( queries );
+        DataQueryGroups queryGroups = DataQueryGroups.newBuilder().withQueries( queries ).build();
 
-        if ( queryGroups.isOptimal( optimalQueries ) )
+        if ( queryGroups.isOptimal( plannerParams.getOptimalQueries() ) )
         {
             return queryGroups;
         }
@@ -259,9 +263,9 @@ public class DefaultQueryPlanner
         
         for ( String dim : splitDimensions )
         {
-            queryGroups = splitByDimension( queryGroups, dim, optimalQueries );
+            queryGroups = splitByDimension( queryGroups, dim, plannerParams.getOptimalQueries() );
 
-            if ( queryGroups.isOptimal( optimalQueries ) )
+            if ( queryGroups.isOptimal( plannerParams.getOptimalQueries() ) )
             {
                 break;
             }
@@ -300,7 +304,7 @@ public class DefaultQueryPlanner
             for ( List<DimensionalItemObject> valuePage : valuePages )
             {
                 DataQueryParams subQuery = query.instance();
-                subQuery.setDimensionOptions( dim.getDimension(), dim.getDimensionType(), dim.getDimensionName(), valuePage );
+                subQuery.setDimensionOptions( dim.getDimension(), valuePage );
                 subQueries.add( subQuery );
             }
         }
@@ -310,7 +314,7 @@ public class DefaultQueryPlanner
             log.debug( "Split on dimension " + dimension + ": " + (subQueries.size() / queryGroups.getAllQueries().size()) );
         }
 
-        return new DataQueryGroups( subQueries );
+        return DataQueryGroups.newBuilder().withQueries( subQueries ).build();
     }
 
     // -------------------------------------------------------------------------
@@ -478,6 +482,52 @@ public class DefaultQueryPlanner
         return queries;
     }
 
+    @Override
+    public List<DataQueryParams> groupByStartEndDate( DataQueryParams params )
+    {
+        List<DataQueryParams> queries = new ArrayList<>();
+        
+        if ( !params.getPeriods().isEmpty() )
+        {
+            for ( DimensionalItemObject item : params.getPeriods() )
+            {
+                Period period = (Period) item;
+                
+                DataQueryParams query = params.instance();
+                query.setStartDate( period.getStartDate() );
+                query.setEndDate( period.getEndDate() );
+    
+                BaseDimensionalObject staticPeriod = (BaseDimensionalObject) query.getDimension( PERIOD_DIM_ID );
+                staticPeriod.setDimensionName( period.getIsoDate() );
+                staticPeriod.setFixed( true );
+                
+                queries.add( query );
+            }
+        }
+        else if ( !params.getFilterPeriods().isEmpty() )
+        {
+            Period period = (Period) params.getFilterPeriods().get( 0 );
+
+            DataQueryParams query = params.instance();
+            query.setStartDate( period.getStartDate() );
+            query.setEndDate( period.getEndDate() );
+            query.removeFilter( PERIOD_DIM_ID );
+            
+            queries.add( query );
+        }
+        else
+        {
+            throw new IllegalQueryException( "Query does not contain any period dimension items" );
+        }
+
+        if ( queries.size() > 1 )
+        {
+            log.debug( "Split on period: " + queries.size() );
+        }
+        
+        return queries;
+    }
+    
     /**
      * Groups queries by their data type.
      */

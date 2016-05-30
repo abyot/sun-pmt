@@ -198,6 +198,7 @@ public class DefaultResourceBundleManager
 
         File dir = new File( dirPath );
         Set<Locale> availableLocales = new HashSet<>();
+        
         File[] files = dir.listFiles( new FilenameFilter()
         {
             @Override
@@ -207,9 +208,12 @@ public class DefaultResourceBundleManager
             }
         } );
 
-        for ( File file : files )
+        if ( files != null )
         {
-            availableLocales.add( getLocaleFromName( file.getName() ) );
+            for ( File file : files )
+            {
+                availableLocales.add( getLocaleFromName( file.getName() ) );
+            }
         }
 
         return availableLocales;

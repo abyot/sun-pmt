@@ -88,10 +88,31 @@ function sendReply()
 
     setHeaderWaitMessage( i18n_sending_message );
 
-    $.postUTF8( "sendReply.action", { id: id, text: text }, function()
+    $.postUTF8( "sendReply.action", { id: id, text: text, internal: false }, function()
     {
         window.location.href = "readMessage.action?id=" + id;
     } );
+}
+
+function sendInternalReply()
+{
+    var id = $("#conversationId").val();
+    var text = $("#text").val();
+    var internal = true;
+
+    if (text == null || text.trim() == '') {
+        setHeaderMessage(i18n_enter_text);
+        return false;
+    }
+
+    $("#replyButton").attr("disabled", "disabled");
+
+    setHeaderWaitMessage(i18n_sending_message);
+
+    $.postUTF8("sendReply.action", {id: id, text: text, internal: internal}, function () {
+        window.location.href = "readMessage.action?id=" + id;
+    });
+
 }
 
 function toggleFollowUp( id, followUp )
@@ -106,6 +127,49 @@ function toggleFollowUp( id, followUp )
 
         $( "#" + imageId ).attr( "src", imageSrc );
     } );
+}
+
+function updatePriority(id) {
+    togglePriority(id, $("#message-priority").val());
+}
+
+function togglePriority( id, priority) {
+
+    $.ajax({
+        url: "/api/messageConversations/"+id+"/priority",
+        type: "POST",
+        data: {"messageConversationPriority": priority}
+    });
+
+}
+
+function setStatusFilter() {
+    window.location.replace(window.location.origin + window.location.pathname + "?ticketStatus=" + $("#statusFilter").val());
+
+}
+
+function updateStatus(id) {
+    toggleStatus(id, $("#message-status").val());
+}
+
+function toggleStatus( id, status) {
+
+    $.ajax({
+        url: "/api/messageConversations/"+id+"/status",
+        type: "POST",
+        data: {"messageConversationStatus": status}
+    });
+
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 function formatItem( item )

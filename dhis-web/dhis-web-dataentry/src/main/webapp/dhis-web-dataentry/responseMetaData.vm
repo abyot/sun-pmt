@@ -59,7 +59,13 @@
 #set( $size2 = $categoryOptions.size() )
 #foreach( $option in $categoryOptions )
 {"id":"${option.uid}","name":"$encoder.jsonEncode( ${option.displayName} )"#if( ${option.startDate} ),"start":"${option.startDate}"#end
-#if( ${option.endDate} ),"end":"${option.endDate}"#end}#if( $velocityCount < $size2 ),#end
+#if( ${option.endDate} ),"end":"${option.endDate}"#end
+#if( ${option.organisationUnits.size()} > 0 ),"ous":[
+#set( $size3 = $option.organisationUnits.size() )
+#foreach( $orgUnit in $option.organisationUnits )
+"${orgUnit.uid}"#if( $velocityCount < $size3 ),#end
+#end ] #end}
+#if( $velocityCount < $size2 ),#end
 #end ] }#if( $velocityCount < $size1 ),#end
 #end }
 } }

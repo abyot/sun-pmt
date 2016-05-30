@@ -35,7 +35,10 @@ import org.apache.commons.logging.LogFactory;
 
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
-
+import org.hisp.dhis.sms.config.GatewayAdministrationService;
+import org.hisp.dhis.sms.config.SmsConfiguration;
+import org.hisp.dhis.sms.config.SmsConfigurationManager;
+import org.hisp.dhis.sms.config.SmsGatewayConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -46,6 +49,7 @@ import org.springframework.context.event.EventListener;
  * The manager looks up all beans implementing {@link SmsConfigurable} in the
  * context, initializing them on startup and on any SMS configuration changes.
  */
+
 public class DefaultSmsConfigurationManager
     implements SmsConfigurationManager
 {

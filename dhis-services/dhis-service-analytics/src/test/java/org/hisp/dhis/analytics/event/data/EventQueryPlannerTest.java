@@ -257,11 +257,11 @@ public class EventQueryPlannerTest
     @Test
     public void testFromDataQueryParams()
     {
-        DataQueryParams dataQueryParams = new DataQueryParams();
-        dataQueryParams.setProgramDataElements( getList( pdeA, pdeB, pdeC, pdeD ) );
-        dataQueryParams.setProgramAttributes( getList( patA, patB ) );
-        dataQueryParams.setOrganisationUnits( getList( ouA, ouB, ouC ) );
-        dataQueryParams.setPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ) ) );
+        DataQueryParams dataQueryParams = DataQueryParams.newBuilder()
+            .withProgramDataElements( getList( pdeA, pdeB, pdeC, pdeD ) )
+            .withProgramAttributes( getList( patA, patB ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC ) )
+            .withPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ) ) ).build();
 
         EventQueryParams params = EventQueryParams.fromDataQueryParams( dataQueryParams );
         
@@ -278,11 +278,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanAggregateDataQueryA()
     {
-        DataQueryParams dataQueryParams = new DataQueryParams();
-        dataQueryParams.setProgramDataElements( getList( pdeA, pdeB, pdeC, pdeD ) );
-        dataQueryParams.setProgramAttributes( getList( patA, patB ) );
-        dataQueryParams.setOrganisationUnits( getList( ouA, ouB, ouC ) );
-        dataQueryParams.setPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ) ) );
+        DataQueryParams dataQueryParams = DataQueryParams.newBuilder()
+            .withProgramDataElements( getList( pdeA, pdeB, pdeC, pdeD ) )
+            .withProgramAttributes( getList( patA, patB ) )
+            .withOrganisationUnits( getList( ouA, ouB, ouC ) )
+            .withPeriods( getList( createPeriod( "200101" ), createPeriod( "200103" ), createPeriod( "200105" ), createPeriod( "200107" ) ) ).build();
 
         EventQueryParams params = EventQueryParams.fromDataQueryParams( dataQueryParams );
         

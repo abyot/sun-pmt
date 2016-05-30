@@ -32,7 +32,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.organisationunit.FeatureType;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
@@ -41,6 +40,7 @@ import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.organisationunit.comparator.OrganisationUnitByLevelComparator;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.query.Query;
+import org.hisp.dhis.query.QueryParserException;
 import org.hisp.dhis.schema.descriptors.OrganisationUnitSchemaDescriptor;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.util.ObjectUtils;
@@ -81,16 +81,16 @@ public class OrganisationUnitController
 
     @Override
     @SuppressWarnings( "unchecked" )
-    protected List<OrganisationUnit> getEntityList( WebMetadata metadata, 
-        WebOptions options, List<String> filters, List<Order> orders )
+    protected List<OrganisationUnit> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,
+        List<Order> orders, TranslateParams translateParams ) throws QueryParserException
     {
         List<OrganisationUnit> objects = Lists.newArrayList();
-        
+
         User user = currentUserService.getCurrentUser();
 
-        boolean anySpecialPropertySet = ObjectUtils.anyIsTrue( options.isTrue( "userOnly" ), 
+        boolean anySpecialPropertySet = ObjectUtils.anyIsTrue( options.isTrue( "userOnly" ),
             options.isTrue( "userDataViewOnly" ), options.isTrue( "userDataViewFallback" ), options.isTrue( "levelSorted" ) );
-        boolean anyQueryPropertySet = ObjectUtils.firstNonNull( options.get( "query" ), options.getInt( "level" ), 
+        boolean anyQueryPropertySet = ObjectUtils.firstNonNull( options.get( "query" ), options.getInt( "level" ),
             options.getInt( "maxLevel" ) ) != null || options.isTrue( "withinUserHierarchy" );
 
         // ---------------------------------------------------------------------
@@ -121,7 +121,7 @@ public class OrganisationUnitController
             objects = new ArrayList<>( manager.getAll( getEntityClass() ) );
             Collections.sort( objects, OrganisationUnitByLevelComparator.INSTANCE );
         }
-        
+
         // ---------------------------------------------------------------------
         // OrganisationUnitQueryParams query parameter handling
         // ---------------------------------------------------------------------
@@ -133,7 +133,7 @@ public class OrganisationUnitController
             params.setLevel( options.getInt( "level" ) );
             params.setMaxLevels( options.getInt( "maxLevel" ) );
             params.setParents( options.isTrue( "withinUserHierarchy" ) ? user.getOrganisationUnits() : Sets.newHashSet() );
-            
+
             objects = organisationUnitService.getOrganisationUnitsByQuery( params );
         }
 
@@ -143,12 +143,12 @@ public class OrganisationUnitController
 
         Query query = queryService.getQueryFromUrl( getEntityClass(), filters, orders );
         query.setDefaultOrder();
-        
+
         if ( anySpecialPropertySet || anyQueryPropertySet )
         {
             query.setObjects( objects );
         }
-        
+
         return (List<OrganisationUnit>) queryService.query( query );
     }
 
@@ -327,7 +327,12 @@ public class OrganisationUnitController
             generator.writeStringField( "code", organisationUnit.getCode() );
             generator.writeStringField( "name", organisationUnit.getName() );
             generator.writeStringField( "level", String.valueOf( organisationUnit.getLevel() ) );
-            generator.writeStringField( "parent", organisationUnit.getParent().getUid() );
+
+            if ( organisationUnit.getParent() != null )
+            {
+                generator.writeStringField( "parent", organisationUnit.getParent().getUid() );
+            }
+
             generator.writeStringField( "parentGraph", organisationUnit.getParentGraph( roots ) );
         }
 

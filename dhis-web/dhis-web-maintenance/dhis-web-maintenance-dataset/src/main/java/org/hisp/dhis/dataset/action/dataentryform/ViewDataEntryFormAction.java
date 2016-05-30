@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
@@ -172,8 +174,10 @@ public class ViewDataEntryFormAction
 
         dataEntryForm = dataSet.getDataEntryForm();
 
-        dataEntryValue = dataEntryForm != null ? dataEntryFormService.prepareDataEntryFormForEdit( dataEntryForm, dataSet, i18n ) : "";
+        dataEntryValue = dataEntryForm != null ? dataEntryFormService.prepareDataEntryFormForEdit( dataEntryForm, dataSet, i18n ) : null;
 
+        dataEntryValue = ObjectUtils.firstNonNull( dataEntryValue, StringUtils.EMPTY );
+        
         autoSave = (Boolean) userSettingService.getUserSetting( UserSettingKey.AUTO_SAVE_DATA_ENTRY_FORM );
         
         dataElementList = new ArrayList<>( dataSet.getDataElements() );

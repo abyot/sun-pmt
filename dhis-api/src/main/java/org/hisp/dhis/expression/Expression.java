@@ -136,6 +136,7 @@ public class Expression
      * @param expression               The expression as a String
      * @param description              A description of the Expression.
      * @param dataElementsInExpression A reference to the DataElements in the Expression.
+     * @param sampleElementsInExpression Past sampled periods DataElements in the Expression.
      */
     public Expression( String expression, String description, 
 		       Set<DataElement> dataElementsInExpression,

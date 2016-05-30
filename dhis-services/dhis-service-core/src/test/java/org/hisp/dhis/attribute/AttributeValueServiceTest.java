@@ -28,6 +28,8 @@ package org.hisp.dhis.attribute;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.hisp.dhis.DhisSpringTest;
 import org.hisp.dhis.attribute.exception.NonUniqueAttributeValueException;
 import org.hisp.dhis.common.IdentifiableObjectManager;
@@ -35,6 +37,9 @@ import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.dataelement.DataElement;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -75,6 +80,7 @@ public class AttributeValueServiceTest
 
         attributeService.addAttributeValue( dataElementA, avA );
         attributeService.addAttributeValue( dataElementB, avB );
+
     }
 
     @Test
@@ -209,5 +215,36 @@ public class AttributeValueServiceTest
         attributeValueB.setValue( "A" );
         attributeService.updateAttributeValue( dataElementB, attributeValueB );
         manager.update( dataElementB );
+    }
+
+    @Test
+    public void testGetJsonAttributeValues() throws Exception
+    {
+
+        DataElement dataElementA = createDataElement( 'A' );
+        manager.save( dataElementA );
+
+        Attribute attribute1 = new Attribute( "attribute1", ValueType.TEXT );
+        attribute1.setDataElementAttribute( true );
+        attributeService.addAttribute( attribute1 );
+
+        AttributeValue av = new AttributeValue( "value1", attribute1 );
+        attributeService.addAttributeValue( dataElementA, av );
+        manager.update( dataElementA );
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        ObjectNode node = mapper.createObjectNode();
+        node.put( "id",attribute1.getId() );
+        node.put( "value", "updatedvalue1" );
+
+        List<String> jsonValues  = new ArrayList<>();
+        jsonValues.add( node.toString() );
+
+        attributeService.updateAttributeValues( dataElementA, jsonValues );
+
+        av = attributeService.getAttributeValue( av.getId() );
+        assertEquals( "updatedvalue1", av.getValue() );
+
     }
 }

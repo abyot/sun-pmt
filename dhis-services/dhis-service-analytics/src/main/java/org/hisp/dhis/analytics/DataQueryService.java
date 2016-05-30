@@ -80,11 +80,10 @@ public interface DataQueryService
     /**
      * Creates a data query parameter object from the given BaseAnalyticalObject.
      *
-     * @param object the BaseAnalyticalObject
-     * @param format the i18n format.
+     * @param object the BaseAnalyticalObject.
      * @return a data query parameter object created based on the given BaseAnalyticalObject.
      */
-    DataQueryParams getFromAnalyticalObject( AnalyticalObject object, I18nFormat format );
+    DataQueryParams getFromAnalyticalObject( AnalyticalObject object );
 
     /**
      * Creates a list of DimensionalObject from the given set of dimension params.

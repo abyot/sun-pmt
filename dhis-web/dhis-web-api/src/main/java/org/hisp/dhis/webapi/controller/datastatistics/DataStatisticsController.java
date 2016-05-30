@@ -28,6 +28,8 @@ package org.hisp.dhis.webapi.controller.datastatistics;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.datastatistics.FavoriteStatistics;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,7 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.hisp.dhis.datastatistics.DataStatisticsEvent;
 import org.hisp.dhis.datastatistics.AggregatedStatistics;
 import org.hisp.dhis.user.CurrentUserService;
-import org.hisp.dhis.user.User;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.datastatistics.DataStatisticsEventType;
 import org.hisp.dhis.datastatistics.DataStatisticsService;
@@ -57,6 +58,7 @@ import java.util.Date;
  * @author Julie Hill Roa
  */
 @Controller
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class DataStatisticsController
 {
     @Autowired
@@ -67,12 +69,12 @@ public class DataStatisticsController
 
     @RequestMapping( value = "/dataStatistics", method = RequestMethod.POST )
     @ResponseStatus( HttpStatus.CREATED )
-    public void saveEvent( @RequestParam DataStatisticsEventType eventType )
+    public void saveEvent( @RequestParam DataStatisticsEventType eventType, String favorite )
     {
         Date timestamp = new Date();
-        User user = currentUserService.getCurrentUser();
+        String username = currentUserService.getCurrentUsername();
 
-        DataStatisticsEvent event = new DataStatisticsEvent( eventType, timestamp, user.getUsername() );
+        DataStatisticsEvent event = new DataStatisticsEvent( eventType, timestamp, username, favorite );
         dataStatisticsService.addEvent( event );
     }
 
@@ -87,5 +89,18 @@ public class DataStatisticsController
         }
 
         return dataStatisticsService.getReports( startDate, endDate, interval );
+    }
+
+    @RequestMapping( value= "/dataStatistics/favorites", method = RequestMethod.GET )
+    public @ResponseBody List<FavoriteStatistics> favorite( @RequestParam DataStatisticsEventType eventType,
+        @RequestParam Integer pageSize, @RequestParam String sortOrder )
+        throws WebMessageException
+    {
+        if ( !( sortOrder.equals( "DESC" ) || sortOrder.equals( "ASC" ) ) )
+        {
+            throw new WebMessageException( WebMessageUtils.conflict( "Sort order is not ASC or DESC" ) );
+        }
+
+        return dataStatisticsService.getTopFavorites( eventType, pageSize, sortOrder );
     }
 }

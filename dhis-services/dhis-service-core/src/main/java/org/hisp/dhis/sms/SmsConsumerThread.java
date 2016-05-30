@@ -30,10 +30,14 @@ package org.hisp.dhis.sms;
 
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.incoming.IncomingSms;
 import org.hisp.dhis.sms.incoming.IncomingSmsListener;
+import org.hisp.dhis.sms.incoming.IncomingSmsService;
 import org.hisp.dhis.sms.incoming.SmsMessageStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,7 +51,11 @@ public class SmsConsumerThread
     private MessageQueue messageQueue;
 
     @Autowired
-    private SmsSender smsSender;
+    @Resource( name = "smsMessageSender" )
+    private MessageSender smsSender;
+
+    @Autowired
+    private IncomingSmsService incomingSmsService;
 
     public SmsConsumerThread()
     {
@@ -60,6 +68,7 @@ public class SmsConsumerThread
         while ( message != null )
         {
             log.info( "Received SMS: " + message.getText() );
+            
             try
             {
                 for ( IncomingSmsListener listener : listeners )
@@ -72,21 +81,25 @@ public class SmsConsumerThread
                     }
                 }
 
-                log.warn( "No suitable sms command found in received data" );
+                log.warn( "No SMS command found in received data" );
 
-                smsSender.sendMessage( "No command found", message.getOriginator() );
                 message.setStatus( SmsMessageStatus.UNHANDLED );
+
+                smsSender.sendMessage( null, "No command found", message.getOriginator() );
             }
             catch ( Exception e )
             {
-                log.error( e );
-                e.printStackTrace();
-                smsSender.sendMessage( e.getMessage(), message.getOriginator() );
+                log.error( "Parse Error " + e.getMessage() );
+
                 message.setStatus( SmsMessageStatus.FAILED );
+                message.setParsed( false );
             }
             finally
             {
                 messageQueue.remove( message );
+
+                incomingSmsService.update( message );
+
                 message = messageQueue.get();
             }
         }
@@ -96,7 +109,7 @@ public class SmsConsumerThread
     public void setListeners( List<IncomingSmsListener> listeners )
     {
         this.listeners = listeners;
-        log.info( "Listeners registered are " + listeners );
-    }
 
+        log.info( "Following listners are registered: " + listeners );
+    }
 }

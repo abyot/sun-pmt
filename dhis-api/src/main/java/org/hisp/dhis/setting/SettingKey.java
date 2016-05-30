@@ -29,14 +29,18 @@ package org.hisp.dhis.setting;
  */
 
 import org.apache.commons.lang3.LocaleUtils;
+import org.hisp.dhis.common.DigitGroupSeparator;
 import org.hisp.dhis.common.ListMap;
 import org.hisp.dhis.configuration.Configuration;
 import org.hisp.dhis.sms.config.SmsConfiguration;
+
+import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Lars Helge Overland
@@ -48,6 +52,7 @@ public enum SettingKey
     UI_LOCALE( "keyUiLocale", Locale.class ),
     DB_LOCALE( "keyDbLocale", Locale.class ),
     ANALYSIS_DISPLAY_PROPERTY( "keyAnalysisDisplayProperty", "name", String.class ),
+    ANALYSIS_DIGIT_GROUP_SEPARATOR( "keyAnalysisDigitGroupSeparator", DigitGroupSeparator.SPACE, DigitGroupSeparator.class ),
     CURRENT_DOMAIN_TYPE( "keyCurrentDomainType" ),
     AUTO_SAVE_CASE_ENTRY_FORM( "keyAutoSaveCaseEntryForm", Boolean.FALSE, Boolean.class ),
     AUTO_SAVE_TRACKED_ENTITY_REGISTRATION_ENTRY_FORM( "keyAutoSavetTrackedEntityForm", Boolean.FALSE, Boolean.class ),
@@ -120,7 +125,8 @@ public enum SettingKey
     STYLE( "keyStyle", "light_blue/light_blue.css", String.class ),
     REMOTE_INSTANCE_URL( "keyRemoteInstanceUrl", "", String.class ),
     REMOTE_INSTANCE_USERNAME( "keyRemoteInstanceUsername", "", String.class ),
-    REMOTE_INSTANCE_PASSWORD( "keyRemoteInstancePassword", "", String.class, true );
+    REMOTE_INSTANCE_PASSWORD( "keyRemoteInstancePassword", "", String.class, true ),
+    MAPZEN_SEARCH_API_KEY( "keyMapzenSearchApiKey", "search-Se1CFzK", String.class );
     
     private final String name;
     
@@ -129,6 +135,8 @@ public enum SettingKey
     private final Class<?> clazz;
 
     private boolean confidential;
+    
+    private static final Set<String> NAMES = getNameSet();
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -207,6 +215,10 @@ public enum SettingKey
             {
                 return LocaleUtils.toLocale( value );
             }
+            else if ( DigitGroupSeparator.class.isAssignableFrom( settingClazz ) )
+            {
+                return DigitGroupSeparator.valueOf( value );
+            }
             
             //TODO handle Dates
         }
@@ -219,6 +231,18 @@ public enum SettingKey
         return defaultValue != null;
     }
 
+    public static Set<String> getNames()
+    {
+        return NAMES;
+    }
+
+    private static Set<String> getNameSet()
+    {
+        Set<String> names = Sets.newHashSet();
+        Sets.newHashSet( SettingKey.values() ).stream().forEach( s -> names.add( s.getName() ) );
+        return names;
+    }
+    
     // -------------------------------------------------------------------------
     // Getters
     // -------------------------------------------------------------------------

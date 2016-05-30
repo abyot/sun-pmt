@@ -44,9 +44,9 @@ public class DatabaseSupportedInternalMemoryMessageQueue
     // -------------------------------------------------------------------------
     // Dependencies
     // -------------------------------------------------------------------------
-
+    
     @Autowired
-    private IncomingSmsStore smsStore;
+    private IncomingSmsStore incomingSmsStore;
 
     // -------------------------------------------------------------------------
     // Implementation
@@ -72,15 +72,13 @@ public class DatabaseSupportedInternalMemoryMessageQueue
     @Override
     public void remove( IncomingSms message )
     {
-        message.setParsed( true );
-        smsStore.update( message );
         queue.remove( message );
     }
 
     @Override
     public void initialize()
     {
-        Collection<IncomingSms> messages = smsStore.getAllUnparsedSmses();
+        Collection<IncomingSms> messages = incomingSmsStore.getAllUnparsedSmses();
 
         if ( messages != null )
         {

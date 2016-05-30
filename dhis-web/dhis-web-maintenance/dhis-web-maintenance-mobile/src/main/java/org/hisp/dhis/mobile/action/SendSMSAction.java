@@ -28,9 +28,8 @@ package org.hisp.dhis.mobile.action;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hisp.dhis.sms.SmsSender;
+import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.sms.SmsServiceException;
-import org.hisp.dhis.sms.outbound.OutboundSms;
 
 import com.opensymphony.xwork2.Action;
 
@@ -41,14 +40,14 @@ public class SendSMSAction
     // Dependencies
     // -------------------------------------------------------------------------
 
-    private SmsSender smsSender;
+    private MessageSender smsSender;
 
-    public SmsSender getSmsSender()
+    public MessageSender getSmsSender()
     {
         return smsSender;
     }
 
-    public void setSmsSender( SmsSender smsSender )
+    public void setSmsSender( MessageSender smsSender )
     {
         this.smsSender = smsSender;
     }
@@ -97,7 +96,7 @@ public class SendSMSAction
         {
             try
             {
-                smsSender.sendMessage( new OutboundSms( msg, recipient ), null );
+                smsSender.sendMessage( null, msg, recipient );
                 this.message = "Sent message to " + recipient;
             }
             catch ( SmsServiceException e )

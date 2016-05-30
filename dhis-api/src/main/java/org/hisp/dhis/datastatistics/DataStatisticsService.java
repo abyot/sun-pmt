@@ -78,4 +78,14 @@ public interface DataStatisticsService
      * @return identifier of the persisted DataStatistics object.
      */
     int saveDataStatisticsSnapshot();
+
+    /**
+     * Returns top favorites by views
+     *
+     * @param eventType that should be counted
+     * @param pageSize number of favorites
+     * @param sortOrder DESC or ASC
+     * @return list of FavoriteStatistics
+     */
+    List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, String sortOrder );
 }

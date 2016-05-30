@@ -54,6 +54,9 @@ import org.hisp.dhis.dataelement.DataElementOperand;
 import org.hisp.dhis.dataelement.DataElementService;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
+import org.hisp.dhis.indicator.Indicator;
+import org.hisp.dhis.indicator.IndicatorGroup;
+import org.hisp.dhis.indicator.IndicatorType;
 import org.hisp.dhis.mock.MockCurrentUserService;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
@@ -98,6 +101,11 @@ public class DataQueryServiceTest
     private ReportingRate rrB;
     private ReportingRate rrC;
     
+    private IndicatorType itA;
+    
+    private Indicator inA;
+    private Indicator inB;
+    
     private TrackedEntityAttribute atA;
     private TrackedEntityAttribute atB;
     
@@ -116,10 +124,12 @@ public class DataQueryServiceTest
     
     private OrganisationUnitGroupSet ouGroupSetA;
     
+    private IndicatorGroup inGroupA;
+    
     private DataElementGroup deGroupA;
     private DataElementGroup deGroupB;
     private DataElementGroup deGroupC;
-    
+        
     private DataElementGroupSet deGroupSetA;
     
     private PeriodType monthly = PeriodType.getPeriodTypeByName( MonthlyPeriodType.NAME );
@@ -193,6 +203,22 @@ public class DataQueryServiceTest
         rrA = new ReportingRate( dsA, ReportingRateMetric.REPORTING_RATE );
         rrB = new ReportingRate( dsB, ReportingRateMetric.REPORTING_RATE );
         rrC = new ReportingRate( dsB, ReportingRateMetric.ACTUAL_REPORTS );
+        
+        itA = createIndicatorType( 'A' );
+        
+        idObjectManager.save( itA );
+        
+        inA = createIndicator( 'A', itA );
+        inB = createIndicator( 'B', itA );
+        
+        idObjectManager.save( inA );
+        idObjectManager.save( inB );
+        
+        inGroupA = createIndicatorGroup( 'A' );
+        inGroupA.getMembers().add( inA );
+        inGroupA.getMembers().add( inB );
+        
+        idObjectManager.save( inGroupA );
         
         atA = createTrackedEntityAttribute( 'A' );
         atB = createTrackedEntityAttribute( 'B' );
@@ -417,7 +443,37 @@ public class DataQueryServiceTest
         assertEquals( DimensionalObject.ORGUNIT_DIM_ID, actual.getDimension() );
         assertEquals( DimensionType.ORGANISATION_UNIT, actual.getDimensionType() );
         assertEquals( DataQueryParams.DISPLAY_NAME_ORGUNIT, actual.getDisplayName() );
-        assertEquals( ouGroupA.getMembers(), Sets.newHashSet( actual.getItems() ) );        
+        assertEquals( ouGroupA.getMembers(), Sets.newHashSet( actual.getItems() ) );
+    }
+    
+    @Test
+    public void testGetDimensionDataElementGroup()
+    {
+        String deGroupAId = DataQueryParams.KEY_DE_GROUP + deGroupA.getUid();
+        
+        List<String> itemUids = Lists.newArrayList( deGroupAId );
+        
+        DimensionalObject actual = dataQueryService.getDimension( DimensionalObject.DATA_X_DIM_ID, itemUids, null, null, null, false, IdScheme.UID );
+        
+        assertEquals( DimensionalObject.DATA_X_DIM_ID, actual.getDimension() );
+        assertEquals( DimensionType.DATA_X, actual.getDimensionType() );
+        assertEquals( DataQueryParams.DISPLAY_NAME_DATA_X, actual.getDisplayName() );
+        assertEquals( deGroupA.getMembers(), Sets.newHashSet( actual.getItems() ) );
+    }
+    
+    @Test
+    public void testGetDimensionIndicatorGroup()
+    {
+        String inGroupAId = DataQueryParams.KEY_IN_GROUP + inGroupA.getUid();
+        
+        List<String> itemUids = Lists.newArrayList( inGroupAId );
+        
+        DimensionalObject actual = dataQueryService.getDimension( DimensionalObject.DATA_X_DIM_ID, itemUids, null, null, null, false, IdScheme.UID );
+        
+        assertEquals( DimensionalObject.DATA_X_DIM_ID, actual.getDimension() );
+        assertEquals( DimensionType.DATA_X, actual.getDimensionType() );
+        assertEquals( DataQueryParams.DISPLAY_NAME_DATA_X, actual.getDisplayName() );
+        assertEquals( inGroupA.getMembers(), Sets.newHashSet( actual.getItems() ) );
     }
     
     @Test
@@ -698,7 +754,7 @@ public class DataQueryServiceTest
         
         chart.getPeriods().add( PeriodType.getPeriodFromIsoString( "2012" ) );
         
-        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart, null );
+        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart );
         
         assertNotNull( params );
         assertEquals( 3, params.getDataElements().size() );
@@ -726,7 +782,7 @@ public class DataQueryServiceTest
         
         chart.getPeriods().add( PeriodType.getPeriodFromIsoString( "2012" ) );
         
-        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart, null );
+        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart );
         
         assertNotNull( params );
         assertEquals( 3, params.getDataElements().size() );
@@ -754,7 +810,7 @@ public class DataQueryServiceTest
         
         chart.getPeriods().add( PeriodType.getPeriodFromIsoString( "2012" ) );
         
-        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart, null );
+        DataQueryParams params = dataQueryService.getFromAnalyticalObject( chart );
         
         assertNotNull( params );
         assertEquals( 1, params.getDataElements().size() );

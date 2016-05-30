@@ -90,6 +90,13 @@ public interface OrganisationUnitStore
      * @return all OrganisationUnits which are not a member of any OrganisationUnitGroups.
      */
     List<OrganisationUnit> getOrganisationUnitsWithoutGroups();
+    
+    /**
+     * Returns all OrganisationUnits with at least one CategoryOption.
+     * 
+     * @return all OrganisationUnits with at least one CategoryOption.
+     */
+    List<OrganisationUnit> getOrganisationUnitsWithCategoryOptions();
 
     /**
      * Returns a list of OrganisationUnits based on the given params.

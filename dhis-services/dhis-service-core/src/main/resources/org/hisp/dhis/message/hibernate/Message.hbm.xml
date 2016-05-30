@@ -20,6 +20,8 @@
 
     <property name="text" column="messagetext" type="text" />
 
+    <property name="internal" column="internal" type="boolean" />
+
     <property name="metaData" column="metadata" />
 
     <many-to-one name="sender" class="org.hisp.dhis.user.User" column="userid"

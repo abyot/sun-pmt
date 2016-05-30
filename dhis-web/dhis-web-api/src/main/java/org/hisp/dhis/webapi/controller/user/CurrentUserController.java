@@ -30,20 +30,19 @@ package org.hisp.dhis.webapi.controller.user;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import org.hisp.dhis.security.acl.AclService;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObjectManager;
+import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.common.view.DetailedView;
+import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.dashboard.DashboardItem;
 import org.hisp.dhis.dataapproval.DataApprovalLevel;
 import org.hisp.dhis.dataapproval.DataApprovalLevelService;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
-import org.hisp.dhis.fieldfilter.FieldFilterService;
-import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.dxf2.common.JacksonUtils;
+import org.hisp.dhis.fieldfilter.FieldFilterService;
 import org.hisp.dhis.i18n.I18nService;
 import org.hisp.dhis.interpretation.Interpretation;
 import org.hisp.dhis.interpretation.InterpretationService;
@@ -55,7 +54,10 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramService;
-import org.hisp.dhis.commons.util.TextUtils;
+import org.hisp.dhis.program.ProgramType;
+import org.hisp.dhis.render.RenderService;
+import org.hisp.dhis.security.acl.AclService;
+import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserGroupService;
@@ -64,9 +66,9 @@ import org.hisp.dhis.user.UserSettingKey;
 import org.hisp.dhis.user.UserSettingService;
 import org.hisp.dhis.webapi.controller.exception.FilterTooShortException;
 import org.hisp.dhis.webapi.controller.exception.NotAuthenticatedException;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.utils.ContextUtils;
-import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.webapi.utils.FormUtils;
 import org.hisp.dhis.webapi.webdomain.FormDataSet;
 import org.hisp.dhis.webapi.webdomain.FormOrganisationUnit;
@@ -85,13 +87,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.hisp.dhis.program.ProgramType;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,13 +103,12 @@ import java.util.Set;
  */
 @Controller
 @RequestMapping( value = { CurrentUserController.RESOURCE_PATH, "/me" }, method = RequestMethod.GET )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.V23 } )
 public class CurrentUserController
 {
     public static final String RESOURCE_PATH = "/currentUser";
 
     private static final int MAX_OBJECTS = 50;
-
-    private static SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd" );
 
     @Autowired
     private CurrentUserService currentUserService;
@@ -335,6 +332,7 @@ public class CurrentUserController
         UserAccount userAccount = new UserAccount();
 
         // user account
+        userAccount.setId( currentUser.getUid() );
         userAccount.setUsername( currentUser.getUsername() );
         userAccount.setFirstName( currentUser.getFirstName() );
         userAccount.setSurname( currentUser.getSurname() );
@@ -348,7 +346,7 @@ public class CurrentUserController
 
         if ( currentUser.getBirthday() != null )
         {
-            userAccount.setBirthday( SIMPLE_DATE_FORMAT.format( currentUser.getBirthday() ) );
+            userAccount.setBirthday( DateUtils.getMediumDateString( currentUser.getBirthday() ) );
         }
 
         userAccount.setNationality( currentUser.getNationality() );
@@ -389,7 +387,7 @@ public class CurrentUserController
 
         if ( userAccount.getBirthday() != null && !userAccount.getBirthday().isEmpty() )
         {
-            currentUser.setBirthday( SIMPLE_DATE_FORMAT.parse( userAccount.getBirthday() ) );
+            currentUser.setBirthday( DateUtils.getMediumDate( userAccount.getBirthday() ) );
         }
 
         currentUser.setNationality( userAccount.getNationality() );
@@ -752,6 +750,6 @@ public class CurrentUserController
     {
         Map<OrganisationUnit, Integer> orgUnitApprovalLevelMap = approvalLevelService.getUserReadApprovalLevels();
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
-        renderService.toJson( response.getOutputStream(), orgUnitApprovalLevelMap );        
+        renderService.toJson( response.getOutputStream(), orgUnitApprovalLevelMap );
     }
 }

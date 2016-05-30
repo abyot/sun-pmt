@@ -34,6 +34,7 @@ import org.hisp.dhis.sms.config.GenericHttpGatewayConfig;
 import org.hisp.dhis.sms.config.SmsConfiguration;
 import org.hisp.dhis.sms.config.SmsConfigurationManager;
 import org.hisp.dhis.sms.config.SmsGatewayConfig;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,10 +47,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 
 @Controller
 @RequestMapping( value = SmsConfigurationController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class SmsConfigurationController
 {
     public static final String RESOURCE_PATH = "/config/sms";
@@ -80,7 +81,7 @@ public class SmsConfigurationController
 
         SmsConfiguration smsConfiguration = new SmsConfiguration();
 
-        SmsGatewayConfig gatewayConfig = new GenericHttpGatewayConfig( new HashMap<>() );
+        SmsGatewayConfig gatewayConfig = new GenericHttpGatewayConfig();
         gatewayConfig.setUrlTemplate( "http://storset.org/" );
         smsConfiguration.setGateways( Collections.singletonList( gatewayConfig ) );
 

@@ -84,7 +84,7 @@ public class SendReplyAction
 
         MessageConversation conversation = messageService.getMessageConversation( conversationId );
 
-        messageService.sendReply( conversation, text, metaData );
+        messageService.sendReply( conversation, text, metaData, false );
 
         return SUCCESS;
     }

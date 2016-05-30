@@ -30,7 +30,6 @@ package org.hisp.dhis.webapi.controller;
 
 import org.hisp.dhis.common.DimensionService;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.dxf2.common.ImportOptions;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
@@ -95,7 +94,7 @@ public class ReportTableController
 
     @Override
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
-    public void postJsonObject( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void postJsonObjectLegacy( ImportOptions importOptions, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         ReportTable reportTable = renderService.fromJson( request.getInputStream(), ReportTable.class );
 
@@ -110,7 +109,7 @@ public class ReportTableController
 
     @Override
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = "application/json" )
-    public void putJsonObject( ImportOptions importOptions, @PathVariable String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public void putJsonObjectLegacy( ImportOptions importOptions, @PathVariable String uid, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         ReportTable reportTable = reportTableService.getReportTable( uid );
 
@@ -123,7 +122,7 @@ public class ReportTableController
 
         mergeReportTable( newReportTable );
 
-        reportTable.mergeWith( newReportTable, MergeMode.MERGE_IF_NOT_NULL );
+        reportTable.mergeWith( newReportTable, importOptions.getMergeMode() );
 
         reportTableService.updateReportTable( reportTable );
     }
@@ -254,7 +253,7 @@ public class ReportTableController
 
         date = date != null ? date : new Date();
 
-        return reportTableService.getReportTableGrid( uid, i18nManager.getI18nFormat(), date, organisationUnitUid );
+        return reportTableService.getReportTableGrid( uid, date, organisationUnitUid );
     }
 
     //--------------------------------------------------------------------------

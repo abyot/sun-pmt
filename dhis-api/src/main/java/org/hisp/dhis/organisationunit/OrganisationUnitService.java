@@ -326,6 +326,13 @@ public interface OrganisationUnitService
      * @return all OrganisationUnits which are not a member of any OrganisationUnitGroups.
      */
     List<OrganisationUnit> getOrganisationUnitsWithoutGroups();
+    
+    /**
+     * Returns all OrganisationUnits with at least one CategoryOption.
+     * 
+     * @return all OrganisationUnits with at least one CategoryOption.
+     */
+    List<OrganisationUnit> getOrganisationUnitsWithCategoryOptions();
 
     OrganisationUnitDataSetAssociationSet getOrganisationUnitDataSetAssociationSet( Integer maxlevels );
 

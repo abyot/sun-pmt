@@ -30,10 +30,11 @@ package org.hisp.dhis.mobile.action.smscommand;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.dataelement.DataElement;
@@ -113,6 +114,8 @@ public class EditSMSCommandForm
 
     private String trackedEntityAttributeCodes;
 
+    private String programStageDataElementCodes;
+
     private String separator;
 
     private String codeSeparator;
@@ -145,38 +148,51 @@ public class EditSMSCommandForm
     {
 
         Set<SMSCode> codeSet = new HashSet<>();
+        ObjectMapper mapper = new ObjectMapper();
 
-        @SuppressWarnings( "unchecked" )
-        List<JSONObject> jsonCodes = (List<JSONObject>) JSONObject.fromObject( codeDataelementOption ).get( "codes" );
-        for ( JSONObject x : jsonCodes )
+        JsonNode root = mapper.readValue( codeDataelementOption, JsonNode.class );
+        JsonNode codes = root.get( "codes" );
+
+        if ( codes != null && codes.size() > 0 )
         {
-            SMSCode c = new SMSCode();
-            c.setCode( x.getString( "code" ) );
-            c.setDataElement( dataElementService.getDataElement( x.getInt( "dataElementId" ) ) );
-            c.setOptionId( x.getInt( "optionId" ) );
-            if ( !x.getString( "formula" ).trim().equals( "" ) )
-            {
-                c.setFormula( x.getString( "formula" ) );
-            }
-            else
-            {
-                c.setFormula( null );
-            }
-            codeSet.add( c );
+            codes.iterator().forEachRemaining( code -> {
+                if ( code.get( "code" ) != null && code.get( "dataElementId" ) != null && code.get( "optionId" ) != null
+                    && code.get( "formula" ) != null )
+                {
+                    SMSCode c = new SMSCode();
+
+                    c.setCode( code.get( "code" ).asText() );
+                    c.setDataElement( dataElementService.getDataElement( code.get( "dataElementId" ).asInt() ) );
+                    c.setOptionId( code.get( "optionId" ).asInt() );
+
+                    if ( !StringUtils.isEmpty( code.get( "formula" ).asText() ) )
+                    {
+                        c.setFormula( code.get( "formula" ).asText() );
+                    }
+                    else
+                    {
+                        c.setFormula( null );
+                    }
+
+                    codeSet.add( c );
+                }
+            } );
         }
 
-        @SuppressWarnings( "unchecked" )
-        List<JSONObject> jsonSpecialCharacters = (List<JSONObject>) JSONObject.fromObject( specialCharactersInfo ).get(
-            "specialCharacters" );
         Set<SMSSpecialCharacter> specialCharacterSet = new HashSet<>();
-        for ( JSONObject x : jsonSpecialCharacters )
+
+        root = mapper.readValue( specialCharactersInfo, JsonNode.class );
+        JsonNode specialChars = root.get( "specialCharacters" );
+
+        if ( specialChars != null && StringUtils.isNoneEmpty( specialChars.toString() ) )
         {
-            String name = x.getString( "name" );
-            String value = x.getString( "value" );
-            SMSSpecialCharacter smsSpecialCharacter = new SMSSpecialCharacter( name, value );
-            specialCharacterSet.add( smsSpecialCharacter );
+            specialCharacterSet = mapper.readValue( specialChars.toString(),
+                new TypeReference<HashSet<SMSSpecialCharacter>>()
+                {
+                } );
+
+            smsCommandService.saveSpecialCharacterSet( specialCharacterSet );
         }
-        smsCommandService.saveSpecialCharacterSet( specialCharacterSet );
 
         SMSCommand command = getSMSCommand();
 
@@ -184,16 +200,40 @@ public class EditSMSCommandForm
         {
             if ( command.getParserType() == ParserType.TRACKED_ENTITY_REGISTRATION_PARSER )
             {
-                @SuppressWarnings( "unchecked" )
-                List<JSONObject> jsonRegistrationCodes = (List<JSONObject>) JSONObject.fromObject(
-                    trackedEntityAttributeCodes ).get( "trackedEntityAttributeCodes" );
-                for ( JSONObject x : jsonRegistrationCodes )
+                root = mapper.readValue( trackedEntityAttributeCodes, JsonNode.class );
+                JsonNode regCodes = root.get( "trackedEntityAttributeCodes" );
+
+                if ( regCodes != null && regCodes.size() > 0 )
                 {
-                    SMSCode c = new SMSCode();
-                    c.setCode( x.getString( "code" ) );
-                    c.setTrackedEntityAttribute( trackedEntityAttributeService.getTrackedEntityAttribute( x
-                        .getInt( "trackedEntityAttributeId" ) ) );
-                    codeSet.add( c );
+                    regCodes.iterator().forEachRemaining( regCode -> {
+                        if ( regCode.get( "code" ) != null && regCode.get( "trackedEntityAttributeId" ) != null )
+                        {
+                            SMSCode c = new SMSCode();
+                            c.setCode( regCode.get( "code" ).asText() );
+                            c.setTrackedEntityAttribute( trackedEntityAttributeService
+                                .getTrackedEntityAttribute( regCode.get( "trackedEntityAttributeId" ).asInt() ) );
+                            codeSet.add( c );
+                        }
+                    } );
+                }
+            }
+
+            if ( command.getParserType() == ParserType.EVENT_REGISTRATION_PARSER )
+            {
+                root = mapper.readValue( programStageDataElementCodes, JsonNode.class );
+                JsonNode regCodes = root.get( "programStageDataElementCodes" );
+                                
+                if ( regCodes != null && regCodes.size() > 0 )
+                {
+                    regCodes.iterator().forEachRemaining( regCode -> {
+                        if ( regCode.get( "code" ) != null && regCode.get( "programStageDataElementId" ) != null )
+                        {
+                            SMSCode c = new SMSCode();
+                            c.setCode( regCode.get( "code" ).asText() );      
+                            c.setDataElement( dataElementService.getDataElement( regCode.get( "programStageDataElementId" ).asInt() ) );
+                            codeSet.add( c );
+                        }
+                    } );
                 }
             }
         }
@@ -423,6 +463,16 @@ public class EditSMSCommandForm
     public String getTrackedEntityAttributeCodes()
     {
         return trackedEntityAttributeCodes;
+    }
+
+    public String getProgramStageDataElementCodes()
+    {
+        return programStageDataElementCodes;
+    }
+
+    public String setProgramStageDataElementCodes( String programStageDataElementCodes )
+    {
+        return this.programStageDataElementCodes = programStageDataElementCodes;
     }
 
     public void setTrackedEntityAttributeCodes( String trackedEntityAttributeCodes )

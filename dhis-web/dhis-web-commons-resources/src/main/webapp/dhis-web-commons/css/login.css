@@ -121,6 +121,11 @@ a:hover
   border-radius: 3px;
 }
 
+#notificationArea:empty
+{
+  display: none;
+}
+
 #notificationArea a 
 {
   color: #2E527C;

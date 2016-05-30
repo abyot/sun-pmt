@@ -30,6 +30,7 @@ package org.hisp.dhis.webapi.controller;
 
 import org.hisp.dhis.analytics.AnalyticsTableService;
 import org.hisp.dhis.analytics.partition.PartitionManager;
+import org.hisp.dhis.appmanager.AppManager;
 import org.hisp.dhis.cache.HibernateCacheManager;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
@@ -47,6 +48,7 @@ import org.hisp.dhis.schema.Property;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
 import org.hisp.dhis.schema.validation.SchemaValidator;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping( value = MaintenanceController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class MaintenanceController
 {
     public static final String RESOURCE_PATH = "/maintenance";
@@ -110,6 +113,9 @@ public class MaintenanceController
 
     @Autowired
     private List<AnalyticsTableService> analyticsTableService;
+
+    @Autowired
+    private AppManager appManager;
 
     @RequestMapping( value = "/analyticsTablesClear", method = { RequestMethod.PUT, RequestMethod.POST } )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
@@ -178,7 +184,8 @@ public class MaintenanceController
         partitionManager.clearCaches();
     }
 
-    @RequestMapping( value = "/dataPruning/organisationUnits/{uid}", method = { RequestMethod.PUT, RequestMethod.POST } )
+    @RequestMapping( value = "/dataPruning/organisationUnits/{uid}", method = { RequestMethod.PUT,
+        RequestMethod.POST } )
     @PreAuthorize( "hasRole('ALL')" )
     public void pruneDataByOrganisationUnit( @PathVariable String uid, HttpServletResponse response )
         throws Exception
@@ -187,20 +194,24 @@ public class MaintenanceController
 
         if ( organisationUnit == null )
         {
-            webMessageService.sendJson( WebMessageUtils.conflict( "Organisation unit does not exist: " + uid ), response );
+            webMessageService
+                .sendJson( WebMessageUtils.conflict( "Organisation unit does not exist: " + uid ), response );
             return;
         }
 
         boolean result = maintenanceService.pruneData( organisationUnit );
 
-        WebMessage message = result ? WebMessageUtils.ok( "Data was pruned successfully" ) : WebMessageUtils.conflict( "Data could not be pruned" );
+        WebMessage message = result ?
+            WebMessageUtils.ok( "Data was pruned successfully" ) :
+            WebMessageUtils.conflict( "Data could not be pruned" );
 
         webMessageService.sendJson( message, response );
     }
 
     @RequestMapping( value = "/metadataValidation", method = { RequestMethod.PUT, RequestMethod.POST } )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
-    public void runValidateMetadata( HttpServletResponse response ) throws InvocationTargetException, IllegalAccessException, IOException
+    public void runValidateMetadata( HttpServletResponse response )
+        throws InvocationTargetException, IllegalAccessException, IOException
     {
         Options options = new Options();
         options.setAssumeTrue( true );
@@ -227,7 +238,8 @@ public class MaintenanceController
 
                 if ( !validationViolations.isEmpty() )
                 {
-                    output.get( property.getName() ).put( ((IdentifiableObject) object).getUid(), validationViolations );
+                    output.get( property.getName() )
+                        .put( ((IdentifiableObject) object).getUid(), validationViolations );
                 }
             }
         }
@@ -236,9 +248,18 @@ public class MaintenanceController
         renderService.toJson( response.getOutputStream(), output );
     }
 
+    @RequestMapping( value = "/appReload", method = RequestMethod.GET )
+    @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
+    public void appReload( HttpServletResponse response )
+        throws IOException
+    {
+        appManager.reloadApps();
+        renderService.toJson( response.getOutputStream(), WebMessageUtils.ok( "Apps reloaded" ) );
+    }
+
     @RequestMapping( method = { RequestMethod.PUT, RequestMethod.POST } )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
-    public void performMaintenance( 
+    public void performMaintenance(
         @RequestParam( required = false ) boolean analyticsTableClear,
         @RequestParam( required = false ) boolean expiredInvitationsClear,
         @RequestParam( required = false ) boolean ouPathsUpdate,
@@ -247,51 +268,57 @@ public class MaintenanceController
         @RequestParam( required = false ) boolean sqlViewsDrop,
         @RequestParam( required = false ) boolean sqlViewsCreate,
         @RequestParam( required = false ) boolean categoryOptionComboUpdate,
-        @RequestParam( required = false ) boolean cacheClear )
+        @RequestParam( required = false ) boolean cacheClear,
+        @RequestParam( required = false ) boolean appReload )
     {
         if ( analyticsTableClear )
         {
             clearAnalyticsTables();
         }
-        
+
         if ( expiredInvitationsClear )
         {
             clearExpiredInvitations();
         }
-        
+
         if ( ouPathsUpdate )
         {
             forceUpdatePaths();
         }
-        
+
         if ( periodPruning )
         {
             prunePeriods();
         }
-        
+
         if ( zeroDataValueRemoval )
         {
             deleteZeroDataValues();
         }
-        
+
         if ( sqlViewsDrop )
         {
             dropSqlViews();
         }
-        
+
         if ( sqlViewsCreate )
         {
             createSqlViews();
         }
-        
+
         if ( categoryOptionComboUpdate )
         {
             updateCategoryOptionCombos();
         }
-        
+
         if ( cacheClear )
         {
             clearCache();
+        }
+
+        if ( appReload )
+        {
+            appManager.reloadApps();
         }
     }
 }

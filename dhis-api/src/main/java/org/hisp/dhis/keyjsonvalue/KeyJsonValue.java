@@ -48,7 +48,7 @@ public class KeyJsonValue
     private String key;
 
     /**
-     * A value referenced by a key and namespace, json-formatted data stored as a string.
+     * A value referenced by a key and namespace, JSON-formatted data stored as a string.
      */
     private String plainValue;
 
@@ -63,10 +63,41 @@ public class KeyJsonValue
     private String encryptedValue;
 
     /**
-     * Temporary variable to hold any new values set during session; Will be made into the corrent type
-     * when being persisted (encrypted or plain)
+     * Temporary variable to hold any new values set during session. Will be made into the correct type
+     * when being persisted by the persistence layer (encrypted or plain).
      */
     private String value;
+
+    // -------------------------------------------------------------------------
+    // Constructors
+    // -------------------------------------------------------------------------
+
+    public KeyJsonValue()
+    {
+    }
+    
+    public KeyJsonValue( String namespace, String key, String value, Boolean encrypted )
+    {
+        this.namespace = namespace;
+        this.key = key;
+        this.value = value;
+        this.encrypted = encrypted;
+    }
+
+    // -------------------------------------------------------------------------
+    // Get and set methods
+    // -------------------------------------------------------------------------
+    
+    @JsonProperty
+    public String getNamespace()
+    {
+        return namespace;
+    }
+
+    public void setNamespace( String namespace )
+    {
+        this.namespace = namespace;
+    }
 
     @JsonProperty
     public String getKey()
@@ -80,27 +111,9 @@ public class KeyJsonValue
     }
 
     @JsonProperty
-    public String getNamespace()
-    {
-        return namespace;
-    }
-
-    public void setNamespace( String namespace )
-    {
-        this.namespace = namespace;
-    }
-
-    @JsonProperty
     public String getValue()
     {
-        if ( this.encrypted )
-        {
-            return this.encryptedValue;
-        }
-        else
-        {
-            return this.plainValue;
-        }
+        return encrypted ? encryptedValue : plainValue;
     }
 
     public void setValue( String value )
@@ -120,7 +133,7 @@ public class KeyJsonValue
 
     public String getPlainValue()
     {
-        return (!this.encrypted && this.value != null ? this.value : this.plainValue);
+        return !this.encrypted && this.value != null ? this.value : this.plainValue;
     }
 
     public void setPlainValue( String plainValue )
@@ -130,7 +143,7 @@ public class KeyJsonValue
 
     public String getEncryptedValue()
     {
-        return (this.encrypted && this.value != null ? this.value : this.encryptedValue);
+        return this.encrypted && this.value != null ? this.value : this.encryptedValue;
     }
 
     public void setEncryptedValue( String encryptedValue )

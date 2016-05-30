@@ -68,8 +68,7 @@ public class InitTableAlteror
         executeSql( "alter table programstageinstance alter column  status  type varchar(25);" );
         executeSql( "UPDATE programstageinstance SET status='ACTIVE' WHERE status='0';" );
         executeSql( "UPDATE programstageinstance SET status='COMPLETED' WHERE status='1';" );
-        executeSql( "UPDATE programstageinstance SET status='SKIPPED' WHERE status='5';" );
-
+        executeSql( "UPDATE programstageinstance SET status='SKIPPED' WHERE status='5';" );        
         executeSql( "ALTER TABLE program DROP COLUMN displayonallorgunit" );
 
         upgradeProgramStageDataElements();
@@ -91,6 +90,26 @@ public class InitTableAlteror
 
         executeSql( "UPDATE keyjsonvalue SET encrypted = false WHERE encrypted IS NULL" );
         executeSql( "UPDATE userkeyjsonvalue SET encrypted = false WHERE encrypted IS NULL" );
+
+        // Set messages "ticket" properties to non-null values
+
+        executeSql( "UPDATE message SET internal = FALSE WHERE internal IS NULL" );
+        executeSql( "UPDATE messageconversation SET priority = 'NONE' WHERE priority IS NULL" );
+        executeSql( "UPDATE messageconversation SET status = 'NONE' WHERE status IS NULL" );
+
+        updateMessageConversationMessageCount();
+    }
+
+    private void updateMessageConversationMessageCount() {
+
+        Integer nullCounts = statementManager.getHolder().queryForInteger( "SELECT count(*) from messageconversation WHERE messagecount IS NULL" );
+
+        if(nullCounts > 0)
+        {
+            // Count messages in messageConversations
+            executeSql(
+                "update messageconversation MC SET messagecount = (SELECT count(MCM.messageconversationid) FROM messageconversation_messages MCM WHERE messageconversationid=MC.messageconversationid) " );
+        }
     }
 
     private void updateCompletedBy()

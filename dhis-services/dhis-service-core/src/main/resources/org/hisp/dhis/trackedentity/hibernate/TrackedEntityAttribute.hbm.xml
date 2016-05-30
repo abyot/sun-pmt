@@ -21,7 +21,7 @@
 
     <property name="description" type="text" />
 
-    <property name="valueType" column="valuetype" length="36" access="property" not-null="false">
+    <property name="valueType" column="valuetype" length="36" access="property" not-null="true">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.common.ValueType</param>
         <param name="useNamed">true</param>
@@ -32,6 +32,7 @@
     <property name="aggregationType" length="40">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">org.hisp.dhis.analytics.AggregationType</param>
+        <param name="useNamed">true</param>
         <param name="type">12</param>
       </type>
     </property>
@@ -63,6 +64,10 @@
     <property name="confidential" />
 
     <property name="unique" column="uniquefield" />
+    
+    <property name="generated" />
+    
+    <property name="pattern" />
 
     <property name="orgunitScope" />
 

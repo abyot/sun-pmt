@@ -130,7 +130,7 @@ public class GridTest
     }
 
     @Test
-    public void testSubstituteMetaDataForIndex()
+    public void testSubstituteMetaDataForIndexA()
     {
         Map<Object, Object> metaData = new HashMap<>();
         metaData.put( 11, "Eleven" );
@@ -143,12 +143,44 @@ public class GridTest
         assertEquals( 21, gridA.getValue( 1, 0 ) );
         assertEquals( 22, gridA.getValue( 1, 1 ) );
         
-        gridA.substituteMetaData( 1, metaData );
+        gridA.substituteMetaData( 1, 1, metaData );
 
         assertEquals( 11, gridA.getValue( 0, 0 ) );
         assertEquals( "Twelve", gridA.getValue( 0, 1 ) );
         assertEquals( 21, gridA.getValue( 1, 0 ) );
         assertEquals( "TwentyTwo", gridA.getValue( 1, 1 ) );
+    }
+
+    @Test
+    public void testSubstituteMetaDataForIndexB()
+    {
+        Map<Object, Object> metaData = new HashMap<>();
+        metaData.put( 11, "Twelve" );
+        metaData.put( 21, "TwentyTwo" );
+        metaData.put( 31, "ThirtyTwo" );
+        metaData.put( 41, "FourtyTwo" );
+
+        assertEquals( 11, gridA.getValue( 0, 0 ) );
+        assertEquals( 21, gridA.getValue( 1, 0 ) );
+        assertEquals( 31, gridA.getValue( 2, 0 ) );
+        assertEquals( 41, gridA.getValue( 3, 0 ) );
+        
+        assertEquals( 12, gridA.getValue( 0, 1 ) );
+        assertEquals( 22, gridA.getValue( 1, 1 ) );
+        assertEquals( 32, gridA.getValue( 2, 1 ) );
+        assertEquals( 42, gridA.getValue( 3, 1 ) );
+        
+        gridA.substituteMetaData( 0, 1, metaData );
+
+        assertEquals( 11, gridA.getValue( 0, 0 ) );
+        assertEquals( 21, gridA.getValue( 1, 0 ) );
+        assertEquals( 31, gridA.getValue( 2, 0 ) );
+        assertEquals( 41, gridA.getValue( 3, 0 ) );
+
+        assertEquals( "Twelve", gridA.getValue( 0, 1 ) );
+        assertEquals( "TwentyTwo", gridA.getValue( 1, 1 ) );
+        assertEquals( "ThirtyTwo", gridA.getValue( 2, 1 ) );
+        assertEquals( "FourtyTwo", gridA.getValue( 3, 1 ) );
     }
     
     @Test

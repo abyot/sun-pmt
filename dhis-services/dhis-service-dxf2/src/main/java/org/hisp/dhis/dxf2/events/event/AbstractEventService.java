@@ -695,7 +695,8 @@ public abstract class AbstractEventService
             programStageInstance.setCompletedBy( null );
             programStageInstance.setCompletedDate( null );
         }
-        else if ( event.getStatus() == EventStatus.COMPLETED )
+        else if ( programStageInstance.getStatus() != event.getStatus() &&
+            event.getStatus() == EventStatus.COMPLETED )
         {
             programStageInstance.setStatus( EventStatus.COMPLETED );
             programStageInstance.setCompletedBy( completedBy );
@@ -1044,8 +1045,19 @@ public abstract class AbstractEventService
         boolean existingEvent = programStageInstance != null;
         boolean dryRun = importOptions.isDryRun();
 
-        Date eventDate = DateUtils.parseDate( event.getEventDate() );
-        Date dueDate = DateUtils.parseDate( event.getDueDate() );
+        Date executionDate = null; //  = new Date();
+
+        if ( event.getEventDate() != null )
+        {
+            executionDate = DateUtils.parseDate( event.getEventDate() );
+        }
+
+        Date dueDate = new Date();
+
+        if ( event.getDueDate() != null )
+        {
+            dueDate = DateUtils.parseDate( event.getDueDate() );
+        }
 
         String storedBy = getStoredBy( event, importSummary, user );
         String completedBy = getCompletedBy( event, importSummary, user );
@@ -1075,11 +1087,11 @@ public abstract class AbstractEventService
             if ( programStageInstance == null )
             {
                 programStageInstance = createProgramStageInstance( programStage, programInstance, organisationUnit,
-                    dueDate, eventDate, event.getStatus().getValue(), event.getCoordinate(), completedBy, event.getEvent(), coc, importOptions );
+                    dueDate, executionDate, event.getStatus().getValue(), event.getCoordinate(), completedBy, event.getEvent(), coc, importOptions );
             }
             else
             {
-                updateProgramStageInstance( programStage, programInstance, organisationUnit, dueDate, eventDate, event
+                updateProgramStageInstance( programStage, programInstance, organisationUnit, dueDate, executionDate, event
                     .getStatus().getValue(), event.getCoordinate(), completedBy, programStageInstance, coc, importOptions );
             }
 

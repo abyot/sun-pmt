@@ -34,7 +34,7 @@ import org.hisp.dhis.common.PagerUtils;
 import org.hisp.dhis.schema.Property;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
-import org.hisp.dhis.system.util.HibernateUtils;
+import org.hisp.dhis.hibernate.HibernateUtils;
 import org.hisp.dhis.system.util.ReflectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 

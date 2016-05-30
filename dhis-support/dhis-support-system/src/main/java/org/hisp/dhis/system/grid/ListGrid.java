@@ -674,7 +674,7 @@ public class ListGrid
             {
                 // Column cells
                 
-                substituteMetaData( colIndex, metaDataMap );
+                substituteMetaData( colIndex, colIndex, metaDataMap );
             }
         }        
         
@@ -682,24 +682,24 @@ public class ListGrid
     }
     
     @Override
-    public Grid substituteMetaData( int columnIndex, Map<? extends Object, ? extends Object> metaDataMap )
+    public Grid substituteMetaData( int sourceColumnIndex, int targetColumnIndex, Map<? extends Object, ? extends Object> metaDataMap )
     {
         if ( metaDataMap == null )
         {
             return this;
-        }
+        }        
+
+        List<Object> sourceColumn = getColumn( sourceColumnIndex );
         
-        List<Object> col = getColumn( columnIndex );
-        
-        for ( int rowIndex = 0; rowIndex < col.size(); rowIndex++ )
+        for ( int rowIndex = 0; rowIndex < sourceColumn.size(); rowIndex++ )
         {
-            Object object = col.get( rowIndex );
+            Object sourceValue = sourceColumn.get( rowIndex );
             
-            Object meta = metaDataMap.get( object );
+            Object metaValue = metaDataMap.get( sourceValue );
             
-            if ( meta != null )
+            if ( metaValue != null )
             {
-                grid.get( rowIndex ).set( columnIndex, meta );
+                grid.get( rowIndex ).set( targetColumnIndex, metaValue );
             }
         }
         

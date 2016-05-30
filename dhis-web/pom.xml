@@ -16,6 +16,7 @@
     <module>dhis-web-commons-resources</module>
     <module>dhis-web-api-mobile</module>
     <module>dhis-web-api</module>
+    <module>dhis-web-api-test</module>
     <module>dhis-web-ohie</module>
     <module>dhis-web-uaa</module>
     <module>dhis-web-maintenance</module>
@@ -57,7 +58,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.2.7.v20150116</version>
+        <version>9.3.8.v20160314</version>
         <configuration>
           <systemProperties>
             <systemProperty>

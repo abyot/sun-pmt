@@ -97,7 +97,7 @@ public class GetDataSetAssociationsAction
         Date lastUpdated = DateUtils.max( 
             identifiableObjectManager.getLastUpdated( DataSet.class ), 
             identifiableObjectManager.getLastUpdated( OrganisationUnit.class ) );
-        String tag = lastUpdated != null && user != null ? ( DateUtils.LONG_DATE_FORMAT.format( lastUpdated ) + SEP + level + SEP + user.getUid() ): null;
+        String tag = lastUpdated != null && user != null ? ( DateUtils.getLongDateString( lastUpdated ) + SEP + level + SEP + user.getUid() ): null;
         
         if ( ContextUtils.isNotModified( ServletActionContext.getRequest(), ServletActionContext.getResponse(), tag ) )
         {

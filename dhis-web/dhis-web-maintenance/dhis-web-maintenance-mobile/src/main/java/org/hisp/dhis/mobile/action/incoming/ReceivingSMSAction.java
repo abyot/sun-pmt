@@ -82,13 +82,6 @@ public class ReceivingSMSAction
         return listIncomingSms;
     }
 
-    private String message;
-
-    public String getMessage()
-    {
-        return message;
-    }
-
     private String smsStatus;
 
     public String getSmsStatus()

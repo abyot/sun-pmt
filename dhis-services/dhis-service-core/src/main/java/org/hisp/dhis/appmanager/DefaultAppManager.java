@@ -367,30 +367,33 @@ public class DefaultAppManager
             {
                 File[] listFiles = appFolderPath.listFiles();
 
-                for ( File folder : listFiles )
+                if ( listFiles != null )
                 {
-                    if ( folder.isDirectory() )
+                    for ( File folder : listFiles )
                     {
-                        File appManifest = new File( folder, "manifest.webapp" );
-
-                        if ( appManifest.exists() )
+                        if ( folder.isDirectory() )
                         {
-                            try
+                            File appManifest = new File( folder, "manifest.webapp" );
+    
+                            if ( appManifest.exists() )
                             {
-                                App app = mapper.readValue( appManifest, App.class );
-                                app.setFolderName( folder.getName() );
-                                appList.add( app );
-
-                                String appNamespace = app.getActivities().getDhis().getNamespace();
-
-                                if ( appNamespace != null )
+                                try
                                 {
-                                    appNamespaces.put( appNamespace, app );
+                                    App app = mapper.readValue( appManifest, App.class );
+                                    app.setFolderName( folder.getName() );
+                                    appList.add( app );
+    
+                                    String appNamespace = app.getActivities().getDhis().getNamespace();
+    
+                                    if ( appNamespace != null )
+                                    {
+                                        appNamespaces.put( appNamespace, app );
+                                    }
                                 }
-                            }
-                            catch ( IOException ex )
-                            {
-                                log.error( ex.getLocalizedMessage(), ex );
+                                catch ( IOException ex )
+                                {
+                                    log.error( ex.getLocalizedMessage(), ex );
+                                }
                             }
                         }
                     }

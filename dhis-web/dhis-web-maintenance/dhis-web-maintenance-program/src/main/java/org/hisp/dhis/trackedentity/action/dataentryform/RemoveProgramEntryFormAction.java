@@ -72,14 +72,6 @@ public class RemoveProgramEntryFormAction
         this.programId = programId;
     }
     
-    private String message;
-
-    public String getMessage()
-    {
-        return message;
-    }
-
-
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
@@ -87,8 +79,7 @@ public class RemoveProgramEntryFormAction
     @Override
     public String execute()
         throws Exception
-    {
-       
+    {       
         Program program = programService.getProgram( programId );
         program.setDataEntryForm( null );
         programService.updateProgram( program );

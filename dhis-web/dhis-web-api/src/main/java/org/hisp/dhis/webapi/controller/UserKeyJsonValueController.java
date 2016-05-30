@@ -33,6 +33,7 @@ import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.userkeyjsonvalue.UserKeyJsonValue;
 import org.hisp.dhis.userkeyjsonvalue.UserKeyJsonValueService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ import java.util.List;
  */
 @Controller
 @RequestMapping( "/userDataStore" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class UserKeyJsonValueController
 {
     @Autowired

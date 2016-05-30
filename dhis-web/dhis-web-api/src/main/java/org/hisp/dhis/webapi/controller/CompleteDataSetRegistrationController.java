@@ -28,6 +28,7 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.datacompletion.CompleteDataSetRegistrationRequest;
@@ -38,17 +39,22 @@ import org.hisp.dhis.dataset.CompleteDataSetRegistrationService;
 import org.hisp.dhis.dataset.CompleteDataSetRegistrations;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
-import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.dxf2.utils.InputUtils;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
+import org.hisp.dhis.fieldfilter.FieldFilterService;
 import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.i18n.I18nManager;
+import org.hisp.dhis.node.NodeUtils;
+import org.hisp.dhis.node.Preset;
+import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -56,6 +62,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -72,6 +79,7 @@ import static org.hisp.dhis.webapi.utils.ContextUtils.CONTENT_TYPE_JSON;
  */
 @Controller
 @RequestMapping( value = CompleteDataSetRegistrationController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class CompleteDataSetRegistrationController
 {
     public static final String RESOURCE_PATH = "/completeDataSetRegistrations";
@@ -103,10 +111,14 @@ public class CompleteDataSetRegistrationController
     private I18nManager i18nManager;
 
     @Autowired
-    private RenderService renderService;
+    private FieldFilterService fieldFilterService;
+
+    @Autowired
+    private ContextService contextService;
 
     @RequestMapping( method = RequestMethod.GET, produces = CONTENT_TYPE_JSON )
-    public void getCompleteDataSetRegistrationsJson(
+    public @ResponseBody
+    RootNode getCompleteDataSetRegistrationsJson(
         @RequestParam Set<String> dataSet,
         @RequestParam( required = false ) String period,
         @RequestParam Date startDate,
@@ -115,11 +127,25 @@ public class CompleteDataSetRegistrationController
         @RequestParam( required = false ) boolean children,
         HttpServletResponse response ) throws IOException
     {
+        List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
+
+        if ( fields.isEmpty() )
+        {
+            fields.addAll( Preset.ALL.getFields() );
+            List<String> defaults = new ArrayList<>();
+            defaults.add( "period[id,name,code],organisationUnit[id,name,created,lastUpdated],dataSet[code,name,created,lastUpdated,id],attributeOptionCombo[code,name,created,lastUpdated,id]" );
+            fields.addAll( defaults );
+        }
+
         response.setContentType( CONTENT_TYPE_JSON );
+
         CompleteDataSetRegistrations completeDataSetRegistrations = getCompleteDataSetRegistrations( dataSet, period,
             startDate, endDate, orgUnit, children );
 
-        renderService.toJson( response.getOutputStream(), completeDataSetRegistrations );
+        RootNode rootNode = NodeUtils.createMetadata();
+        rootNode.addChild( fieldFilterService.filter( CompleteDataSetRegistration.class, completeDataSetRegistrations.getCompleteDataSetRegistrations(), fields ) );
+
+        return rootNode;
     }
 
     private CompleteDataSetRegistrations getCompleteDataSetRegistrations( Set<String> dataSet, String period,

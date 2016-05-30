@@ -1,7 +1,5 @@
 package org.hisp.dhis.analytics.event;
 
-import java.util.Map;
-
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -32,9 +30,15 @@ import java.util.Map;
 
 import org.hisp.dhis.common.AnalyticalObject;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.i18n.I18nFormat;
+
+import org.hisp.dhis.analytics.Rectangle;
 
 /**
+ * <p>
+ * This interface is responsible for retrieving aggregated event data. Data will 
+ * be returned in a grid object or as a dimensional key-value mapping.
+ * </p>
+ * 
  * @author Lars Helge Overland
  */
 public interface EventAnalyticsService
@@ -51,13 +55,44 @@ public interface EventAnalyticsService
     String ITEM_EXTENT = "extent";
     String ITEM_POINTS = "points";
     
+    /**
+     * Generates aggregated event data for the given query.
+     * 
+     * @param params the event query parameters.
+     * @return aggregated event data as a Grid object.
+     */
     Grid getAggregatedEventData( EventQueryParams params );
     
-    Grid getAggregatedEventData( AnalyticalObject object, I18nFormat format );
-    
+    /**
+     * Generates aggregated event data for the given analytical object.
+     * 
+     * @param params the event query parameters.
+     * @return aggregated event data as a Grid object.
+     */
+    Grid getAggregatedEventData( AnalyticalObject object );
+
+    /**
+     * Returns a list of events matching the given query.
+     * 
+     * @param params the event query parameters.
+     * @return events as a Grid object.
+     */
     Grid getEvents( EventQueryParams params );
-    
+
+    /**
+     * Returns a list of event clusters matching the given query.
+     * 
+     * @param params the event query parameters.
+     * @return event clusters as a Grid object.
+     */
     Grid getEventClusters( EventQueryParams params );
-    
-    Map<String, Object> getEventCountAndExtent( EventQueryParams params );
+
+    /**
+     * Returns a Rectangle with information about event count and extent of the
+     * spatial rectangle for the given query.
+     * 
+     * @param params the event query parameters.
+     * @return event clusters as a Grid object.
+     */
+    Rectangle getRectangle( EventQueryParams params );
 }

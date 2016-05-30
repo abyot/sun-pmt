@@ -2,7 +2,7 @@
 <script type="text/javascript">
 	jQuery(function() {
 		jQuery("#availableList").dhisAjaxSelect({
-			source: "../dhis-web-commons-ajax-json/getDataSets.action",
+			source: "../api/dataSets.json?paging=false&fields=id,displayName|rename(name)",
 			iterator: 'dataSets',
 			connectedTo: 'selectedList',
 			handler: function(item) {

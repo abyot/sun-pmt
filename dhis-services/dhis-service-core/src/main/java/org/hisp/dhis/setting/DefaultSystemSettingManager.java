@@ -32,9 +32,12 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.system.util.SystemUtils;
 import org.hisp.dhis.system.util.ValidationUtils;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
+import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +55,7 @@ import java.util.stream.Collectors;
  * Declare transactions on individual methods. The get-methods do not have
  * transactions declared, instead a programmatic transaction is initiated on
  * cache miss in order to reduce the number of transactions to improve performance.
- * 
+ *
  * @author Stian Strandli
  * @author Lars Helge Overland
  */
@@ -74,7 +77,9 @@ public class DefaultSystemSettingManager
     // -------------------------------------------------------------------------
     // Dependencies
     // -------------------------------------------------------------------------
-    
+
+    private static final Log log = LogFactory.getLog( DefaultSystemSettingManager.class );
+
     private SystemSettingStore systemSettingStore;
 
     public void setSystemSettingStore( SystemSettingStore systemSettingStore )
@@ -88,7 +93,7 @@ public class DefaultSystemSettingManager
     {
         this.flags = flags;
     }
-    
+
     @Autowired
     private TransactionTemplate transactionTemplate;
 
@@ -172,7 +177,7 @@ public class DefaultSystemSettingManager
     }
 
     /**
-     * No transaction for this method, transaction is initiated in 
+     * No transaction for this method, transaction is initiated in
      * {@link getSystemSettingOptional} on cache miss.
      */
     @Override
@@ -192,7 +197,7 @@ public class DefaultSystemSettingManager
     }
 
     /**
-     * No transaction for this method, transaction is initiated in 
+     * No transaction for this method, transaction is initiated in
      * {@link getSystemSettingOptional}.
      */
     @Override
@@ -202,9 +207,9 @@ public class DefaultSystemSettingManager
     }
 
     /**
-     * Get system setting optional. The database call is executed in a 
+     * Get system setting optional. The database call is executed in a
      * programmatic transaction.
-     * 
+     *
      * @param name the system setting name.
      * @param defaultValue the default value for the system setting.
      * @return an optional system setting value.
@@ -213,17 +218,30 @@ public class DefaultSystemSettingManager
     {
         SystemSetting setting = transactionTemplate.execute( new TransactionCallback<SystemSetting>()
         {
-            public SystemSetting doInTransaction( TransactionStatus status ) 
+            public SystemSetting doInTransaction( TransactionStatus status )
             {
                 return systemSettingStore.getByName( name );
             }
         } );
-        
+
         if ( setting != null && setting.hasValue() )
         {
-            return isConfidential( name ) ?
-                Optional.of( pbeStringEncryptor.decrypt( setting.getValue().toString() ) ) :
-                Optional.of( setting.getValue() );
+            if ( isConfidential( name ) )
+            {
+                try
+                {
+                    return Optional.of( pbeStringEncryptor.decrypt( (String) setting.getValue() ) );
+                }
+                catch ( EncryptionOperationNotPossibleException e ) // Most likely this means the value is not encrypted, or not existing(null or empty string).
+                {
+                    log.warn( "Could not decrypt system setting '" + name + "'" );
+                    return Optional.empty();
+                }
+            }
+            else
+            {
+                return Optional.of( setting.getValue() );
+            }
         }
         else
         {

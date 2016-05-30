@@ -40,7 +40,6 @@ import java.util.Set;
 import org.hisp.dhis.chart.ChartService;
 import org.hisp.dhis.common.Grid;
 import org.hisp.dhis.common.GridHeader;
-import org.hisp.dhis.common.comparator.IdentifiableObjectNameComparator;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
@@ -120,8 +119,8 @@ public class DefaultOrgUnitDistributionService
         List<OrganisationUnit> units = organisationUnitOnly ? Arrays.asList( organisationUnit ) : new ArrayList<>( organisationUnit.getChildren() );
         List<OrganisationUnitGroup> groups = new ArrayList<>( groupSet.getOrganisationUnitGroups() );
         
-        Collections.sort( units, IdentifiableObjectNameComparator.INSTANCE );
-        Collections.sort( groups, IdentifiableObjectNameComparator.INSTANCE );
+        Collections.sort( units );
+        Collections.sort( groups );
         
         if ( !organisationUnitOnly )
         {

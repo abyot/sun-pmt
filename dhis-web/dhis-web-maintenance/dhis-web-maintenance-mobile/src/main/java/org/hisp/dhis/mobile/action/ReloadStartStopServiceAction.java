@@ -100,13 +100,9 @@ public class ReloadStartStopServiceAction
         {                      
             smsConsumerService.startSmsConsumer();
         }
-        else if ( actionType.equals( "stop" ) )
+        else if ( actionType != null && actionType.equals( "stop" ) )
         {            
             smsConsumerService.stopSmsConsumer();
-        }
-        else
-        {
-            
         }
         
         if ( message != null && !message.equals( "success" ) )

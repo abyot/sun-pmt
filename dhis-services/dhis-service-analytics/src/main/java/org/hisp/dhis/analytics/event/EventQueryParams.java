@@ -68,16 +68,6 @@ public class EventQueryParams
     extends DataQueryParams
 {
     /**
-     * The start date for the period dimension, can be null.
-     */
-    private Date startDate;
-
-    /**
-     * The end date fore the period dimension, can be null.
-     */
-    private Date endDate;
-
-    /**
      * The query items.
      */
     private List<QueryItem> items = new ArrayList<>();
@@ -197,14 +187,14 @@ public class EventQueryParams
         params.displayProperty = this.displayProperty;
         params.aggregationType = this.aggregationType;
         params.skipRounding = this.skipRounding;
+        params.startDate = this.startDate;
+        params.endDate = this.endDate;
 
         params.partitions = new Partitions( this.partitions );
         params.periodType = this.periodType;
 
         params.program = this.program;
         params.programStage = this.programStage;
-        params.startDate = this.startDate;
-        params.endDate = this.endDate;
         params.items = new ArrayList<>( this.items );
         params.itemFilters = new ArrayList<>( this.itemFilters );
         params.value = this.value;
@@ -453,14 +443,6 @@ public class EventQueryParams
         return !items.isEmpty() || !itemFilters.isEmpty();
     }
 
-    /**
-     * Indicates whether this query has a start and end date.
-     */
-    public boolean hasStartEndDate()
-    {
-        return startDate != null && endDate != null;
-    }
-
     public Set<OrganisationUnit> getOrganisationUnitChildren()
     {
         Set<OrganisationUnit> children = new HashSet<>();
@@ -571,26 +553,6 @@ public class EventQueryParams
     // -------------------------------------------------------------------------
     // Getters and setters
     // -------------------------------------------------------------------------
-
-    public Date getStartDate()
-    {
-        return startDate;
-    }
-
-    public void setStartDate( Date startDate )
-    {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate()
-    {
-        return endDate;
-    }
-
-    public void setEndDate( Date endDate )
-    {
-        this.endDate = endDate;
-    }
 
     public List<QueryItem> getItems()
     {

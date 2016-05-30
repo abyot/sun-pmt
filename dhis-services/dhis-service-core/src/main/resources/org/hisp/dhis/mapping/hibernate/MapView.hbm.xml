@@ -11,14 +11,13 @@
     <id name="id" column="mapviewid">
       <generator class="native" />
     </id>
-
-    <property name="uid" column="uid" length="11" />
-
-    <property name="created" type="timestamp" />
-
-    <property name="lastUpdated" type="timestamp" />
+    
+    <property name="uid" column="uid" unique="true" length="11" not-null="true" />
+    <property name="created" type="timestamp"/>
+    <property name="lastUpdated" type="timestamp"/>
 
     <property name="layer" not-null="true" />
+    <property name="key" />
 
     <!-- AnalyticalObject -->
 

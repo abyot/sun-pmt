@@ -31,7 +31,6 @@ package org.hisp.dhis.dxf2.pdfform;
 import java.awt.Color;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -56,12 +55,12 @@ import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.period.SixMonthlyAprilPeriodType;
 import org.hisp.dhis.period.SixMonthlyPeriodType;
-import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.period.YearlyPeriodType;
 import org.hisp.dhis.program.ProgramStage;
 import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramStageSection;
 import org.hisp.dhis.program.ProgramStageService;
+import org.hisp.dhis.system.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.lowagie.text.Chunk;
@@ -748,25 +747,13 @@ public class DefaultPdfDataEntryFormService
     {
         String[] periodTitles = new String[periods.size()];
 
-        // For Weekly, since formatPeriod has logic to only get ISO date
-        // add weekly date range info here.
-        SimpleDateFormat simpleDateFormat_Weekly = null;
-
-        if ( periods.size() > 1 && periods.get( 0 ).getPeriodType().getName().equals( WeeklyPeriodType.NAME ) )
-        {
-            simpleDateFormat_Weekly = new SimpleDateFormat( Period.DEFAULT_DATE_FORMAT );
-        }
-
         for ( int i = 0; i < periods.size(); i++ )
         {
             Period period = periods.get( i );
             periodTitles[i] = format.formatPeriod( period );
 
-            if ( simpleDateFormat_Weekly != null )
-            {
-                periodTitles[i] += " - " + simpleDateFormat_Weekly.format( period.getStartDate() )
-                    + " - " + simpleDateFormat_Weekly.format( period.getEndDate() );
-            }
+            periodTitles[i] += " - " + DateUtils.getMediumDateString( period.getStartDate() )
+                + " - " + DateUtils.getMediumDateString( period.getEndDate() );
         }
 
         return periodTitles;
@@ -776,8 +763,6 @@ public class DefaultPdfDataEntryFormService
         throws ParseException
     {
         Period period = new Period();
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( Period.DEFAULT_DATE_FORMAT );
 
         Calendar currentDate = Calendar.getInstance();
 
@@ -797,8 +782,8 @@ public class DefaultPdfDataEntryFormService
             endYear = currYear + PERIODRANGE_FUTUREYEARS_YEARLY;
         }
 
-        period.setStartDate( simpleDateFormat.parse( String.valueOf( startYear ) + "-01-01" ) );
-        period.setEndDate( simpleDateFormat.parse( String.valueOf( endYear ) + "-01-01" ) );
+        period.setStartDate( DateUtils.getMediumDate( String.valueOf( startYear ) + "-01-01" ) );
+        period.setEndDate( DateUtils.getMediumDate( String.valueOf( endYear ) + "-01-01" ) );
 
         return period;
     }

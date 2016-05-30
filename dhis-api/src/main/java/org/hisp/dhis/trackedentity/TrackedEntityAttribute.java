@@ -79,6 +79,10 @@ public class TrackedEntityAttribute
     private Boolean confidential = false;
 
     private Boolean unique = false;    
+    
+    private Boolean generated = false;
+    
+    private String pattern;
 
     // For Local ID type
 
@@ -129,7 +133,7 @@ public class TrackedEntityAttribute
      * Indicates whether this attribute has confidential information.
      */
     @JsonIgnore
-    public boolean isConfidential()
+    public boolean isConfidentialBool()
     {
         return confidential != null && confidential;
     }
@@ -330,6 +334,32 @@ public class TrackedEntityAttribute
     {
         this.unique = unique;
     }
+    
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public Boolean isGenerated()
+    {
+        return generated != null ? generated : false;
+    }
+
+    public void setGenerated( Boolean generated )
+    {
+        this.generated = generated;
+    }
+    
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getPattern()
+    {
+        return pattern != null ? pattern : "";
+    }
+
+    public void setPattern( String pattern )
+    {
+        this.pattern = pattern;
+    }
 
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
@@ -432,6 +462,8 @@ public class TrackedEntityAttribute
                 displayInListNoProgram = trackedEntityAttribute.getDisplayInListNoProgram();
                 sortOrderInListNoProgram = trackedEntityAttribute.getSortOrderInListNoProgram();
                 unique = trackedEntityAttribute.isUnique();
+                generated = trackedEntityAttribute.isGenerated();
+                pattern = trackedEntityAttribute.getPattern();
                 orgunitScope = trackedEntityAttribute.getOrgunitScope();
                 programScope = trackedEntityAttribute.getProgramScope();
                 searchScope = trackedEntityAttribute.getSearchScope();
@@ -448,7 +480,9 @@ public class TrackedEntityAttribute
                 sortOrderInVisitSchedule = trackedEntityAttribute.getSortOrderInVisitSchedule() == null ? sortOrderInVisitSchedule : trackedEntityAttribute.getSortOrderInVisitSchedule();
                 displayInListNoProgram = trackedEntityAttribute.getDisplayInListNoProgram() == null ? displayInListNoProgram : trackedEntityAttribute.getDisplayInListNoProgram();
                 sortOrderInListNoProgram = trackedEntityAttribute.getSortOrderInListNoProgram() == null ? sortOrderInListNoProgram : trackedEntityAttribute.getSortOrderInListNoProgram();
-                unique = trackedEntityAttribute.isUnique() == null ? unique : trackedEntityAttribute.isUnique();                
+                unique = trackedEntityAttribute.isUnique() == null ? unique : trackedEntityAttribute.isUnique(); 
+                generated = trackedEntityAttribute.isGenerated() == null ? generated : trackedEntityAttribute.isGenerated();
+                pattern = trackedEntityAttribute.getPattern() == null ? pattern : trackedEntityAttribute.getPattern();
                 orgunitScope = trackedEntityAttribute.getOrgunitScope() == null ? orgunitScope : trackedEntityAttribute.getOrgunitScope();
                 programScope = trackedEntityAttribute.getProgramScope() == null ? programScope : trackedEntityAttribute.getProgramScope();
                 searchScope = trackedEntityAttribute.getSearchScope() == null ? searchScope : trackedEntityAttribute.getSearchScope();

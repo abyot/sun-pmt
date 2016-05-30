@@ -31,6 +31,7 @@ package org.hisp.dhis.datastatistics;
 import org.hisp.dhis.common.GenericStore;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,4 +49,15 @@ public interface DataStatisticsEventStore
      * @return a map between DataStatisticsEventTypes and counts.
      */
     Map<DataStatisticsEventType, Double> getDataStatisticsEventCount( Date startDate, Date endDate );
+
+    /**
+     * Returns top favorites by views
+     *
+     * @param eventType that should be counted
+     * @param pageSize number of favorites
+     * @param sortOrder DESC or ASC
+     * @return list of FavoriteStatistics
+     */
+    List<FavoriteStatistics> getFavoritesData( DataStatisticsEventType eventType, int pageSize, String sortOrder );
+
 }

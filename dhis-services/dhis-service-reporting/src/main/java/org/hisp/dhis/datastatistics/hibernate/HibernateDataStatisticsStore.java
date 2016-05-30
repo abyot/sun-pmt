@@ -90,25 +90,27 @@ public class HibernateDataStatisticsStore
 
             ads.setMapViews( resultSet.getInt( "mapViews" ) );
             ads.setChartViews( resultSet.getInt( "chartViews" ) );
-            ads.setReportTableViews( resultSet.getInt( "reportTableViews" ) );
+            ads.setPivotTableViews( resultSet.getInt( "reportTableViews" ) );
             ads.setEventReportViews( resultSet.getInt( "eventReportViews" ) );
             ads.setEventChartViews( resultSet.getInt( "eventChartViews" ) );
             ads.setDashboardViews( resultSet.getInt( "dashboardViews" ) );
+            ads.setDataSetReportViews( resultSet.getInt( "dataSetReportViews" ) );
             ads.setTotalViews( resultSet.getInt( "totalViews" ) );
             ads.setAverageViews( resultSet.getInt( "averageViews" ) );
             ads.setAverageMapViews( resultSet.getInt( "averageMapViews" ) );
             ads.setAverageChartViews( resultSet.getInt( "averageChartViews" ) );
-            ads.setAverageReportTableViews( resultSet.getInt( "averageReportTableViews" ) );
+            ads.setAveragePivotTableViews( resultSet.getInt( "averageReportTableViews" ) );
             ads.setAverageEventReportViews( resultSet.getInt( "averageEventReportViews" ) );
             ads.setAverageEventChartViews( resultSet.getInt( "averageEventChartViews" ) );
             ads.setAverageDashboardViews( resultSet.getInt( "averageDashboardViews" ) );
             ads.setSavedMaps( resultSet.getInt( "savedMaps" ) );
             ads.setSavedCharts( resultSet.getInt( "savedCharts" ) );
-            ads.setSavedReportTables( resultSet.getInt( "savedReportTables" ) );
+            ads.setSavedPivotTables( resultSet.getInt( "savedReportTables" ) );
             ads.setSavedEventReports( resultSet.getInt( "savedEventReports" ) );
             ads.setSavedEventCharts( resultSet.getInt( "savedEventCharts" ) );
             ads.setSavedDashboards( resultSet.getInt( "savedDashboards" ) );
             ads.setSavedIndicators( resultSet.getInt( "savedIndicators" ) );
+            ads.setSavedDataValues( resultSet.getInt( "savedDataValues" ) );
             ads.setActiveUsers( resultSet.getInt( "activeUsers" ) );
             ads.setUsers( resultSet.getInt( "users" ) );
 
@@ -223,6 +225,7 @@ public class HibernateDataStatisticsStore
                 "cast(round(cast(sum(eventreportviews) as numeric),0) as int) as eventReportViews, " +
                 "cast(round(cast(sum(eventchartviews) as numeric),0) as int) as eventChartViews," +
                 "cast(round(cast(sum(dashboardviews) as numeric),0) as int) as dashboardViews, " +
+                "cast(round(cast(sum(datasetreportviews) as numeric),0) as int) as dataSetReportViews, " +
                 "max(active_users) as activeUsers," +
                 "sum(totalviews)/max(active_users) as averageViews, " +
                 "sum(mapviews)/max(active_users) as averageMapViews, " +
@@ -239,6 +242,7 @@ public class HibernateDataStatisticsStore
                 "cast(round(cast(sum(eventcharts) as numeric),0) as int) as savedEventCharts," +
                 "cast(round(cast(sum(dashboards) as numeric),0) as int) as savedDashboards, " +
                 "cast(round(cast(sum(indicators) as numeric),0) as int) as savedIndicators," +
+                "cast(round(cast(sum(datavalues) as numeric),0) as int) as savedDataValues," +
                 "max(users) as users from datastatistics " +
                 "where created >= '" + DateUtils.getMediumDateString( start ) + "' " +
                 "and created <= '" + DateUtils.getMediumDateString( end ) + "' ";

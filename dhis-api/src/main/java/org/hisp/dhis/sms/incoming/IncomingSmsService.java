@@ -60,4 +60,7 @@ public interface IncomingSmsService
     List<IncomingSms> getSmsByStatus( SmsMessageStatus status, String keyword );
 
     List<IncomingSms> getSmsByStatus( SmsMessageStatus status, String keyword, Integer min, Integer max );
+    
+    List<IncomingSms> getAllUnparsedMessages( );
+
 }

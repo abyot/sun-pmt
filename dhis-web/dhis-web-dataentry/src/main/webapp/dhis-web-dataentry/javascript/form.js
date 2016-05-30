@@ -671,12 +671,20 @@ dhis2.de.loadForm = function()
 	                {
 	                    $( "#tabs" ).tabs();
 	                }
-	
+
 	                dhis2.de.enableSectionFilter();	               
 	                $( document ).trigger( dhis2.de.event.formLoaded, dhis2.de.currentDataSetId );
 	
 	                loadDataValues();
-	                dhis2.de.insertOptionSets();
+                    var table = $( '.sectionTable' );
+                    table.floatThead({
+                        position: 'auto',
+                        top: 44,
+                        zIndex: 9
+                    });
+
+                  dhis2.de.insertOptionSets();
+
 	            } );
 	        } 
 	    	else {
@@ -777,8 +785,9 @@ dhis2.de.filterOnSection = function()
 
 dhis2.de.filterInSection = function( $this )
 {
-    var $tbody = $this.parent().parent().parent();
-    var $trTarget = $tbody.find( 'tr:not([colspan])' );
+    var $tbody = $this.closest('tbody').find("#sectionTable tbody");
+    var thisTable = $tbody.parent().get(0);
+    var $trTarget = $tbody.find( 'tr');
 
     if ( $this.val() == '' )
     {
@@ -805,6 +814,10 @@ dhis2.de.filterInSection = function( $this )
     }
 
     refreshZebraStripes( $tbody );
+    $.each($( '.sectionTable' ), function(index, table){
+        if(table == thisTable) return;
+        $(table).trigger( 'reflow' );
+    });
 }
 
 //------------------------------------------------------------------------------
@@ -1399,6 +1412,27 @@ dhis2.de.optionValidWithinPeriod = function( option, period )
 }
 
 /**
+ * Tests to see if attribute category option is valid for the selected org unit.
+ */
+dhis2.de.optionValidForSelectedOrgUnit = function( option )
+{
+    var isValid = true;
+
+    if (option.ous && option.ous.length) {
+        isValid = false;
+        var path = organisationUnits[dhis2.de.getCurrentOrganisationUnit()].path;
+        $.safeEach(option.ous, function (idx, uid) {
+            if (path.indexOf(uid) >= 0) {
+                isValid = true;
+                return false;
+            }
+        });
+    }
+
+    return isValid;
+}
+
+/**
  * Sets the markup for attribute selections.
  */
 dhis2.de.setAttributesMarkup = function()
@@ -1432,7 +1466,7 @@ dhis2.de.getAttributesMarkup = function()
 		html += '<option value="-1">[ ' + i18n_select_option + ' ]</option>';
 
 		$.safeEach( category.options, function( idx, option ) {
-			if ( dhis2.de.optionValidWithinPeriod( option, period ) ) {
+			if ( dhis2.de.optionValidWithinPeriod( option, period ) && dhis2.de.optionValidForSelectedOrgUnit( option ) ) {
 				var selected = ( $.inArray( option.id, options ) != -1 ) ? " selected" : "";
 				html += '<option value="' + option.id + '"' + selected + '>' + option.name + '</option>';
 			}

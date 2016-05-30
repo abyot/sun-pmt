@@ -4,7 +4,7 @@
 	{
 		jQuery('#designTextarea').ckeditor()
 		  .editor
-		  .setData('$encoder.jsEscape( $dataEntryValue, "'" )');
+		  .setData('$encoder.jsEscape( $!{dataEntryValue}, "'" )');
 	});
 
     var stat = "ADD";

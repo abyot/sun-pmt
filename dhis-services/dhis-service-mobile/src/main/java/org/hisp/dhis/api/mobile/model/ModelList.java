@@ -72,12 +72,14 @@ public class ModelList
         {
             dataOutputStream.writeInt( 0 );
         }
-
-        dataOutputStream.writeInt( models.size() );
-
-        for ( Model model : models )
+        else
         {
-            model.serialize( dataOutputStream );
+            dataOutputStream.writeInt( models.size() );
+    
+            for ( Model model : models )
+            {
+                model.serialize( dataOutputStream );
+            }
         }
     }
 
@@ -105,14 +107,15 @@ public class ModelList
         {
             dataOutputStream.writeInt( 0 );
         }
-
-        dataOutputStream.writeInt( models.size() );
-
-        for ( Model model : models )
+        else
         {
-            model.serialize( dataOutputStream );
+            dataOutputStream.writeInt( models.size() );
+    
+            for ( Model model : models )
+            {
+                model.serialize( dataOutputStream );
+            }
         }
-
     }
 
     @Override
@@ -123,21 +126,20 @@ public class ModelList
         {
             dataOutputStream.writeInt( 0 );
         }
-
-        dataOutputStream.writeInt( models.size() );
-
-        for ( Model model : models )
+        else
         {
-            model.serializeVersion2_9( dataOutputStream );
+            dataOutputStream.writeInt( models.size() );
+    
+            for ( Model model : models )
+            {
+                model.serializeVersion2_9( dataOutputStream );
+            }
         }
     }
 
     @Override
     public void serializeVersion2_10( DataOutputStream dataOutputStream )
         throws IOException
-    {
-        // TODO Auto-generated method stub
-        
+    {        
     }
-
 }

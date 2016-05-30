@@ -30,6 +30,7 @@ package org.hisp.dhis.webapi.controller;
 
 import org.hisp.dhis.i18n.I18nService;
 import org.hisp.dhis.i18n.locale.LocaleManager;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.webdomain.WebLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping( value = "/locales" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class LocaleController
 {
     @Autowired
@@ -55,9 +57,9 @@ public class LocaleController
     public String getUiLocales( Model model )
     {
         List<Locale> locales = localeManager.getAvailableLocales();
-        
-        List<WebLocale> webLocales = locales.stream().map( l -> WebLocale.fromLocale( l ) ).collect( Collectors.toList() );
-        
+
+        List<WebLocale> webLocales = locales.stream().map( WebLocale::fromLocale ).collect( Collectors.toList() );
+
         model.addAttribute( "model", webLocales );
         return "locales";
     }
@@ -66,9 +68,9 @@ public class LocaleController
     public String getDbLocales( Model model )
     {
         List<Locale> locales = i18nService.getAvailableLocales();
-        
-        List<WebLocale> webLocales = locales.stream().map( l -> WebLocale.fromLocale( l ) ).collect( Collectors.toList() );
-        
+
+        List<WebLocale> webLocales = locales.stream().map( WebLocale::fromLocale ).collect( Collectors.toList() );
+
         model.addAttribute( "model", webLocales );
         return "locales";
     }

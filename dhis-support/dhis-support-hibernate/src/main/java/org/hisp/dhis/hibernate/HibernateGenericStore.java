@@ -46,6 +46,7 @@ import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeValue;
 import org.hisp.dhis.common.AuditLogUtil;
 import org.hisp.dhis.common.BaseIdentifiableObject;
+import org.hisp.dhis.common.UserContext;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dashboard.Dashboard;
 import org.hisp.dhis.hibernate.exception.CreateAccessDeniedException;
@@ -59,6 +60,7 @@ import org.hisp.dhis.security.acl.AccessStringHelper;
 import org.hisp.dhis.security.acl.AclService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
+import org.hisp.dhis.user.UserSettingKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,6 +68,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Lars Helge Overland
@@ -156,7 +159,15 @@ public class HibernateGenericStore<T>
      */
     protected final Session getSession()
     {
-        return sessionFactory.getCurrentSession();
+        Session session = sessionFactory.getCurrentSession();
+        Locale dbLocale = UserContext.getUserSetting( UserSettingKey.DB_LOCALE, Locale.class );
+
+        if ( dbLocale != null )
+        {
+            session.enableFilter( "locale" ).setParameter( "locale", dbLocale.toString() );
+        }
+
+        return session;
     }
 
     /**
@@ -167,7 +178,7 @@ public class HibernateGenericStore<T>
      */
     protected final Query getQuery( String hql )
     {
-        return sessionFactory.getCurrentSession().createQuery( hql ).setCacheable( cacheable );
+        return getSession().createQuery( hql ).setCacheable( cacheable );
     }
 
     /**
@@ -178,7 +189,7 @@ public class HibernateGenericStore<T>
      */
     protected final SQLQuery getSqlQuery( String sql )
     {
-        SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery( sql );
+        SQLQuery query = getSession().createSQLQuery( sql );
         query.setCacheable( cacheable );
         return query;
     }
@@ -190,21 +201,25 @@ public class HibernateGenericStore<T>
      *
      * @return a Criteria instance.
      */
+    @Override
     public final Criteria getCriteria()
     {
         return getClazzCriteria().setCacheable( cacheable );
     }
 
+    @Override
     public final Criteria getSharingCriteria()
     {
         return getSharingCriteria( "r%" );
     }
 
+    @Override
     public final Criteria getSharingCriteria( String access )
     {
         return getSharingCriteria( currentUserService.getCurrentUser(), access );
     }
 
+    @Override
     public final Criteria getSharingCriteria( User user )
     {
         return getSharingCriteria( user, "r%" );
@@ -212,7 +227,7 @@ public class HibernateGenericStore<T>
 
     private Criteria getSharingCriteria( User user, String access )
     {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria( getClazz(), "c" ).setCacheable( cacheable );
+        Criteria criteria = getSession().createCriteria( getClazz(), "c" ).setCacheable( cacheable );
 
         if ( !sharingEnabled( user ) || user == null )
         {
@@ -248,7 +263,7 @@ public class HibernateGenericStore<T>
 
     protected Criteria getClazzCriteria()
     {
-        return sessionFactory.getCurrentSession().createCriteria( getClazz() );
+        return getSession().createCriteria( getClazz() );
     }
 
     /**
@@ -402,7 +417,7 @@ public class HibernateGenericStore<T>
         }
 
         AuditLogUtil.infoWrapper( log, username, object, AuditLogUtil.ACTION_CREATE );
-        return (Integer) sessionFactory.getCurrentSession().save( object );
+        return (Integer) getSession().save( object );
     }
 
     private boolean checkPublicAccess( User user, IdentifiableObject identifiableObject )
@@ -444,7 +459,7 @@ public class HibernateGenericStore<T>
 
         if ( object != null )
         {
-            sessionFactory.getCurrentSession().update( object );
+            getSession().update( object );
         }
     }
 
@@ -469,15 +484,14 @@ public class HibernateGenericStore<T>
 
         if ( object != null )
         {
-            sessionFactory.getCurrentSession().delete( object );
+            getSession().delete( object );
         }
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
     public final T get( int id )
     {
-        T object = (T) sessionFactory.getCurrentSession().get( getClazz(), id );
+        T object = (T) getSession().get( getClazz(), id );
 
         if ( !isReadAllowed( object ) )
         {
@@ -489,17 +503,15 @@ public class HibernateGenericStore<T>
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
     public final T getNoAcl( int id )
     {
-        return (T) sessionFactory.getCurrentSession().get( getClazz(), id );
+        return (T) getSession().get( getClazz(), id );
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
     public final T load( int id )
     {
-        T object = (T) sessionFactory.getCurrentSession().load( getClazz(), id );
+        T object = (T) getSession().load( getClazz(), id );
 
         if ( !isReadAllowed( object ) )
         {

@@ -32,6 +32,7 @@ import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserService;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +43,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping( value = MenuController.RESOURCE_PATH )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class MenuController
 {
     public static final String RESOURCE_PATH = "/menu";
@@ -55,7 +57,7 @@ public class MenuController
     @Autowired
     private RenderService renderService;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
     public void saveMenuOrder( InputStream input )
         throws Exception

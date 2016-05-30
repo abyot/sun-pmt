@@ -28,8 +28,8 @@ package org.hisp.dhis.dxf2.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import org.hisp.dhis.system.util.DateUtils;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +39,6 @@ import java.util.Map;
  */
 public class Options
 {
-    private static final String[] DATE_PATTERNS = new String[] {
-        "yyyy-MM-dd", "yyyy-MM", "yyyyMMdd", "yyyyMM", "yyyy" };
-    
     //--------------------------------------------------------------------------
     // Internal State
     //--------------------------------------------------------------------------
@@ -94,7 +91,7 @@ public class Options
 
     public Date getDate( String key )
     {
-        return stringAsDate( options.get( key ) );
+        return DateUtils.parseDate( options.get( key ) );
     }
 
     /**
@@ -197,42 +194,6 @@ public class Options
         }
 
         return str;
-    }
-
-    protected static Date stringAsDate( String str )
-    {
-        if ( str == null )
-        {
-            return null;
-        }
-
-        for ( String pattern : DATE_PATTERNS )
-        {
-            Date date = getDateByPattern( str, pattern );
-
-            if ( date != null )
-            {
-                return date;
-            }
-        }
-
-        return null;
-    }
-
-    protected static Date getDateByPattern( String str, String pattern )
-    {
-        if ( str != null )
-        {
-            try
-            {
-                return new SimpleDateFormat( pattern ).parse( str );
-            }
-            catch ( ParseException ignored )
-            {
-            }
-        }
-
-        return null;
     }
 
     protected static boolean stringAsBoolean( String str, boolean defaultValue )

@@ -42,14 +42,11 @@ import org.joda.time.format.DateTimeParser;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-
-import static org.hisp.dhis.period.Period.DEFAULT_DATE_FORMAT;
+import java.util.Locale;
 
 /**
  * @author Lars Helge Overland
@@ -73,53 +70,32 @@ public class DateUtils
 
     private static final DateTimeFormatter DATE_FORMATTER = new DateTimeFormatterBuilder()
         .append( null, SUPPORTED_DATE_FORMAT_PARSERS ).toFormatter();
-
+    
     private static final DateTimeParser[] SUPPORTED_DATE_TIME_FORMAT_PARSERS = {
-            DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" ).getParser(),
-            DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ssZ" ).getParser(),
-            DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mmZ" ).getParser(),
-            DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss" ).getParser(),
-            DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm" ).getParser()
+        DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" ).getParser(),
+        DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ssZ" ).getParser(),
+        DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mmZ" ).getParser(),
+        DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss" ).getParser(),
+        DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm" ).getParser()
     };
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = ( new DateTimeFormatterBuilder() )
-            .append(null, SUPPORTED_DATE_TIME_FORMAT_PARSERS).toFormatter();
-
-    private static final String SEP = ", ";
+    private static final DateTimeFormatter DATE_TIME_FORMAT = ( new DateTimeFormatterBuilder() )
+        .append( null, SUPPORTED_DATE_TIME_FORMAT_PARSERS ).toFormatter();
 
     public static final PeriodFormatter DAY_SECOND_FORMAT = new PeriodFormatterBuilder()
-        .appendDays().appendSuffix( " d" ).appendSeparator( SEP )
-        .appendHours().appendSuffix( " h" ).appendSeparator( SEP )
-        .appendMinutes().appendSuffix( " m" ).appendSeparator( SEP )
-        .appendSeconds().appendSuffix( " s" ).appendSeparator( SEP ).toFormatter();
+        .appendDays().appendSuffix( " d" ).appendSeparator( ", " )
+        .appendHours().appendSuffix( " h" ).appendSeparator( ", " )
+        .appendMinutes().appendSuffix( " m" ).appendSeparator( ", " )
+        .appendSeconds().appendSuffix( " s" ).appendSeparator( ", " ).toFormatter();
 
-    //TODO replace with FastDateParser, SimpleDateFormat is not thread-safe
-
-    /**
-     * Used by web API and utility methods.
-     */
-    public static final String DATE_PATTERN = "yyyy-MM-dd";
-    public static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
-
-    public static final SimpleDateFormat LONG_DATE_FORMAT = new SimpleDateFormat( TIMESTAMP_PATTERN );
-    public static final SimpleDateFormat ACCESS_DATE_FORMAT = new SimpleDateFormat( "yyyy/MM/dd HH:mm:ss" );
-    public static final SimpleDateFormat HTTP_DATE_FORMAT = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss" );
-
-    public static final double DAYS_IN_YEAR = 365.0;
-
+    private static final DateTimeFormatter MEDIUM_DATE_FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd" );
+    private static final DateTimeFormatter LONG_DATE_FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss" );
+    private static final DateTimeFormatter HTTP_DATE_FORMAT = DateTimeFormat.forPattern( "EEE, dd MMM yyyy HH:mm:ss 'GMT'" ).withLocale( Locale.ENGLISH );    
+    private static final DateTimeFormatter TIMESTAMP_UTC_TZ_FORMAT = DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" ).withZoneUTC();
+    
+    private static final double DAYS_IN_YEAR = 365.0;
     private static final long MS_PER_DAY = 86400000;
     private static final long MS_PER_S = 1000;
-
-    /**
-     * Formats a Date to the Access date format.
-     *
-     * @param date the Date to parse.
-     * @return a formatted date string.
-     */
-    public static String getAccessDateString( Date date )
-    {
-        return date != null ? ACCESS_DATE_FORMAT.format( date ) : null;
-    }
 
     /**
      * Converts a Date to the GMT timezone and formats it to the format yyyy-MM-dd HH:mm:ssZ.
@@ -129,16 +105,8 @@ public class DateUtils
      */
     public static String getLongGmtDateString( Date date )
     {
-        if ( date == null )
-        {
-            return null;
-        }
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
-        simpleDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-        return simpleDateFormat.format( date );
+        return date != null ? TIMESTAMP_UTC_TZ_FORMAT.print( new DateTime( date ) ) : null;
     }
-
 
     /**
      * Formats a Date to the format yyyy-MM-dd HH:mm:ss.
@@ -148,7 +116,7 @@ public class DateUtils
      */
     public static String getLongDateString( Date date )
     {
-        return date != null ? LONG_DATE_FORMAT.format( date ) : null;
+        return date != null ? LONG_DATE_FORMAT.print( new DateTime( date ) ) : null;
     }
 
     /**
@@ -162,66 +130,14 @@ public class DateUtils
     }
 
     /**
-     * Formats a Date to the format YYYY-MM-DD.
+     * Formats a Date to the format yyyy-MM-dd.
      *
      * @param date the Date to parse.
      * @return A formatted date string. Null if argument is null.
      */
     public static String getMediumDateString( Date date )
     {
-        final SimpleDateFormat format = new SimpleDateFormat();
-
-        format.applyPattern( DEFAULT_DATE_FORMAT );
-
-        return date != null ? format.format( date ) : null;
-    }
-
-    /**
-     * Returns the latest of the two given dates.
-     *
-     * @param date1 the first date.
-     * @param date2 the second date.
-     * @return the latest of the two given dates.
-     */
-    public static Date max( Date date1, Date date2 )
-    {
-        if ( date1 == null )
-        {
-            return date2 != null ? date2 : null;
-        }
-
-        return date2 != null ? (date1.after( date2 ) ? date1 : date2) : date1;
-    }
-
-    /**
-     * Returns the latest of the given dates.
-     *
-     * @param date the dates.
-     * @return the latest of the given dates.
-     */
-    public static Date max( Date... date )
-    {
-        Date latest = null;
-
-        for ( Date d : date )
-        {
-            latest = max( d, latest );
-        }
-
-        return latest;
-    }
-
-    /**
-     * Formats a Date to the format YYYY-MM-DD.
-     *
-     * @param date         the Date to parse.
-     * @param defaultValue the return value if the date argument is null.
-     * @return A formatted date string. The defaultValue argument if date
-     * argument is null.
-     */
-    public static String getMediumDateString( Date date, String defaultValue )
-    {
-        return date != null ? getMediumDateString( date ) : defaultValue;
+        return date != null ? MEDIUM_DATE_FORMAT.print( new DateTime( date ) ) : null;
     }
 
     /**
@@ -242,63 +158,90 @@ public class DateUtils
      */
     public static String getHttpDateString( Date date )
     {
-        return HTTP_DATE_FORMAT.format( date ) + " GMT";
+        return date != null ? ( HTTP_DATE_FORMAT.print( new DateTime( date ) ) ) : null;
     }
 
     /**
-     * Returns yesterday's date formatted according to the HTTP specification
-     * standard date format.
+     * Returns the latest of the two given dates.
      *
-     * @param date the Date to format.
-     * @return a formatted string.
+     * @param date1 the first date, can be null.
+     * @param date2 the second date, can be null.
+     * @return the latest of the two given dates.
      */
-    public static String getExpiredHttpDateString()
+    public static Date max( Date date1, Date date2 )
     {
-        Calendar cal = Calendar.getInstance();
-        cal.add( Calendar.DAY_OF_YEAR, -1 );
+        if ( date1 == null )
+        {
+            return date2;
+        }
 
-        return getHttpDateString( cal.getTime() );
+        return date2 != null ? ( date1.after( date2 ) ? date1 : date2 ) : date1;
     }
 
     /**
-     * Parses the given string into a Date using the default date format which is
-     * yyyy-MM-dd. Returns null if the string cannot be parsed.
+     * Returns the latest of the given dates.
      *
-     * @param dateString the date string.
-     * @return a date.
+     * @param date the collection of dates.
+     * @return the latest of the given dates.
      */
-    public static Date getDefaultDate( String dateString )
+    public static Date max( Collection<Date> dates )
     {
-        try
+        Date latest = null;
+
+        for ( Date d : dates )
         {
-            return new SimpleDateFormat( DEFAULT_DATE_FORMAT ).parse( dateString );
+            latest = max( d, latest );
         }
-        catch ( Exception ex )
-        {
-            return null;
-        }
+
+        return latest;
     }
 
     /**
-     * Parses a date from a String on the format YYYY-MM-DD.
+     * Returns the earliest of the two given dates.
+     *
+     * @param date1 the first date, can be null.
+     * @param date2 the second date, can be null.
+     * @return the latest of the two given dates.
+     */
+    public static Date min( Date date1, Date date2 )
+    {
+        if ( date1 == null )
+        {
+            return date2;
+        }
+        
+        return date2 != null ? ( date1.before( date2 ) ? date1 : date2 ) : date1;
+    }
+
+    /**
+     * Returns the earliest of the given dates.
+     *
+     * @param date the collection of dates.
+     * @return the earliest of the given dates.
+     */
+    public static Date min( Collection<Date> dates )
+    {
+        Date earliest = null;
+        
+        for ( Date d : dates )
+        {
+            earliest = min( d, earliest );
+        }
+        
+        return earliest;
+    }    
+    
+    /**
+     * Parses a date from a String on the format YYYY-MM-DD. Returns null if the
+     * given string is null.
      *
      * @param dateString the String to parse.
      * @return a Date based on the given String.
+     * @throws IllegalArgumentException if the given string is invalid.
      */
-    public static Date getMediumDate( String dateString )
+    public static Date getMediumDate( String string )
     {
-        try
-        {
-            final SimpleDateFormat format = new SimpleDateFormat();
-
-            format.applyPattern( DEFAULT_DATE_FORMAT );
-
-            return dateString != null && dateIsValid( dateString ) ? format.parse( dateString ) : null;
-        }
-        catch ( ParseException ex )
-        {
-            throw new RuntimeException( "Failed to parse medium date", ex );
-        }
+        return string != null ? MEDIUM_DATE_FORMAT.parseDateTime( string ).toDate() : null;
     }
 
     /**
@@ -503,7 +446,7 @@ public class DateUtils
     {
         try
         {
-            DATE_TIME_FORMATTER.parseDateTime(dateTimeString);
+            DATE_TIME_FORMAT.parseDateTime(dateTimeString);
             return true;
         }
         catch( IllegalArgumentException ex )
@@ -552,35 +495,6 @@ public class DateUtils
         cal.add( Calendar.DATE, days );
 
         return cal.getTime();
-    }
-
-    /**
-     * This is a helper method for checking if the fromDate is later than the
-     * toDate. This is necessary in case a user sends the dates with HTTP GET.
-     *
-     * @param fromDate
-     * @param toDate
-     * @return boolean
-     */
-    public static boolean checkDates( String fromDate, String toDate )
-    {
-        String formatString = DEFAULT_DATE_FORMAT;
-        SimpleDateFormat sdf = new SimpleDateFormat( formatString );
-
-        Date date1 = null;
-        Date date2 = null;
-
-        try
-        {
-            date1 = sdf.parse( fromDate );
-            date2 = sdf.parse( toDate );
-        }
-        catch ( ParseException e )
-        {
-            return false; // The user hasn't specified any dates
-        }
-
-        return !date1.before( date2 );
     }
 
     /**

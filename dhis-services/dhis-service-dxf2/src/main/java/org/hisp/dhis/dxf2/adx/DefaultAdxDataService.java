@@ -153,6 +153,7 @@ public class DefaultAdxDataService
     
     @Override
     public void writeDataValueSet( DataExportParams params, OutputStream out )
+        throws AdxException
     {
         dataValueSetService.decideAccess( params );
         dataValueSetService.validate( params );
@@ -164,18 +165,7 @@ public class DefaultAdxDataService
 
         for ( DataSet dataSet : params.getDataSets() )
         {
-            AdxDataSetMetadata metadata;
-
-            try
-            {
-                metadata = new AdxDataSetMetadata( dataSet );
-            }
-            catch ( AdxException ex )
-            {
-                log.info( "Export failed for dataset: " + dataSet.getName() );
-                log.info( "Error: " + ex.getMessage() );
-                continue;
-            }
+            AdxDataSetMetadata metadata = new AdxDataSetMetadata( dataSet );
 
             DataElementCategoryCombo categoryCombo = dataSet.getCategoryCombo();
 
@@ -230,6 +220,7 @@ public class DefaultAdxDataService
                 }
             }
         }
+        
         adxWriter.closeElement(); // ADX
 
         adxWriter.closeWriter();
