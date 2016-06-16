@@ -428,3 +428,11 @@ textarea:read-only
 .select2-chosen {
     padding-top: 6px;
 }
+
+#categoryOptionAddDialog {
+    display: none;
+}
+
+.category-option-field {
+    width: 250px;
+}

@@ -62,6 +62,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
 import com.opensymphony.xwork2.Action;
+import org.hisp.dhis.attribute.Attribute;
+import org.hisp.dhis.attribute.AttributeService;
 
 /**
  * @author Lars Helge Overland
@@ -113,6 +115,9 @@ public class GetMetaDataAction
 
     @Autowired
     private IdentifiableObjectManager identifiableObjectManager;
+    
+    @Autowired
+    private AttributeService attributeService;
     
     // -------------------------------------------------------------------------
     // Output
@@ -187,6 +192,14 @@ public class GetMetaDataAction
     {
         return categoryOptionMap;
     }
+
+    private List<Attribute> attributes;
+    
+    public List<Attribute> getAttributes()
+    {
+        return attributes; 
+    }
+    
 
     // -------------------------------------------------------------------------
     // Action implementation
@@ -271,6 +284,8 @@ public class GetMetaDataAction
         Collections.sort( categories );
 
         defaultCategoryCombo = categoryService.getDefaultDataElementCategoryCombo();
+
+        attributes = attributeService.getAttributes( DataElementCategoryOption.class );
 
         return SUCCESS;
     }

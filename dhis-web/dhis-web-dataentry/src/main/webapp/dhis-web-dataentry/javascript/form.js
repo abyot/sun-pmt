@@ -80,6 +80,9 @@ dhis2.de.multiOrganisationUnitEnabled = false;
 // Simple object to see if we have tried to fetch children DS for a parent before
 dhis2.de.fetchedDataSets = {};
 
+//meta attributes
+dhis2.de.attributes = [];
+
 // "organisationUnits" object inherited from ouwt.js
 
 // Constants
@@ -308,7 +311,8 @@ dhis2.de.loadMetaData = function()
 	        dhis2.de.optionSets = metaData.optionSets;
 	        dhis2.de.defaultCategoryCombo = metaData.defaultCategoryCombo;
 	        dhis2.de.categoryCombos = metaData.categoryCombos;
-	        dhis2.de.categories = metaData.categories;	        
+	        dhis2.de.categories = metaData.categories;
+                dhis2.de.attributes = metaData.attributes;
 	        def.resolve();
 	    }
 	} );
@@ -1369,12 +1373,156 @@ dhis2.de.getCurrentCategoryOptions = function()
 	$.safeEach( dhis2.de.currentCategories, function( idx, category ) {
 		var option = $( '#category-' + category.id ).val();
 		
-		if ( option && option != -1 ) {
+                if( option && option === 'ADD_NEW_OPTION' ){
+                    //adding new option to category
+                    dhis2.de.showAddNewOptionToCategory( category );
+                }                
+                else{
+                    if ( option && option != -1 ) {
 			options.push( option );
-		}
+                    }
+                }
+		
 	} );
 	
 	return options;
+};
+
+
+dhis2.de.showAddNewOptionToCategory = function( category )
+{    
+    var html = '';
+    
+    html += '<table>';
+    html += '<tr>';
+    html += '<td><label>' + i18n_name_label + ':</label></td>';
+    html += '<td><input type="text" name="option-name" id="option-name-id" class="category-option-field" /></td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td><label>' + i18n_short_name_label + ':</label></td>';
+    html += '<td><input type="text" name="option-short-name" id="option-short-name-id" class="category-option-field" /></td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td><label>' + i18n_code_label + ':</label></td>';
+    html += '<td><input type="text" name="option-code" id="option-code-id" class="category-option-field" /></td>';
+    html += '</tr>';
+        
+    $.safeEach( dhis2.de.attributes, function( idx, att ) {
+        
+        html += '<tr>';
+        html += '<td><label>' + att.displayName + ':</label></td>';
+        
+        html += '<td>';
+        if( att.optionSet ){
+            
+            html += '<select class="category-option-field" id=" ' + att.id + '" >';
+            html += '<option value="-1">[ ' + i18n_select_option + ' ]</option>';
+
+            $.safeEach( att.optionSet.options, function( idx, option ) {
+		html += '<option value="' + option.displayName + '">' + option.displayName + '</option>';
+            } );
+            
+            html += '</select>';
+        }
+        else{
+            switch ( att.valueType )
+            {
+                case "NUMBER":
+                    html += '<input type="text" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+                case "INTEGER":
+                    html += '<input type="text" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+                case "INTEGER_POSITIVE":
+                    html += '<input type="text" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+                case "INTEGER_NEGATIVE":
+                    html += '<input type="text" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+                case "BOOLEAN":
+                    html += '<select class="category-option-field" id="option-attribute- ' + att.id + '" >';
+                    html += '<option value="false">' + i18n_no_label + '</option>';
+                    html += '<option value="true">' + i18n_yes_label + '</option>';
+                    html += '</select>';
+                    break;    
+                case "LONGTEXT":
+                    html += '<textarea row="3" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+                default:
+                    html += '<input type="text" id="option-attribute-' + att.id + '" class="category-option-field" />';
+                    break;
+            }
+        }
+        
+        html += '</td>';
+        html += '</tr>';
+        
+    } );
+
+    html += '</table>';
+    
+    $( '#categoryOptionAddDialog' ).html( html );
+    
+    $( "#categoryOptionAddDialog" ).dialog( {
+        modal: true,
+        title: i18n_add_new_option,
+        width: 500,
+        height: 300,
+        buttons: [{
+            text: i18n_save_button_label,
+            click: function(){
+                dhis2.de.saveNewCategoryOption(category);
+            }},{
+            text: i18n_close_button_label,
+            click: function(){
+                $(this).dialog('close');
+            }			
+        }]        
+    } );
+};
+
+dhis2.de.saveNewCategoryOption = function( category ){
+    
+    var optionName = $("#option-name-id").val();
+    var optionsShortName = $("#option-short-name-id").val();
+    var optionCode = $("#option-code-id").val();
+    
+    var categoryOption = {name: optionName};
+    
+    if( optionsShortName && optionsShortName !== '' ){
+        categoryOption.shortName = optionsShortName;
+    }
+    
+    if( optionCode && optionCode !== '' ){
+        categoryOption.code = optionCode;
+    }
+    
+    $.ajax({		
+        url: "../api/categoryOptions.json",
+        type: "post",
+        data: JSON.stringify( categoryOption ),
+        contentType: "application/json; charset=utf-8",
+        success: function(json){
+            
+            if( json && json.response && json.response.lastImported ){                
+                
+                category.options.push( {id: json.response.lastImported, name: optionName} );                
+                var cat = jQuery.extend({}, category);                
+                cat.categoryOptions = category.options;
+                
+                $.ajax({		
+                    url: "../api/categories/" + cat.id + ".json?mergeMode=MERGE",
+                    type: "put",
+                    data: JSON.stringify( cat ),
+                    contentType: "application/json; charset=utf-8",
+                    success: function(json){                        
+                        $( "#categoryOptionAddDialog" ).dialog('close');
+                        location.reload();
+                    }
+                });
+            }            
+        }
+    });
 };
 
 /**
@@ -1462,7 +1610,7 @@ dhis2.de.getAttributesMarkup = function()
 	$.safeEach( dhis2.de.currentCategories, function( idx, category ) {
 		html += '<div class="selectionBoxRow">';
 		html += '<div class="selectionLabel">' + category.name + '</div>&nbsp;';
-		html += '<select id="category-' + category.id + '" class="selectionBoxSelect" onchange="dhis2.de.attributeSelected(\'' + category.id + '\')">';
+		html += '<select id="category-' + category.id + '" class="selectionBoxSelect" onchange="dhis2.de.attributeSelected(\'' + category.id + '\')">';                
 		html += '<option value="-1">[ ' + i18n_select_option + ' ]</option>';
 
 		$.safeEach( category.options, function( idx, option ) {
@@ -1471,6 +1619,8 @@ dhis2.de.getAttributesMarkup = function()
 				html += '<option value="' + option.id + '"' + selected + '>' + option.name + '</option>';
 			}
 		} );
+                
+                html += '<option value="ADD_NEW_OPTION">[ ' + i18n_add_new_option + ' ]</option>';
 		
 		html += '</select>';
 		html += '</div>';
@@ -1492,7 +1642,7 @@ dhis2.de.clearAttributes = function()
  */
 dhis2.de.attributeSelected = function( categoryId )
 {
-	if ( dhis2.de.inputSelected() ) {    	
+    if ( dhis2.de.inputSelected() ) {    	
         showLoader();
 
         if ( dhis2.de.dataEntryFormIsLoaded ) {

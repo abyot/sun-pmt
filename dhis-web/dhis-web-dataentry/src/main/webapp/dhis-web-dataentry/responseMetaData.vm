@@ -51,10 +51,25 @@
 #end
 },
 
+"attributes": [
+#set( $size1 = $attributes.size() )
+#foreach( $attribute in $attributes )
+{"id":"${attribute.uid}", "displayName":"$encoder.jsonEncode( ${attribute.displayName} )","code":"$encoder.jsonEncode( ${attribute.code} )", "categoryOptionAttribute":"${attribute.categoryOptionAttribute}", "valueType":"${attribute.valueType}", "mandatory":"${attribute.mandatory}"  
+#if( ${attribute.optionSet} ), "optionSet": {"displayName":"${attribute.getOptionSet().displayName}"
+#if( ${attribute.getOptionSet().getOptions().size()} > 0 ),"options":[
+#set( $size2 = $attribute.getOptionSet().getOptions().size() )
+#foreach( $option in $attribute.getOptionSet().getOptions() )
+{"id":"${option.uid}", "displayName": "$encoder.jsonEncode( ${option.displayName} )", "code":"$encoder.jsonEncode( ${option.code} )"} #if( $velocityCount < $size2 ),#end
+#end
+]#end
+}#end}
+#if( $velocityCount < $size1 ),#end
+#end ],
+
 "categories": {
 #set( $size1 = $categories.size() )
 #foreach( $category in $categories )
-"${category.uid}":{"id":"${category.uid}","name":"$encoder.jsonEncode( ${category.displayName} )","options":[
+"${category.uid}":{"id":"${category.uid}","name":"$encoder.jsonEncode( ${category.displayName} )","dataDimension":"${category.dataDimension}","dataDimensionType":"${category.dataDimensionType}", "options":[
 #set( $categoryOptions = $categoryOptionMap.get( $category.uid ) )
 #set( $size2 = $categoryOptions.size() )
 #foreach( $option in $categoryOptions )
