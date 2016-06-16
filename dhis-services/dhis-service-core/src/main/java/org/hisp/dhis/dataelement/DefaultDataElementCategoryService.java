@@ -139,7 +139,7 @@ public class DefaultDataElementCategoryService
     @Override
     public void updateDataElementCategory( DataElementCategory dataElementCategory )
     {
-    	categoryStore.update( dataElementCategory );
+        categoryStore.update( dataElementCategory );
     }
 
     @Override

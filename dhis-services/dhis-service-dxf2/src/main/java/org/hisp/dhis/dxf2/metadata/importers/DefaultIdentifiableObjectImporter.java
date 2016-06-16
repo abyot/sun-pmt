@@ -46,10 +46,8 @@ import org.hisp.dhis.common.NameableObject;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.dashboard.DashboardItem;
 import org.hisp.dhis.dataelement.CategoryOptionGroupSet;
-import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.dataelement.DataElementCategoryDimension;
 import org.hisp.dhis.dataelement.DataElementCategoryOption;
-import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataelement.DataElementOperand;
 import org.hisp.dhis.dataelement.DataElementOperandService;
 import org.hisp.dhis.dxf2.common.ImportOptions;
@@ -150,9 +148,6 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
 
     @Autowired( required = false )
     private List<ObjectHandler<T>> objectHandlers;
-    
-    @Autowired
-    private DataElementCategoryService dataElementCategoryService;
 
     //-------------------------------------------------------------------------------------------------------
     // Constructor
@@ -395,7 +390,7 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
      * @return An ImportConflict instance if there was a conflict, otherwise null
      */
     protected boolean updateObject( User user, T object, T persistedObject )
-    {	
+    {
         if ( !aclService.canUpdate( user, persistedObject ) )
         {
             summaryType.getImportConflicts().add(
@@ -506,11 +501,6 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
         }
 
         summaryType.setLastImported( object.getUid() );
-        
-        if( object instanceof DataElementCategory )
-        {  	
-        	dataElementCategoryService.updateOptionCombos( (DataElementCategory) object );
-        }
 
         log.debug( "Update successful." );
 
