@@ -1465,7 +1465,7 @@ dhis2.de.showAddNewOptionToCategory = function( category )
     
     $( "#categoryOptionAddDialog" ).dialog( {
         modal: true,
-        title: i18n_add_new_option,
+        title: i18n_add_new + " " + category.name,
         width: 500,
         height: 300,
         buttons: [{
@@ -1620,7 +1620,7 @@ dhis2.de.getAttributesMarkup = function()
 			}
 		} );
                 
-                html += '<option value="ADD_NEW_OPTION">[ ' + i18n_add_new_option + ' ]</option>';
+                html += '<option value="ADD_NEW_OPTION">[ ' + i18n_add_new + " " + category.name + ' ]</option>';
 		
 		html += '</select>';
 		html += '</div>';
