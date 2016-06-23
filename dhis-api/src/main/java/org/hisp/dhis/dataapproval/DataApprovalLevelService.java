@@ -125,8 +125,19 @@ public interface DataApprovalLevelService
      * level.
      */
     Map<Integer, DataApprovalLevel> getDataApprovalLevelMap();
-    
+
+    /**
+     * Gets all approval levels to which the user has access.
+     * @return all approval levels to which the user has access.
+     */
     List<DataApprovalLevel> getUserDataApprovalLevels();
+
+    /**
+     * Gets approval levels within a workflow to which the user has access.
+     * @param workflow the workflow to look within.
+     * @return all user-accessible approval levels within that workflow.
+     */
+    List<DataApprovalLevel> getUserDataApprovalLevels( DataApprovalWorkflow workflow );
 
     /**
      * Gets data approval levels by org unit level.

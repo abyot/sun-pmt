@@ -32,12 +32,16 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
+import org.hisp.dhis.organisationunit.OrganisationUnit;
+import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
@@ -50,10 +54,10 @@ public class ProgramMessageRecipients
     implements Serializable
 {
     private static final long serialVersionUID = 1141462154959329242L;
-
-    private String trackedEntityInstanceUid;
-
-    private String organisationUnitUid;
+    
+    private TrackedEntityInstance trackedEntityInstance;
+    
+    private OrganisationUnit organisationUnit;
 
     private Set<String> phoneNumbers = new HashSet<>();
 
@@ -65,22 +69,19 @@ public class ProgramMessageRecipients
 
     public ProgramMessageRecipients()
     {
-        super();
     }
 
     public ProgramMessageRecipients( Set<String> phoneNumbers, Set<String> emailAddresses )
     {
-        super();
         this.phoneNumbers = phoneNumbers;
         this.emailAddresses = emailAddresses;
     }
 
-    public ProgramMessageRecipients( String trackedEntityInstanceUid, String organisationUnitUid, Set<String> phoneNumbers,
-        Set<String> emailAddresses )
+    public ProgramMessageRecipients( TrackedEntityInstance trackedEntityInstance,
+        OrganisationUnit organisationUnit, Set<String> phoneNumbers, Set<String> emailAddresses )
     {
-        super();
-        this.trackedEntityInstanceUid = trackedEntityInstanceUid;
-        this.organisationUnitUid = organisationUnitUid;
+        this.trackedEntityInstance = trackedEntityInstance;
+        this.organisationUnit = organisationUnit;
         this.phoneNumbers = phoneNumbers;
         this.emailAddresses = emailAddresses;
     }
@@ -91,42 +92,44 @@ public class ProgramMessageRecipients
 
     public boolean hasTrackedEntityInstance()
     {
-        return trackedEntityInstanceUid != null;
+        return trackedEntityInstance != null;
     }
 
     public boolean hasOrganisationUnit()
     {
-        return organisationUnitUid != null;
+        return organisationUnit != null;
     }
 
     // -------------------------------------------------------------------------
     // Setters and getters
     // -------------------------------------------------------------------------
-
-    @JsonProperty( value = "trackedEntityInstanceUid" )
+    
+    @JsonProperty( value = "trackedEntityInstance" )
+    @JsonSerialize( as = BaseIdentifiableObject.class )
     @JsonView( { DetailedView.class, ExportView.class } )
-    @JacksonXmlProperty( localName = "trackedEntityInstanceUid" )
-    public String getTrackedEntityInstanceUid()
+    @JacksonXmlProperty( localName = "trackedEntityInstance" )
+    public TrackedEntityInstance getTrackedEntityInstance()
     {
-        return trackedEntityInstanceUid;
+        return trackedEntityInstance;
     }
 
-    public void setTrackedEntityInstanceUid( String trackedEntityInstanceUid )
+    public void setTrackedEntityInstance( TrackedEntityInstance trackedEntityInstance )
     {
-        this.trackedEntityInstanceUid = trackedEntityInstanceUid;
+        this.trackedEntityInstance = trackedEntityInstance;
     }
-
-    @JsonProperty( value = "organisationUnitUid" )
+    
+    @JsonProperty( value = "organisationUnit" )
+    @JsonSerialize( as = BaseIdentifiableObject.class )
     @JsonView( { DetailedView.class, ExportView.class } )
-    @JacksonXmlProperty( localName = "organisationUnitUid" )
-    public String getOrganisationUnitUid()
+    @JacksonXmlProperty( localName = "organisationUnit" )
+    public OrganisationUnit getOrganisationUnit()
     {
-        return organisationUnitUid;
+        return organisationUnit;
     }
 
-    public void setOrganisationUnitUid( String organisationUnitUid )
+    public void setOrganisationUnit( OrganisationUnit organisationUnit )
     {
-        this.organisationUnitUid = organisationUnitUid;
+        this.organisationUnit = organisationUnit;
     }
 
     @JsonProperty( value = "phoneNumbers" )
@@ -158,7 +161,7 @@ public class ProgramMessageRecipients
     @Override
     public String toString()
     {
-        return "ProgramMessageRecipients[ " + phoneNumbers != null ? " " + phoneNumbers + " "
-            : " " + emailAddresses != null ? " " + emailAddresses + " " : "" + " ]";
+        return "ProgramMessageRecipients[ " + ( phoneNumbers != null ? " " + phoneNumbers + " "
+            : " " + ( emailAddresses != null ? " " + emailAddresses + " " : "" ) ) + " ]";
     }
 }

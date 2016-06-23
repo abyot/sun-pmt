@@ -231,16 +231,14 @@ public class DataElementControllerDocumentation
         List<FieldDescriptor> fieldDescriptors = new ArrayList<>();
         fieldDescriptors.addAll( ResponseDocumentation.pager() );
         fieldDescriptors.add( fieldWithPath( "dataElements" ).description( "Data elements" ) );
-
+        
         mvc.perform( get( "/dataElements?filter=name:like:DataElementA" )
             .session( session )
             .contentType( TestUtils.APPLICATION_JSON_UTF8 ) )
-            .andExpect( jsonPath( "$.pager.total", new GreaterThan( 0 ) ) )
+            .andExpect( jsonPath( "$.pager.total", new GreaterThan<Integer>( 0 ) ) )
             .andDo( documentPrettyPrint( "data-elements/filter",
                 responseFields( fieldDescriptors.toArray( new FieldDescriptor[fieldDescriptors.size()] ) ) ) );
-
     }
-
 
     @Test
     public void testFilteriLikeOk() throws Exception
@@ -252,8 +250,7 @@ public class DataElementControllerDocumentation
         mvc.perform( get( "/dataElements?filter=name:ilike:DataElementA" )
             .session( session )
             .contentType( TestUtils.APPLICATION_JSON_UTF8 ) )
-            .andExpect( jsonPath( "$.pager.total", new GreaterThan( 0 ) ) );
-
+            .andExpect( jsonPath( "$.pager.total", new GreaterThan<Integer>( 0 ) ) );
     }
 
     @Test
@@ -266,7 +263,7 @@ public class DataElementControllerDocumentation
         mvc.perform( get( "/dataElements?filter=name:eq:DataElementA" )
             .session( session )
             .contentType( TestUtils.APPLICATION_JSON_UTF8 ) )
-            .andExpect( jsonPath( "$.pager.total", new GreaterThan( 0 ) ) );
+            .andExpect( jsonPath( "$.pager.total", new GreaterThan<Integer>( 0 ) ) );
     }
 
     @Test
@@ -335,7 +332,4 @@ public class DataElementControllerDocumentation
             }
         }
     }
-
-
-
 }

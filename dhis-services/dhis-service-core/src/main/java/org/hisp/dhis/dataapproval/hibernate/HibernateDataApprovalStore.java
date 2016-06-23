@@ -59,6 +59,7 @@ import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.hibernate.HibernateGenericStore;
+import org.hisp.dhis.jdbc.StatementBuilder;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
@@ -67,6 +68,7 @@ import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 /**
@@ -78,8 +80,11 @@ public class HibernateDataApprovalStore
 {
     private static final Log log = LogFactory.getLog( HibernateDataApprovalStore.class );
 
-    private static final int MAX_APPROVAL_LEVEL = 99999999;
-    
+    private static final int MAX_APPROVAL_LEVEL = 100000000;
+
+    private static final String SQL_CONCAT = "-";
+    private static final String SQL_CAT = StatementBuilder.QUOTE + SQL_CONCAT + StatementBuilder.QUOTE;
+
     // -------------------------------------------------------------------------
     // Dependencies
     // -------------------------------------------------------------------------
@@ -118,6 +123,9 @@ public class HibernateDataApprovalStore
     {
         this.systemSettingManager = systemSettingManager;
     }
+
+    @Autowired
+    private StatementBuilder statementBuilder;
 
     // -------------------------------------------------------------------------
     // DataApproval
@@ -184,19 +192,28 @@ public class HibernateDataApprovalStore
         Period period, OrganisationUnit orgUnit, DataElementCategoryCombo attributeCombo,
         Set<DataElementCategoryOptionCombo> attributeOptionCombos )
     {
+        // ---------------------------------------------------------------------
+        // Get validation criteria
+        // ---------------------------------------------------------------------
+
         final User user = currentUserService.getCurrentUser();
 
-        final boolean isSuperUser = currentUserService.currentUserIsSuper();
+        List<DataApprovalLevel> approvalLevels = workflow.getSortedLevels();
 
-        final String startDate = DateUtils.getMediumDateString( period.getStartDate() );
-        final String endDate = DateUtils.getMediumDateString( period.getEndDate() );
+        List<DataApprovalLevel> userApprovalLevels = dataApprovalLevelService.getUserDataApprovalLevels( workflow );
 
-        boolean maySeeDefaultCategoryCombo = 
-            ( CollectionUtils.isEmpty( user.getUserCredentials().getCogsDimensionConstraints() )
-            && CollectionUtils.isEmpty( user.getUserCredentials().getCatDimensionConstraints() ) );
+        Set<OrganisationUnit> userOrgUnits = user.getDataViewOrganisationUnitsWithFallback();
 
         boolean isDefaultCombo = attributeOptionCombos != null && attributeOptionCombos.size() == 1
             && categoryService.getDefaultDataElementCategoryOptionCombo().equals( attributeOptionCombos.toArray()[0] );
+
+        boolean maySeeDefaultCategoryCombo =
+            ( CollectionUtils.isEmpty( user.getUserCredentials().getCogsDimensionConstraints() )
+                && CollectionUtils.isEmpty( user.getUserCredentials().getCatDimensionConstraints() ) );
+
+        // ---------------------------------------------------------------------
+        // Validate
+        // ---------------------------------------------------------------------
 
         if ( isDefaultCombo && !maySeeDefaultCategoryCombo )
         {
@@ -205,161 +222,184 @@ public class HibernateDataApprovalStore
             return new ArrayList<>(); // Unapprovable.
         }
 
-        List<DataApprovalLevel> approvalLevels = workflow.getSortedLevels();
-
         if ( CollectionUtils.isEmpty( approvalLevels ) )
         {
-            log.info( "No approval levels configured for workflow " + workflow.getName() );
+            log.warn( "No approval levels configured for workflow " + workflow.getName() );
 
             return new ArrayList<>(); // Unapprovable.
         }
 
-        int orgUnitLevel = 0;
-        String orgUnitJoinOn = null;
-        String highestApprovedOrgUnitCompare = null;
-
-        Set<OrganisationUnit> userOrgUnits = user.getDataViewOrganisationUnitsWithFallback();
-
-        if ( orgUnit != null )
+        if ( CollectionUtils.isEmpty( userApprovalLevels ) )
         {
-            if ( !orgUnit.isDescendant( userOrgUnits ) )
-            {
-                log.debug( "User " + user.getUsername() + " can't see orgUnit " + orgUnit.getName() );
+            log.warn( "No user approval levels for user " + user.getUsername() + ", workflow " + workflow.getName() );
 
-                return new ArrayList<>(); // Unapprovable.
-            }
-
-            orgUnitLevel = orgUnit.getLevel();
-            orgUnitJoinOn = "o.organisationunitid = " + orgUnit.getId();
-            highestApprovedOrgUnitCompare = "da.organisationunitid = o.organisationunitid ";
+            return new ArrayList<>(); // Unapprovable.
         }
-        else
+
+        if ( orgUnit != null && !orgUnit.isDescendant( userOrgUnits ) )
         {
-            highestApprovedOrgUnitCompare = "";
-            orgUnitLevel = 0;
+            log.debug( "User " + user.getUsername() + " can't see orgUnit " + orgUnit.getName() );
 
-            for ( DataApprovalLevel dal : approvalLevels )
-            {
-                if ( dal.getOrgUnitLevel() != orgUnitLevel )
-                {
-                    orgUnitLevel = dal.getOrgUnitLevel(); // Remember lowest (last level -> greatest number) level.
-
-                    highestApprovedOrgUnitCompare += ( highestApprovedOrgUnitCompare.length() == 0 ? "(" : " or" )
-                        + " da.organisationunitid = o.idlevel" + orgUnitLevel;
-                }
-            }
-
-            highestApprovedOrgUnitCompare += ") ";
-
-            orgUnitJoinOn = "o.level = " + orgUnitLevel;
-
-            if ( !userOrgUnits.isEmpty() )
-            {
-                String restrict = "";
-
-                for ( OrganisationUnit ou : userOrgUnits )
-                {
-                    restrict += ( restrict.length() == 0 ? " and ( " : " or " )
-                        + "o.idlevel" + ou.getLevel() + " = " + ou.getId();
-                }
-
-                orgUnitJoinOn += restrict + ")";
-            }
+            return new ArrayList<>(); // Unapprovable.
         }
+
+        // ---------------------------------------------------------------------
+        // Get other information
+        // ---------------------------------------------------------------------
+
+        final boolean isSuperUser = currentUserService.currentUserIsSuper();
+
+        final String startDate = DateUtils.getMediumDateString( period.getStartDate() );
+        final String endDate = DateUtils.getMediumDateString( period.getEndDate() );
+
+        DataApprovalLevel highestApprovalLevel = approvalLevels.get( 0 );
+        DataApprovalLevel highestUserApprovalLevel = userApprovalLevels.get( 0 );
 
         DataApprovalLevel lowestApprovalLevelForOrgUnit = null;
+        DataApprovalLevel approvalLevelAboveOrgUnit = null;
+        DataApprovalLevel approvalLevelBelowOrgUnit = null;
+        DataApprovalLevel approvalLevelAboveUser = null;
 
-        String joinAncestors = StringUtils.EMPTY;
-        String testAncestors = StringUtils.EMPTY;
-
-        for ( int i = 1; i < orgUnitLevel; i++ )
-        {
-            joinAncestors += "left join _orgunitstructure o" + i + " on o" + i + ".organisationunitid = o.organisationunitid and o" + i + ".idlevel" + i + " = coo.organisationunitid ";
-            testAncestors += "or o" + i + ".organisationunitid is not null ";
-        }
-
-        String readyBelowSubquery = "true"; // Ready below if this is the lowest (highest number) approval orgUnit level.
-
-        int orgUnitLevelAbove = 0;
-
-        int highestApprovalOrgUnitLevel = MAX_APPROVAL_LEVEL;
+        int orgUnitLevel = ( orgUnit != null ) ?
+            orgUnit.getLevel() :
+            approvalLevels.get( approvalLevels.size() - 1 ).getOrgUnitLevel();
 
         for ( DataApprovalLevel dal : approvalLevels )
         {
-            if ( dal.getOrgUnitLevel() < highestApprovalOrgUnitLevel )
+            int dalOrgUnitLevel = dal.getOrgUnitLevel();
+
+            if ( dal.getLevel() < highestUserApprovalLevel.getLevel() )
             {
-                highestApprovalOrgUnitLevel = dal.getOrgUnitLevel();
+                approvalLevelAboveUser = dal;
             }
 
-            if ( dal.getOrgUnitLevel() < orgUnitLevel )
+            if ( dalOrgUnitLevel < orgUnitLevel )
             {
-                orgUnitLevelAbove = dal.getOrgUnitLevel(); // Keep getting the lowest org unit level above ours.
+                approvalLevelAboveOrgUnit = dal;
             }
-
-            if ( dal.getOrgUnitLevel() == orgUnitLevel )
+            else if ( dal.getOrgUnitLevel() == orgUnitLevel )
             {
                 lowestApprovalLevelForOrgUnit = dal;
             }
-
-            if ( dal.getOrgUnitLevel() > orgUnitLevel ) // If there is a lower (higher number) approval orgUnit level.
+            else // dal.getOrgUnitLevel() > orgUnitLevel
             {
-                String coOrgUnitConstraint = ""; // Constrain lower level orgUnit by categoryOption orgUnit(s) (if any).
-
-                if ( !isDefaultCombo )
-                {
-                    for ( int i = 1; i <= dal.getOrgUnitLevel(); i++ )
-                    {
-                        coOrgUnitConstraint += ( i == 1 ? "" : "or " ) + "( o2.level = " + i + " and ous.idlevel" + i + " = c_o.organisationunitid ) ";
-                    }
-                }
-
-                boolean acceptanceRequiredForApproval = (Boolean) systemSettingManager.getSystemSetting( SettingKey.ACCEPTANCE_REQUIRED_FOR_APPROVAL );
-
-                readyBelowSubquery = "not exists (select 1 from _orgunitstructure ous " +
-                    "where not exists (select 1 from dataapproval da " +
-                        "join period p on p.periodid = da.periodid " +
-                        "where da.organisationunitid = ous.organisationunitid " +
-                        "and da.dataapprovallevelid = " + dal.getId() + " " +
-                        "and '" + endDate + "' >= p.startdate and '" + endDate + "' <= p.enddate " +
-                        "and da.workflowid = " + workflow.getId() + " " +
-                        "and da.attributeoptioncomboid = cocco.categoryoptioncomboid " +
-                        ( acceptanceRequiredForApproval ? "and da.accepted " : "" ) +
-                    ") " +
-                    "and ous.idlevel" + orgUnitLevel + " = o.organisationunitid " +
-                    "and ous.level = " + dal.getOrgUnitLevel() + " " +
-                    ( isDefaultCombo ? "" :
-                        "and ( not exists ( select 1 from categoryoption_organisationunits c_o where c_o.categoryoptionid = cocco.categoryoptionid ) " +
-                            "or exists ( select 1 from categoryoption_organisationunits c_o " +
-                            "join _orgunitstructure o2 on o2.organisationunitid = c_o.organisationunitid " +
-                            "where c_o.categoryoptionid = cocco.categoryoptionid and (" + coOrgUnitConstraint + ") ) ) " ) +
-                    ")";
+                approvalLevelBelowOrgUnit = dal;
                 break;
             }
         }
 
+        DataApprovalLevel approvedAboveLevel = null;
+
+        if ( highestUserApprovalLevel.getLevel() != highestApprovalLevel.getLevel() &&
+            ( orgUnit == null || orgUnitLevel == highestUserApprovalLevel.getOrgUnitLevel() ) )
+        {
+            approvedAboveLevel = approvalLevelAboveUser;
+        }
+        else if ( orgUnit != null && orgUnitLevel != highestUserApprovalLevel.getOrgUnitLevel() )
+        {
+            approvedAboveLevel = approvalLevelAboveOrgUnit;
+        }
+
+        log.debug( "Workflow '" + workflow.getName() + "' levels: " + approvalLevels.size() +
+            ", user levels: " + userApprovalLevels.size() +
+            ", lowestApprovalLevelForOrgUnit: " + ( lowestApprovalLevelForOrgUnit == null ? "-" : lowestApprovalLevelForOrgUnit.getLevel() ) +
+            ", approvalLevelAboveOrgUnit: " + ( approvalLevelAboveOrgUnit == null ? "-" : approvalLevelAboveOrgUnit.getLevel() ) +
+            ", approvalLevelBelowOrgUnit: " + ( approvalLevelBelowOrgUnit == null ? "-" : approvalLevelBelowOrgUnit.getLevel() ) +
+            ", approvalLevelAboveUser: " + ( approvalLevelAboveUser == null ? "-" : approvalLevelAboveUser.getLevel() ) +
+            ", approvedAboveLevel: " + ( approvedAboveLevel == null ? "-" : approvedAboveLevel.getLevel() ) );
+
+        // ---------------------------------------------------------------------
+        // Construct query
+        // ---------------------------------------------------------------------
+
+        String userOrgUnitRestrictions = "";
+
+        if ( !isSuperUser && !userOrgUnits.isEmpty() )
+        {
+            for ( OrganisationUnit ou : userOrgUnits )
+            {
+                userOrgUnitRestrictions += ( userOrgUnitRestrictions.length() == 0 ? " and ( " : " or " )
+                    + statementBuilder.position( "'" + ou.getUid() + "'", "o.path" ) + " <> 0";
+            }
+            userOrgUnitRestrictions += " )";
+        }
+
+        String highestApprovedOrgUnitJoin = "";
+        String highestApprovedOrgUnitCompare;
+
+        if ( orgUnit != null )
+        {
+            highestApprovedOrgUnitCompare = "da.organisationunitid = " + orgUnit.getId() + " ";
+        }
+        else
+        {
+            highestApprovedOrgUnitJoin = "join organisationunit dao on dao.organisationunitid = da.organisationunitid ";
+
+            highestApprovedOrgUnitCompare = statementBuilder.position( "dao.uid", "o.path" ) + " <> 0";
+        }
+
+        String userApprovalLevelRestrictions = "";
+
+        if ( !isSuperUser && userApprovalLevels.size() != approvalLevels.size() )
+        {
+            for ( DataApprovalLevel dal : userApprovalLevels )
+            {
+                userApprovalLevelRestrictions += ( userApprovalLevelRestrictions.length() == 0 ?
+                    " and dal.dataapprovallevelid in ( " : ", " ) + dal.getId();
+            }
+            userApprovalLevelRestrictions += " ) ";
+        }
+
         String approvedAboveSubquery = "false"; // Not approved above if this is the highest (lowest number) approval orgUnit level.
 
-        if ( orgUnitLevelAbove > 0 && orgUnit != null )
+        if ( approvedAboveLevel != null )
         {
             approvedAboveSubquery = "exists(select 1 from dataapproval da " +
                 "join period p on p.periodid = da.periodid " +
-                "join dataapprovallevel dal on dal.dataapprovallevelid = da.dataapprovallevelid " +
-                "join _orgunitstructure ou on ou.organisationunitid = o.organisationunitid and ou.idlevel" + orgUnitLevelAbove + " = da.organisationunitid " +
-                "where '" + endDate + "' >= p.startdate and '" + endDate + "' <= p.enddate " +
+                "join organisationunit dao on dao.organisationunitid = da.organisationunitid " +
+                "where " + statementBuilder.position( "dao.uid", "o.path" ) +" = " + pathPositionAtLevel( approvedAboveLevel ) + " " +
+                "and '" + endDate + "' >= p.startdate and '" + endDate + "' <= p.enddate " +
+                "and da.dataapprovallevelid = " + approvedAboveLevel.getId() + " " +
                 "and da.workflowid = " + workflow.getId() + " and da.attributeoptioncomboid = cocco.categoryoptioncomboid)";
         }
 
-        int workflowPeriodId = getWorkflowPeriodId( workflow, endDate );
+        String readyBelowSubquery = "true"; // Ready below if this is the lowest (highest number) approval orgUnit level.
+
+        if ( approvalLevelBelowOrgUnit != null )
+        {
+            boolean acceptanceRequiredForApproval = (Boolean) systemSettingManager.getSystemSetting( SettingKey.ACCEPTANCE_REQUIRED_FOR_APPROVAL );
+
+            readyBelowSubquery = "not exists (select 1 from organisationunit dao " +
+                "where not exists (select 1 from dataapproval da " +
+                    "join period p on p.periodid = da.periodid " +
+                    "where da.organisationunitid = dao.organisationunitid " +
+                    "and da.dataapprovallevelid = " + approvalLevelBelowOrgUnit.getId() + " " +
+                    "and '" + endDate + "' >= p.startdate and '" + endDate + "' <= p.enddate " +
+                    "and da.workflowid = " + workflow.getId() + " " +
+                    "and da.attributeoptioncomboid = cocco.categoryoptioncomboid " +
+                    ( acceptanceRequiredForApproval ? "and da.accepted " : "" ) +
+                ") " +
+                "and " + statementBuilder.position( "o.uid", "dao.path" ) + " = " + pathPositionAtLevel( orgUnitLevel ) + " " +
+                "and dao.hierarchylevel = " + approvalLevelBelowOrgUnit.getOrgUnitLevel() + " " +
+                ( isDefaultCombo ? "" :
+                    "and ( not exists ( select 1 from categoryoption_organisationunits c_o where c_o.categoryoptionid = cocco.categoryoptionid ) " +
+                        "or exists ( select 1 from categoryoption_organisationunits c_o " +
+                        "join organisationunit o2 on o2.organisationunitid = c_o.organisationunitid " +
+                        "where c_o.categoryoptionid = cocco.categoryoptionid and " + statementBuilder.position( "o2.uid", "dao.path" ) +
+                        " between 2 and " + pathPositionAtLevel( approvalLevelBelowOrgUnit ) + ") ) " ) +
+                ")";
+        }
 
         final String sql =
-            "select coc.uid as cocuid, o.organisationunituid as ouuid, ou.name as ouname, " +
-            "(select min(dal.level + case when da.accepted then .0 else .1 end) " +
+            "select coc.uid as cocuid, o.uid as ouuid, o.name as ouname, " +
+            "(select min(" + statementBuilder.concatenate( MAX_APPROVAL_LEVEL + " + dal.level", SQL_CAT, "da.accepted", SQL_CAT, "da.organisationunitid" ) + ") " +
                 "from dataapproval da " +
                 "join dataapprovallevel dal on dal.dataapprovallevelid = da.dataapprovallevelid " +
+                highestApprovedOrgUnitJoin +
                 "where da.workflowid = " + workflow.getId() + " " +
-                "and da.periodid = " + workflowPeriodId + " " +
+                "and da.periodid = " + getWorkflowPeriodId( workflow, endDate ) + " " +
                 "and da.attributeoptioncomboid = cocco.categoryoptioncomboid " +
-                "and " + highestApprovedOrgUnitCompare +
+                "and " + highestApprovedOrgUnitCompare + userApprovalLevelRestrictions +
             ") as highest_approved, " +
             readyBelowSubquery + " as ready_below, " +
             approvedAboveSubquery + " as approved_above " +
@@ -369,12 +409,10 @@ public class HibernateDataApprovalStore
                 "and ccoc.categorycomboid = " + attributeCombo.getId() + " " ) +
             "join dataelementcategoryoption co on co.categoryoptionid = cocco.categoryoptionid " +
                 "and (co.startdate is null or co.startdate <= '" + endDate + "') and (co.enddate is null or co.enddate >= '" + startDate + "') " +
-            "join _orgunitstructure o on " + orgUnitJoinOn + " " +
-            "join organisationunit ou on o.organisationunitid = ou.organisationunitid " +
+            "join organisationunit o on " + (orgUnit != null ? "o.organisationunitid = " + orgUnit.getId() : "o.hierarchylevel = " + orgUnitLevel + userOrgUnitRestrictions ) + " " +
             "left join categoryoption_organisationunits coo on coo.categoryoptionid = co.categoryoptionid " +
-            "left join _orgunitstructure ous on ous.idlevel" + orgUnitLevel + " = o.organisationunitid and ous.organisationunitid = coo.organisationunitid " +
-            joinAncestors +
-            "where ( coo.categoryoptionid is null or ous.organisationunitid is not null " + testAncestors + ")" +
+            "left join organisationunit oc on oc.organisationunitid = coo.organisationunitid " +
+            "where ( coo.categoryoptionid is null or " + statementBuilder.position( "o.uid", "oc.path" ) + " <> 0 )" +
             ( attributeOptionCombos == null || attributeOptionCombos.isEmpty() ? "" : " and cocco.categoryoptioncomboid in (" +
                 StringUtils.join( IdentifiableObjectUtils.getIdentifiers( attributeOptionCombos ), "," ) + ") " ) +
             ( isSuperUser ? "" :
@@ -384,12 +422,21 @@ public class HibernateDataApprovalStore
                 "left join usergroupmembers ugm on ugm.usergroupid = uga.usergroupid " +
                 "where couga.categoryoptionid = cocco.categoryoptionid and ugm.userid = " + user.getId() + ") )" );
 
+        log.debug( "User " + user.getUsername() + " superuser " + isSuperUser
+            + " workflow " + workflow.getName() + " period " + period.getIsoDate()
+            + " orgUnit " + ( orgUnit == null ? "null" : orgUnit.getName() )
+            + " attributeCombo " + ( attributeCombo == null ? "null" : attributeCombo.getName() ) );
+
         log.debug( "Get approval SQL: " + sql );
+
+        // ---------------------------------------------------------------------
+        // Fetch query results and process them
+        // ---------------------------------------------------------------------
 
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet( sql );
 
         Map<Integer, DataApprovalLevel> levelMap = dataApprovalLevelService.getDataApprovalLevelMap();
-        
+
         List<DataApprovalStatus> statusList = new ArrayList<>();
 
         while ( rowSet.next() )
@@ -397,15 +444,22 @@ public class HibernateDataApprovalStore
             final String aocUid = rowSet.getString( 1 );
             final String ouUid = rowSet.getString( 2 );
             final String ouName = rowSet.getString( 3 );
-            final Double highestApproved = rowSet.getDouble( 4 );
+            final String highestApproved = rowSet.getString( 4 );
             final boolean readyBelow = rowSet.getBoolean( 5 );
-            final boolean approvedAbove = rowSet.getBoolean( 6 );
+            boolean approvedAbove = rowSet.getBoolean( 6 );
 
-            final int level = highestApproved == null ? 0 : highestApproved.intValue();
-            final boolean accepted = ( highestApproved != 0 && highestApproved == level );
+            final String[] approved = highestApproved == null ? null : highestApproved.split( SQL_CONCAT );
+            final int level = approved == null ? 0 : Integer.parseInt( approved[ 0 ] ) - MAX_APPROVAL_LEVEL;
+            final boolean accepted = approved == null ? false : approved[ 1 ].substring( 0, 1 ).equalsIgnoreCase( "t" );
+            final int approvedOrgUnitId = approved == null ? 0 : Integer.parseInt( approved[ 2 ] );
 
             DataApprovalLevel approvedLevel = ( level == 0 ? null : levelMap.get( level ) ); // null if not approved
             DataApprovalLevel actionLevel = ( approvedLevel == null ? lowestApprovalLevelForOrgUnit : approvedLevel );
+
+            if ( approvedAbove && accepted && approvedAboveLevel == approvalLevelAboveUser )
+            {
+                approvedAbove = false; // Hide higher-level approval from user.
+            }
 
             if ( ouUid != null )
             {
@@ -414,7 +468,7 @@ public class HibernateDataApprovalStore
                         APPROVED_ABOVE :
                         approvedLevel == null ?
                             lowestApprovalLevelForOrgUnit == null ?
-                                orgUnitLevelAbove == 0 ?
+                                approvalLevelAboveOrgUnit == null ?
                                     UNAPPROVABLE :
                                     UNAPPROVED_ABOVE :
                                 readyBelow ?
@@ -424,8 +478,8 @@ public class HibernateDataApprovalStore
                                 ACCEPTED_HERE :
                                 APPROVED_HERE );
     
-                statusList.add( new DataApprovalStatus( state, approvedLevel, actionLevel, ouUid, ouName, aocUid, accepted, null ) );
-    
+                statusList.add( new DataApprovalStatus( state, approvedLevel, approvedOrgUnitId, actionLevel, ouUid, ouName, aocUid, accepted, null ) );
+
                 log.debug( "Get approval result: level " + level + " dataApprovalLevel " + ( actionLevel != null ? actionLevel.getLevel() : "[none]" )
                     + " approved " + ( approvedLevel != null )
                     + " readyBelow " + readyBelow + " approvedAbove " + approvedAbove
@@ -467,5 +521,30 @@ public class HibernateDataApprovalStore
         }
 
         return 0;
+    }
+
+    //TODO: Should we move these two methods to static methods in OrganisationUnit?
+    /**
+     * Returns the position within an orgUnit path at which the orgUnit UID
+     * will be found for a given orgUnitLevel.
+     *
+     * @param orgUnitLevel organization unit level.
+     * @return position within path for this org unit level.
+     */
+    private int pathPositionAtLevel( int orgUnitLevel )
+    {
+        return ( orgUnitLevel - 1 ) * 12 + 2;
+    }
+
+    /**
+     * Returns the position within an orgUnit path at which the orgUnit UID
+     * will be found for a given data approval level.
+     *
+     * @param level data approval level.
+     * @return position within path for this org unit level.
+     */
+    private int pathPositionAtLevel( DataApprovalLevel level )
+    {
+        return pathPositionAtLevel( level.getOrgUnitLevel() );
     }
 }

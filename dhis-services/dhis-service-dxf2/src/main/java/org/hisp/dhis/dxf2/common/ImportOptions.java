@@ -62,6 +62,8 @@ public class ImportOptions
     
     private boolean sendNotifications;
 
+    private boolean datasetAllowsPeriods;
+
     private boolean strictPeriods;
 
     private boolean strictCategoryOptionCombos;
@@ -129,6 +131,11 @@ public class ImportOptions
     public boolean isAsync()
     {
         return async;
+    }
+
+    public boolean isDatasetAllowsPeriods()
+    {
+        return datasetAllowsPeriods;
     }
 
     public ImportStrategy getImportStrategy()
@@ -210,6 +217,12 @@ public class ImportOptions
     public ImportOptions setDataElementIdScheme( String idScheme )
     {
         idSchemes.setDataElementIdScheme( idScheme );
+        return this;
+    }
+
+    public ImportOptions setDatasetAllowsPeriods( boolean datasetAllowsPeriods )
+    {
+        this.datasetAllowsPeriods = datasetAllowsPeriods;
         return this;
     }
 

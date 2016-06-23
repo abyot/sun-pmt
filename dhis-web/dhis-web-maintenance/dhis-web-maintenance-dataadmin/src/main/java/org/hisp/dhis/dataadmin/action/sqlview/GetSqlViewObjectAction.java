@@ -29,8 +29,19 @@ package org.hisp.dhis.dataadmin.action.sqlview;
  */
 
 import com.opensymphony.xwork2.Action;
+import org.hisp.dhis.attribute.Attribute;
+import org.hisp.dhis.attribute.AttributeService;
+import org.hisp.dhis.attribute.comparator.AttributeSortOrderComparator;
 import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.sqlview.SqlViewService;
+import org.hisp.dhis.system.util.AttributeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Removes a existing regular expression from the database.
@@ -50,6 +61,9 @@ public class GetSqlViewObjectAction
     {
         this.sqlViewService = sqlViewService;
     }
+
+    @Autowired
+    private AttributeService attributeService;
 
     // -------------------------------------------------------------------------
     // Input
@@ -73,6 +87,14 @@ public class GetSqlViewObjectAction
         return sqlViewObject;
     }
 
+    private List<Attribute> attributes;
+
+    public List<Attribute> getAttributes() { return attributes;  }
+
+    private Map<Integer, String> attributeValues = new HashMap<>();
+
+    public Map<Integer, String> getAttributeValues() { return attributeValues; }
+
     // -------------------------------------------------------------------------
     // Action
     // -------------------------------------------------------------------------
@@ -82,6 +104,12 @@ public class GetSqlViewObjectAction
         throws Exception
     {
         sqlViewObject = sqlViewService.getSqlView( id );
+
+        attributeValues = AttributeUtils.getAttributeValueMap( sqlViewObject.getAttributeValues() );
+
+        attributes = new ArrayList<>( attributeService.getAttributes( SqlView.class ) );
+
+        Collections.sort( attributes, AttributeSortOrderComparator.INSTANCE );
 
         return SUCCESS;
     }

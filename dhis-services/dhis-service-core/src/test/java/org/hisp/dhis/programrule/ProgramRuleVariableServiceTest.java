@@ -88,9 +88,9 @@ public class ProgramRuleVariableServiceTest
     @Test
     public void testAddGet()
     {
-        ProgramRuleVariable variableA = new ProgramRuleVariable( "RuleVariableA", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, null );
-        ProgramRuleVariable variableB = new ProgramRuleVariable( "RuleVariableB", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, null );
-        ProgramRuleVariable variableC = new ProgramRuleVariable( "RuleVariableC", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, null );
+        ProgramRuleVariable variableA = new ProgramRuleVariable( "RuleVariableA", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, false, null );
+        ProgramRuleVariable variableB = new ProgramRuleVariable( "RuleVariableB", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, true, null );
+        ProgramRuleVariable variableC = new ProgramRuleVariable( "RuleVariableC", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, false, null );
         
         int idA = variableService.addProgramRuleVariable( variableA );
         int idB = variableService.addProgramRuleVariable( variableB );
@@ -103,11 +103,11 @@ public class ProgramRuleVariableServiceTest
     @Test
     public void testGetByProgram()
     {
-        ProgramRuleVariable variableD = new ProgramRuleVariable( "RuleVariableD", programB, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, null );
-        ProgramRuleVariable variableE = new ProgramRuleVariable( "RuleVariableE", programB, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, null );
-        ProgramRuleVariable variableF = new ProgramRuleVariable( "RuleVariableF", programB, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, null );
+        ProgramRuleVariable variableD = new ProgramRuleVariable( "RuleVariableD", programB, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, false, null );
+        ProgramRuleVariable variableE = new ProgramRuleVariable( "RuleVariableE", programB, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, null, null );
+        ProgramRuleVariable variableF = new ProgramRuleVariable( "RuleVariableF", programB, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, null, null );
          //Add a var that is not part of programB....
-        ProgramRuleVariable variableG = new ProgramRuleVariable( "RuleVariableG", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, null );
+        ProgramRuleVariable variableG = new ProgramRuleVariable( "RuleVariableG", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataElementA, null, null );
         
         variableService.addProgramRuleVariable( variableD );
         variableService.addProgramRuleVariable( variableE );
@@ -128,7 +128,7 @@ public class ProgramRuleVariableServiceTest
     @Test
     public void testUpdate()
     {
-        ProgramRuleVariable variableH = new ProgramRuleVariable( "RuleVariableH", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM_STAGE, null, dataElementA, null );
+        ProgramRuleVariable variableH = new ProgramRuleVariable( "RuleVariableH", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM_STAGE, null, dataElementA, false, null );
         
         int idH = variableService.addProgramRuleVariable( variableH );
         
@@ -146,8 +146,8 @@ public class ProgramRuleVariableServiceTest
     @Test
     public void testDeleteProgramRuleVariable()
     {
-        ProgramRuleVariable ruleVariableI = new ProgramRuleVariable( "RuleVariableI", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, null );
-        ProgramRuleVariable ruleVariableJ = new ProgramRuleVariable( "RuleVariableJ", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, null );
+        ProgramRuleVariable ruleVariableI = new ProgramRuleVariable( "RuleVariableI", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataElementA, null, null );
+        ProgramRuleVariable ruleVariableJ = new ProgramRuleVariable( "RuleVariableJ", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, attributeA, null, false, null );
 
         int idI = variableService.addProgramRuleVariable( ruleVariableI );
         int idJ = variableService.addProgramRuleVariable( ruleVariableJ );

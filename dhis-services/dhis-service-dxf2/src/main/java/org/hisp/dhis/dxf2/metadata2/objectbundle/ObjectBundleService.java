@@ -29,7 +29,6 @@ package org.hisp.dhis.dxf2.metadata2.objectbundle;
  */
 
 import org.hisp.dhis.dxf2.metadata2.objectbundle.feedback.ObjectBundleCommitReport;
-import org.hisp.dhis.dxf2.metadata2.objectbundle.feedback.ObjectBundleValidationReport;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -43,13 +42,6 @@ public interface ObjectBundleService
      * @return Configured ObjectBundle instance
      */
     ObjectBundle create( ObjectBundleParams params );
-
-    /**
-     * Validate object bundle
-     *
-     * @param bundle Bundle to validate
-     */
-    ObjectBundleValidationReport validate( ObjectBundle bundle );
 
     /**
      * Commits objects from bundle into persistence store if bundle mode COMMIT is enabled.

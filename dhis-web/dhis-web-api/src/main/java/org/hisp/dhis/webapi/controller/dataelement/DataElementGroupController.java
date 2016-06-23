@@ -29,7 +29,6 @@ package org.hisp.dhis.webapi.controller.dataelement;
  */
 
 import com.google.common.collect.Lists;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.Pager;
 import org.hisp.dhis.common.PagerUtils;
@@ -69,14 +68,12 @@ public class DataElementGroupController
     private DataElementCategoryService dataElementCategoryService;
 
     @RequestMapping( value = "/{uid}/operands", method = RequestMethod.GET )
-    public String getOperands( @PathVariable( "uid" ) String uid,
-        @RequestParam Map<String, String> parameters,
-        TranslateParams translateParams,
-        Model model, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    public String getOperands( @PathVariable( "uid" ) String uid, @RequestParam Map<String, String> parameters, Model model,
+        TranslateParams translateParams, HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         WebOptions options = new WebOptions( parameters );
+        setUserContext( translateParams );
         List<DataElementGroup> dataElementGroups = getEntity( uid, NO_WEB_OPTIONS );
-        translate( dataElementGroups, translateParams );
 
         if ( dataElementGroups.isEmpty() )
         {
@@ -85,9 +82,6 @@ public class DataElementGroupController
 
         WebMetadata metadata = new WebMetadata();
         List<DataElementOperand> dataElementOperands = Lists.newArrayList( dataElementCategoryService.getOperands( dataElementGroups.get( 0 ).getMembers() ) );
-
-        Collections.sort( dataElementOperands );
-
         Collections.sort( dataElementOperands );
 
         metadata.setDataElementOperands( dataElementOperands );
@@ -110,15 +104,12 @@ public class DataElementGroupController
 
     @RequestMapping( value = "/{uid}/operands/query/{q}", method = RequestMethod.GET )
     public String getOperandsByQuery( @PathVariable( "uid" ) String uid,
-        @PathVariable( "q" ) String q,
-        @RequestParam Map<String, String> parameters,
-        TranslateParams translateParams,
-        Model model, HttpServletRequest request,
-        HttpServletResponse response ) throws Exception
+        @PathVariable( "q" ) String q, @RequestParam Map<String, String> parameters, TranslateParams translateParams, Model model,
+        HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         WebOptions options = new WebOptions( parameters );
+        setUserContext( translateParams );
         List<DataElementGroup> dataElementGroups = getEntity( uid, NO_WEB_OPTIONS );
-        translate( dataElementGroups, translateParams );
 
         if ( dataElementGroups.isEmpty() )
         {

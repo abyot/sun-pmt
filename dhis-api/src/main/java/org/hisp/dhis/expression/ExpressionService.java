@@ -28,12 +28,7 @@ package org.hisp.dhis.expression;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
+import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.ListMap;
 import org.hisp.dhis.dataelement.DataElement;
@@ -43,6 +38,12 @@ import org.hisp.dhis.indicator.Indicator;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.validation.ValidationRule;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Expressions are mathematical formulas and can contain references to various
@@ -254,6 +255,16 @@ public interface ExpressionService
      * @return A Set of Operands.
      */
     Set<DataElementOperand> getOperandsInExpression( String expression );
+
+    /**
+     * Returns all data elements and data element operands included in an expression string.
+     * This includes all of the operands, as in getOperandsInExpression as well as
+     * data elements without any modifiers, bundled as a DataElementOperand object.
+     *
+     * @param expression The expression string.
+     * @return A Set of Operands.
+     */
+    public Set<BaseDimensionalItemObject> getDataInputsInExpression( String expression );
 
     /**
      * Returns all aggregates included in an expression string. An aggregate has the form

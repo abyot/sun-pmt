@@ -94,12 +94,10 @@ public class JdbcEventAnalyticsTableManager
         {
             Period period = PartitionUtils.getPeriod( calendar, year );
             
-            List<Integer> programs = getDataPrograms( period );
+            List<Program> programs = idObjectManager.getAllNoAcl( Program.class );
             
-            for ( Integer id : programs )
+            for ( Program program : programs )
             {
-                Program program = idObjectManager.getNoAcl( Program.class, id );
-                
                 AnalyticsTable table = new AnalyticsTable( baseName, null, period, program );
                 List<AnalyticsTableColumn> dimensionColumns = getDimensionColumns( table );
                 table.setDimensionColumns( dimensionColumns );
@@ -362,24 +360,7 @@ public class JdbcEventAnalyticsTableManager
         
         return jdbcTemplate.queryForList( sql, Integer.class );
     }
-    
-    private List<Integer> getDataPrograms( Period period )
-    {
-        final String start = DateUtils.getMediumDateString( period.getStartDate() );
-        final String end = DateUtils.getMediumDateString( period.getEndDate() );
         
-        final String sql = 
-            "select distinct pi.programid " +
-            "from programstageinstance psi " +
-            "inner join programinstance pi on psi.programinstanceid = pi.programinstanceid " +
-            "where psi.executiondate >= '" + start + "' " + 
-            "and psi.executiondate <= '" + end + "' " +
-            "and psi.organisationunitid is not null " +
-            "and psi.executiondate is not null";
-        
-        return jdbcTemplate.queryForList( sql, Integer.class );
-    }
-    
     @Override
     @Async
     public Future<?> applyAggregationLevels( ConcurrentLinkedQueue<AnalyticsTable> tables,

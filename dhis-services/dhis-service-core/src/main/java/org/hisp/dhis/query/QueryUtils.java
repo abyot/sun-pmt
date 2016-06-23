@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import org.hisp.dhis.system.util.DateUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -43,13 +44,13 @@ import java.util.List;
  */
 public final class QueryUtils
 {
-    static public <T> T getValue( Class<T> klass, Object objectValue )
+    static public <T> T parseValue( Class<T> klass, Object objectValue )
     {
-        return getValue( klass, null, objectValue );
+        return parseValue( klass, null, objectValue );
     }
 
-    @SuppressWarnings( { "rawtypes", "unchecked" } )
-    static public <T> T getValue( Class<T> klass, Class<?> secondaryKlass, Object objectValue )
+    @SuppressWarnings( "unchecked" )
+    static public <T> T parseValue( Class<T> klass, Class<?> secondaryKlass, Object objectValue )
     {
         if ( klass.isInstance( objectValue ) )
         {
@@ -71,6 +72,7 @@ public final class QueryUtils
             }
             catch ( Exception ignored )
             {
+                throw new QueryParserException( "Unable to parse `" + value + "` as `Boolean`." );
             }
         }
         else if ( Integer.class.isAssignableFrom( klass ) )
@@ -81,6 +83,7 @@ public final class QueryUtils
             }
             catch ( Exception ignored )
             {
+                throw new QueryParserException( "Unable to parse `" + value + "` as `Integer`." );
             }
         }
         else if ( Float.class.isAssignableFrom( klass ) )
@@ -91,6 +94,7 @@ public final class QueryUtils
             }
             catch ( Exception ignored )
             {
+                throw new QueryParserException( "Unable to parse `" + value + "` as `Float`." );
             }
         }
         else if ( Double.class.isAssignableFrom( klass ) )
@@ -101,19 +105,28 @@ public final class QueryUtils
             }
             catch ( Exception ignored )
             {
+                throw new QueryParserException( "Unable to parse `" + value + "` as `Double`." );
             }
         }
         else if ( Date.class.isAssignableFrom( klass ) )
         {
-            return (T) DateUtils.parseDate( value );
+            try
+            {
+                Date date = DateUtils.parseDate( value );
+                return (T) date;
+            }
+            catch ( Exception ex )
+            {
+                throw new QueryParserException( "Unable to parse `" + value + "` as `Date`." );
+            }
         }
         else if ( Enum.class.isAssignableFrom( klass ) )
         {
-            Optional<? extends Enum<?>> enumValue = (Optional<? extends Enum<?>>) Enums.getIfPresent( (Class<? extends Enum>) klass, value );
+            T enumValue = getEnumValue( klass, value );
 
-            if ( enumValue.isPresent() )
+            if ( enumValue != null )
             {
-                return (T) enumValue.get();
+                return enumValue;
             }
         }
         else if ( Collection.class.isAssignableFrom( klass ) )
@@ -132,7 +145,7 @@ public final class QueryUtils
 
                 for ( String item : items )
                 {
-                    Object convertedValue = getValue( secondaryKlass, null, item );
+                    Object convertedValue = parseValue( secondaryKlass, null, item );
 
                     if ( convertedValue != null )
                     {
@@ -147,6 +160,28 @@ public final class QueryUtils
         }
 
         return null;
+    }
+
+    /**
+     * Try and parse `value` as Enum. Throws `QueryException` if invalid value.
+     *
+     * @param klass Enum class
+     * @param value value
+     */
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
+    public static <T> T getEnumValue( Class<T> klass, String value )
+    {
+        Optional<? extends Enum<?>> enumValue = Enums.getIfPresent( (Class<? extends Enum>) klass, value );
+
+        if ( enumValue.isPresent() )
+        {
+            return (T) enumValue.get();
+        }
+        else
+        {
+            Object[] possibleValues = klass.getEnumConstants();
+            throw new QueryParserException( "Unable to parse `" + value + "` as `" + klass + "`, available values are: " + Arrays.toString( possibleValues ) );
+        }
     }
 
     private QueryUtils()

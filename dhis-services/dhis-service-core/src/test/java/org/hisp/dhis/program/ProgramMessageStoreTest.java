@@ -33,7 +33,6 @@ import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.program.message.DeliveryChannel;
-import org.hisp.dhis.program.message.ProgramMessageCategory;
 import org.hisp.dhis.program.message.ProgramMessageQueryParams;
 import org.hisp.dhis.program.message.ProgramMessage;
 import org.hisp.dhis.program.message.ProgramMessageRecipients;
@@ -64,8 +63,6 @@ public class ProgramMessageStoreTest
     private ProgramStageInstance psiA;
 
     private TrackedEntityInstance teiA;
-
-    private ProgramMessageCategory messageCategory = ProgramMessageCategory.OUTGOING;
 
     private ProgramMessageStatus messageStatus = ProgramMessageStatus.SENT;
 
@@ -125,22 +122,25 @@ public class ProgramMessageStoreTest
 
         Set<OrganisationUnit> ouSet = new HashSet<>();
         ouSet.add( ouA );
+
+        Set<String> ouUids = new HashSet<>();
+        ouUids.add( ouA.getUid() );
         // ouSet.add( ouB );
 
         teiA = createTrackedEntityInstance( 'Z', ouA );
         teiService.addTrackedEntityInstance( teiA );
 
         recipientsA = new ProgramMessageRecipients();
-        recipientsA.setOrganisationUnitUid( ouA.getUid() );
-        recipientsA.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsA.setOrganisationUnit( ouA );
+        recipientsA.setTrackedEntityInstance( teiA );
 
         recipientsB = new ProgramMessageRecipients();
-        recipientsB.setOrganisationUnitUid( ouA.getUid() );
-        recipientsB.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsB.setOrganisationUnit( ouA );
+        recipientsB.setTrackedEntityInstance( teiA );
 
         recipientsC = new ProgramMessageRecipients();
-        recipientsC.setOrganisationUnitUid( ouA.getUid() );
-        recipientsC.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsC.setOrganisationUnit( ouA );
+        recipientsC.setTrackedEntityInstance( teiA );
 
         Set<String> phoneNumberListA = new HashSet<>();
         phoneNumberListA.add( msisdn );
@@ -153,14 +153,13 @@ public class ProgramMessageStoreTest
         Set<String> phoneNumberListC = new HashSet<>();
         phoneNumberListC.add( msisdn );
         recipientsC.setPhoneNumbers( phoneNumberListC );
-        
+
         channels.add( DeliveryChannel.SMS );
 
         pmsgA = new ProgramMessage();
         pmsgA.setText( text );
         pmsgA.setSubject( subject );
         pmsgA.setRecipients( recipientsA );
-        pmsgA.setMessageCategory( messageCategory );
         pmsgA.setMessageStatus( messageStatus );
         pmsgA.setDeliveryChannels( channels );
 
@@ -168,7 +167,6 @@ public class ProgramMessageStoreTest
         pmsgB.setText( text );
         pmsgB.setSubject( subject );
         pmsgB.setRecipients( recipientsB );
-        pmsgB.setMessageCategory( messageCategory );
         pmsgB.setMessageStatus( messageStatus );
         pmsgB.setDeliveryChannels( channels );
 
@@ -176,7 +174,6 @@ public class ProgramMessageStoreTest
         pmsgC.setText( text );
         pmsgC.setSubject( subject );
         pmsgC.setRecipients( recipientsC );
-        pmsgC.setMessageCategory( messageCategory );
         pmsgC.setMessageStatus( messageStatus );
         pmsgC.setDeliveryChannels( channels );
 
@@ -189,10 +186,8 @@ public class ProgramMessageStoreTest
         pmsgC.setUid( uidC );
 
         params = new ProgramMessageQueryParams();
-        params.setOrganisationUnit( ouSet );
+        params.setOrganisationUnit( ouUids );
         params.setProgramStageInstance( psiA );
-        params.setCategory( messageCategory );
-        params.setDeliveryChannels( channels );
         params.setMessageStatus( messageStatus );
 
     }

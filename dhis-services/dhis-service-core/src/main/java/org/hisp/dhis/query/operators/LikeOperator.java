@@ -44,7 +44,7 @@ public class LikeOperator extends Operator
 
     private final MatchMode matchMode;
 
-    public LikeOperator( String arg, boolean caseSensitive, org.hisp.dhis.query.operators.MatchMode matchMode )
+    public LikeOperator( Object arg, boolean caseSensitive, org.hisp.dhis.query.operators.MatchMode matchMode )
     {
         super( Typed.from( String.class ), arg );
         this.caseSensitive = caseSensitive;

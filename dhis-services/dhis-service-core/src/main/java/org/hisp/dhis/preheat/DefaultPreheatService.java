@@ -29,13 +29,11 @@ package org.hisp.dhis.preheat;
  */
 
 import com.google.common.collect.Lists;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeService;
-import org.hisp.dhis.attribute.AttributeValue;
 import org.hisp.dhis.common.AnalyticalObject;
 import org.hisp.dhis.common.BaseAnalyticalObject;
 import org.hisp.dhis.common.BaseIdentifiableObject;
@@ -43,20 +41,14 @@ import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.common.DataDimensionItem;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.commons.timer.SystemTimer;
 import org.hisp.dhis.commons.timer.Timer;
 import org.hisp.dhis.dataelement.DataElementCategoryDimension;
 import org.hisp.dhis.dataelement.DataElementOperand;
-import org.hisp.dhis.feedback.ErrorCode;
-import org.hisp.dhis.feedback.ErrorReport;
-import org.hisp.dhis.feedback.ObjectReport;
-import org.hisp.dhis.feedback.TypeReport;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodStore;
-import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.query.QueryService;
 import org.hisp.dhis.query.Restrictions;
@@ -79,7 +71,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -637,7 +628,6 @@ public class DefaultPreheatService implements PreheatService
                                 catch ( InstantiationException | IllegalAccessException ignored )
                                 {
                                 }
-
                             }
                         }
 
@@ -648,352 +638,6 @@ public class DefaultPreheatService implements PreheatService
         }
 
         return refs;
-    }
-
-    @Override
-    public TypeReport checkReferences( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier )
-    {
-        TypeReport typeReport = new TypeReport( klass );
-
-        if ( objects.isEmpty() )
-        {
-            return typeReport;
-        }
-
-        for ( int idx = 0; idx < objects.size(); idx++ )
-        {
-            IdentifiableObject object = objects.get( idx );
-            List<PreheatErrorReport> errorReports = checkReferences( klass, object, preheat, identifier );
-
-            if ( errorReports.isEmpty() ) continue;
-
-            ObjectReport objectReport = new ObjectReport( object.getClass(), idx );
-            objectReport.addErrorReports( errorReports );
-            typeReport.addObjectReport( objectReport );
-        }
-
-        return typeReport;
-    }
-
-    @Override
-    public List<PreheatErrorReport> checkReferences( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier )
-    {
-        List<PreheatErrorReport> preheatErrorReports = new ArrayList<>();
-
-        if ( object == null )
-        {
-            return preheatErrorReports;
-        }
-
-        Schema schema = schemaService.getDynamicSchema( object.getClass() );
-        schema.getProperties().stream()
-            .filter( p -> p.isPersisted() && p.isOwner() && (PropertyType.REFERENCE == p.getPropertyType() || PropertyType.REFERENCE == p.getItemPropertyType()) )
-            .forEach( p -> {
-                if ( skipCheck( p.getKlass() ) || skipCheck( p.getItemKlass() ) )
-                {
-                    return;
-                }
-
-                if ( !p.isCollection() )
-                {
-                    IdentifiableObject refObject = ReflectionUtils.invokeMethod( object, p.getGetterMethod() );
-                    IdentifiableObject ref = preheat.get( identifier, refObject );
-
-                    if ( ref == null && refObject != null && !Preheat.isDefaultClass( refObject.getClass() ) )
-                    {
-                        preheatErrorReports.add( new PreheatErrorReport( identifier, object.getClass(), ErrorCode.E5002,
-                            identifier.getIdentifiersWithName( refObject ), identifier.getIdentifiersWithName( object ), p.getName() ) );
-                    }
-                }
-                else
-                {
-                    Collection<IdentifiableObject> objects = ReflectionUtils.newCollectionInstance( p.getKlass() );
-                    Collection<IdentifiableObject> refObjects = ReflectionUtils.invokeMethod( object, p.getGetterMethod() );
-
-                    for ( IdentifiableObject refObject : refObjects )
-                    {
-                        if ( Preheat.isDefault( refObject ) ) continue;
-
-                        IdentifiableObject ref = preheat.get( identifier, refObject );
-
-                        if ( ref == null && refObject != null && !Preheat.isDefaultClass( refObject.getClass() ) )
-                        {
-                            preheatErrorReports.add( new PreheatErrorReport( identifier, object.getClass(), ErrorCode.E5002,
-                                identifier.getIdentifiersWithName( refObject ), identifier.getIdentifiersWithName( object ), p.getCollectionName() ) );
-                        }
-                        else
-                        {
-                            objects.add( refObject );
-                        }
-                    }
-
-                    ReflectionUtils.invokeMethod( object, p.getSetterMethod(), objects );
-                }
-            } );
-
-        if ( schema.havePersistedProperty( "attributeValues" ) )
-        {
-            object.getAttributeValues().stream()
-                .filter( attributeValue -> attributeValue.getAttribute() != null && preheat.get( identifier, attributeValue.getAttribute() ) == null )
-                .forEach( attributeValue -> preheatErrorReports.add( new PreheatErrorReport( identifier, object.getClass(), ErrorCode.E5002,
-                    identifier.getIdentifiersWithName( attributeValue.getAttribute() ), identifier.getIdentifiersWithName( object ), "attributeValues" ) ) );
-        }
-
-        if ( schema.havePersistedProperty( "userGroupAccesses" ) )
-        {
-            object.getUserGroupAccesses().stream()
-                .filter( userGroupAccess -> userGroupAccess.getUserGroup() != null && preheat.get( identifier, userGroupAccess.getUserGroup() ) == null )
-                .forEach( attributeValue -> preheatErrorReports.add( new PreheatErrorReport( identifier, object.getClass(), ErrorCode.E5002,
-                    identifier.getIdentifiersWithName( attributeValue.getUserGroup() ), identifier.getIdentifiersWithName( object ), "userGroupAccesses" ) ) );
-        }
-
-        return preheatErrorReports;
-    }
-
-    @Override
-    public TypeReport checkUniqueness( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier )
-    {
-        TypeReport typeReport = new TypeReport( klass );
-
-        if ( objects.isEmpty() )
-        {
-            return typeReport;
-        }
-
-        Iterator<IdentifiableObject> iterator = objects.iterator();
-        int idx = 0;
-
-        while ( iterator.hasNext() )
-        {
-            IdentifiableObject object = iterator.next();
-            List<ErrorReport> errorReports = new ArrayList<>();
-
-            if ( User.class.isInstance( object ) )
-            {
-                User user = (User) object;
-                errorReports.addAll( checkUniqueness( User.class, user, preheat, identifier ) );
-                errorReports.addAll( checkUniqueness( UserCredentials.class, user.getUserCredentials(), preheat, identifier ) );
-            }
-            else
-            {
-                errorReports = checkUniqueness( klass, object, preheat, identifier );
-            }
-
-
-            if ( !errorReports.isEmpty() )
-            {
-                ObjectReport objectReport = new ObjectReport( object.getClass(), idx );
-                objectReport.addErrorReports( errorReports );
-                typeReport.addObjectReport( objectReport );
-                typeReport.getStats().incIgnored();
-
-                iterator.remove();
-            }
-
-            idx++;
-        }
-
-        return typeReport;
-    }
-
-    @Override
-    public List<ErrorReport> checkUniqueness( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier )
-    {
-        List<ErrorReport> errorReports = new ArrayList<>();
-
-        if ( object == null || Preheat.isDefault( object ) ) return errorReports;
-
-        if ( !preheat.getUniquenessMap().containsKey( object.getClass() ) )
-        {
-            preheat.getUniquenessMap().put( object.getClass(), new HashMap<>() );
-        }
-
-        Map<String, Map<Object, String>> uniquenessMap = preheat.getUniquenessMap().get( object.getClass() );
-
-        Schema schema = schemaService.getDynamicSchema( object.getClass() );
-        List<Property> uniqueProperties = schema.getProperties().stream()
-            .filter( p -> p.isPersisted() && p.isOwner() && p.isUnique() && p.isSimple() )
-            .collect( Collectors.toList() );
-
-        uniqueProperties.forEach( property -> {
-            if ( !uniquenessMap.containsKey( property.getName() ) )
-            {
-                uniquenessMap.put( property.getName(), new HashMap<>() );
-            }
-
-            Object value = ReflectionUtils.invokeMethod( object, property.getGetterMethod() );
-
-            if ( value != null )
-            {
-                String persistedUid = uniquenessMap.get( property.getName() ).get( value );
-
-                if ( persistedUid != null )
-                {
-                    if ( !object.getUid().equals( persistedUid ) )
-                    {
-                        errorReports.add( new ErrorReport( object.getClass(), ErrorCode.E5003, property.getName(), value,
-                            identifier.getIdentifiersWithName( object ), persistedUid ) );
-                    }
-                }
-                else
-                {
-                    uniquenessMap.get( property.getName() ).put( value, object.getUid() );
-                }
-            }
-        } );
-
-        return errorReports;
-    }
-
-    @Override
-    public TypeReport checkMandatoryAttributes( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier )
-    {
-        TypeReport typeReport = new TypeReport( klass );
-        Schema schema = schemaService.getDynamicSchema( klass );
-
-        if ( objects.isEmpty() || !schema.havePersistedProperty( "attributeValues" ) )
-        {
-            return typeReport;
-        }
-
-        Iterator<IdentifiableObject> iterator = objects.iterator();
-        int idx = 0;
-
-        while ( iterator.hasNext() )
-        {
-            IdentifiableObject object = iterator.next();
-            List<ErrorReport> errorReports = checkMandatoryAttributes( klass, object, preheat, identifier );
-
-            if ( !errorReports.isEmpty() )
-            {
-                ObjectReport objectReport = new ObjectReport( object.getClass(), idx );
-                objectReport.addErrorReports( errorReports );
-                typeReport.addObjectReport( objectReport );
-                typeReport.getStats().incIgnored();
-
-                iterator.remove();
-            }
-
-            idx++;
-        }
-
-        return typeReport;
-    }
-
-    @Override
-    public List<ErrorReport> checkMandatoryAttributes( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier )
-    {
-        List<ErrorReport> errorReports = new ArrayList<>();
-
-        if ( object == null || Preheat.isDefault( object ) || !preheat.getMandatoryAttributes().containsKey( klass ) )
-        {
-            return errorReports;
-        }
-
-        Set<AttributeValue> attributeValues = object.getAttributeValues();
-        Set<String> mandatoryAttributes = new HashSet<>( preheat.getMandatoryAttributes().get( klass ) ); // make copy for modification
-
-        if ( mandatoryAttributes.isEmpty() )
-        {
-            return errorReports;
-        }
-
-        attributeValues.forEach( attributeValue -> mandatoryAttributes.remove( attributeValue.getAttribute().getUid() ) );
-        mandatoryAttributes.forEach( att -> errorReports.add( new ErrorReport( Attribute.class, ErrorCode.E4011, att ) ) );
-
-        return errorReports;
-    }
-
-    @Override
-    public TypeReport checkUniqueAttributes( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier )
-    {
-        TypeReport typeReport = new TypeReport( klass );
-        Schema schema = schemaService.getDynamicSchema( klass );
-
-        if ( objects.isEmpty() || !schema.havePersistedProperty( "attributeValues" ) )
-        {
-            return typeReport;
-        }
-
-        Iterator<IdentifiableObject> iterator = objects.iterator();
-        int idx = 0;
-
-        while ( iterator.hasNext() )
-        {
-            IdentifiableObject object = iterator.next();
-            List<ErrorReport> errorReports = checkUniqueAttributes( klass, object, preheat, identifier );
-
-            if ( !errorReports.isEmpty() )
-            {
-                ObjectReport objectReport = new ObjectReport( object.getClass(), idx );
-                objectReport.addErrorReports( errorReports );
-                typeReport.addObjectReport( objectReport );
-                typeReport.getStats().incIgnored();
-
-                iterator.remove();
-            }
-
-            idx++;
-        }
-
-        return typeReport;
-    }
-
-    @Override
-    public List<ErrorReport> checkUniqueAttributes( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier )
-    {
-        List<ErrorReport> errorReports = new ArrayList<>();
-
-        if ( object == null || Preheat.isDefault( object ) || !preheat.getUniqueAttributes().containsKey( klass ) )
-        {
-            return errorReports;
-        }
-
-        Set<AttributeValue> attributeValues = object.getAttributeValues();
-        List<String> uniqueAttributes = new ArrayList<>( preheat.getUniqueAttributes().get( klass ) ); // make copy for modification
-
-        if ( !preheat.getUniqueAttributeValues().containsKey( klass ) )
-        {
-            preheat.getUniqueAttributeValues().put( klass, new HashMap<>() );
-        }
-
-        Map<String, Map<String, String>> uniqueAttributeValues = preheat.getUniqueAttributeValues().get( klass );
-
-        if ( uniqueAttributes.isEmpty() )
-        {
-            return errorReports;
-        }
-
-        attributeValues.forEach( attributeValue -> {
-            Attribute attribute = preheat.get( identifier, attributeValue.getAttribute() );
-
-            if ( attribute == null || !attribute.isUnique() || StringUtils.isEmpty( attributeValue.getValue() ) )
-            {
-                return;
-            }
-
-            if ( uniqueAttributeValues.containsKey( attribute.getUid() ) )
-            {
-                Map<String, String> values = uniqueAttributeValues.get( attribute.getUid() );
-
-                if ( values.containsKey( attributeValue.getValue() ) && !values.get( attributeValue.getValue() ).equals( object.getUid() ) )
-                {
-                    errorReports.add( new ErrorReport( Attribute.class, ErrorCode.E4009, IdentifiableObjectUtils.getDisplayName( attribute ),
-                        attributeValue.getValue() ) );
-                }
-                else
-                {
-                    uniqueAttributeValues.get( attribute.getUid() ).put( attributeValue.getValue(), object.getUid() );
-                }
-            }
-            else
-            {
-                uniqueAttributeValues.put( attribute.getUid(), new HashMap<>() );
-                uniqueAttributeValues.get( attribute.getUid() ).put( attributeValue.getValue(), object.getUid() );
-            }
-        } );
-
-        return errorReports;
     }
 
     @Override
@@ -1054,6 +698,17 @@ public class DefaultPreheatService implements PreheatService
                     ReflectionUtils.invokeMethod( object, p.getSetterMethod(), objects );
                 }
             } );
+    }
+
+    @Override
+    public void refresh( IdentifiableObject object )
+    {
+        PreheatParams preheatParams = new PreheatParams();
+        preheatParams.setUser( currentUserService.getCurrentUser() );
+        preheatParams.addObject( object );
+
+        Preheat preheat = preheat( preheatParams );
+        connectReferences( object, preheat, PreheatIdentifier.UID );
     }
 
     //-----------------------------------------------------------------------------------
@@ -1135,13 +790,6 @@ public class DefaultPreheatService implements PreheatService
         }
 
         return userCredentialsMap;
-    }
-
-    private boolean skipCheck( Class<?> klass )
-    {
-        return klass != null && (
-            UserCredentials.class.isAssignableFrom( klass ) || DataElementOperand.class.isAssignableFrom( klass )
-                || Period.class.isAssignableFrom( klass ) || PeriodType.class.isAssignableFrom( klass ));
     }
 
     private boolean skipConnect( Class<?> klass )

@@ -29,6 +29,7 @@ package org.hisp.dhis.dataapproval;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -135,7 +136,8 @@ public class DefaultDataApprovalService
             }
             else if ( status.getState().isApproved() )
             {
-                if ( da.getDataApprovalLevel().getLevel() >= status.getActionLevel().getLevel() )
+                if ( da.getDataApprovalLevel() != null && status.getActionLevel() != null &&
+                    da.getDataApprovalLevel().getLevel() >= status.getActionLevel().getLevel() )
                 {
                     continue; // Already approved at or above the level requested
                 }
@@ -364,6 +366,62 @@ public class DefaultDataApprovalService
     }
 
     @Override
+    public DataApproval getDataApproval( DataApproval dataApproval )
+    {
+        return dataApproval == null ? null : dataApprovalStore.getDataApproval( dataApproval );
+    }
+
+    @Override
+    public DataApproval lowestApproval( DataApproval dataApproval )
+    {
+        OrganisationUnit orgUnit = dataApproval.getOrganisationUnit();
+
+        List<DataApprovalLevel> approvalLevels = dataApproval.getWorkflow().getSortedLevels();
+
+        Collections.reverse( approvalLevels );
+
+        DataApproval da = null;
+
+        for ( DataApprovalLevel approvalLevel : approvalLevels )
+        {
+            if ( approvalLevel.getOrgUnitLevel() <= orgUnit.getLevel() )
+            {
+                if ( approvalLevel.getOrgUnitLevel() < orgUnit.getLevel() )
+                {
+                    orgUnit = orgUnit.getAncestors().get( approvalLevel.getOrgUnitLevel() - 1 );
+                }
+                da = new DataApproval( approvalLevel, dataApproval.getWorkflow(),
+                    dataApproval.getPeriod(), orgUnit, dataApproval.getAttributeOptionCombo() );
+
+                break;
+            }
+        }
+
+        return da;
+    }
+
+    @Override
+    public boolean isApproved( DataApprovalWorkflow workflow, Period period,
+        OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo )
+    {
+        if ( workflow == null )
+        {
+            return false;
+        }
+
+        DataApproval da = new DataApproval ( null, workflow, period, organisationUnit, attributeOptionCombo );
+
+        da = lowestApproval ( da );
+
+        if ( da != null )
+        {
+            da = getDataApproval( da );
+        }
+
+        return da != null;
+    }
+
+    @Override
     public DataApprovalStatus getDataApprovalStatus( DataApprovalWorkflow workflow, Period period,
         OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo )
     {
@@ -380,13 +438,18 @@ public class DefaultDataApprovalService
         {
             DataApprovalStatus status = statuses.get( 0 );
 
-            DataApproval da = dataApprovalStore.getDataApproval( status.getActionLevel(),
-                workflow, period, organisationUnit, attributeOptionCombo );
-
-            if ( da != null )
+            if ( status.getApprovedLevel() != null )
             {
-                status.setCreated( da.getCreated() );
-                status.setCreator( da.getCreator() );
+                OrganisationUnit approvedOrgUnit = organisationUnitService.getOrganisationUnit( status.getApprovedOrgUnitId() );
+
+                DataApproval da = dataApprovalStore.getDataApproval( status.getActionLevel(),
+                    workflow, period, approvedOrgUnit, attributeOptionCombo );
+
+                if ( da != null )
+                {
+                    status.setCreated( da.getCreated() );
+                    status.setCreator( da.getCreator() );
+                }
             }
 
             return status;

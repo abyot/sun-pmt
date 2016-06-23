@@ -29,6 +29,7 @@ package org.hisp.dhis.query.operators;
  */
 
 import org.hibernate.criterion.Criterion;
+import org.hisp.dhis.query.QueryParserException;
 import org.hisp.dhis.query.QueryUtils;
 import org.hisp.dhis.query.Type;
 import org.hisp.dhis.query.Typed;
@@ -59,6 +60,18 @@ public abstract class Operator
         this( typed );
         this.argumentType = new Type( arg );
         this.args.add( arg );
+        validate();
+    }
+
+    private void validate()
+    {
+        for ( Object arg : args )
+        {
+            if ( !isValid( arg.getClass() ) )
+            {
+                throw new QueryParserException( "Value `" + arg + "` of type `" + arg.getClass().getSimpleName() + "` is not supported by this operator." );
+            }
+        }
     }
 
     public Operator( Typed typed, Object... args )
@@ -75,12 +88,12 @@ public abstract class Operator
 
     protected <T> T getValue( Class<T> klass, Class<?> secondaryClass, int idx )
     {
-        return QueryUtils.getValue( klass, secondaryClass, args.get( idx ) );
+        return QueryUtils.parseValue( klass, secondaryClass, args.get( idx ) );
     }
 
     protected <T> T getValue( Class<T> klass, int idx )
     {
-        return QueryUtils.getValue( klass, null, args.get( idx ) );
+        return QueryUtils.parseValue( klass, null, args.get( idx ) );
     }
 
     protected <T> T getValue( Class<T> klass )
@@ -90,12 +103,12 @@ public abstract class Operator
 
     protected <T> T getValue( Class<T> klass, Class<?> secondaryClass, Object value )
     {
-        return QueryUtils.getValue( klass, secondaryClass, value );
+        return QueryUtils.parseValue( klass, secondaryClass, value );
     }
 
     protected <T> T getValue( Class<T> klass, Object value )
     {
-        return QueryUtils.getValue( klass, value );
+        return QueryUtils.parseValue( klass, value );
     }
 
     public boolean isValid( Class<?> klass )

@@ -80,6 +80,7 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
+import org.hisp.dhis.predictor.Predictor;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
@@ -189,6 +190,8 @@ public class Metadata
     private List<OrganisationUnitLevel> organisationUnitLevels = new ArrayList<>();
 
     private List<ValidationRule> validationRules = new ArrayList<>();
+
+    private List<Predictor> predictors = new ArrayList<>();
 
     private List<ValidationRuleGroup> validationRuleGroups = new ArrayList<>();
 
@@ -719,6 +722,19 @@ public class Metadata
     }
 
     @JsonProperty
+    @JacksonXmlElementWrapper( localName = "predictors", namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "predictor", namespace = DxfNamespaces.DXF_2_0 )
+    public List<Predictor> getPredictors()
+    {
+        return predictors;
+    }
+
+    public void setPredictors( List<Predictor> predictors )
+    {
+        this.predictors = predictors;
+    }
+
+    @JsonProperty
     @JacksonXmlElementWrapper( localName = "validationRuleGroups", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "validationRuleGroup", namespace = DxfNamespaces.DXF_2_0 )
     public List<ValidationRuleGroup> getValidationRuleGroups()
@@ -1237,6 +1253,7 @@ public class Metadata
             ", organisationUnitLevels=" + organisationUnitLevels +
             ", validationRules=" + validationRules +
             ", validationRuleGroups=" + validationRuleGroups +
+            ", predictors=" + predictors +
             ", sqlViews=" + sqlViews +
             ", charts=" + charts +
             ", reports=" + reports +

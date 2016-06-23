@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.Grid;
@@ -233,9 +234,9 @@ public class DefaultSqlViewService
         }
         
         final Set<String> sqlVars = getVariables( sqlView.getSqlQuery() );
-        final String sql = sqlView.getSqlQuery();
+        final String sql = sqlView.getSqlQuery().toLowerCase();
         
-        if ( !SELECT_PATTERN.matcher( sqlView.getSqlQuery() ).matches() )
+        if ( !SELECT_PATTERN.matcher( sql ).matches() )
         {
             violation = "SQL query must be a select query";
         }
@@ -285,7 +286,7 @@ public class DefaultSqlViewService
             violation = "SQL query contains references to protected tables";
         }
         
-        if ( sql.matches( SqlView.getIllegalKeywordsRegex() ) )
+        if (  StringUtils.indexOfAny( sql.toLowerCase(), SqlView.getIllegalKeyWords() ) != -1 )
         {
             violation = "SQL query contains illegal keywords";
         }
@@ -296,6 +297,7 @@ public class DefaultSqlViewService
             
             throw new IllegalQueryException( violation );
         }
+
     }
 
     @Override

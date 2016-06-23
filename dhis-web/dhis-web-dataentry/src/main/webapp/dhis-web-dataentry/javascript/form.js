@@ -1,7 +1,23 @@
 
 dhis2.util.namespace( 'dhis2.de' );
+dhis2.util.namespace( 'dhis2.de.api' );
 dhis2.util.namespace( 'dhis2.de.event' );
 dhis2.util.namespace( 'dhis2.de.cst' );
+
+// API / methods to be used externally from forms / scripts
+
+/**
+ * Returns an object representing the currently selected state of the UI.
+ * Contains properties for "ds", "pe", "ou" and the identifier of each
+ * category with matching identifier values of the selected option.
+ */
+dhis2.de.api.getSelections = function() {
+	var sel = dhis2.de.getCurrentCategorySelections();
+	sel["ds"] = $( '#selectedDataSetId' ).val(),
+	sel["pe"] = $( '#selectedPeriodId').val(),
+	sel["ou"] = dhis2.de.currentOrganisationUnitId;	
+	return sel;
+}
 
 // whether current user has any organisation units
 dhis2.de.emptyOrganisationUnits = false;
@@ -919,7 +935,7 @@ function organisationUnitSelected( orgUnits, orgUnitNames, children )
 	dhis2.de.currentOrganisationUnitId = orgUnits[0];
     var organisationUnitName = orgUnitNames[0];
 
-    $( '#selectedOrganisationUnit' ).val( $( '<div/>' ).html( organisationUnitName ).text() ); // unescape
+    $( '#selectedOrganisationUnit' ).val( organisationUnitName );
     $( '#currentOrganisationUnit' ).html( organisationUnitName );
 
     dhis2.de.getOrFetchDataSetList().then(function(data) {
@@ -1610,7 +1626,7 @@ dhis2.de.getAttributesMarkup = function()
 	$.safeEach( dhis2.de.currentCategories, function( idx, category ) {
 		html += '<div class="selectionBoxRow">';
 		html += '<div class="selectionLabel">' + category.name + '</div>&nbsp;';
-		html += '<select id="category-' + category.id + '" class="selectionBoxSelect" onchange="dhis2.de.attributeSelected(\'' + category.id + '\')">';                
+		html += '<select id="category-' + category.id + '" class="selectionBoxSelect" onchange="dhis2.de.attributeSelected(\'' + category.id + '\')">';
 		html += '<option value="-1">[ ' + i18n_select_option + ' ]</option>';
 
 		$.safeEach( category.options, function( idx, option ) {
@@ -1642,7 +1658,7 @@ dhis2.de.clearAttributes = function()
  */
 dhis2.de.attributeSelected = function( categoryId )
 {
-    if ( dhis2.de.inputSelected() ) {    	
+	if ( dhis2.de.inputSelected() ) {    	
         showLoader();
 
         if ( dhis2.de.dataEntryFormIsLoaded ) {

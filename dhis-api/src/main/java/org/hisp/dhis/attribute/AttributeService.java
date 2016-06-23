@@ -112,24 +112,6 @@ public interface AttributeService
 
     List<Attribute> getUniqueAttributes( Class<?> klass );
 
-    /**
-     * Gets the number of attributes.
-     *
-     * @return the number of attributes.
-     */
-    int getAttributeCount();
-
-    /**
-     * Gets the number of attributes with the given name.
-     *
-     * @return the number of attributes with the given name.
-     */
-    int getAttributeCountByName( String name );
-
-    List<Attribute> getAttributesBetween( int first, int max );
-
-    List<Attribute> getAttributesBetweenByName( String name, int first, int max );
-
     // -------------------------------------------------------------------------
     // AttributeValue
     // -------------------------------------------------------------------------

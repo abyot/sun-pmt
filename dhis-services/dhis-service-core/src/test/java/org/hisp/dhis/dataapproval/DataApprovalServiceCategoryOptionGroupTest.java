@@ -131,9 +131,6 @@ public class DataApprovalServiceCategoryOptionGroupTest
     @Autowired
     protected CurrentUserService currentUserService;
 
-    @Resource( name = "jdbcTemplate" )
-    private JdbcTemplate jdbcTemplate;
-
     // -------------------------------------------------------------------------
     // Supporting data
     // -------------------------------------------------------------------------
@@ -326,25 +323,6 @@ public class DataApprovalServiceCategoryOptionGroupTest
         String chinaUid = china.getUid();
         String indiaUid = india.getUid();
 
-        jdbcTemplate.execute(
-                "CREATE TABLE _orgunitstructure "+
-                        "(" +
-                        "  organisationunitid integer NOT NULL, " +
-                        "  organisationunituid character(11) NOT NULL, " +
-                        "  level integer, " +
-                        "  idlevel1 integer, " +
-                        "  idlevel2 integer, " +
-                        "  idlevel3 integer, " +
-                        "  CONSTRAINT _orgunitstructure_pkey PRIMARY KEY (organisationunitid)" +
-                        ");" );
-
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + globalId + ", '" + globalUid + "', 1, " + globalId + ", null, null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + americasId + ", '" + americasUid + "', 2, " + globalId + ", " + americasId + ", null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + asiaId + ", '" + asiaUid + "', 2, " + globalId + ", " + asiaId + ", null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + brazilId + ", '" + brazilUid + "', 3, " + globalId + ", " + americasId + ", " + brazilId + ");" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + chinaId + ", '" + chinaUid + "', 3, " + globalId + ", " + asiaId + ", " + chinaId + ");" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + indiaId + ", '" + indiaUid + "', 3, " + globalId + ", " + asiaId + ", " + indiaId + ");" );
-
         userA = createUser( 'A' );
         userService.addUser( userA );
 
@@ -526,8 +504,6 @@ public class DataApprovalServiceCategoryOptionGroupTest
         dataApprovalWorkflowService.addWorkflow( workflowAll );
         dataApprovalWorkflowService.addWorkflow( workflowAgency );
 
-        systemSettingManager.invalidateCache();
-        
         systemSettingManager.saveSystemSetting( SettingKey.HIDE_UNAPPROVED_DATA_IN_ANALYTICS, true );
         systemSettingManager.saveSystemSetting( SettingKey.ACCEPTANCE_REQUIRED_FOR_APPROVAL, true );
     }
@@ -785,7 +761,7 @@ public class DataApprovalServiceCategoryOptionGroupTest
         assertEquals( "GlobalLevel1, CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( globalUser ) );
         assertEquals( "GlobalLevel1, CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( globalApproveOnly ) );
         assertEquals( "GlobalLevel1, CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( globalAcceptOnly ) );
-        assertEquals( "", getUserLevels( globalReadEverything ) );
+        assertEquals( "GlobalLevel1, CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( globalReadEverything ) );
         assertEquals( "CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( brazilInteragencyUser ) );
         assertEquals( "CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( chinaInteragencyUser ) );
         assertEquals( "CountryLevel2, AgencyLevel3, PartnerLevel4", getUserLevels( chinaInteragencyApproveOnly ) );
@@ -1609,8 +1585,9 @@ public class DataApprovalServiceCategoryOptionGroupTest
                 "ou=Brazil mechanism=BrazilA1 level=4 UNAPPROVED_READY approve=T unapprove=F accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( brazilPartner1User, workflowAll, periodA, null ) );
 
+        // (Note: Level 4 user can't see the level 3 approval, etc.)
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=3 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=4 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( chinaPartner1User, workflowAll, periodA, null ) );
 
@@ -1781,7 +1758,7 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilPartner1User, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=4 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( chinaPartner1User, workflowAll, periodA, null ) );
 
@@ -1922,19 +1899,19 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAApproveOnly, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAAcceptOnly, workflowAll, periodA, null ) );
@@ -1952,7 +1929,7 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilPartner1User, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=4 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( chinaPartner1User, workflowAll, periodA, null ) );
 
@@ -2093,19 +2070,19 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAAcceptOnly, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAApproveOnly, workflowAll, periodA, null ) );
@@ -2123,7 +2100,7 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilPartner1User, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=4 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( chinaPartner1User, workflowAll, periodA, null ) );
 
@@ -2229,21 +2206,21 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( globalReadEverything, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaB2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaInteragencyUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaB2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaInteragencyApproveOnly, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=2 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaB2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
@@ -2254,19 +2231,19 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAUser, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=F",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAApproveOnly, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=3 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=T unaccept=F read=T",
                 "ou=China mechanism=ChinaA2 level=4 UNAPPROVED_READY approve=F unapprove=F accept=F unaccept=F read=F" },
             getUserApprovalsAndPermissions( chinaAgencyAAcceptOnly, workflowAll, periodA, null ) );
@@ -2284,7 +2261,7 @@ public class DataApprovalServiceCategoryOptionGroupTest
             getUserApprovalsAndPermissions( brazilPartner1User, workflowAll, periodA, null ) );
 
         assertArrayEquals( new String[] {
-                "ou=China mechanism=ChinaA1_1 level=1 APPROVED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
+                "ou=China mechanism=ChinaA1_1 level=4 ACCEPTED_HERE approve=F unapprove=F accept=F unaccept=F read=T",
                 "ou=China mechanism=ChinaA1_2 level=4 APPROVED_HERE approve=F unapprove=T accept=F unaccept=F read=T" },
             getUserApprovalsAndPermissions( chinaPartner1User, workflowAll, periodA, null ) );
 

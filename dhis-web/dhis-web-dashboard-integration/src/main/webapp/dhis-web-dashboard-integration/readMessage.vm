@@ -1,5 +1,13 @@
 <script type="text/javascript">
     $(document).ready(function () {
+
+        $( "#prioritySelector" ).simpleDropDownMenu( {
+            btnLabel: "<span id='priorityButton'>$i18n.getString("Priority")</span>"
+        });
+        $( "#statusSelector" ).simpleDropDownMenu( {
+            btnLabel: "<span id='statusButton'>$i18n.getString("Status")</span>"
+        });
+
         jQuery('#text').autogrow();
 
         if (scrollIsRelevant() == false) {
@@ -20,6 +28,25 @@
             'mark_unread' )</a></li>
         <li><a class="greyButtonLink" href="removeMessageRedirect.action?id=${conversation.id}">$i18n.getString(
             'remove' )</a></li>
+        #if($showTicketTools)
+            <li>
+                <select name="priority" id="message-priority" class="message-select" onchange="updatePriority('${conversation.uid}')">
+                    <option value="NONE" #if(${conversation.priority} == "NONE") selected #end>$i18n.getString( "priority" ): $i18n.getString( "none" )</option>
+                    <option value="LOW" #if(${conversation.priority} == "LOW") selected #end>$i18n.getString( "priority" ): $i18n.getString( "low" )</option>
+                    <option value="MEDIUM" #if(${conversation.priority} == "MEDIUM") selected #end>$i18n.getString( "priority" ): $i18n.getString( "medium" )
+                    </option>
+                    <option value="HIGH" #if(${conversation.priority} == "HIGH") selected #end>$i18n.getString( "priority" ): $i18n.getString( "high" )</option>
+                </select>
+            </li>
+            <li>
+                <select name="status" id="message-status" class="message-select" onchange="updateStatus('${conversation.uid}')">
+                    <option value="OPEN" #if(${conversation.status} == "OPEN") selected #end>Status: Open</option>
+                    <option value="PENDING" #if(${conversation.status} == "PENDING") selected #end>Status: Pending</option>
+                    <option value="INVALID" #if(${conversation.status} == "INVALID") selected #end>Status: Invalid</option>
+                    <option value="SOLVED" #if(${conversation.status} == "SOLVED") selected #end>Status: Solved</option>
+                </select>
+            </li>
+        #end
         <li><a class="greyButtonLink" href="message.action?currentPage=${keyCurrentPage}">$i18n.getString( 'back' )</a>
         </li>
         <li class="scrollButton"><a class="greyButtonLink" href="javascript:scrollToBottom()">$i18n.getString(
@@ -31,8 +58,10 @@
     <img id="followUp${conversation.id}" style="padding-right:8px; cursor:pointer;"
          onclick="toggleFollowUp( '${conversation.id}' )"#if( $conversation.followUp ) src="../images/marked.png"#else
          src="../images/unmarked.png"#end>
+
     $!encoder.htmlEncode( $conversation.subject )
 </h3>
+
 <div class="recipientsDiv tipText">
     $i18n.getString( "to" )
     #set( $recSize = $conversation.topRecipients.size() )
@@ -43,28 +72,6 @@
         "more" )#end
 
 </div>
-
-#if ($showTicketTools)
-<div class="recipientsDiv">
-    <label for="priority">Priority</label>
-    <select name="priority" id="message-priority" onchange="updatePriority('${conversation.uid}')">
-        <option value="NONE" #if(!${conversation.priority}) selected #end>None</option>
-        <option value="LOW" #if(${conversation.priority} == "LOW") selected #end>Low</option>
-        <option value="MEDIUM" #if(${conversation.priority} == "MEDIUM") selected #end>Medium
-        </option>
-        <option value="HIGH" #if(${conversation.priority} == "HIGH") selected #end>High</option>
-    </select>
-
-    <label for="status">Status</label>
-    <select name="status" id="message-status" onchange="updateStatus('${conversation.uid}')">
-        <option value="OPEN" #if(${conversation.status} == "OPEN") selected #end>Open</option>
-        <option value="PENDING" #if(${conversation.status} == "PENDING") selected #end>Pending
-        </option>
-        <option value="INVALID" #if(${conversation.status} == "INVALID") selected #end>Invalid</option>
-        <option value="SOLVED" #if(${conversation.status} == "SOLVED") selected #end>Solved</option>
-    </select>
-</div>
-#end
 
 #foreach( $message in $messages )
 <div class="messageSymbol"><img src="../images/mail_small.png" onclick="toggleMetaData( '${message.id}' )"></div>
@@ -77,7 +84,7 @@
     #end
     <span class="grey">&nbsp;&nbsp;$!format.formatDate( $message.lastUpdated )</span>
     #if( $message.internal )
-        <span style="float: right; font-weight: bold; padding-right: 5px">$i18n.getString( 'internalMessage' )</span>
+        <span style="float: right; padding-right: 5px; color: #777">$i18n.getString( 'internalMessage' )</span>
     #end
 
     <div class="messageText">$!dhisTextUtils.htmlify( $encoder.htmlEncode( $message.text ) )</div>

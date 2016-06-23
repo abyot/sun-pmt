@@ -143,6 +143,7 @@ public class DefaultSmsConfigurationManager
             if ( gw.getName().equals( gatewayId ) )
             {
                 gw.setDefault( true );
+                
                 result = true;
             }
             else

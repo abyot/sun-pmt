@@ -28,18 +28,7 @@ package org.hisp.dhis.validation;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.system.util.MathUtils.expressionIsTrue;
-import static org.hisp.dhis.system.util.MathUtils.roundSignificant;
-import static org.hisp.dhis.system.util.MathUtils.zeroIfNull;
-
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.ListMap;
@@ -61,7 +50,15 @@ import org.hisp.dhis.system.util.MathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.Sets;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.hisp.dhis.system.util.MathUtils.*;
 
 /**
  * Runs a validation task on a thread within a multi-threaded validation run.
@@ -734,7 +731,7 @@ public class DataValidationTask
 
     /**
      * Returns the data elements referenced in an expression, as a set. This will
-     * return an empty set if e.getDataElementsInExpression returns null.
+     * return an empty set if e.getPresentDataNeeded returns null.
      *
      * @param expression expression to evaluate.
      * @return a Set of DataElement(s)

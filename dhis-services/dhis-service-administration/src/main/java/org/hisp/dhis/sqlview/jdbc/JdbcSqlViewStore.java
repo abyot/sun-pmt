@@ -40,6 +40,7 @@ import org.hisp.dhis.sqlview.SqlViewStore;
 import org.hisp.dhis.sqlview.SqlViewType;
 import org.hisp.dhis.commons.util.SqlHelper;
 import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.google.common.collect.ImmutableMap;
@@ -157,6 +158,10 @@ public class JdbcSqlViewStore
             jdbcTemplate.execute( "DROP VIEW IF EXISTS " + viewName );
         }
         catch ( BadSqlGrammarException ex )
+        {
+            return ex.getCause().getMessage();
+        }
+        catch ( UncategorizedSQLException ex )
         {
             return ex.getCause().getMessage();
         }

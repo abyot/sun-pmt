@@ -363,9 +363,10 @@ public class EventAnalyticsController
         EventQueryParams params = eventDataQueryService.getFromUrl( program, stage, startDate, endDate, dimension, filter,
             ouMode, asc, desc, skipMeta, skipData, completedOnly, hierarchyMeta, coordinatesOnly, displayProperty, userOrgUnit, page, pageSize, i18nManager.getI18nFormat() );
 
-        params.setClusterSize( clusterSize );
-        params.setBbox( bbox );
-        params.setIncludeClusterPoints( includeClusterPoints );
+        params = new EventQueryParams.Builder( params )
+            .withClusterSize( clusterSize )
+            .withBbox( bbox )
+            .withIncludeClusterPoints( includeClusterPoints ).build();
 
         contextUtils.configureResponse( response, ContextUtils.CONTENT_TYPE_JSON, CacheStrategy.RESPECT_SYSTEM_SETTING );
         Grid grid = analyticsService.getEventClusters( params );

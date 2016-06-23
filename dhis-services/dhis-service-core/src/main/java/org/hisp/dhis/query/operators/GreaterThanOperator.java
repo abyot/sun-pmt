@@ -54,7 +54,7 @@ public class GreaterThanOperator extends Operator
     {
         if ( property.isCollection() )
         {
-            Integer value = QueryUtils.getValue( Integer.class, args.get( 0 ) );
+            Integer value = QueryUtils.parseValue( Integer.class, args.get( 0 ) );
 
             if ( value == null )
             {

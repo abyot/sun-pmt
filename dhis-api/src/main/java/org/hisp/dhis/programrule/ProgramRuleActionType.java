@@ -38,7 +38,9 @@ public enum ProgramRuleActionType {
     HIDESECTION( "hidesection" ),
     ASSIGN( "assign" ),
     SHOWWARNING( "showwarning" ),
+    WARNINGONCOMPLETE( "warningoncomplete" ),
     SHOWERROR( "showerror" ),
+    ERRORONCOMPLETE( "erroroncomplete" ),
     CREATEEVENT("createevent");
 
     final String value;

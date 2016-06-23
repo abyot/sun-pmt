@@ -64,12 +64,28 @@
 		<td></td>				
 	</tr>
 	
+	<tr id="generatedTR" name="generatedTR" style="#if( $attribute.unique == 'false' ) display:none; #end">
+		<td><label for="generated">$i18n.getString( "generated" )</label></td>
+		<td>
+			<input type="checkbox" id="generated" name="generated" value="true" #if( $attribute.generated=='true' ) checked #end onchange="generatedOnChange()">
+		</td>	
+	</tr>
+	
+	<tr id="generatedPatternTR" name="generatedPatternTR" style="#if( $attribute.unique == 'false' ) display:none; #end">
+		<td>
+			<label for="generated">$i18n.getString( "generated_pattern" )</label><br>
+			<span class="tipText">($i18n.getString( "generated_pattern_tips" ))</span>
+		</td>
+		<td>
+			<input type="text" id="pattern" name="pattern" value="$encoder.htmlEncode( $attribute.pattern )" />
+		</td>
+	</tr>
+	
 	<tr>
 		<td><label for="inherit">$i18n.getString( "inherit" )</label></td>
 		<td>
 			<input type='checkbox' id="inherit" name="inherit" value='true' #if( $attribute.inherit ) checked #end>
-		</td>		
-		<td></td>				
+		</td>			
 	</tr>
 	
 	<tr>

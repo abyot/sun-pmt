@@ -81,4 +81,29 @@ public class IdentifiableObjectUtilsTest
         assertEquals( deC, map.get( "CodeC" ) );
         assertNull( map.get( "CodeD" ) );
     }
+    
+    @Test
+    public void testGetUidMapIdentifiableProperty()
+    {
+        DataElement deA = new DataElement( "NameA" );
+        DataElement deB = new DataElement( "NameB" );
+        DataElement deC = new DataElement( "NameC" );
+
+        deA.setUid( "A123456789A" );
+        deB.setUid( "A123456789B" );
+        deC.setUid( "A123456789C" );
+        
+        deA.setCode( "CodeA" );
+        deB.setCode( "CodeB" );
+        deC.setCode( null );
+        
+        List<DataElement> elements = Lists.newArrayList( deA, deB, deC );
+        
+        Map<String, String> map = IdentifiableObjectUtils.getUidPropertyMap( elements, IdentifiableProperty.CODE );
+
+        assertEquals( 3, map.size() );
+        assertEquals( "CodeA", map.get( "A123456789A" ) );
+        assertEquals( "CodeB", map.get( "A123456789B" ) );
+        assertEquals( null, map.get( "A123456789C" ) );
+    }    
 }

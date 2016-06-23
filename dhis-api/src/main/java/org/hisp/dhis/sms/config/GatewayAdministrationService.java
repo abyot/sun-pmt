@@ -28,6 +28,7 @@
  */
 package org.hisp.dhis.sms.config;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +47,7 @@ public interface GatewayAdministrationService
 
     SmsGatewayConfig getDefaultGateway();
 
-    SmsConfiguration listGateways();
+    List<SmsGatewayConfig> listGateways();
 
     SmsGatewayConfig getGatewayConfigurationByUid( String uid );
 

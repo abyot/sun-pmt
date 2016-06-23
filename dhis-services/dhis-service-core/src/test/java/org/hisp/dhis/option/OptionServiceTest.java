@@ -63,15 +63,15 @@ public class OptionServiceTest
     @Override
     public void setUpTest()
     {
-        option1 = new Option("OptA1","OptA1");
-        option2 = new Option("OptA2","OptA2");
-        option3 = new Option("OptB1","OptB1");
-        option4 = new Option("OptB2","OptB2");
+        option1 = new Option( "OptA1", "OptA1" );
+        option2 = new Option( "OptA2", "OptA2" );
+        option3 = new Option( "OptB1", "OptB1" );
+        option4 = new Option( "OptB2", "OptB2" );
         
-        options.add( option1);
-        options.add( option2);
-        options.add( option3);
-        options.add( option4);
+        options.add( option1 );
+        options.add( option2 );
+        options.add( option3 );
+        options.add( option4 );
 
         optionSetA.setOptions( options );
         optionSetB.setOptions( options );

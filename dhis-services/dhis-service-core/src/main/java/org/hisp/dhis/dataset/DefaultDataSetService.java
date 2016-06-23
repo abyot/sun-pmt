@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.hisp.dhis.dataapproval.DataApprovalService;
-import org.hisp.dhis.dataapproval.DataApprovalStatus;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
 import org.hisp.dhis.i18n.I18nService;
@@ -59,7 +58,6 @@ import com.google.common.collect.Sets;
 
 /**
  * @author Lars Helge Overland
- * @version $Id: DefaultDataSetService.java 6255 2008-11-10 16:01:24Z larshelg $
  */
 @Transactional
 public class DefaultDataSetService
@@ -370,27 +368,20 @@ public class DefaultDataSetService
     }
 
     @Override
-    public boolean isLocked( DataSet dataSet, Period period, OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo, Date now )
+    public boolean isLockedPeriod( DataSet dataSet, Period period, OrganisationUnit organisationUnit, Date now )
     {
         now = now != null ? now : new Date();
 
         boolean expired = dataSet.getExpiryDays() != DataSet.NO_EXPIRY && new DateTime( period.getEndDate() ).plusDays( dataSet.getExpiryDays() ).isBefore( new DateTime( now ) );
 
-        boolean exception = lockExceptionStore.getCount( dataSet, period, organisationUnit ) > 0L;
-        
-        if ( expired && !exception )
-        {
-            return true;
-        }
+        return expired && lockExceptionStore.getCount( dataSet, period, organisationUnit ) == 0L;
+    }
 
-        if ( dataSet.getWorkflow() == null )
-        {
-            return false;
-        }
-
-        DataApprovalStatus dataApprovalStatus = dataApprovalService.getDataApprovalStatus( dataSet.getWorkflow(), period, organisationUnit, attributeOptionCombo );
-        
-        return dataApprovalStatus.getState().isApproved();
+    @Override
+    public boolean isLocked( DataSet dataSet, Period period, OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo, Date now )
+    {
+        return isLockedPeriod( dataSet, period, organisationUnit, now ) ||
+            dataApprovalService.isApproved( dataSet.getWorkflow(), period, organisationUnit, attributeOptionCombo );
     }
 
     @Override
@@ -433,14 +424,12 @@ public class DefaultDataSetService
 
         DataSet dataSet = dataElement.getApprovalDataSet();
 
-        if ( dataSet == null || dataSet.getWorkflow() == null )
+        if ( dataSet == null )
         {
             return false;
         }
 
-        DataApprovalStatus dataApprovalStatus = dataApprovalService.getDataApprovalStatus( dataSet.getWorkflow(), period, organisationUnit, attributeOptionCombo );
-
-        return dataApprovalStatus.getState().isApproved();
+        return dataApprovalService.isApproved( dataSet.getWorkflow(), period, organisationUnit, attributeOptionCombo );
     }
     
     @Override

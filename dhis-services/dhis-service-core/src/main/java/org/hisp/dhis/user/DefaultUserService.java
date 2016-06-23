@@ -227,7 +227,8 @@ public class DefaultUserService
     }
 
     @Override
-    public int getUserCount(){
+    public int getUserCount()
+    {
         return userStore.getUserCount();
     }
 

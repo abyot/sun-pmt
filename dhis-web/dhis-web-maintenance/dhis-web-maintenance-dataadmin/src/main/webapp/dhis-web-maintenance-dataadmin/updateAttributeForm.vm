@@ -76,6 +76,8 @@
       <input type="checkbox" id="optionSetAttribute" name="optionSetAttribute" value="true" #if( $attribute.optionSetAttribute ) checked="checked" #end /><label for="optionSetAttribute">$i18n.getString( 'option_set' ) <br />
       <input type="checkbox" id="constantAttribute" name="constantAttribute" value="true" #if( $attribute.constantAttribute ) checked="checked" #end  /><label for="constantAttribute">$i18n.getString( 'constant' )</label> <br />
       <input type="checkbox" id="legendSetAttribute" name="legendSetAttribute" value="true" #if( $attribute.legendSetAttribute ) checked="checked" #end /><label for="legendSetAttribute">$i18n.getString( 'legend_set' )</label> <br />
+      <input type="checkbox" id="programIndicatorAttribute" name="programIndicatorAttribute" value="true" #if( $attribute.programIndicatorAttribute ) checked="checked" #end /><label for="programIndicatorAttribute">$i18n.getString( 'program_indicator' )</label> <br />
+      <input type="checkbox" id="sqlViewAttribute" name="sqlViewAttribute" value="true" #if( $attribute.sqlViewAttribute ) checked="checked" #end /><label for="sqlViewAttribute">$i18n.getString( 'sql_view' )</label> <br />
 		</label> <br />
 		</td>
 	</tr>

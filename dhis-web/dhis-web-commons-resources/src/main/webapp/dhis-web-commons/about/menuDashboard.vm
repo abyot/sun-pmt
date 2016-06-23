@@ -1,6 +1,6 @@
 
 #if ( $keyFlag )
-<img class="dashboardMenuFlag" src="../dhis-web-commons/flags/${keyFlagImage}" onclick="window.location.href='../${startModule}/index.action'"
+<img class="dashboardMenuFlag" src="../dhis-web-commons/flags/${keyFlagImage}" onclick="window.location.href='../dhis-web-commons-about/redirect.action'"
     title="$i18n.getString( 'view_home_page' )">
 #end
 

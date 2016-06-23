@@ -302,7 +302,20 @@ public interface DataSetService
     void deleteLockExceptionCombination( DataSet dataSet, Period period );
 
     /**
-     * Checks whether the system is locked for data entry for the given input.
+     * Checks whether the period is locked for data entry for the given input,
+     * checking the dataset's expiryDays and lockExceptions.
+     *
+     * @param dataSet the data set
+     * @param period the period.
+     * @param organisationUnit the organisation unit.
+     * @param now the base date for deciding locked date, current date if null.
+     * @return true or false indicating whether the system is locked or not.
+     */
+    boolean isLockedPeriod( DataSet dataSet, Period period, OrganisationUnit organisationUnit, Date now );
+
+    /**
+     * Checks whether the system is locked for data entry for the given input,
+     * checking expiryDays, lockExceptions and approvals.
      *
      * @param dataSet the data set
      * @param period the period.
@@ -314,8 +327,8 @@ public interface DataSetService
     boolean isLocked( DataSet dataSet, Period period, OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo, Date now );
 
     /**
-     * Checks whether the system is locked for data entry for the given input.
-     * The status u
+     * Checks whether the system is locked for data entry for the given input,
+     * checking expiryDays, lockExceptions and approvals.
      *
      * @param dataSet the data set
      * @param period the period.
@@ -328,7 +341,8 @@ public interface DataSetService
     boolean isLocked( DataSet dataSet, Period period, OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo, Date now, boolean useOrgUnitChildren );
 
     /**
-     * Checks whether the system is locked for data entry for the given input.
+     * Checks whether the system is locked for data entry for the given input,
+     * checking expiryDays, lockExceptions and approvals.
      *
      * @param dataElement the data element.
      * @param period the period.

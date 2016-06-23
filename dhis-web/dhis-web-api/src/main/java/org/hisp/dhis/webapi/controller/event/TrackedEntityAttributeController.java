@@ -40,6 +40,7 @@ import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeReservedV
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,25 +62,49 @@ public class TrackedEntityAttributeController
     @Autowired
     TrackedEntityAttributeService trackedEntityAttributeService;
     
-    @RequestMapping( value = "/{id}/generate", method = RequestMethod.GET, produces = { ContextUtils.CONTENT_TYPE_JSON, ContextUtils.CONTENT_TYPE_JAVASCRIPT } )
+    @RequestMapping( value = "/{id}/generateAndReserve", method = RequestMethod.GET, produces = { ContextUtils.CONTENT_TYPE_JSON, ContextUtils.CONTENT_TYPE_JAVASCRIPT } )
+    @PreAuthorize( "hasRole('ALL') or hasRole('F_TRACKED_ENTITY_INSTANCE_ADD')" )
     public String queryTrackedEntityInstancesJson(
-        @RequestParam( required = false ) Integer numberOfIdsToGenerate,
+        @RequestParam( required = false ) Integer numberToReserve,
         @PathVariable String id,
         Model model,
         HttpServletResponse response ) throws Exception
     {
-        if ( numberOfIdsToGenerate == null || numberOfIdsToGenerate < 1 ) {
-            numberOfIdsToGenerate = 1;
+        if ( numberToReserve == null || numberToReserve < 1 ) 
+        {
+            numberToReserve = 1;
         }
         
         TrackedEntityAttribute attribute = trackedEntityAttributeService.getTrackedEntityAttribute( id );
-        if ( attribute == null ) {
+        if ( attribute == null ) 
+        {
             throw new Exception("No attribute found with id " + id);
         }
         
         List<TrackedEntityAttributeReservedValue> generated =
             trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( 
-                attribute, numberOfIdsToGenerate );
+                attribute, numberToReserve );
+
+        model.addAttribute( "model", generated );
+        model.addAttribute( "viewClass", "detailed" );
+
+        return "generated";
+    }
+    
+    @RequestMapping( value = "/{id}/generate", method = RequestMethod.GET, produces = { ContextUtils.CONTENT_TYPE_JSON, ContextUtils.CONTENT_TYPE_JAVASCRIPT } )
+    public String queryTrackedEntityInstancesJson(
+        @PathVariable String id,
+        Model model,
+        HttpServletResponse response ) throws Exception
+    {
+        TrackedEntityAttribute attribute = trackedEntityAttributeService.getTrackedEntityAttribute( id );
+        if ( attribute == null ) 
+        {
+            throw new Exception( "No attribute found with id " + id );
+        }
+        
+        String generated =
+            trackedEntityAttributeReservedValueService.getGeneratedValue( attribute );
 
         model.addAttribute( "model", generated );
         model.addAttribute( "viewClass", "detailed" );

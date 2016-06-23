@@ -71,6 +71,34 @@ public interface DataApprovalService
     void unacceptData( List<DataApproval> dataApprovalList );
 
     /**
+     * Gets the data approval record if it exists.
+     *
+     * @param approval the DataApproval object properties to look for
+     * @return
+     */
+    DataApproval getDataApproval( DataApproval approval );
+
+    /**
+     * Finds the lowest level (if any) at which data would be approved.
+     *
+     * @param approval approval param
+     * @return
+     */
+    DataApproval lowestApproval( DataApproval approval );
+
+    /**
+     * Tells whether data is approved (and therefore locked by approval.)
+     *
+     * @param workflow workflow to check for approval.
+     * @param period Period to check for approval.
+     * @param organisationUnit OrganisationUnit to check for approval.
+     * @param attributeOptionCombo CategoryOptionCombo (if any) for approval.
+     * @return
+     */
+    boolean isApproved( DataApprovalWorkflow workflow, Period period,
+        OrganisationUnit organisationUnit, DataElementCategoryOptionCombo attributeOptionCombo );
+
+    /**
      * Returns the data approval status for a given data set, period,
      * organisation unit and attribute category combination.
      * If attributeOptionCombo is null, the default option combo will be used.

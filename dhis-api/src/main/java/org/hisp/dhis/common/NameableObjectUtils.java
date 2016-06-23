@@ -135,38 +135,6 @@ public class NameableObjectUtils
 
         return map;
     }
-
-    /**
-     * Returns a mapping between the UID and the property of the object
-     * indicated by the given property.
-     * 
-     * @param objects the collection of objects.
-     * @param property the property.
-     * @return a mapping.
-     */
-    public static Map<String, String> getUidPropertyMap( Collection<? extends NameableObject> objects,
-        IdentifiableProperty property )
-    {
-        Map<String, String> map = new HashMap<>();
-
-        for ( NameableObject object : objects )
-        {
-            if ( IdentifiableProperty.UID.equals( property ) )
-            {
-                map.put( object.getUid(), object.getUid() );
-            }
-            else if ( IdentifiableProperty.CODE.equals( property ) )
-            {
-                map.put( object.getUid(), object.getCode() );
-            }
-            else if ( IdentifiableProperty.NAME.equals( property ) )
-            {
-                map.put( object.getUid(), object.getName() );
-            }
-        }
-
-        return map;
-    }
         
     /**
      * Returns a copy of the given list. Returns an empty list if the argument is null.

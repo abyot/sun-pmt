@@ -59,7 +59,6 @@ public class BulkSmsGatewayConfig
     @JsonProperty( value = "urlTemplate" )
     public String getUrlTemplate()
     {
-
         return this.URL_TEMPLATE;
     }
 

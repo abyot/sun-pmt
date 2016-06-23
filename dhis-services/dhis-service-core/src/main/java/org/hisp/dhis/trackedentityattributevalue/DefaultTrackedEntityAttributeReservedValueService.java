@@ -29,12 +29,18 @@ package org.hisp.dhis.trackedentityattributevalue;
  */
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Markus Bekken
@@ -42,6 +48,9 @@ import java.util.List;
 public class DefaultTrackedEntityAttributeReservedValueService
     implements TrackedEntityAttributeReservedValueService
 {
+    private static final Log log = LogFactory.getLog( DefaultTrackedEntityAttributeReservedValueService.class );
+    private static final int GENERATION_TIMEOUT = 50;
+    
     @Autowired
     private TrackedEntityAttributeReservedValueStore trackedEntityAttributeReservedValueStore;
     
@@ -50,100 +59,134 @@ public class DefaultTrackedEntityAttributeReservedValueService
 
     @Override
     public TrackedEntityAttributeReservedValue markTrackedEntityAttributeReservedValueAsUtilized(
-        TrackedEntityAttribute attribute, 
-        TrackedEntityInstance trackedEntityInstance,
-        String value )
+        TrackedEntityAttribute attribute, TrackedEntityInstance trackedEntityInstance, String value )
     {
-        TrackedEntityAttributeReservedValue utilized = findTrackedEntityAttributeReservedValue(
-            attribute, value );
-
-        utilized.setValueUtilizedByTEI( trackedEntityInstance );
-        utilized = trackedEntityAttributeReservedValueStore.saveTrackedEntityAttributeReservedValue( utilized );
+        if ( attribute.isGenerated() ) 
+        {
+            TrackedEntityAttributeReservedValue utilized = findTrackedEntityAttributeReservedValue(
+                attribute, value );
+            
+            if ( utilized != null )
+            {
+                utilized.setValueUtilizedByTEI( trackedEntityInstance );
+                utilized = trackedEntityAttributeReservedValueStore.saveTrackedEntityAttributeReservedValue( utilized );
+            }
+            
+            return utilized;
+        }
         
-        return utilized;
+        return null;
     }
 
     @Override
     public List<TrackedEntityAttributeReservedValue> createTrackedEntityReservedValues(
-        TrackedEntityAttribute trackedEntityAttribute, int numberOfValuesToCreate )
+        TrackedEntityAttribute attribute, int valuesToCreate )
     {
+        Assert.isTrue( attribute.isGenerated(), "Attribute must be of type generated in order to reserve values" );
+        
         ArrayList<TrackedEntityAttributeReservedValue> reservedValues = new ArrayList<TrackedEntityAttributeReservedValue>();
         
-        if ( trackedEntityAttribute.isGenerated() )
+        for ( int i = 0; i < valuesToCreate; i++ ) 
         {
-            int timeout = 0;
-            
-            while ( reservedValues.size() < numberOfValuesToCreate && timeout < 10000 ) 
+            try 
             {
-                String candidate = generateRandomValueInPattern( trackedEntityAttribute.getPattern() );
-                
-                if ( !trackedEntityAttributeValueService.exists( trackedEntityAttribute, candidate ) )
-                {
-                    //The generated ID was available. Check that it is not already reserved:
-                    if ( findTrackedEntityAttributeReservedValue( trackedEntityAttribute, candidate ) == null ) 
-                    {
-                        //The generated ID was not reserved previously, and can be reserved now.
-                        TrackedEntityAttributeReservedValue newReservation = 
-                            new TrackedEntityAttributeReservedValue( trackedEntityAttribute, candidate );
-                        newReservation = trackedEntityAttributeReservedValueStore.saveTrackedEntityAttributeReservedValue( newReservation );
-                        reservedValues.add( newReservation );
-                    }
-                    else
-                    {
-                        timeout++;
-                    }
-                }
-                else
-                {
-                    timeout ++;
-                }
+                reservedValues.add( reserveCandidateValue( attribute ) );
+            }
+            catch ( Exception e ) 
+            {
+                log.warn( "Not able to provide all requested reserved values for  "
+                    + attribute.getUid() + ".  " + (i + 1) + " of " + valuesToCreate + " created." );
+                break;
             }
         }
-        
+
         return reservedValues;
     }
     
-    private String generateRandomValueInPattern( String pattern ) 
+    private String findValueCandidate( TrackedEntityAttribute trackedEntityAttribute ) 
+        throws TimeoutException 
     {
-        if ( pattern.isEmpty() ) {
-            //No pattern is given. Generate a random number between 1 000 000 and 9 999 999.
-            return String.valueOf( 1000000 + (int)( Math.random() * 9999999 ) ); 
-        }
-        else if ( pattern.matches( "[0-9]+" ) && pattern.length() > 0 )
+        int timeout = 0;
+        
+        while ( timeout < GENERATION_TIMEOUT ) 
         {
-            //This is a simplified pattern, 
-            //Generate a random number with the same number of digits as given in the pattern.
-            int min = 10^( pattern.length() - 1 );
-            int max = ( 10^( pattern.length() ) ) - 1;
-            return String.valueOf( min + (int)( Math.random() * max ) ); 
+            String candidate = generateRandomValueInPattern( trackedEntityAttribute.getPattern() );
+            
+            if ( !trackedEntityAttributeValueService.exists( trackedEntityAttribute, candidate ) )
+            {
+                //The generated ID was available. Check that it is not already reserved
+                if ( findTrackedEntityAttributeReservedValue( trackedEntityAttribute, candidate ) == null ) 
+                {
+                    return candidate;
+                }
+            }
+            
+            timeout ++;
+        }
+        
+        throw new TimeoutException( "Timeout while generating values, could not find unused values for "
+            + trackedEntityAttribute.getUid() + " in " + GENERATION_TIMEOUT + " tries." );
+    }
+    
+    @Transactional
+    public TrackedEntityAttributeReservedValue reserveCandidateValue( TrackedEntityAttribute trackedEntityAttribute ) 
+        throws TimeoutException 
+    {
+        //Retrieve a valid, non-taken and non-reserved ID
+        String reservableValue = findValueCandidate( trackedEntityAttribute );
+        
+        if ( reservableValue != null ) 
+        {
+            TrackedEntityAttributeReservedValue newReservation = 
+                new TrackedEntityAttributeReservedValue( trackedEntityAttribute, reservableValue );
+            
+            return trackedEntityAttributeReservedValueStore.saveTrackedEntityAttributeReservedValue( newReservation );
+        }
+        
+        return null;
+    }
+    
+    private String generateRandomValueInPattern( String pattern ) 
+    {   
+        if ( pattern.isEmpty() || ( pattern.matches( "[0-9]+" ) && pattern.length() > 0 ) )
+        {
+            // This is a simplified pattern
+            long min = 1000000;
+            long max = 9999999;
+            
+            if ( !pattern.isEmpty() ) 
+            {
+                // Generate a random number with the same number of digits as given in the pattern.
+                min = (long)Math.pow( 10, pattern.length() - 1 );
+                max = (long)Math.pow( 10, pattern.length() ) - 1;
+            }
+           
+            return String.valueOf( ThreadLocalRandom.current().nextLong( min, max ) );
         }
         else 
         {
-            //Regex generation, not covered yet.
+            // RegEx generation, not covered yet
             throw new NotImplementedException();
         }
     }
     
     private TrackedEntityAttributeReservedValue findTrackedEntityAttributeReservedValue(
-        TrackedEntityAttribute attribute, 
-        String value )
+        TrackedEntityAttribute attribute, String value )
     {
-        List<TrackedEntityAttributeReservedValue> values = 
-            trackedEntityAttributeReservedValueStore.getTrackedEntityReservedValues( 
-                attribute, value );
-        if ( values.size() == 1 ) 
-        {
-           return values.get( 0 );
-        }
-        else if ( values.size() > 1 ) 
-        {
-            throw new IllegalStateException( "Duplicate values reserved for attribute " 
-                + attribute.getUid() + " value " + value, null );
-        }
-        else
-        {
-            return null;
-        }
+        List<TrackedEntityAttributeReservedValue> values = trackedEntityAttributeReservedValueStore.
+            getTrackedEntityReservedValues( attribute, value );
+        
+        Assert.state( ( values.size() <= 1 ), "Duplicate values reserved for attribute " + attribute.getUid() + " value " + value );
+        
+        return values.size() == 1 ? values.get( 0 ) : null;
     }
 
+    @Override
+    public String getGeneratedValue( TrackedEntityAttribute attribute )
+        throws TimeoutException
+    {
+        Assert.state( attribute.isGenerated(), "Tracked entity attribute " + attribute.getUid() + " must be of type generated" );
+        
+        return findValueCandidate( attribute );
+    }
 }

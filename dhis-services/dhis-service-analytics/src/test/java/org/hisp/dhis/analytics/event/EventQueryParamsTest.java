@@ -55,14 +55,13 @@ public class EventQueryParamsTest
     @Test
     public void testReplacePeriodsWithStartEndDates()
     {
-        EventQueryParams params = new EventQueryParams();
-
         List<DimensionalItemObject> periods = new ArrayList<>();
         periods.add( new MonthlyPeriodType().createPeriod( new DateTime( 2014, 4, 1, 0, 0 ).toDate() ) );
         periods.add( new MonthlyPeriodType().createPeriod( new DateTime( 2014, 5, 1, 0, 0 ).toDate() ) );
         periods.add( new MonthlyPeriodType().createPeriod( new DateTime( 2014, 6, 1, 0, 0 ).toDate() ) );
-        
-        params.getDimensions().add( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) );
+
+        EventQueryParams params = new EventQueryParams.Builder()
+            .addDimension( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) ).build();
         
         assertNull( params.getStartDate() );
         assertNull( params.getEndDate() );
@@ -75,18 +74,17 @@ public class EventQueryParamsTest
     
     @Test
     public void testGetDuplicateQueryItems()
-    {
-        EventQueryParams params = new EventQueryParams();
-        
+    {        
         QueryItem iA = new QueryItem( createDataElement( 'A', new DataElementCategoryCombo() ) );
         QueryItem iB = new QueryItem( createDataElement( 'B', new DataElementCategoryCombo() ) );
         QueryItem iC = new QueryItem( createDataElement( 'B', new DataElementCategoryCombo() ) );
         QueryItem iD = new QueryItem( createDataElement( 'D', new DataElementCategoryCombo() ) );
-        
-        params.getItems().add( iA );
-        params.getItems().add( iB );
-        params.getItems().add( iC );
-        params.getItems().add( iD );
+
+        EventQueryParams params = new EventQueryParams.Builder()
+            .addItem( iA )
+            .addItem( iB )
+            .addItem( iC )
+            .addItem( iD ).build();
         
         List<QueryItem> duplicates = params.getDuplicateQueryItems();
         

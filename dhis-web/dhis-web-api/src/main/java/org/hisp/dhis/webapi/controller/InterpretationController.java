@@ -95,7 +95,7 @@ public class InterpretationController
 
         if ( chart == null )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Chart identifier not valid: " + chartUid ) );
+            throw new WebMessageException( WebMessageUtils.conflict( "Chart does not exist or is not accessible: " + chartUid ) );
         }
 
         User user = currentUserService.getCurrentUser();
@@ -124,7 +124,7 @@ public class InterpretationController
 
         if ( map == null )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Map identifier not valid: " + mapUid ) );
+            throw new WebMessageException( WebMessageUtils.conflict( "Map does not exist or is not accessible: " + mapUid ) );
         }
 
         Interpretation interpretation = new Interpretation( map, text );
@@ -146,7 +146,7 @@ public class InterpretationController
 
         if ( reportTable == null )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Report table identifier not valid: " + reportTableUid ) );
+            throw new WebMessageException( WebMessageUtils.conflict( "Report table does not exist or is not accessible: " + reportTableUid ) );
         }
 
         Period period = PeriodType.getPeriodFromIsoString( isoPeriod );
@@ -159,7 +159,7 @@ public class InterpretationController
 
             if ( orgUnit == null )
             {
-                throw new WebMessageException( WebMessageUtils.conflict( "Organisation unit identifier not valid: " + orgUnitUid ) );
+                throw new WebMessageException( WebMessageUtils.conflict( "Organisation unit does not exist or is not accessible: " + orgUnitUid ) );
             }
         }
 
@@ -182,7 +182,7 @@ public class InterpretationController
 
         if ( dataSet == null )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Data set identifier not valid: " + dataSetUid ) );
+            throw new WebMessageException( WebMessageUtils.conflict( "Data set does not exist or is not accessible: " + dataSetUid ) );
         }
 
         Period period = PeriodType.getPeriodFromIsoString( isoPeriod );
@@ -196,7 +196,7 @@ public class InterpretationController
 
         if ( orgUnit == null )
         {
-            throw new WebMessageException( WebMessageUtils.conflict( "Organisation unit identifier not valid: " + orgUnitUid ) );
+            throw new WebMessageException( WebMessageUtils.conflict( "Organisation unit does not exist or is not accessible: " + orgUnitUid ) );
         }
 
         Interpretation interpretation = new Interpretation( dataSet, period, orgUnit, text );

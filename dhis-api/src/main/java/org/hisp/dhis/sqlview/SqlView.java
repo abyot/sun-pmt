@@ -204,20 +204,13 @@ public class SqlView
         
         return regex.append( ")(\"|'|`|\\s|$).*$" ).toString();
     }
-    
-    public static String getIllegalKeywordsRegex()
+
+
+    public static final String[] getIllegalKeyWords()
     {
-        StringBuffer regex = new StringBuffer( "^.*?(\\s|^)(" );
-        
-        for ( String word : ILLEGAL_KEYWORDS )
-        {
-            regex.append( word ).append( REGEX_SEP );
-        }
-        
-        regex.delete( regex.length() - 1, regex.length() );
-        
-        return regex.append( ")(\\s|$).*$" ).toString();
+        return ILLEGAL_KEYWORDS.toArray(new String[ILLEGAL_KEYWORDS.size()]);
     }
+
     
     /**
      * Indicates whether this SQL view is a query.

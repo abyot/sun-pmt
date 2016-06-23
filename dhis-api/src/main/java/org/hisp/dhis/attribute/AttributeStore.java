@@ -46,7 +46,9 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.program.Program;
+import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
+import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.trackedentity.TrackedEntity;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.user.User;
@@ -84,6 +86,8 @@ public interface AttributeStore
         .put( OptionSet.class, "optionSetAttribute" )
         .put( Constant.class, "constantAttribute")
         .put( LegendSet.class, "legendSetAttribute")
+        .put( ProgramIndicator.class, "programIndicatorAttribute")
+        .put( SqlView.class, "sqlViewAttribute")
         .build();
 
     /**

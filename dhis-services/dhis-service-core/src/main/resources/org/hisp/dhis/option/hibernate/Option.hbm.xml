@@ -16,12 +16,12 @@
 
     <property name="uid" column="uid" unique="true" length="11" />
     <property name="code" column="code" not-null="false" unique="false" length="230" />
-
-    <!-- Length for legacy support -->
     <property name="created" type="timestamp" />
     <property name="lastUpdated" type="timestamp" />
 
     <property name="name" column="name" not-null="true" length="230" />
+    
+    <many-to-one name="optionSet" class="org.hisp.dhis.option.OptionSet" column="optionsetid" />
 
     <!-- Dynamic attribute values -->
     <set name="attributeValues" table="optionattributevalues" cascade="delete-orphan">
@@ -30,5 +30,21 @@
       <many-to-many class="org.hisp.dhis.attribute.AttributeValue" column="attributevalueid" unique="true" />
     </set>
 
+    <!-- Object Translation -->
+    <set name="translations" table="optionvaluetranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="optionvalueid" foreign-key="fk_objecttranslation_optionvalueid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

@@ -45,7 +45,7 @@ public interface SqlViewService
     String ID = SqlViewService.class.getName();
     
     String VARIABLE_EXPRESSION = "\\$\\{(\\w+)\\}";
-    String SELECT_EXPRESSION = "^(?i)\\s*select\\s+.+";
+    String SELECT_EXPRESSION = "^(?i)\\s*(select|with)\\s+.+";
     
     Pattern VARIABLE_PATTERN = Pattern.compile( VARIABLE_EXPRESSION, Pattern.DOTALL );
     Pattern SELECT_PATTERN = Pattern.compile( SELECT_EXPRESSION, Pattern.DOTALL );

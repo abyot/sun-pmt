@@ -1,5 +1,8 @@
 package org.hisp.dhis.sms.command.code;
 
+import org.hisp.dhis.common.BaseIdentifiableObject;
+import org.hisp.dhis.common.DxfNamespaces;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -31,6 +34,12 @@ package org.hisp.dhis.sms.command.code;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
+@JacksonXmlRootElement( localName = "smscode", namespace = DxfNamespaces.DXF_2_0 )
 public class SMSCode
 {
     private int id;
@@ -44,6 +53,8 @@ public class SMSCode
     private int optionId;
 
     private String formula;
+    
+    private boolean compulsory;
 
     public SMSCode( String code, DataElement dataElement, int optionId )
     {
@@ -60,7 +71,7 @@ public class SMSCode
 
     public SMSCode()
     {
-
+        
     }
 
     public int getId()
@@ -73,16 +84,21 @@ public class SMSCode
         this.id = id;
     }
 
+    @JsonProperty( value = "smsCode" )
+    @JacksonXmlProperty( localName = "smsCode" )
     public String getCode()
     {
         return code;
     }
-
+    
     public void setCode( String code )
     {
         this.code = code;
     }
 
+    @JsonProperty( value = "dataElement" )
+    @JsonSerialize( as = BaseIdentifiableObject.class )
+    @JacksonXmlProperty( localName = "dataElement" )
     public DataElement getDataElement()
     {
         return dataElement;
@@ -121,5 +137,17 @@ public class SMSCode
     public void setFormula( String formula )
     {
         this.formula = formula;
+    }
+    
+    @JsonProperty( value = "compulsory" )
+    @JacksonXmlProperty( localName = "compulsory" )
+    public boolean isCompulsory()
+    {
+        return compulsory;
+    }
+
+    public void setCompulsory( boolean compulsory )
+    {
+        this.compulsory = compulsory;
     }
 }

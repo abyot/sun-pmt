@@ -48,11 +48,11 @@ public interface ObjectBundleHook
 
     <T extends IdentifiableObject> void preCreate( T object, ObjectBundle bundle );
 
-    <T extends IdentifiableObject> void postCreate( T object, ObjectBundle bundle );
+    <T extends IdentifiableObject> void postCreate( T persistedObject, ObjectBundle bundle );
 
-    <T extends IdentifiableObject> void preUpdate( T object, ObjectBundle bundle );
+    <T extends IdentifiableObject> void preUpdate( T object, T persistedObject, ObjectBundle bundle );
 
-    <T extends IdentifiableObject> void postUpdate( T object, ObjectBundle bundle );
+    <T extends IdentifiableObject> void postUpdate( T persistedObject, ObjectBundle bundle );
 
-    <T extends IdentifiableObject> void preDelete( T object, ObjectBundle bundle );
+    <T extends IdentifiableObject> void preDelete( T persistedObject, ObjectBundle bundle );
 }

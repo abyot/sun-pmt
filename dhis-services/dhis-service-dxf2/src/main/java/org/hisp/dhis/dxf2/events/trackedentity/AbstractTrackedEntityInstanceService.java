@@ -29,7 +29,6 @@ package org.hisp.dhis.dxf2.events.trackedentity;
  */
 
 import com.google.common.collect.Lists;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.common.IdSchemes;
@@ -37,10 +36,13 @@ import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.commons.collection.CachingMap;
 import org.hisp.dhis.dbms.DbmsManager;
 import org.hisp.dhis.dxf2.common.ImportOptions;
+import org.hisp.dhis.dxf2.events.enrollment.Enrollment;
+import org.hisp.dhis.dxf2.events.enrollment.EnrollmentService;
 import org.hisp.dhis.dxf2.importsummary.ImportConflict;
 import org.hisp.dhis.dxf2.importsummary.ImportStatus;
 import org.hisp.dhis.dxf2.importsummary.ImportSummaries;
 import org.hisp.dhis.dxf2.importsummary.ImportSummary;
+import org.hisp.dhis.importexport.ImportStrategy;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.relationship.Relationship;
 import org.hisp.dhis.relationship.RelationshipService;
@@ -95,6 +97,9 @@ public abstract class AbstractTrackedEntityInstanceService
 
     @Autowired
     protected DbmsManager dbmsManager;
+
+    @Autowired
+    protected EnrollmentService enrollmentService;
 
     private final CachingMap<String, OrganisationUnit> organisationUnitCache = new CachingMap<>();
 
@@ -216,7 +221,7 @@ public abstract class AbstractTrackedEntityInstanceService
 
         if ( organisationUnit == null )
         {
-            importSummary.getConflicts().add( new ImportConflict( trackedEntityInstance.getTrackedEntityInstance(), "Invalid org unit ID: " + trackedEntityInstance.getOrgUnit()) );
+            importSummary.getConflicts().add( new ImportConflict( trackedEntityInstance.getTrackedEntityInstance(), "Invalid org unit ID: " + trackedEntityInstance.getOrgUnit() ) );
             return null;
         }
 
@@ -308,6 +313,15 @@ public abstract class AbstractTrackedEntityInstanceService
         importSummary.setReference( entityInstance.getUid() );
         importSummary.getImportCount().incrementImported();
 
+        for ( Enrollment enrollment : trackedEntityInstance.getEnrollments() )
+        {
+            enrollment.setTrackedEntity( trackedEntityInstance.getTrackedEntity() );
+            enrollment.setTrackedEntityInstance( entityInstance.getUid() );
+        }
+
+        ImportSummaries importSummaries = enrollmentService.addEnrollments( trackedEntityInstance.getEnrollments(), importOptions );
+        importSummary.setEnrollments( importSummaries );
+
         return importSummary;
     }
 
@@ -397,6 +411,16 @@ public abstract class AbstractTrackedEntityInstanceService
         importSummary.setStatus( ImportStatus.SUCCESS );
         importSummary.setReference( entityInstance.getUid() );
         importSummary.getImportCount().incrementUpdated();
+
+        for ( Enrollment enrollment : trackedEntityInstance.getEnrollments() )
+        {
+            enrollment.setTrackedEntity( trackedEntityInstance.getTrackedEntity() );
+            enrollment.setTrackedEntityInstance( entityInstance.getUid() );
+        }
+
+        importOptions.setStrategy( ImportStrategy.CREATE_AND_UPDATE );
+        ImportSummaries importSummaries = enrollmentService.addEnrollments( trackedEntityInstance.getEnrollments(), importOptions );
+        importSummary.setEnrollments( importSummaries );
 
         return importSummary;
     }

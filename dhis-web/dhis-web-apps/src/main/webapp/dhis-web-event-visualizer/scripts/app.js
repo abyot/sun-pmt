@@ -2886,7 +2886,7 @@ Ext.onReady( function() {
 							this.currentValue = this.getValue();
 
 							var value = this.getValue(),
-								url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:like:' + value : null;
+								url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:ilike:' + value : null;
 								store = ns.app.stores.eventChart;
 
 							store.page = 1;
@@ -2902,7 +2902,7 @@ Ext.onReady( function() {
 			text: NS.i18n.prev,
 			handler: function() {
 				var value = searchTextfield.getValue(),
-					url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:like:' + value : null;
+					url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:ilike:' + value : null;
 					store = ns.app.stores.eventChart;
 
 				store.page = store.page <= 1 ? 1 : store.page - 1;
@@ -2914,7 +2914,7 @@ Ext.onReady( function() {
 			text: NS.i18n.next,
 			handler: function() {
 				var value = searchTextfield.getValue(),
-					url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:like:' + value : null;
+					url = value ? ns.core.init.contextPath + '/api/eventCharts.json?fields=id,displayName|rename(name),access&filter=displayName:ilike:' + value : null;
 					store = ns.app.stores.eventChart;
 
 				store.page = store.page + 1;
@@ -5883,7 +5883,7 @@ Ext.onReady( function() {
 						return;
 					}
 
-					path = '/organisationUnitGroups.json?fields=id,' + ns.core.init.namePropertyUrl + '&filter=organisationUnitGroupSet.id:eq:' + dimension.id + (filter ? '&filter=name:like:' + filter : '');
+					path = '/organisationUnitGroups.json?fields=id,' + ns.core.init.namePropertyUrl + '&filter=organisationUnitGroupSet.id:eq:' + dimension.id + (filter ? '&filter=name:ilike:' + filter : '');
 
 					store.isPending = true;
 

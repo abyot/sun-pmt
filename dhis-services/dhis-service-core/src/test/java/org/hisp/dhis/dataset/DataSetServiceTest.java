@@ -161,6 +161,7 @@ public class DataSetServiceTest
         mockCurrentUserService = new MockCurrentUserService( true, newHashSet( unitA ), newHashSet( unitA ), UserAuthorityGroup.AUTHORITY_ALL );
         setDependency( approvalService, "currentUserService", mockCurrentUserService, CurrentUserService.class );
         setDependency( approvalStore, "currentUserService", mockCurrentUserService, CurrentUserService.class );
+        setDependency( levelService, "currentUserService", mockCurrentUserService, CurrentUserService.class );
 
         User user = mockCurrentUserService.getCurrentUser();
         user.setFirstName( "John" );
@@ -200,6 +201,7 @@ public class DataSetServiceTest
     {
         setDependency( approvalService, "currentUserService", currentUserService, CurrentUserService.class );
         setDependency( approvalStore, "currentUserService", currentUserService, CurrentUserService.class );
+        setDependency( levelService, "currentUserService", currentUserService, CurrentUserService.class );
     }
 
     // -------------------------------------------------------------------------

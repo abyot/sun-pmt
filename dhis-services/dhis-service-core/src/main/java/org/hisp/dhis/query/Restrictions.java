@@ -85,22 +85,22 @@ public final class Restrictions
         return new Restriction( path, new BetweenOperator( lside, rside ) );
     }
 
-    public static Restriction like( String path, String value, MatchMode matchMode )
+    public static Restriction like( String path, Object value, MatchMode matchMode )
     {
         return new Restriction( path, new LikeOperator( value, true, matchMode ) );
     }
 
-    public static Restriction notLike( String path, String value, MatchMode matchMode )
+    public static Restriction notLike( String path, Object value, MatchMode matchMode )
     {
         return new Restriction( path, new NotLikeOperator( value, true, matchMode ) );
     }
 
-    public static Restriction ilike( String path, String value, MatchMode matchMode )
+    public static Restriction ilike( String path, Object value, MatchMode matchMode )
     {
         return new Restriction( path, new LikeOperator( value, false, matchMode ) );
     }
 
-    public static Restriction notIlike( String path, String value, MatchMode matchMode )
+    public static Restriction notIlike( String path, Object value, MatchMode matchMode )
     {
         return new Restriction( path, new NotLikeOperator( value, false, matchMode ) );
     }

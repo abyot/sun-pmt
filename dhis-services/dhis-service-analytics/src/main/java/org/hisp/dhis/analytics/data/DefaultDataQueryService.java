@@ -56,9 +56,7 @@ import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_USER_ORGUNIT_C
 import static org.hisp.dhis.organisationunit.OrganisationUnit.KEY_USER_ORGUNIT_GRANDCHILDREN;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,7 +78,6 @@ import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.RelativePeriodEnum;
 import org.hisp.dhis.period.RelativePeriods;
-import org.hisp.dhis.period.comparator.AscendingPeriodEndDateComparator;
 import org.hisp.dhis.system.util.ReflectionUtils;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
@@ -317,7 +314,7 @@ public class DefaultDataQueryService
         {
             Calendar calendar = PeriodType.getCalendar();
 
-            Set<Period> periods = new HashSet<>();
+            List<Period> periods = new ArrayList<>();
 
             for ( String isoPeriod : items )
             {
@@ -338,6 +335,8 @@ public class DefaultDataQueryService
                 }
             }
 
+            periods = periods.stream().distinct().collect( Collectors.toList() ); // Remove duplicates
+
             if ( periods.isEmpty() )
             {
                 throw new IllegalQueryException( "Dimension pe is present in query without any valid dimension options" );
@@ -355,10 +354,7 @@ public class DefaultDataQueryService
                 }
             }
 
-            List<Period> periodList = new ArrayList<>( periods );
-            Collections.sort( periodList, AscendingPeriodEndDateComparator.INSTANCE );
-
-            DimensionalObject object = new BaseDimensionalObject( dimension, DimensionType.PERIOD, null, DISPLAY_NAME_PERIOD, asList( periodList ) );
+            DimensionalObject object = new BaseDimensionalObject( dimension, DimensionType.PERIOD, null, DISPLAY_NAME_PERIOD, asList( periods ) );
 
             return object;
         }

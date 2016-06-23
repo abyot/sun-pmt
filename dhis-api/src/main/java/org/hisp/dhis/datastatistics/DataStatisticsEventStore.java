@@ -1,5 +1,7 @@
 package org.hisp.dhis.datastatistics;
 
+import org.hisp.dhis.analytics.SortOrder;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -55,9 +57,9 @@ public interface DataStatisticsEventStore
      *
      * @param eventType that should be counted
      * @param pageSize number of favorites
-     * @param sortOrder DESC or ASC
+     * @param sortOrder sort order of the favorites
+     * @param username of user
      * @return list of FavoriteStatistics
      */
-    List<FavoriteStatistics> getFavoritesData( DataStatisticsEventType eventType, int pageSize, String sortOrder );
-
+    List<FavoriteStatistics> getFavoritesData( DataStatisticsEventType eventType, int pageSize, SortOrder sortOrder, String username );
 }

@@ -29,6 +29,7 @@ package org.hisp.dhis.trackedentityattributevalue;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -47,6 +48,9 @@ public class TrackedEntityAttributeReservedValueServiceTest
 {
     private TrackedEntityAttribute trackedEntityAttributeA;
     private TrackedEntityAttribute trackedEntityAttributeB;
+    private TrackedEntityAttribute trackedEntityAttributeC;
+    private TrackedEntityAttribute trackedEntityAttributeD;
+    
     private TrackedEntityInstance trackedEntityInstanceA;
     
     @Autowired
@@ -69,12 +73,19 @@ public class TrackedEntityAttributeReservedValueServiceTest
     {
         trackedEntityAttributeA = createTrackedEntityAttribute( 'A' );
         trackedEntityAttributeB = createTrackedEntityAttribute( 'B' );
+        trackedEntityAttributeC = createTrackedEntityAttribute( 'C' );
+        trackedEntityAttributeD = createTrackedEntityAttribute( 'D' );
         trackedEntityAttributeA.setGenerated( true );
         trackedEntityAttributeB.setGenerated( false );
+        trackedEntityAttributeC.setGenerated( true );
+        trackedEntityAttributeC.setPattern( "000000" );
+        trackedEntityAttributeD.setGenerated( true );
+        trackedEntityAttributeD.setPattern( "0" );
         
         trackedEntityAttributeStore.save( trackedEntityAttributeA );
         trackedEntityAttributeStore.save( trackedEntityAttributeB );
-        
+        trackedEntityAttributeStore.save( trackedEntityAttributeC );
+        trackedEntityAttributeStore.save( trackedEntityAttributeD );
         
         OrganisationUnit ou = createOrganisationUnit( 'A' );
         organisationUnitStore.save( ou );
@@ -101,18 +112,93 @@ public class TrackedEntityAttributeReservedValueServiceTest
     @Test
     public void testReserveOneTrackedEntityAttributeValue() 
     {
-        List<TrackedEntityAttributeReservedValue> reservedValues = trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeA, 1 );
-        
-        assertTrue( reservedValues.size() == 1 );
+        try 
+        {
+            List<TrackedEntityAttributeReservedValue> reservedValues = trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeA, 1 );
+
+            assertTrue( reservedValues.size() == 1 );
+        }
+        catch( Exception e )
+        {
+            fail( "service threw unexpected exception" );
+        }
     }
     
     @Test
     public void testReserveTrackedEntityAttributeValues() 
     {
-        List<TrackedEntityAttributeReservedValue> reservedValues = trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeA, 10 );
-        
-        assertTrue( reservedValues.size() == 10 );
-        assertTrue( reservedValues.get( 0 ).getValue() != null );
-        assertTrue( reservedValues.get( 0 ).getValue() != reservedValues.get( 1 ).getValue() );
+        try
+        {
+            List<TrackedEntityAttributeReservedValue> reservedValues = trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeA, 10 );
+            
+            assertTrue( reservedValues.size() == 10 );
+            assertTrue( reservedValues.get( 0 ).getValue() != null );
+            assertTrue( reservedValues.get( 0 ).getValue() != reservedValues.get( 1 ).getValue() );
+        }
+        catch ( Exception e )
+        {
+            fail( "service threw unexpected exception" );
+        }
+    }
+    
+    @Test
+    public void testReserveTrackedEntityAttributeValuesWhenNotGenerated() 
+    {
+        try
+        {
+            trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeB, 10 );
+            
+            fail( "Expected exception, as the TEA is not configured to be generated" );
+        }
+        catch ( Exception e )
+        {
+            //All good - expected exception when trying to generate a value for a non-generated TEA
+        }
+    }
+    
+    @Test
+    public void testReserveTrackedEntityAttributeValueTillTimeout() 
+    {
+        try
+        {
+            List<TrackedEntityAttributeReservedValue> reservedValues = trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeD, 11 );
+            //We requested 11 values, but expect less(as there are only 10 possible values for the pattern);
+            
+            assertTrue( reservedValues.size() < 11 );
+        }
+        catch ( Exception e )
+        {
+            fail( "No exception is expected to be thrown" );
+        }
+    }
+    
+    @Test
+    public void testGenerateTrackedEntityAttributeValues() 
+    {
+        try
+        {
+            String reserved = trackedEntityAttributeReservedValueService.getGeneratedValue( trackedEntityAttributeC );
+            
+            assertTrue( reserved.length() == 6 );
+        }
+        catch ( Exception e )
+        {
+            fail( "service threw unexpected exception" );
+        }
+    }
+    
+    @Test
+    public void testGenerateTrackedEntityAttributeValuesWhenNotGenerated() 
+    {
+        try
+        {
+            trackedEntityAttributeReservedValueService.createTrackedEntityReservedValues( trackedEntityAttributeB, 10 );
+            
+            fail( "Expected exception, as the TEA is not configured to be generated" );
+        }
+        catch ( Exception e )
+        {
+            //All good - expected exception when trying to generate a value for a non-generated TEA
+        }
     }
 }

@@ -93,6 +93,12 @@ public class ProgramRuleVariable
      * </ul>
      */
     private DataElement dataElement;
+    
+    /**
+     * If the dataElement or trackedEntityAttribute is connected to an option set,
+     * use this option sets code(and not the name) as value 
+     */
+    private Boolean useCodeForOptionSet;
 
     /**
      * Specification of the program stage that the variable should be fetched
@@ -114,6 +120,7 @@ public class ProgramRuleVariable
         ProgramRuleVariableSourceType sourceType,
         TrackedEntityAttribute attribute,
         DataElement dataElement,
+        Boolean useCodeForOptionSet,
         ProgramStage programStage )
     {
         this.name = name;
@@ -121,6 +128,7 @@ public class ProgramRuleVariable
         this.sourceType = sourceType;
         this.attribute = attribute;
         this.dataElement = dataElement;
+        this.useCodeForOptionSet = useCodeForOptionSet;
         this.programStage = programStage;
     }
 
@@ -139,6 +147,19 @@ public class ProgramRuleVariable
     public void setProgram( Program program )
     {
         this.program = program;
+    }
+    
+    @JsonProperty
+    @JsonSerialize( as = BaseIdentifiableObject.class )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public Boolean isUseCodeForOptionSet()
+    {
+        return useCodeForOptionSet;
+    }
+
+    public void setUseCodeForOptionSet( Boolean useCodeForOptionSet )
+    {
+        this.useCodeForOptionSet = useCodeForOptionSet;
     }
 
     @JsonProperty
@@ -207,6 +228,7 @@ public class ProgramRuleVariable
                 this.sourceType = programRuleVariable.getSourceType();
                 this.attribute = programRuleVariable.getAttribute();
                 this.dataElement = programRuleVariable.getDataElement();
+                this.useCodeForOptionSet = programRuleVariable.isUseCodeForOptionSet();
                 this.programStage = programRuleVariable.getProgramStage();
             }
             else if ( mergeMode.isMerge() )
@@ -214,6 +236,7 @@ public class ProgramRuleVariable
                 this.sourceType = programRuleVariable.getSourceType() == null ? sourceType : programRuleVariable.getSourceType();
                 this.attribute = programRuleVariable.getAttribute() == null ? attribute : programRuleVariable.getAttribute();
                 this.dataElement = programRuleVariable.getDataElement() == null ? dataElement : programRuleVariable.getDataElement();
+                this.useCodeForOptionSet = programRuleVariable.isUseCodeForOptionSet() == null ? useCodeForOptionSet : programRuleVariable.isUseCodeForOptionSet();
                 this.programStage = programRuleVariable.getProgramStage() == null ? programStage : programRuleVariable.getProgramStage();
             }
         }

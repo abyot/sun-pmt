@@ -101,6 +101,7 @@ public class DefaultSchemaService
         add( new OrganisationUnitGroupSetSchemaDescriptor() ).
         add( new OrganisationUnitLevelSchemaDescriptor() ).
         add( new OrganisationUnitSchemaDescriptor() ).
+        add( new PredictorSchemaDescriptor() ).
         add( new ProgramIndicatorSchemaDescriptor() ).
         add( new ProgramRuleActionSchemaDescriptor() ).
         add( new ProgramRuleSchemaDescriptor() ).

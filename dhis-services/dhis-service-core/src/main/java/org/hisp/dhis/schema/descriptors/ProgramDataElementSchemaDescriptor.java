@@ -53,7 +53,6 @@ public class ProgramDataElementSchemaDescriptor implements SchemaDescriptor
         Schema schema = new Schema( ProgramDataElement.class, SINGULAR, PLURAL );
         schema.setRelativeApiEndpoint( API_ENDPOINT );
         schema.setOrder( 1511 );
-        schema.setShareable( true );
 
         schema.getAuthorities().add( new Authority( AuthorityType.CREATE, Lists.newArrayList( "F_PROGRAMDATAELEMENT_ADD" ) ) );
         schema.getAuthorities().add( new Authority( AuthorityType.DELETE, Lists.newArrayList( "F_PROGRAMDATAELEMENT_DELETE" ) ) );

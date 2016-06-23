@@ -34,6 +34,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.DxfNamespaces;
+import org.hisp.dhis.dxf2.events.enrollment.Enrollment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,8 @@ public class TrackedEntityInstance
     private List<Relationship> relationships = new ArrayList<>();
 
     private List<Attribute> attributes = new ArrayList<>();
+
+    private List<Enrollment> enrollments = new ArrayList<>();
 
     private Boolean inactive;
 
@@ -161,6 +164,19 @@ public class TrackedEntityInstance
     public void setAttributes( List<Attribute> attributes )
     {
         this.attributes = attributes;
+    }
+
+    public List<Enrollment> getEnrollments()
+    {
+        return enrollments;
+    }
+
+    @JsonProperty
+    @JacksonXmlElementWrapper( localName = "enrollments", namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "enrollment", namespace = DxfNamespaces.DXF_2_0 )
+    public void setEnrollments( List<Enrollment> enrollments )
+    {
+        this.enrollments = enrollments;
     }
 
     @JsonProperty

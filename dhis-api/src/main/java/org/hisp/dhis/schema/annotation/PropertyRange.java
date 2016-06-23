@@ -43,6 +43,10 @@ import java.lang.annotation.Target;
  * <ol>PropertyType.NUMBER: min/max values (only integer min/max currently allowed)</ol>
  * <ol>PropertyType.INTEGER: min/max values</ol>
  * </ul>
+ * <p>
+ * Be aware that this annotation overrides anything set in the schema, so it's possible to
+ * have values here that goes beyond what the schema allows, and would result in error when
+ * trying to save the object.
  *
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
@@ -50,7 +54,7 @@ import java.lang.annotation.Target;
 @Retention( RetentionPolicy.RUNTIME )
 public @interface PropertyRange
 {
-    int min() default 0;
+    double min() default 0;
 
-    int max() default Integer.MAX_VALUE;
+    double max() default Double.MAX_VALUE;
 }

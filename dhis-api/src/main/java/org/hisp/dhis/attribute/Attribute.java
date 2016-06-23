@@ -56,7 +56,9 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.program.Program;
+import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
+import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.trackedentity.TrackedEntity;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.user.User;
@@ -117,6 +119,10 @@ public class Attribute
 
     private boolean legendSetAttribute;
 
+    private boolean programIndicatorAttribute;
+
+    private boolean sqlViewAttribute;
+
     private boolean mandatory;
 
     private boolean unique;
@@ -142,7 +148,7 @@ public class Attribute
         return 31 * super.hashCode() + Objects.hash( valueType, dataElementAttribute, dataElementGroupAttribute, indicatorAttribute, indicatorGroupAttribute,
             dataSetAttribute, organisationUnitAttribute, organisationUnitGroupAttribute, organisationUnitGroupSetAttribute, userAttribute, userGroupAttribute,
             programAttribute, programStageAttribute, trackedEntityAttribute, trackedEntityAttributeAttribute, categoryOptionAttribute, categoryOptionGroupAttribute,
-            mandatory, unique, optionSet, optionAttribute );
+            mandatory, unique, optionSet, optionAttribute, constantAttribute, legendSetAttribute, programIndicatorAttribute, sqlViewAttribute);
     }
 
     @Override
@@ -183,6 +189,8 @@ public class Attribute
             && Objects.equals( this.optionAttribute, other.optionAttribute )
             && Objects.equals( this.constantAttribute, other.constantAttribute )
             && Objects.equals( this.legendSetAttribute, other.legendSetAttribute )
+            && Objects.equals( this.programIndicatorAttribute, other.programIndicatorAttribute )
+            && Objects.equals( this.sqlViewAttribute, other.sqlViewAttribute )
 
             && Objects.equals( this.mandatory, other.mandatory )
             && Objects.equals( this.unique, other.unique )
@@ -504,6 +512,20 @@ public class Attribute
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isProgramIndicatorAttribute() { return programIndicatorAttribute; }
+
+    public void setProgramIndicatorAttribute( boolean programIndicatorAttribute ) { this.programIndicatorAttribute = programIndicatorAttribute; }
+
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isSqlViewAttribute() { return sqlViewAttribute; }
+
+    public void setSqlViewAttribute( boolean sqlViewAttribute ) { this.sqlViewAttribute = sqlViewAttribute; }
+
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public OptionSet getOptionSet()
     {
         return optionSet;
@@ -552,6 +574,8 @@ public class Attribute
         if ( optionSetAttribute ) klasses.add( OptionSet.class );
         if ( legendSetAttribute ) klasses.add( LegendSet.class );
         if ( constantAttribute ) klasses.add( Constant.class );
+        if ( programIndicatorAttribute ) klasses.add( ProgramIndicator.class );
+        if ( sqlViewAttribute ) klasses.add( SqlView.class );
 
         return klasses;
     }
@@ -586,6 +610,8 @@ public class Attribute
             optionSetAttribute = attribute.isOptionSetAttribute();
             constantAttribute = attribute.isConstantAttribute();
             legendSetAttribute = attribute.isLegendSetAttribute();
+            programIndicatorAttribute = attribute.isProgramIndicatorAttribute();
+            sqlViewAttribute = attribute.isSqlViewAttribute();
             mandatory = attribute.isMandatory();
             unique = attribute.isUnique();
 
@@ -626,6 +652,8 @@ public class Attribute
             .add( "categoryOptionGroupAttribute", categoryOptionGroupAttribute )
             .add( "constantAttribute", constantAttribute )
             .add( "legendSetAttribute", legendSetAttribute )
+            .add( "programIndicatorAttribute", programIndicatorAttribute )
+            .add( "sqlViewAttribute", sqlViewAttribute )
             .add( "mandatory", mandatory )
             .toString();
     }

@@ -89,13 +89,6 @@
       <param name="requiredAuthorities">F_MOBILE_SETTINGS</param>
     </action>
 
-    <action name="reloadStartStopService" class="org.hisp.dhis.mobile.action.ReloadStartStopServiceAction">
-      <result name="success" type="velocity-json">../dhis-web-commons/ajax/jsonResponseSuccess.vm</result>
-      <result name="input" type="velocity-json">../dhis-web-commons/ajax/jsonResponseInput.vm</result>
-      <param name="onExceptionReturn">plainTextError</param>
-      <param name="requiredAuthorities">F_MOBILE_SETTINGS</param>
-    </action>
-
     <action name="saveSmsConfiguration" class="org.hisp.dhis.mobile.action.SaveSmsConfigurationAction">
       <result name="success" type="redirect">showSMSConfigureForm.action</result>
       <param name="requiredAuthorities">F_MOBILE_SETTINGS</param>
@@ -104,18 +97,6 @@
     <action name="saveBulkSMSConfig" class="org.hisp.dhis.mobile.action.UpdateBulkGateWayConfigAction">
       <result name="success" type="velocity-json">../dhis-web-commons/ajax/jsonResponseSuccess.vm</result>
       <param name="onExceptionReturn">plainTextError</param>
-    </action>
-
-    <action name="updateSMPPConfig" class="org.hisp.dhis.mobile.action.UpdateSMPPGateWayConfigAction">
-      <result name="success" type="velocity-json">../dhis-web-commons/ajax/jsonResponseSuccess.vm</result>
-      <param name="onExceptionReturn">plainTextError</param>
-      <param name="requiredAuthorities">F_MOBILE_SETTINGS</param>
-    </action>
-
-    <action name="saveModemConfig" class="org.hisp.dhis.mobile.action.UpdateModemGateWayConfigAction">
-      <result name="success" type="velocity-json">../dhis-web-commons/ajax/jsonResponseSuccess.vm</result>
-      <param name="onExceptionReturn">plainTextError</param>
-      <param name="requiredAuthorities">F_MOBILE_SETTINGS</param>
     </action>
 
     <action name="saveClickatellConfig" class="org.hisp.dhis.mobile.action.UpdateClickatellGateWayConfigAction">

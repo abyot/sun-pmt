@@ -29,6 +29,7 @@ package org.hisp.dhis.webapi.controller;
  */
 
 import com.fasterxml.jackson.core.JsonParseException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hisp.dhis.common.DeleteNotAllowedException;
 import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.MaintenanceModeException;
@@ -49,16 +50,22 @@ import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
 import java.beans.PropertyEditorSupport;
 import java.util.Date;
 
@@ -129,7 +136,8 @@ public class CrudControllerAdvice
     @ExceptionHandler( ConstraintViolationException.class )
     public void constraintViolationExceptionHandler( ConstraintViolationException ex, HttpServletResponse response, HttpServletRequest request )
     {
-        webMessageService.send( WebMessageUtils.unprocessableEntity( ex.getMessage() ), response, request );
+        webMessageService.send( WebMessageUtils.error( getExceptionMessage( ex ) ), response, request );
+        ex.printStackTrace();
     }
 
     @ExceptionHandler( MaintenanceModeException.class )
@@ -154,5 +162,61 @@ public class CrudControllerAdvice
     public void httpStatusCodeExceptionHandler( HttpStatusCodeException ex, HttpServletResponse response, HttpServletRequest request )
     {
         webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, ex.getStatusCode() ), response, request );
+    }
+
+    @ExceptionHandler( HttpClientErrorException.class )
+    public void httpClientErrorExceptionHandler( HttpClientErrorException ex, HttpServletRequest request, HttpServletResponse response )
+    {
+        webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, ex.getStatusCode() ), response, request );
+    }
+
+    @ExceptionHandler( HttpServerErrorException.class )
+    public void httpServerErrorExceptionHandler( HttpServerErrorException ex, HttpServletRequest request, HttpServletResponse response )
+    {
+        webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, ex.getStatusCode() ), response, request );
+    }
+
+    @ExceptionHandler( HttpRequestMethodNotSupportedException.class )
+    public void httpRequestMethodNotSupportedExceptionHandler( HttpRequestMethodNotSupportedException ex, HttpServletRequest request, HttpServletResponse response )
+    {
+        webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, HttpStatus.METHOD_NOT_ALLOWED ), response, request );
+    }
+
+    @ExceptionHandler( HttpMediaTypeNotAcceptableException.class )
+    public void httpMediaTypeNotAcceptableExceptionHandler( HttpMediaTypeNotAcceptableException ex, HttpServletRequest request, HttpServletResponse response )
+    {
+        webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, HttpStatus.NOT_ACCEPTABLE ), response, request );
+    }
+
+    @ExceptionHandler( HttpMediaTypeNotSupportedException.class )
+    public void httpMediaTypeNotSupportedExceptionHandler( HttpMediaTypeNotSupportedException ex, HttpServletRequest request, HttpServletResponse response )
+    {
+        webMessageService.send( WebMessageUtils.createWebMessage( ex.getMessage(), Status.ERROR, HttpStatus.UNSUPPORTED_MEDIA_TYPE ), response, request );
+    }
+
+    @ExceptionHandler( ServletException.class )
+    public void servletExceptionHandler( ServletException ex ) throws ServletException
+    {
+        throw ex;
+    }
+
+    // Catch default exception and send back to user, but rethrow internally so it still ends up in server logs
+    @ExceptionHandler( Exception.class )
+    public void defaultExceptionHandler( Exception ex, HttpServletRequest request, HttpServletResponse response ) throws Exception
+    {
+        webMessageService.send( WebMessageUtils.error( getExceptionMessage( ex ) ), response, request );
+        ex.printStackTrace();
+    }
+
+    private String getExceptionMessage( Exception ex )
+    {
+        String message = ex.getMessage();
+
+        if ( ex.getCause() != null )
+        {
+            message = ex.getCause().getMessage();
+        }
+
+        return message;
     }
 }

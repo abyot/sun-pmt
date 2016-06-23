@@ -31,14 +31,18 @@ package org.hisp.dhis.webapi.controller.sms;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.render.RenderService;
+import org.hisp.dhis.sms.command.SMSCommand;
+import org.hisp.dhis.sms.command.SMSCommandService;
 import org.hisp.dhis.sms.incoming.IncomingSms;
 import org.hisp.dhis.sms.incoming.IncomingSmsService;
 import org.hisp.dhis.sms.outbound.OutboundSms;
+import org.hisp.dhis.sms.parse.ParserType;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,6 +77,42 @@ public class SmsController
     @Autowired
     private RenderService renderService;
 
+    @Autowired
+    private SMSCommandService smsCommandService;
+
+    // -------------------------------------------------------------------------
+    // GET
+    // -------------------------------------------------------------------------
+
+    @PreAuthorize( "hasRole('ALL') or hasRole(' F_MOBILE_SENDSMS')" )
+    @RequestMapping( value = "/commands", method = RequestMethod.GET, produces = "application/json" )
+    public void getSmsCommands( HttpServletRequest request, HttpServletResponse response )
+        throws IOException
+    {
+        List<SMSCommand> commands = smsCommandService.getSMSCommands();
+
+        if ( commands != null && !commands.isEmpty() )
+        {
+            renderService.toJson( response.getOutputStream(), commands );
+        }
+    }
+
+    @PreAuthorize( "hasRole('ALL') or hasRole(' F_MOBILE_SENDSMS')" )
+    @RequestMapping( value = "/commands/{commandName}", method = RequestMethod.GET, produces = "application/json" )
+    public void getSmsCommandTypes( @PathVariable( "commandName" ) String commandName, @RequestParam ParserType type,
+        HttpServletRequest request, HttpServletResponse response)
+            throws IOException, WebMessageException
+    {
+        SMSCommand command = smsCommandService.getSMSCommand( commandName, type );
+
+        if ( command == null )
+        {
+            throw new WebMessageException( WebMessageUtils.notFound( "No sms command found" ) );
+        }
+
+        renderService.toJson( response.getOutputStream(), command );
+    }
+
     // -------------------------------------------------------------------------
     // POST
     // -------------------------------------------------------------------------
@@ -81,7 +121,7 @@ public class SmsController
     @RequestMapping( value = "/outbound", method = RequestMethod.POST )
     public void sendSMSMessage( @RequestParam String recipient, @RequestParam String message,
         HttpServletResponse response, HttpServletRequest request )
-        throws WebMessageException
+            throws WebMessageException
     {
         if ( recipient == null || recipient.length() <= 0 )
         {
@@ -95,7 +135,7 @@ public class SmsController
 
         String result = smsSender.sendMessage( null, message, recipient );
 
-        if ( result.equals( "success" ) )
+        if ( "success".equals( result ) )
         {
             webMessageService.send( WebMessageUtils.ok( "SENT" ), response, request );
         }
@@ -114,7 +154,7 @@ public class SmsController
 
         String result = smsSender.sendMessage( null, sms.getMessage(), sms.getRecipients() );
 
-        if ( result.equals( "success" ) )
+        if ( "success".equals( result ) )
         {
             webMessageService.send( WebMessageUtils.ok( "SENT" ), response, request );
         }
@@ -128,8 +168,8 @@ public class SmsController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_MOBILE_SETTINGS')" )
     public void receiveSMSMessage( @RequestParam String originator, @RequestParam( required = false ) Date receivedTime,
         @RequestParam String message, @RequestParam( defaultValue = "Unknown", required = false ) String gateway,
-        HttpServletRequest request, HttpServletResponse response )
-        throws WebMessageException, ParseException
+        HttpServletRequest request, HttpServletResponse response)
+            throws WebMessageException, ParseException
     {
         if ( originator == null || originator.length() <= 0 )
         {
@@ -151,11 +191,6 @@ public class SmsController
     public void receiveSMSMessage( HttpServletRequest request, HttpServletResponse response )
         throws WebMessageException, ParseException, IOException
     {
-        if ( incomingSMSService == null )
-        {
-            throw new WebMessageException( WebMessageUtils.error( "Service unavailable" ) );
-        }
-
         IncomingSms sms = renderService.fromJson( request.getInputStream(), IncomingSms.class );
 
         int smsId = incomingSMSService.save( sms );
@@ -168,11 +203,6 @@ public class SmsController
     public void importUnparsedSMSMessages( HttpServletRequest request, HttpServletResponse response )
         throws WebMessageException, ParseException, IOException
     {
-        if ( incomingSMSService == null )
-        {
-            throw new WebMessageException( WebMessageUtils.error( "Service unavailable" ) );
-        }
-
         List<IncomingSms> importMessageList = incomingSMSService.getAllUnparsedMessages();
 
         for ( IncomingSms sms : importMessageList )
@@ -180,6 +210,6 @@ public class SmsController
             incomingSMSService.update( sms );
         }
 
-        webMessageService.send( WebMessageUtils.ok( "Import Successful" ), response, request );
+        webMessageService.send( WebMessageUtils.ok( "Import successful" ), response, request );
     }
 }

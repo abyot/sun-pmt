@@ -55,19 +55,24 @@ public class SectionObjectBundleHook extends AbstractObjectBundleHook
     }
 
     @Override
-    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !Section.class.isInstance( identifiableObject ) ) return;
-        Section section = (Section) identifiableObject;
+        if ( !Section.class.isInstance( object ) ) return;
+        Section section = (Section) object;
+        Section persistedSection = (Section) persistedObject;
+
         section.getGreyedFields().clear();
+        persistedSection.getGreyedFields().clear();
+
+        sessionFactory.getCurrentSession().flush();
     }
 
     @Override
     @SuppressWarnings( "unchecked" )
-    public void postUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void postUpdate( IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !Section.class.isInstance( identifiableObject ) ) return;
-        Section section = (Section) identifiableObject;
+        if ( !Section.class.isInstance( persistedObject ) ) return;
+        Section section = (Section) persistedObject;
 
         Map<String, Object> references = bundle.getObjectReferences( Section.class ).get( section.getUid() );
         if ( references == null ) return;

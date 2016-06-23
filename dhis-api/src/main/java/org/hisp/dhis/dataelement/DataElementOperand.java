@@ -41,6 +41,7 @@ import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.DimensionItemType;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObject;
+import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
@@ -100,7 +101,7 @@ public class DataElementOperand
     private List<Integer> aggregationLevels = new ArrayList<>();
 
     private ValueType valueType;
-    
+
     private int frequencyOrder;
 
     private String operandType;
@@ -164,13 +165,13 @@ public class DataElementOperand
 
         if ( dataElement != null )
         {
-            item = dataElement.getUid() + ( categoryOptionCombo != null ? ( SEPARATOR + categoryOptionCombo.getUid() ) : StringUtils.EMPTY );
+            item = dataElement.getUid() + (categoryOptionCombo != null ? (SEPARATOR + categoryOptionCombo.getUid()) : StringUtils.EMPTY);
         }
         else if ( dataElementId != null )
         {
-            item = dataElementId + ( optionComboId != null ? ( SEPARATOR + optionComboId ) : StringUtils.EMPTY );
+            item = dataElementId + (optionComboId != null ? (SEPARATOR + optionComboId) : StringUtils.EMPTY);
         }
-        
+
         return item;
     }
 
@@ -179,7 +180,7 @@ public class DataElementOperand
     {
         return DimensionItemType.DATA_ELEMENT_OPERAND;
     }
-    
+
     // -------------------------------------------------------------------------
     // Logic
     // -------------------------------------------------------------------------
@@ -695,5 +696,27 @@ public class DataElementOperand
         }
 
         return this.optionComboId.compareTo( other.optionComboId );
+    }
+
+    @Override
+    public void mergeWith( IdentifiableObject other, MergeMode mergeMode )
+    {
+        super.mergeWith( other, mergeMode );
+
+        if ( other.getClass().isInstance( this ) )
+        {
+            DataElementOperand dataElementOperand = (DataElementOperand) other;
+
+            if ( mergeMode.isReplace() )
+            {
+                dataElement = dataElementOperand.getDataElement();
+                categoryOptionCombo = dataElementOperand.getCategoryOptionCombo();
+            }
+            else if ( mergeMode.isMerge() )
+            {
+                dataElement = dataElementOperand.getDataElement() != null ? dataElementOperand.getDataElement() : dataElement;
+                categoryOptionCombo = dataElementOperand.getCategoryOptionCombo() != null ? dataElementOperand.getCategoryOptionCombo() : categoryOptionCombo;
+            }
+        }
     }
 }

@@ -45,7 +45,7 @@ public class DefaultQueryParser implements QueryParser
 {
     @Autowired
     private SchemaService schemaService;
-    
+
     @Autowired
     private TranslationService translationService;
 
@@ -108,101 +108,101 @@ public class DefaultQueryParser implements QueryParser
         {
             case "eq":
             {
-                return Restrictions.eq( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.eq( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "!eq":
             {
-                return Restrictions.ne( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.ne( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "ne":
             {
-                return Restrictions.ne( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.ne( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "neq":
             {
-                return Restrictions.ne( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.ne( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "gt":
             {
-                return Restrictions.gt( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.gt( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "lt":
             {
-                return Restrictions.lt( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.lt( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "gte":
             {
-                return Restrictions.ge( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.ge( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "ge":
             {
-                return Restrictions.ge( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.ge( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "lte":
             {
-                return Restrictions.le( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.le( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "le":
             {
-                return Restrictions.le( path, QueryUtils.getValue( property.getKlass(), arg ) );
+                return Restrictions.le( path, QueryUtils.parseValue( property.getKlass(), arg ) );
             }
             case "like":
             {
-                return Restrictions.like( path, String.valueOf( arg ), MatchMode.ANYWHERE );
+                return Restrictions.like( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.ANYWHERE );
             }
             case "!like":
             {
-                return Restrictions.notLike( path, String.valueOf( arg ), MatchMode.ANYWHERE );
+                return Restrictions.notLike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.ANYWHERE );
             }
             case "^like":
             {
-                return Restrictions.like( path, String.valueOf( arg ), MatchMode.START );
+                return Restrictions.like( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.START );
             }
             case "!^like":
             {
-                return Restrictions.notLike( path, String.valueOf( arg ), MatchMode.START );
+                return Restrictions.notLike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.START );
             }
             case "$like":
             {
-                return Restrictions.like( path, String.valueOf( arg ), MatchMode.END );
+                return Restrictions.like( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.END );
             }
             case "!$like":
             {
-                return Restrictions.notLike( path, String.valueOf( arg ), MatchMode.END );
+                return Restrictions.notLike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.END );
             }
             case "ilike":
             {
-                return Restrictions.ilike( path, String.valueOf( arg ), MatchMode.ANYWHERE );
+                return Restrictions.ilike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.ANYWHERE );
             }
             case "!ilike":
             {
-                return Restrictions.notIlike( path, String.valueOf( arg ), MatchMode.ANYWHERE );
+                return Restrictions.notIlike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.ANYWHERE );
             }
             case "startsWith":
             case "^ilike":
             {
-                return Restrictions.ilike( path, String.valueOf( arg ), MatchMode.START );
+                return Restrictions.ilike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.START );
             }
             case "!^ilike":
             {
-                return Restrictions.notIlike( path, String.valueOf( arg ), MatchMode.START );
+                return Restrictions.notIlike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.START );
             }
             case "endsWith":
             case "$ilike":
             {
-                return Restrictions.ilike( path, String.valueOf( arg ), MatchMode.END );
+                return Restrictions.ilike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.END );
             }
             case "!$ilike":
             {
-                return Restrictions.notIlike( path, String.valueOf( arg ), MatchMode.END );
+                return Restrictions.notIlike( path, QueryUtils.parseValue( property.getKlass(), arg ), MatchMode.END );
             }
             case "in":
             {
-                return Restrictions.in( path, QueryUtils.getValue( Collection.class, property.getKlass(), arg ) );
+                return Restrictions.in( path, QueryUtils.parseValue( Collection.class, property.getKlass(), arg ) );
             }
             case "!in":
             {
-                return Restrictions.notIn( path, QueryUtils.getValue( Collection.class, property.getKlass(), arg ) );
+                return Restrictions.notIn( path, QueryUtils.parseValue( Collection.class, property.getKlass(), arg ) );
             }
             case "null":
             {
@@ -212,9 +212,11 @@ public class DefaultQueryParser implements QueryParser
             {
                 return Restrictions.isNotNull( path );
             }
+            default:
+            {
+                throw new QueryParserException( "`" + operator + "` is not a valid operator." );
+            }
         }
-
-        return null;
     }
 
     private Property getProperty( Schema schema, String path ) throws QueryParserException

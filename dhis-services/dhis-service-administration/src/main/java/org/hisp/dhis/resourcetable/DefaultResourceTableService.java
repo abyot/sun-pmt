@@ -197,6 +197,7 @@ public class DefaultResourceTableService
     {
         resourceTableStore.generateResourceTable( new CategoryResourceTable( 
             idObjectManager.getDataDimensionsNoAcl( DataElementCategory.class ),
+            idObjectManager.getDataDimensionsNoAcl( CategoryOptionGroupSet.class ),
             statementBuilder.getColumnQuote() ) );
     }
 
@@ -233,7 +234,6 @@ public class DefaultResourceTableService
     }
 
     @Override
-    @Transactional
     public void generateDataApprovalMinLevelTable()
     {
         List<OrganisationUnitLevel> orgUnitLevels = Lists.newArrayList( 

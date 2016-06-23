@@ -112,11 +112,8 @@ public class OperatorTest
     public void testEqual()
     {
         EqualOperator operator = new EqualOperator( "operator" );
-
         assertTrue( operator.test( "operator" ) );
-        assertFalse( operator.test( Boolean.TRUE ) );
-        assertFalse( operator.test( new Float( 0 ) ) );
-        assertFalse( operator.test( Collections.emptyList() ) );
+        assertFalse( operator.test( "not operator" ) );
     }
 
     @Test
@@ -126,7 +123,6 @@ public class OperatorTest
         assertTrue( new EqualOperator( "B" ).test( TestEnum.B ) );
         assertTrue( new EqualOperator( "C" ).test( TestEnum.C ) );
 
-        assertFalse( new EqualOperator( "A" ).test( 123 ) );
         assertFalse( new EqualOperator( "A" ).test( "abc" ) );
     }
 
@@ -149,8 +145,6 @@ public class OperatorTest
 
         assertFalse( operator.test( "operator" ) );
         assertTrue( operator.test( Boolean.TRUE ) );
-        assertTrue( operator.test( new Float( 0 ) ) );
-        assertTrue( operator.test( Collections.emptyList() ) );
     }
 
     @Test
@@ -414,7 +408,6 @@ public class OperatorTest
         assertTrue( operator.test( TestEnum.A ) );
         assertTrue( operator.test( TestEnum.B ) );
         assertFalse( operator.test( TestEnum.C ) );
-        assertFalse( operator.test( 123 ) );
         assertFalse( operator.test( "abc" ) );
     }
 }

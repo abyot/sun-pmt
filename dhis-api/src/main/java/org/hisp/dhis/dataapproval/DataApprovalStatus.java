@@ -35,7 +35,7 @@ import java.util.Date;
 /**
  * Current status of data approval for a given selection of data from a
  * data set. Returns the approval state and, if approved for this particular
- * selection, the approval object.
+ * selection, approval information.
  *
  * @author Jim Grace
  */
@@ -52,6 +52,12 @@ public class DataApprovalStatus
      * one level, this is for the highest level of approval.
      */
     private DataApprovalLevel approvedLevel;
+
+    /**
+     * If the selection of data is approved, the ID of the highest organisation
+     * unit at which there is approval.
+     */
+    private int approvedOrgUnitId;
 
     /**
      * If the selection of data is approved, the approval level (same as above)
@@ -112,12 +118,13 @@ public class DataApprovalStatus
     }
 
     public DataApprovalStatus( DataApprovalState state,
-        DataApprovalLevel approvedLevel, DataApprovalLevel actionLevel,
+        DataApprovalLevel approvedLevel, int approvedOrgUnitId, DataApprovalLevel actionLevel,
         String organisationUnitUid, String organisationUnitName, String attributeOptionComboUid,
         boolean accepted, DataApprovalPermissions permissions )
     {
         this.state = state;
         this.approvedLevel = approvedLevel;
+        this.approvedOrgUnitId = approvedOrgUnitId;
         this.actionLevel = actionLevel;
         this.organisationUnitUid = organisationUnitUid;
         this.organisationUnitName = organisationUnitName;
@@ -148,6 +155,16 @@ public class DataApprovalStatus
     public void setApprovedLevel( DataApprovalLevel approvedLevel )
     {
         this.approvedLevel = approvedLevel;
+    }
+
+    public int getApprovedOrgUnitId()
+    {
+        return approvedOrgUnitId;
+    }
+
+    public void setApprovedOrgUnitId( int approvedOrgUnitId )
+    {
+        this.approvedOrgUnitId = approvedOrgUnitId;
     }
 
     public DataApprovalLevel getActionLevel()

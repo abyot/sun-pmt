@@ -68,6 +68,7 @@ import org.hisp.dhis.feedback.ErrorReport;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
+import org.hisp.dhis.predictor.Predictor;
 import org.hisp.dhis.program.ProgramStage;
 import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramValidation;
@@ -395,7 +396,7 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
      * @return An ImportConflict instance if there was a conflict, otherwise null
      */
     protected boolean updateObject( User user, T object, T persistedObject )
-    {	
+    {
         if ( !aclService.canUpdate( user, persistedObject ) )
         {
             summaryType.getImportConflicts().add(
@@ -964,6 +965,8 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
 
         private Expression leftSide;
         private Expression rightSide;
+        private Expression sampleSkipTest;
+        private Expression generator;
 
         private Set<DataElementOperand> compulsoryDataElementOperands = new HashSet<>();
         private Set<DataElementOperand> greyedFields = new HashSet<>();
@@ -1013,6 +1016,8 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
             userGroupAccesses = extractUserGroupAccesses( object );
             leftSide = extractExpression( object, "leftSide" );
             rightSide = extractExpression( object, "rightSide" );
+            sampleSkipTest = extractExpression( object, "sampleSkipTest" );
+            generator = extractExpression( object, "generator" );
             compulsoryDataElementOperands = Sets.newHashSet( extractDataElementOperands( object, "compulsoryDataElementOperands" ) );
             greyedFields = Sets.newHashSet( extractDataElementOperands( object, "greyedFields" ) );
             dataElementOperands = Lists.newArrayList( extractDataElementOperands( object, "dataElementOperands" ) );
@@ -1028,6 +1033,8 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
             {
                 deleteExpression( object, "leftSide" );
                 deleteExpression( object, "rightSide" );
+                deleteExpression( object, "sampleSkipTest" );
+                deleteExpression( object, "generator" );
 
                 if ( options.getImportStrategy().isDelete() )
                 {
@@ -1046,6 +1053,8 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
             saveUserGroupAccess( object, userGroupAccesses );
             saveExpression( object, "leftSide", leftSide );
             saveExpression( object, "rightSide", rightSide );
+            saveExpression( object, "sampleSkipTest", sampleSkipTest );
+            saveExpression( object, "generator", generator );
             saveDataElementOperands( object, "compulsoryDataElementOperands", compulsoryDataElementOperands );
             saveDataElementOperands( object, "greyedFields", greyedFields );
             saveDataElementOperands( object, "dataElementOperands", dataElementOperands );
@@ -1055,7 +1064,8 @@ public class DefaultIdentifiableObjectImporter<T extends BaseIdentifiableObject>
 
         private Expression extractExpression( T object, String fieldName )
         {
-            if ( !ValidationRule.class.isInstance( object ) )
+            if ( ( !ValidationRule.class.isInstance( object ) ) &&
+                (  !Predictor.class.isInstance( object ) ) )
             {
                 return null;
             }

@@ -265,6 +265,13 @@
     <property name="cacheable" value="true" />
   </bean>
 
+  <bean id="org.hisp.dhis.predictor.PredictorStore" class="org.hisp.dhis.predictor.hibernate.HibernatePredictorStore">
+    <property name="clazz" value="org.hisp.dhis.predictor.Predictor" />
+    <property name="sessionFactory" ref="sessionFactory" />
+    <property name="periodService" ref="org.hisp.dhis.period.PeriodService" />
+    <property name="cacheable" value="true" />
+  </bean>
+
   <bean id="org.hisp.dhis.dataelement.CategoryStore" class="org.hisp.dhis.dataelement.hibernate.HibernateCategoryStore">
     <property name="clazz" value="org.hisp.dhis.dataelement.DataElementCategory" />
     <property name="sessionFactory" ref="sessionFactory" />
@@ -1083,6 +1090,7 @@
         <value>ivory_coast</value>
         <value>jhpiego</value>
         <value>kenya</value>
+        <value>kiribati</value>
         <value>kurdistan</value>
         <value>laos</value>
         <value>lesotho</value>
@@ -1124,6 +1132,7 @@
         <value>timor_leste</value>
         <value>republic_of_trinidad_and_tobago</value>
         <value>togo</value>
+        <value>tonga</value>
         <value>uganda</value>
         <value>usaid</value>
         <value>vietnam</value>
@@ -1365,6 +1374,8 @@
     <property name="commentStore" ref="org.hisp.dhis.trackedentitycomment.TrackedEntityCommentStore" />
   </bean>
 
+  <bean id="org.hisp.dhis.predictor.PredictorService" class="org.hisp.dhis.predictor.DefaultPredictorService" />
+
   <bean id="org.hisp.dhis.trackedentitycomment.TrackedEntityCommentStore"
     class="org.hisp.dhis.hibernate.HibernateGenericStore">
     <property name="clazz" value="org.hisp.dhis.trackedentitycomment.TrackedEntityComment" />
@@ -1482,6 +1493,7 @@
         <value>indicatorgroupset</value>
         <value>validationrule</value>
         <value>validationrulegroup</value>
+        <value>predictor</value>
         <value>dataset</value>
         <value>section</value>
         <value>orgunitlevel</value>

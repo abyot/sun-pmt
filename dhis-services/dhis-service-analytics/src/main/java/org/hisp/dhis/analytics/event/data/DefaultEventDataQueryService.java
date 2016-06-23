@@ -124,18 +124,19 @@ public class DefaultEventDataQueryService
         SortOrder sortOrder, Integer limit, EventOutputType outputType, boolean collapseDataDimensions,
         boolean aggregateData, DisplayProperty displayProperty, String userOrgUnit, I18nFormat format )
     {
-        EventQueryParams params = getFromUrl( program, stage, startDate, endDate, dimension, filter, null, null, null,
+        EventQueryParams query = getFromUrl( program, stage, startDate, endDate, dimension, filter, null, null, null,
             skipMeta, skipData, completedOnly, hierarchyMeta, false, displayProperty, userOrgUnit, null, null, format );
 
-        params.setValue( getValueDimension( value ) );
-        params.setAggregationType( aggregationType );
-        params.setSkipRounding( skipRounding );
-        params.setShowHierarchy( showHierarchy );
-        params.setSortOrder( sortOrder );
-        params.setLimit( limit );
-        params.setOutputType( MoreObjects.firstNonNull( outputType, EventOutputType.EVENT ) );
-        params.setCollapseDataDimensions( collapseDataDimensions );
-        params.setAggregateData( aggregateData );
+        EventQueryParams params = new EventQueryParams.Builder( query )
+            .withValue( getValueDimension( value ) )
+            .withAggregationType( aggregationType )
+            .withSkipRounding( skipRounding )
+            .withShowHierarchy( showHierarchy )
+            .withSortOrder( sortOrder )
+            .withLimit( limit )
+            .withOutputType( MoreObjects.firstNonNull( outputType, EventOutputType.EVENT ) )
+            .withCollapseDataDimensions( collapseDataDimensions )
+            .withAggregateData( aggregateData ).build();
 
         return params;
     }
@@ -147,7 +148,8 @@ public class DefaultEventDataQueryService
         boolean coordinatesOnly, DisplayProperty displayProperty, String userOrgUnit, Integer page, Integer pageSize,
         I18nFormat format )
     {
-        EventQueryParams params = new EventQueryParams();
+        EventQueryParams.Builder params = new EventQueryParams.Builder();
+        
         IdScheme idScheme = IdScheme.UID;
 
         List<OrganisationUnit> userOrgUnits = dataQueryService.getUserOrgUnits( userOrgUnit );
@@ -192,12 +194,12 @@ public class DefaultEventDataQueryService
                     format, true, idScheme );
 
                 if ( dimObj != null )
-                {
-                    params.getDimensions().add( dimObj );
+                {                    
+                    params.addDimension( dimObj );
                 }
                 else
                 {
-                    params.getItems().add( getQueryItem( dim ) );
+                    params.addItem( getQueryItem( dim ) );
                 }
             }
         }
@@ -213,11 +215,11 @@ public class DefaultEventDataQueryService
 
                 if ( dimObj != null )
                 {
-                    params.getFilters().add( dimObj );
+                    params.addFilter( dimObj );
                 }
                 else
                 {
-                    params.getItemFilters().add( getQueryItem( dim ) );
+                    params.addItemFilter( getQueryItem( dim ) );
                 }
             }
         }
@@ -226,7 +228,7 @@ public class DefaultEventDataQueryService
         {
             for ( String sort : asc )
             {
-                params.getAsc().add( getSortItem( sort ) );
+                params.addAscSortItem( getSortItem( sort ) );
             }
         }
 
@@ -234,33 +236,33 @@ public class DefaultEventDataQueryService
         {
             for ( String sort : desc )
             {
-                params.getDesc().add( getSortItem( sort ) );
+                params.addDescSortItem( getSortItem( sort ) );
             }
         }
 
-        params.setProgram( pr );
-        params.setProgramStage( ps );
-        params.setStartDate( start );
-        params.setEndDate( end );
-        params.setOrganisationUnitMode( ouMode );
-        params.setSkipMeta( skipMeta );
-        params.setSkipData( skipData );
-        params.setCompletedOnly( completedOnly );
-        params.setHierarchyMeta( hierarchyMeta );
-        params.setCoordinatesOnly( coordinatesOnly );
-        params.setDisplayProperty( displayProperty );
-        params.setPage( page );
-        params.setPageSize( pageSize );
-
-        return params;
+        return params
+            .withProgram( pr )
+            .withProgramStage( ps )
+            .withStartDate( start )
+            .withEndDate( end )
+            .withOrganisationUnitMode( ouMode )
+            .withSkipMeta( skipMeta )
+            .withSkipData( skipData )
+            .withCompletedOnly( completedOnly )
+            .withHierarchyMeta( hierarchyMeta )
+            .withCoordinatesOnly( coordinatesOnly )
+            .withDisplayProperty( displayProperty )
+            .withPage( page )
+            .withPageSize( pageSize ).build();
     }
 
     @Override
     public EventQueryParams getFromAnalyticalObject( EventAnalyticalObject object )
     {
+        EventQueryParams.Builder params = new EventQueryParams.Builder();
+        
         I18nFormat format = i18nManager.getI18nFormat();
         
-        EventQueryParams params = new EventQueryParams();
         IdScheme idScheme = IdScheme.UID;
 
         if ( object != null )
@@ -276,11 +278,11 @@ public class DefaultEventDataQueryService
 
                 if ( dimObj != null )
                 {
-                    params.getDimensions().add( dimObj );
+                    params.addDimension( dimObj );
                 }
                 else
                 {
-                    params.getItems().add( getQueryItem( dimension.getDimension(), dimension.getFilter() ) );
+                    params.addItem( getQueryItem( dimension.getDimension(), dimension.getFilter() ) );
                 }
             }
 
@@ -291,23 +293,24 @@ public class DefaultEventDataQueryService
 
                 if ( dimObj != null )
                 {
-                    params.getFilters().add( dimObj );
+                    params.addFilter( dimObj );
                 }
                 else
                 {
-                    params.getItemFilters().add( getQueryItem( filter.getDimension(), filter.getFilter() ) );
+                    params.addItemFilter( getQueryItem( filter.getDimension(), filter.getFilter() ) );
                 }
             }
 
-            params.setProgram( object.getProgram() );
-            params.setProgramStage( object.getProgramStage() );
-            params.setStartDate( object.getStartDate() );
-            params.setEndDate( object.getEndDate() );
-            params.setValue( object.getValue() );
-            params.setOutputType( object.getOutputType() );
+            params
+                .withProgram( object.getProgram() )
+                .withProgramStage( object.getProgramStage() )
+                .withStartDate( object.getStartDate() )
+                .withEndDate( object.getEndDate() )
+                .withValue( object.getValue() )
+                .withOutputType( object.getOutputType() );
         }
 
-        return params;
+        return params.build();
     }
 
     // -------------------------------------------------------------------------

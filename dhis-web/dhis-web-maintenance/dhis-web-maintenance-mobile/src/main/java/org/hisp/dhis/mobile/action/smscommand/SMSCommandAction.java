@@ -40,6 +40,7 @@ import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.program.ProgramStage;
+import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramType;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.sms.parse.ParserType;
@@ -129,7 +130,7 @@ public class SMSCommandAction
 
     private List<TrackedEntityAttribute> trackedEntityAttributeList;
 
-    private Collection<DataElement> programStageDataElementList = new ArrayList<>();
+    private Collection<ProgramStageDataElement> programStageDataElementList = new ArrayList<>();
 
     private int selectedCommandID = -1;
 
@@ -274,7 +275,7 @@ public class SMSCommandAction
         return null;
     }
 
-    public Collection<DataElement> getProgramStageDataElementList()
+    public Collection<ProgramStageDataElement> getProgramStageDataElementList()
     {
         if ( smsCommand != null )
         {
@@ -285,13 +286,13 @@ public class SMSCommandAction
 
             if ( programStage != null )
             {
-                programStageDataElementList = programStage.getAllDataElements();
+                programStageDataElementList = programStage.getProgramStageDataElements();
             }
 
             return programStageDataElementList;
         }
 
-        return new ArrayList<DataElement>();
+        return new ArrayList<ProgramStageDataElement>();
     }
 
     public void setTrackedEntityAttributeList( List<TrackedEntityAttribute> trackedEntityAttributeList )

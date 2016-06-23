@@ -37,7 +37,7 @@ import org.hisp.dhis.schema.Property;
  */
 public class NotLikeOperator extends LikeOperator
 {
-    public NotLikeOperator( String arg, boolean caseSensitive, MatchMode matchMode )
+    public NotLikeOperator( Object arg, boolean caseSensitive, MatchMode matchMode )
     {
         super( arg, caseSensitive, matchMode );
     }

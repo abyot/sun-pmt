@@ -1,5 +1,7 @@
 package org.hisp.dhis.program;
 
+import java.util.Date;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -38,7 +40,6 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.program.message.DeliveryChannel;
 import org.hisp.dhis.program.message.ProgramMessage;
-import org.hisp.dhis.program.message.ProgramMessageCategory;
 import org.hisp.dhis.program.message.ProgramMessageQueryParams;
 import org.hisp.dhis.program.message.ProgramMessageRecipients;
 import org.hisp.dhis.program.message.ProgramMessageService;
@@ -47,6 +48,8 @@ import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.trackedentity.TrackedEntityInstanceService;
 
 import org.junit.Test;
+import org.mockito.internal.util.collections.Sets;
+
 import static org.junit.Assert.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,11 +65,9 @@ public class ProgramMessageServiceTest
 
     private OrganisationUnit ouB;
 
-    private ProgramStageInstance psiA;
+    private ProgramInstance piA;
 
     private TrackedEntityInstance teiA;
-
-    private ProgramMessageCategory messageCategory = ProgramMessageCategory.OUTGOING;
 
     private ProgramMessageStatus messageStatus = ProgramMessageStatus.OUTBOUND;
 
@@ -111,6 +112,12 @@ public class ProgramMessageServiceTest
     @Autowired
     private TrackedEntityInstanceService teiService;
 
+    @Autowired
+    private ProgramInstanceService programInstanceService;
+
+    @Autowired
+    private ProgramService programService;
+
     // -------------------------------------------------------------------------
     // Prerequisite
     // -------------------------------------------------------------------------
@@ -120,28 +127,49 @@ public class ProgramMessageServiceTest
     {
         ouA = createOrganisationUnit( 'A' );
         ouB = createOrganisationUnit( 'B' );
-
         orgUnitService.addOrganisationUnit( ouA );
         orgUnitService.addOrganisationUnit( ouB );
 
+        Program program = new Program();
+        program.setAutoFields();
+        program.setOrganisationUnits( Sets.newSet( ouA, ouB ) );
+        program.setName( "programA" );
+        program.setDisplayShortName( "programAshortname" );
+        program.setProgramType( ProgramType.WITHOUT_REGISTRATION );
+
+        programService.addProgram( program );
+
+        piA = new ProgramInstance();
+        piA.setProgram( program );
+        piA.setOrganisationUnit( ouA );
+        piA.setName( "programInstanceA" );
+        piA.setEnrollmentDate( new Date() );
+        piA.setAutoFields();
+
+        programInstanceService.addProgramInstance( piA );
+
         Set<OrganisationUnit> ouSet = new HashSet<>();
         ouSet.add( ouA );
+
+        Set<String> ouUids = new HashSet<>();
+        ouUids.add( ouA.getUid() );
+
         // ouSet.add( ouB );
 
         teiA = createTrackedEntityInstance( 'Z', ouA );
         teiService.addTrackedEntityInstance( teiA );
 
         recipientsA = new ProgramMessageRecipients();
-        recipientsA.setOrganisationUnitUid( ouA.getUid() );
-        recipientsA.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsA.setOrganisationUnit( ouA );
+        recipientsA.setTrackedEntityInstance( teiA );
 
         recipientsB = new ProgramMessageRecipients();
-        recipientsB.setOrganisationUnitUid( ouA.getUid() );
-        recipientsB.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsB.setOrganisationUnit( ouA );
+        recipientsB.setTrackedEntityInstance( teiA );
 
         recipientsC = new ProgramMessageRecipients();
-        recipientsC.setOrganisationUnitUid( ouA.getUid() );
-        recipientsC.setTrackedEntityInstanceUid( teiA.getUid() );
+        recipientsC.setOrganisationUnit( ouA );
+        recipientsC.setTrackedEntityInstance( teiA );
 
         Set<String> phoneNumberListA = new HashSet<>();
         phoneNumberListA.add( msisdn );
@@ -161,24 +189,23 @@ public class ProgramMessageServiceTest
         pmsgA.setText( text );
         pmsgA.setSubject( subject );
         pmsgA.setRecipients( recipientsA );
-        pmsgA.setMessageCategory( messageCategory );
         pmsgA.setMessageStatus( messageStatus );
         pmsgA.setDeliveryChannels( channels );
+        pmsgA.setProgramInstance( piA );
         pmsgA.setStoreCopy( false );
 
         pmsgB = new ProgramMessage();
         pmsgB.setText( text );
         pmsgB.setSubject( subject );
         pmsgB.setRecipients( recipientsB );
-        pmsgB.setMessageCategory( messageCategory );
         pmsgB.setMessageStatus( messageStatus );
+        pmsgB.setProgramInstance( piA );
         pmsgB.setDeliveryChannels( channels );
 
         pmsgC = new ProgramMessage();
         pmsgC.setText( text );
         pmsgC.setSubject( subject );
         pmsgC.setRecipients( recipientsC );
-        pmsgC.setMessageCategory( messageCategory );
         pmsgC.setMessageStatus( messageStatus );
         pmsgC.setDeliveryChannels( channels );
 
@@ -191,10 +218,8 @@ public class ProgramMessageServiceTest
         pmsgC.setUid( uidC );
 
         params = new ProgramMessageQueryParams();
-        params.setOrganisationUnit( ouSet );
-        params.setProgramStageInstance( psiA );
-        params.setCategory( messageCategory );
-        params.setDeliveryChannels( channels );
+        params.setOrganisationUnit( ouUids );
+        params.setProgramInstance( piA );
         params.setMessageStatus( messageStatus );
 
     }

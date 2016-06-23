@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.CombinationGenerator;
 import org.hisp.dhis.common.DataDimensionType;
@@ -175,7 +176,7 @@ public class DataElementCategoryCombo
 
     public List<DataElementCategoryOptionCombo> generateOptionCombosList()
     {
-        List<DataElementCategoryOptionCombo> list = new ArrayList<>();
+    	List<DataElementCategoryOptionCombo> list = new ArrayList<>();
 
         CombinationGenerator<DataElementCategoryOption> generator =
             new CombinationGenerator<>( getCategoryOptionsAsArray() );

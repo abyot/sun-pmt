@@ -62,8 +62,9 @@ public class DataApprovalMinLevelResourceTable
             "periodid integer not null, " +
             "organisationunitid integer not null, " +
             "attributeoptioncomboid integer not null, " +
-            "minlevel integer not null);";
-
+            "minlevel integer not null, " +
+            "primary key (workflowid,periodid,attributeoptioncomboid,organisationunitid))";
+        
         return sql;
     }
 
@@ -81,10 +82,10 @@ public class DataApprovalMinLevelResourceTable
                 "select 1 from dataapproval da2 " +
                 "inner join dataapprovallevel dal2 on da2.dataapprovallevelid=dal2.dataapprovallevelid " +
                 "where da.workflowid=da2.workflowid " +
-                  "and da.periodid=da2.periodid " +
-                  "and da.attributeoptioncomboid=da2.attributeoptioncomboid " +
-                  "and dal.level > dal2.level " +
-                  "and ( ";
+                    "and da.periodid=da2.periodid " +
+                    "and da.attributeoptioncomboid=da2.attributeoptioncomboid " +
+                    "and dal.level > dal2.level " +
+                    "and ( ";
         
         for ( OrganisationUnitLevel level : objects )
         {
@@ -105,10 +106,6 @@ public class DataApprovalMinLevelResourceTable
     @Override
     public List<String> getCreateIndexStatements()
     {
-        return Lists.newArrayList(
-            "create index in_dataapprovalminlevel_workflowidid_" + getRandomSuffix() + " on " + getTempTableName() + "(workflowid);",
-            "create index in_dataapprovalminlevel_periodid_" + getRandomSuffix() + " on " + getTempTableName() + "(periodid);",
-            "create index in_dataapprovalminlevel_organisationunitid_" + getRandomSuffix() + " on " + getTempTableName() + "(organisationunitid);",
-            "create index in_dataapprovalminlevel_attributeoptioncomboid_" + getRandomSuffix() + " on " + getTempTableName() + "(attributeoptioncomboid);" );        
+        return Lists.newArrayList();        
     }
 }

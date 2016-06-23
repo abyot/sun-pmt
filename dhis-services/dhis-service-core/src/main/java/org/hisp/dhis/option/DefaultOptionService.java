@@ -125,30 +125,6 @@ public class DefaultOptionService
         return i18n( i18nService, optionSetStore.getAll() );
     }
 
-    @Override
-    public Integer getOptionSetsCountByName( String name )
-    {
-        return optionStore.getCountLikeName( name );
-    }
-
-    @Override
-    public List<OptionSet> getOptionSetsBetweenByName( String name, int first, int max )
-    {
-        return new ArrayList<>( i18n( i18nService, optionSetStore.getAllLikeName( name, first, max ) ) );
-    }
-
-    @Override
-    public List<OptionSet> getOptionSetsBetween( int first, int max )
-    {
-        return new ArrayList<>( i18n( i18nService, optionSetStore.getAllOrderedName( first, max ) ) );
-    }
-
-    @Override
-    public Integer getOptionSetCount()
-    {
-        return optionSetStore.getCount();
-    }
-
     // -------------------------------------------------------------------------
     // Option
     // -------------------------------------------------------------------------
@@ -200,18 +176,6 @@ public class DefaultOptionService
     public Option getOptionByCode( String code )
     {
         return i18n( i18nService, optionStore.getByCode( code ) );
-    }
-
-    @Override
-    public Option getOptionByName( OptionSet optionSet, String name )
-    {
-        return i18n( i18nService, optionStore.getOptionByName( optionSet, name ) );
-    }
-
-    @Override
-    public Option getOptionByCode( OptionSet optionSet, String name )
-    {
-        return i18n( i18nService, optionStore.getOptionByName( optionSet, name ) );
     }
     
     @Override

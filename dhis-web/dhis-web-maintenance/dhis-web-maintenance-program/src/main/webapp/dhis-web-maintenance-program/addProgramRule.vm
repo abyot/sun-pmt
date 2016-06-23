@@ -24,9 +24,12 @@
 		removeDuplicateOptions();
 	});
 	
+        var i18n_none = '$encoder.jsEscape( $i18n.getString( "none" ) , "'" )';
 	var i18n_add_source_field = '$encoder.jsEscape( $i18n.getString( "add_source_field" ) , "'" )';
 	var i18n_hide_field = '$encoder.jsEscape( $i18n.getString( "hide_field" ) , "'" )';
 	var i18n_show_warning = '$encoder.jsEscape( $i18n.getString( "show_warning" ) , "'" )';
+	var i18n_show_error_on_complete = '$encoder.jsEscape( $i18n.getString( "show_error_on_complete" ) , "'" )';
+        var i18n_show_warning_on_complete = '$encoder.jsEscape( $i18n.getString( "show_warning_on_complete" ) , "'" )';
 	var i18n_show_error = '$encoder.jsEscape( $i18n.getString( "show_error" ) , "'" )';
 	var i18n_this_field_is_required = '$encoder.jsEscape( $i18n.getString( "this_field_is_required" ) , "'")';
 	var i18n_name_in_use = '$encoder.jsEscape( $i18n.getString( "name_in_use" ) , "'")';
@@ -246,6 +249,12 @@
 			<td>$i18n.getString('variable_name') <em title="$i18n.getString( "required" )" class="required">*</em></td>
 			<td><input type="text" id="variableName" name="variableName" style="width:247px;" onkeypress="return variableNameKeyPress(event)" />
 			<span style="color:red;display:none;" id="variableNameError" ></span></td>
+		</td>
+		<tr name="optionSetCodeSelection">
+			<td>$i18n.getString('use_optionset_code')</td>
+			<td>
+				<input type="checkbox" id="useOptionSetCode" name="useOptionSetCode" value="true">
+			</td>
 		</td>
 		
 		<tr>

@@ -24,7 +24,11 @@
 
   <bean class="org.hisp.dhis.dxf2.metadata2.objectbundle.hooks.ValidationRuleObjectBundleHook" />
 
+  <bean class="org.hisp.dhis.dxf2.metadata2.objectbundle.hooks.PredictorObjectBundleHook" />
+
   <bean id="org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleService" class="org.hisp.dhis.dxf2.metadata2.objectbundle.DefaultObjectBundleService" />
+
+  <bean id="org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleValidationService" class="org.hisp.dhis.dxf2.metadata2.objectbundle.DefaultObjectBundleValidationService" />
 
   <bean id="org.hisp.dhis.dxf2.metadata2.MetadataExportService" class="org.hisp.dhis.dxf2.metadata2.DefaultMetadataExportService" />
 
@@ -272,6 +276,10 @@
 
   <bean id="validationRuleGroupImporter" class="org.hisp.dhis.dxf2.metadata.importers.DefaultIdentifiableObjectImporter" scope="prototype">
     <constructor-arg name="importerClass" type="java.lang.Class" value="org.hisp.dhis.validation.ValidationRuleGroup" />
+  </bean>
+
+  <bean id="predictorImporter" class="org.hisp.dhis.dxf2.metadata.importers.DefaultIdentifiableObjectImporter" scope="prototype">
+    <constructor-arg name="importerClass" type="java.lang.Class" value="org.hisp.dhis.predictor.Predictor" />
   </bean>
 
   <!-- register tracker importers -->

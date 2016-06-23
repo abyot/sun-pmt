@@ -61,6 +61,9 @@ public class ObjectBundleServiceFavoritesTest
     private ObjectBundleService objectBundleService;
 
     @Autowired
+    private ObjectBundleValidationService objectBundleValidationService;
+
+    @Autowired
     private IdentifiableObjectManager manager;
 
     @Autowired
@@ -88,7 +91,7 @@ public class ObjectBundleServiceFavoritesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
@@ -115,7 +118,7 @@ public class ObjectBundleServiceFavoritesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
@@ -147,7 +150,7 @@ public class ObjectBundleServiceFavoritesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 

@@ -271,6 +271,23 @@ public class IdentifiableObjectUtils
     }
 
     /**
+     * Returns a mapping between the uid and the property defined by the given
+     * identifiable property for the given identifiable objects.
+     * 
+     * @param objects the identifiable objects.
+     * @param property the identifiable property.
+     * @return a mapping between uid and property.
+     */
+    public static Map<String, String> getUidPropertyMap( Collection<? extends IdentifiableObject> objects, IdentifiableProperty property )
+    {
+        Map<String, String> map = Maps.newHashMap();
+        
+        objects.forEach( obj -> map.put( obj.getUid(), obj.getPropertyValue( IdScheme.from( property ) ) ) );
+        
+        return map;
+    }
+    
+    /**
      * Returns a mapping between the uid and the name of the given identifiable
      * objects.
      *

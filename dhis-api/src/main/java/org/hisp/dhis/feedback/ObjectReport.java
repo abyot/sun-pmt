@@ -50,12 +50,31 @@ public class ObjectReport
 
     private Integer index;
 
+    /**
+     * UID of object (if object is id object).
+     */
+    private String uid;
+
     private Map<ErrorCode, List<ErrorReport>> errorReportsByCode = new HashMap<>();
 
     public ObjectReport( Class<?> klass, Integer index )
     {
         this.klass = klass;
         this.index = index;
+    }
+
+    public ObjectReport( Class<?> klass, Integer index, String uid )
+    {
+        this.klass = klass;
+        this.index = index;
+        this.uid = uid;
+    }
+
+    public ObjectReport( ObjectReport objectReport )
+    {
+        this.klass = objectReport.getKlass();
+        this.index = objectReport.getIndex();
+        this.uid = objectReport.getUid();
     }
 
     //-----------------------------------------------------------------------------------
@@ -101,6 +120,13 @@ public class ObjectReport
     }
 
     @JsonProperty
+    @JacksonXmlProperty( isAttribute = true )
+    public String getUid()
+    {
+        return uid;
+    }
+
+    @JsonProperty
     @JacksonXmlElementWrapper( localName = "errorReports", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "errorReport", namespace = DxfNamespaces.DXF_2_0 )
     public List<ErrorReport> getErrorReports()
@@ -138,6 +164,7 @@ public class ObjectReport
         return MoreObjects.toStringHelper( this )
             .add( "klass", klass )
             .add( "index", index )
+            .add( "uid", uid )
             .add( "errorReports", getErrorReports() )
             .toString();
     }

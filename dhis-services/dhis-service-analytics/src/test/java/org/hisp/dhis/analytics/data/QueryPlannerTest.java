@@ -238,9 +238,9 @@ public class QueryPlannerTest
             .withOrganisationUnits( ousA )
             .withPeriods( pesA ).build();
 
-        DataQueryParams paramsB = paramsA.instance();
-        paramsB.setOrganisationUnits( ousB );
-        paramsB.setPeriods( pesB );
+        DataQueryParams paramsB = DataQueryParams.newBuilder( paramsA )
+            .withOrganisationUnits( ousB )
+            .withPeriods( pesB ).build();
 
         assertEquals( desA, paramsA.getDataElements() );
         assertEquals( ousA, paramsA.getOrganisationUnits() );

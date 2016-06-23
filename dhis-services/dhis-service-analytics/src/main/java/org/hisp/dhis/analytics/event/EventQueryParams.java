@@ -29,7 +29,9 @@ package org.hisp.dhis.analytics.event;
  */
 
 import static org.hisp.dhis.common.DimensionalObject.DATA_X_DIM_ID;
+import static org.hisp.dhis.common.DimensionalObject.ORGUNIT_DIM_ID;
 import static org.hisp.dhis.common.DimensionalObject.PERIOD_DIM_ID;
+import static org.hisp.dhis.common.DimensionalObjectUtils.asList;
 import static org.hisp.dhis.common.DimensionalObjectUtils.asTypedList;
 
 import java.util.ArrayList;
@@ -46,8 +48,11 @@ import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.EventOutputType;
 import org.hisp.dhis.analytics.Partitions;
 import org.hisp.dhis.analytics.SortOrder;
+import org.hisp.dhis.common.BaseDimensionalObject;
+import org.hisp.dhis.common.DimensionType;
 import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.DimensionalObject;
+import org.hisp.dhis.common.DisplayProperty;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
 import org.hisp.dhis.common.QueryItem;
 import org.hisp.dhis.commons.collection.ListUtils;
@@ -56,8 +61,10 @@ import org.hisp.dhis.legend.Legend;
 import org.hisp.dhis.option.OptionSet;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.Period;
+import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramDataElement;
 import org.hisp.dhis.program.ProgramIndicator;
+import org.hisp.dhis.program.ProgramStage;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 
@@ -173,12 +180,12 @@ public class EventQueryParams
     // Constructors
     // -------------------------------------------------------------------------
 
-    public EventQueryParams()
+    private EventQueryParams()
     {
     }
-
+    
     @Override
-    public EventQueryParams instance()
+    protected EventQueryParams instance()
     {
         EventQueryParams params = new EventQueryParams();
 
@@ -225,8 +232,10 @@ public class EventQueryParams
     public static EventQueryParams fromDataQueryParams( DataQueryParams dataQueryParams )
     {
         EventQueryParams params = new EventQueryParams();
-
+        
         dataQueryParams.copyTo( params );
+        
+        EventQueryParams.Builder builder = new EventQueryParams.Builder( params );
 
         for ( DimensionalItemObject object : dataQueryParams.getProgramDataElements() )
         {
@@ -234,7 +243,7 @@ public class EventQueryParams
             DataElement dataElement = element.getDataElement(); 
             QueryItem item = new QueryItem( dataElement, dataElement.getLegendSet(), dataElement.getValueType(), dataElement.getAggregationType(), dataElement.getOptionSet() );
             item.setProgram( element.getProgram() );
-            params.getItems().add( item );
+            builder.addItem( item );
         }
 
         for ( DimensionalItemObject object : dataQueryParams.getProgramAttributes() )
@@ -243,7 +252,7 @@ public class EventQueryParams
             TrackedEntityAttribute attribute = element.getAttribute();
             QueryItem item = new QueryItem( attribute, attribute.getLegendSet(), attribute.getValueType(), attribute.getAggregationType(), attribute.getOptionSet() );
             item.setProgram( element.getProgram() );
-            params.getItems().add( item );
+            builder.addItem( item );
         }
 
         for ( DimensionalItemObject object : dataQueryParams.getFilterProgramDataElements() )
@@ -252,7 +261,7 @@ public class EventQueryParams
             DataElement dataElement = element.getDataElement(); 
             QueryItem item = new QueryItem( dataElement, dataElement.getLegendSet(), dataElement.getValueType(), dataElement.getAggregationType(), dataElement.getOptionSet() );
             item.setProgram( element.getProgram() );
-            params.getItemFilters().add( item );
+            builder.addItemFilter( item );
         }
 
         for ( DimensionalItemObject object : dataQueryParams.getFilterProgramAttributes() )
@@ -260,19 +269,18 @@ public class EventQueryParams
             ProgramTrackedEntityAttribute element = (ProgramTrackedEntityAttribute) object;
             TrackedEntityAttribute attribute = element.getAttribute();
             QueryItem item = new QueryItem( attribute, attribute.getLegendSet(), attribute.getValueType(), attribute.getAggregationType(), attribute.getOptionSet() );
-            params.getItemFilters().add( item );
+            builder.addItemFilter( item );
         }
 
         for ( DimensionalItemObject object : dataQueryParams.getProgramIndicators() )
         {
             ProgramIndicator programIndicator = (ProgramIndicator) object;
-            params.getItemProgramIndicators().add( programIndicator );
+            builder.addItemProgramIndicator( programIndicator );
         }
 
-        params.setAggregateData( true );
-        params.removeDimension( DATA_X_DIM_ID );
-
-        return params;
+        return builder
+            .withAggregateData( true )
+            .removeDimension( DATA_X_DIM_ID ).build();
     }
 
     // -------------------------------------------------------------------------
@@ -551,7 +559,7 @@ public class EventQueryParams
     }
 
     // -------------------------------------------------------------------------
-    // Getters and setters
+    // Helper get methods
     // -------------------------------------------------------------------------
 
     public List<QueryItem> getItems()
@@ -559,19 +567,9 @@ public class EventQueryParams
         return items;
     }
 
-    public void setItems( List<QueryItem> items )
-    {
-        this.items = items;
-    }
-
     public List<QueryItem> getItemFilters()
     {
         return itemFilters;
-    }
-
-    public void setItemFilters( List<QueryItem> itemFilters )
-    {
-        this.itemFilters = itemFilters;
     }
 
     public DimensionalItemObject getValue()
@@ -579,29 +577,14 @@ public class EventQueryParams
         return value;
     }
 
-    public void setValue( DimensionalItemObject value )
-    {
-        this.value = value;
-    }
-
     public List<ProgramIndicator> getItemProgramIndicators()
     {
         return itemProgramIndicators;
     }
 
-    public void setItemProgramIndicators( List<ProgramIndicator> itemProgramIndicators )
-    {
-        this.itemProgramIndicators = itemProgramIndicators;
-    }
-
     public ProgramIndicator getProgramIndicator()
     {
         return programIndicator;
-    }
-
-    public void setProgramIndicator( ProgramIndicator programIndicator )
-    {
-        this.programIndicator = programIndicator;
     }
 
     public List<String> getAsc()
@@ -615,25 +598,9 @@ public class EventQueryParams
         return dimensions;
     }
 
-    @Override
-    public void setDimensions( List<DimensionalObject> dimensions )
-    {
-        this.dimensions = dimensions;
-    }
-
-    public void setAsc( List<String> asc )
-    {
-        this.asc = asc;
-    }
-
     public List<String> getDesc()
     {
         return desc;
-    }
-
-    public void setDesc( List<String> desc )
-    {
-        this.desc = desc;
     }
 
     public OrganisationUnitSelectionMode getOrganisationUnitMode()
@@ -641,19 +608,9 @@ public class EventQueryParams
         return organisationUnitMode;
     }
 
-    public void setOrganisationUnitMode( OrganisationUnitSelectionMode organisationUnitMode )
-    {
-        this.organisationUnitMode = organisationUnitMode;
-    }
-
     public Integer getPage()
     {
         return page;
-    }
-
-    public void setPage( Integer page )
-    {
-        this.page = page;
     }
 
     public Integer getPageSize()
@@ -661,19 +618,9 @@ public class EventQueryParams
         return pageSize;
     }
 
-    public void setPageSize( Integer pageSize )
-    {
-        this.pageSize = pageSize;
-    }
-
     public SortOrder getSortOrder()
     {
         return sortOrder;
-    }
-
-    public void setSortOrder( SortOrder sortOrder )
-    {
-        this.sortOrder = sortOrder;
     }
 
     public Integer getLimit()
@@ -681,19 +628,9 @@ public class EventQueryParams
         return limit;
     }
 
-    public void setLimit( Integer limit )
-    {
-        this.limit = limit;
-    }
-
     public EventOutputType getOutputType()
     {
         return outputType;
-    }
-
-    public void setOutputType( EventOutputType outputType )
-    {
-        this.outputType = outputType;
     }
 
     public boolean isCollapseDataDimensions()
@@ -701,19 +638,9 @@ public class EventQueryParams
         return collapseDataDimensions;
     }
 
-    public void setCollapseDataDimensions( boolean collapseDataDimensions )
-    {
-        this.collapseDataDimensions = collapseDataDimensions;
-    }
-
     public boolean isCoordinatesOnly()
     {
         return coordinatesOnly;
-    }
-
-    public void setCoordinatesOnly( boolean coordinatesOnly )
-    {
-        this.coordinatesOnly = coordinatesOnly;
     }
 
     public boolean isGeometryOnly()
@@ -723,7 +650,7 @@ public class EventQueryParams
 
     public void setGeometryOnly( boolean geometryOnly )
     {
-        this.geometryOnly = geometryOnly;
+        this.geometryOnly = geometryOnly; //TODO builder
     }
 
     public boolean isAggregateData()
@@ -731,19 +658,9 @@ public class EventQueryParams
         return aggregateData;
     }
 
-    public void setAggregateData( boolean aggregateData )
-    {
-        this.aggregateData = aggregateData;
-    }
-
     public Long getClusterSize()
     {
         return clusterSize;
-    }
-
-    public void setClusterSize( Long clusterSize )
-    {
-        this.clusterSize = clusterSize;
     }
 
     public String getBbox()
@@ -751,18 +668,263 @@ public class EventQueryParams
         return bbox;
     }
 
-    public void setBbox( String bbox )
-    {
-        this.bbox = bbox;
-    }
-
     public boolean isIncludeClusterPoints()
     {
         return includeClusterPoints;
     }
+    
+    // -------------------------------------------------------------------------
+    // Builder of immutable instances
+    // -------------------------------------------------------------------------
 
-    public void setIncludeClusterPoints( boolean includeClusterPoints )
+    /**
+     * Builder for {@link DataQueryParams} instances.
+     */
+    public static class Builder
     {
-        this.includeClusterPoints = includeClusterPoints;
+        private EventQueryParams params;
+        
+        public Builder()
+        {
+            this.params = new EventQueryParams();
+        }
+        
+        public Builder( EventQueryParams params )
+        {
+            this.params = params.instance();
+        }
+
+        public Builder withProgram( Program program )
+        {
+            this.params.program = program;
+            return this;
+        }
+
+        public Builder withProgramStage( ProgramStage programStage )
+        {
+            this.params.programStage = programStage;
+            return this;
+        }
+
+        public Builder withStartDate( Date startDate )
+        {
+            this.params.startDate = startDate;
+            return this;
+        }
+
+        public Builder withEndDate( Date endDate )
+        {
+            this.params.endDate = endDate;
+            return this;
+        }
+        
+        public Builder addDimension( DimensionalObject dimension )
+        {
+            this.params.addDimension( dimension );
+            return this;
+        }
+
+        public Builder removeDimension( String dimension )
+        {
+            this.params.dimensions.remove( new BaseDimensionalObject( dimension ) );
+            return this;
+        }
+        
+        public Builder withOrganisationUnits( List<? extends DimensionalItemObject> organisationUnits )
+        {
+            this.params.setDimensionOptions( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, null, asList( organisationUnits ) );
+            return this;
+        }
+        
+        public Builder addFilter( DimensionalObject filter )
+        {
+            this.params.addFilter( filter );
+            return this;
+        }
+        
+        public Builder addItem( QueryItem item )
+        {
+            this.params.items.add( item );
+            return this;
+        }
+        
+        public Builder removeItems()
+        {
+            this.params.items.clear();
+            return this;
+        }
+        
+        public Builder addItemFilter( QueryItem item )
+        {
+            this.params.itemFilters.add( item );
+            return this;
+        }
+        
+        public Builder addItemProgramIndicator( ProgramIndicator programIndicator )
+        {
+            this.params.itemProgramIndicators.add( programIndicator );
+            return this;
+        }
+        
+        public Builder removeItemProgramIndicators()
+        {
+            this.params.itemProgramIndicators.clear();
+            return this;
+        }
+
+        public Builder withValue( DimensionalItemObject value )
+        {
+            this.params.value = value;
+            return this;
+        }
+        
+        public Builder withProgramIndicator( ProgramIndicator programIndicator )
+        {
+            this.params.programIndicator = programIndicator;
+            return this;
+        }
+        
+        public Builder withOrganisationUnitMode( OrganisationUnitSelectionMode organisationUnitMode )
+        {
+            this.params.organisationUnitMode = organisationUnitMode; 
+            return this;
+        }
+
+        public Builder withSkipMeta( boolean skipMeta )
+        {
+            this.params.skipMeta = skipMeta;
+            return this;
+        }
+
+        public Builder withSkipData( boolean skipData )
+        {
+            this.params.skipData = skipData;
+            return this;
+        }
+        
+        public Builder withCompletedOnly( boolean completedOnly )
+        {
+            this.params.completedOnly = completedOnly;
+            return this;
+        }
+
+        public Builder withHierarchyMeta( boolean hierarchyMeta )
+        {
+            this.params.hierarchyMeta = hierarchyMeta;
+            return this;
+        }
+
+        public Builder withCoordinatesOnly( boolean coordinatesOnly )
+        {
+            this.params.coordinatesOnly = coordinatesOnly;
+            return this;
+        }
+
+        public Builder withDisplayProperty( DisplayProperty displayProperty )
+        {
+            this.params.displayProperty = displayProperty;
+            return this;
+        }
+
+        public Builder withPage( Integer page )
+        {
+            this.params.page = page;
+            return this;
+        }
+
+        public Builder withPageSize( Integer pageSize )
+        {
+            this.params.pageSize = pageSize;
+            return this;
+        }
+        
+        public Builder withPartitions( Partitions partitions )
+        {
+            this.params.partitions = partitions;
+            return this;
+        }
+        
+        public Builder addAscSortItem( String sortItem )
+        {
+            this.params.asc.add( sortItem );
+            return this;
+        }
+        
+        public Builder addDescSortItem( String sortItem )
+        {
+            this.params.desc.add( sortItem );
+            return this;
+        }
+
+        public Builder withAggregationType( AggregationType aggregationType )
+        {
+            this.params.aggregationType = aggregationType;
+            return this;
+        }
+        
+        public Builder withSkipRounding( boolean skipRounding )
+        {
+            this.params.skipRounding = skipRounding;
+            return this;
+        }
+        
+        public Builder withShowHierarchy( boolean showHierarchy )
+        {
+            this.params.showHierarchy = showHierarchy;
+            return this;
+        }
+
+        public Builder withSortOrder( SortOrder sortOrder )
+        {
+            this.params.sortOrder = sortOrder;
+            return this;
+        }
+
+        public Builder withLimit( Integer limit )
+        {
+            this.params.limit = limit;
+            return this;
+        }
+
+        public Builder withOutputType( EventOutputType outputType )
+        {
+            this.params.outputType = outputType;
+            return this;
+        }
+
+        public Builder withCollapseDataDimensions( boolean collapseDataDimensions )
+        {
+            this.params.collapseDataDimensions = collapseDataDimensions;
+            return this;
+        }
+
+        public Builder withAggregateData( boolean aggregateData )
+        {
+            this.params.aggregateData = aggregateData;
+            return this;
+        }
+        
+        public Builder withClusterSize( Long clusterSize )
+        {
+            this.params.clusterSize = clusterSize;
+            return this;
+        }
+        
+        public Builder withBbox( String bbox )
+        {
+            this.params.bbox = bbox;
+            return this;
+        }
+        
+        public Builder withIncludeClusterPoints( boolean includeClusterPoints )
+        {
+            this.params.includeClusterPoints = includeClusterPoints;
+            return this;
+        }
+
+        public EventQueryParams build()
+        {
+            return params;
+        }
     }
 }

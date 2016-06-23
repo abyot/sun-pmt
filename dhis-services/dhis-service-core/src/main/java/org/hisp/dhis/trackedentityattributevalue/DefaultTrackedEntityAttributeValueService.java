@@ -66,6 +66,9 @@ public class DefaultTrackedEntityAttributeValueService
     private TrackedEntityAttributeValueAuditService trackedEntityAttributeValueAuditService;
 
     @Autowired
+    private TrackedEntityAttributeReservedValueService trackedEntityAttributeReservedValueService;
+
+    @Autowired
     private CurrentUserService currentUserService;
 
     @Autowired
@@ -140,6 +143,7 @@ public class DefaultTrackedEntityAttributeValueService
         if ( attributeValue.getValue() != null )
         {
             attributeValueStore.saveVoid( attributeValue );
+            trackedEntityAttributeReservedValueService.markTrackedEntityAttributeReservedValueAsUtilized( attributeValue.getAttribute(), attributeValue.getEntityInstance(), attributeValue.getAuditValue() );
         }
     }
 
@@ -171,6 +175,7 @@ public class DefaultTrackedEntityAttributeValueService
 
             trackedEntityAttributeValueAuditService.addTrackedEntityAttributeValueAudit( trackedEntityAttributeValueAudit );
             attributeValueStore.update( attributeValue );
+            trackedEntityAttributeReservedValueService.markTrackedEntityAttributeReservedValueAsUtilized( attributeValue.getAttribute(), attributeValue.getEntityInstance(), attributeValue.getAuditValue() );
         }
     }
 

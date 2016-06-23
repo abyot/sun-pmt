@@ -41,25 +41,25 @@ public class DataStatisticsEvent
     private int id;
     private DataStatisticsEventType eventType;
     private Date timestamp;
-    private String userName;
+    private String username;
     private String favoriteUid;
 
     public DataStatisticsEvent()
     {
     }
 
-    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String userName )
+    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String username )
     {
         this.eventType = eventType;
         this.timestamp = timestamp;
-        this.userName = userName;
+        this.username = username;
     }
 
-    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String userName, String favoriteUid )
+    public DataStatisticsEvent( DataStatisticsEventType eventType, Date timestamp, String username, String favoriteUid )
     {
         this.eventType = eventType;
         this.timestamp = timestamp;
-        this.userName = userName;
+        this.username = username;
         this.favoriteUid = favoriteUid;
     }
 
@@ -93,14 +93,14 @@ public class DataStatisticsEvent
         this.timestamp = timestamp;
     }
 
-    public String getUserName()
+    public String getUsername()
     {
-        return userName;
+        return username;
     }
 
-    public void setUserName( String userName )
+    public void setUsername( String username )
     {
-        this.userName = userName;
+        this.username = username;
     }
 
     public String getFavoriteUid()

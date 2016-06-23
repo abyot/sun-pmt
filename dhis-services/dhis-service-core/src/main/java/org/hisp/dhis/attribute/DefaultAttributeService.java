@@ -158,30 +158,6 @@ public class DefaultAttributeService
         return new ArrayList<>( i18n( i18nService, attributeStore.getUniqueAttributes( klass ) ) );
     }
 
-    @Override
-    public int getAttributeCount()
-    {
-        return attributeStore.getCount();
-    }
-
-    @Override
-    public int getAttributeCountByName( String name )
-    {
-        return attributeStore.getCountLikeName( name );
-    }
-
-    @Override
-    public List<Attribute> getAttributesBetween( int first, int max )
-    {
-        return new ArrayList<>( i18n( i18nService, attributeStore.getAllOrderedName( first, max ) ) );
-    }
-
-    @Override
-    public List<Attribute> getAttributesBetweenByName( String name, int first, int max )
-    {
-        return new ArrayList<>( i18n( i18nService, attributeStore.getAllLikeName( name, first, max ) ) );
-    }
-
     // -------------------------------------------------------------------------
     // AttributeValue implementation
     // -------------------------------------------------------------------------

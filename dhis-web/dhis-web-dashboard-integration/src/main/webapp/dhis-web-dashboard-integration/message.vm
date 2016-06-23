@@ -1,7 +1,7 @@
 <h3>$i18n.getString( "messages" ) #openHelp( "dashboard_messages" )</h3>
 
 <div class="horizontalMenu" style="padding: 8px 0 40px 0;">
-    <ul>
+    <ul style="display: inline-block">
 
         #if( $auth.hasAccess( "dhis-web-dashboard-integration", "sendMessage" ) )
         <li><a class="blueButtonLink" href="showSendMessage.action">$i18n.getString( 'write_message' )</a></li>
@@ -24,16 +24,21 @@
         <li><a class="greyButtonLink" href="message.action">$i18n.getString( "inbox" )</a></li>
         <li><a class="greyButtonLink" href="message.action?followUp=true">$i18n.getString( "follow_up" )</a></li>
         <li><a class="greyButtonLink" href="message.action?unread=true">$i18n.getString( "unread" )</a></li>
+        #if( $showTicketTools )
         <li>
-            <select id="statusFilter" onChange="javascript:setStatusFilter()">
-                <option value="ALL" selected>$i18n.getString( "Show all" )</option>
-                <option value="NONE">$i18n.getString( "No status" )</option>
-                <option value="OPEN">$i18n.getString( "Open")</option>
-                <option value="PENDING">$i18n.getString( "Pending" )</option>
-                <option value="INVALID">$i18n.getString( "Invalid")</option>
-                <option value="SOLVED">$i18n.getString( "Solved" )</option>
-            </select>
+            <div id="statusFilterContainer">
+                <div></div>
+                <ul>
+                    <li data-action="setStatusFilter" data-args="ALL">$i18n.getString( "Show all" )</li>
+                    <li data-action="setStatusFilter" data-args="NONE">$i18n.getString( "No status" )</li>
+                    <li data-action="setStatusFilter" data-args="OPEN">$i18n.getString( "Open" )</li>
+                    <li data-action="setStatusFilter" data-args="PENDING">$i18n.getString( "Pending" )</li>
+                    <li data-action="setStatusFilter" data-args="INVALID">$i18n.getString( "Invalid" )</li>
+                    <li data-action="setStatusFilter" data-args="SOLVED">$i18n.getString( "Solved" )</li>
+                </ul>
+            </div>
         </li>
+        #end
     </ul>
 </div>
 <div style="width:100%">
@@ -105,7 +110,33 @@ $( document ).ready( function() {
     i18n_mark_unread = '$encoder.jsEscape( $i18n.getString( "mark_unread" ) , "'" )';
 
     $( "#checkboxDropdown" ).multiCheckboxMenu( $( "#messages" ) );
+    $( "#statusFilterContainer" ).simpleDropDownMenu( {
+        btnLabel: "<span id='activeStatusFilter'>$i18n.getString("Filter status")</span>"
+    });
 
-    $( "#statusFilter").val(getParameterByName( "ticketStatus" ));
+    var btn = $("#activeStatusFilter");
+
+    switch ( getParameterByName( "ticketStatus" ) ) {
+        case 'ALL':
+            btn.html( "$i18n.getString( "show_all" )" );
+            break;
+        case 'NONE':
+            btn.html( "$i18n.getString( "no_status" )" );
+            break;
+        case 'OPEN':
+            btn.html( "$i18n.getString( "open" )" );
+            break;
+        case 'PENDING':
+            btn.html( "$i18n.getString( "pending" )" );
+            break;
+        case 'INVALID':
+            btn.html( "$i18n.getString( "invalid" )" );
+            break;
+        case 'SOLVED':
+            btn.html( "$i18n.getString( "solved" )" );
+            break;
+        default:
+            break;
+    }
 });
 </script>

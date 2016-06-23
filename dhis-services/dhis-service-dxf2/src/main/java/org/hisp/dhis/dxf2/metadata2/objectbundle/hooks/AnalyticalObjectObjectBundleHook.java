@@ -49,10 +49,10 @@ public class AnalyticalObjectObjectBundleHook
     extends AbstractObjectBundleHook
 {
     @Override
-    public void preCreate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preCreate( IdentifiableObject object, ObjectBundle bundle )
     {
-        if ( !AnalyticalObject.class.isInstance( identifiableObject ) ) return;
-        BaseAnalyticalObject analyticalObject = (BaseAnalyticalObject) identifiableObject;
+        if ( !AnalyticalObject.class.isInstance( object ) ) return;
+        BaseAnalyticalObject analyticalObject = (BaseAnalyticalObject) object;
         Schema schema = schemaService.getDynamicSchema( analyticalObject.getClass() );
         Session session = sessionFactory.getCurrentSession();
 
@@ -64,10 +64,10 @@ public class AnalyticalObjectObjectBundleHook
     }
 
     @Override
-    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !AnalyticalObject.class.isInstance( identifiableObject ) ) return;
-        BaseAnalyticalObject analyticalObject = (BaseAnalyticalObject) identifiableObject;
+        if ( !AnalyticalObject.class.isInstance( object ) ) return;
+        BaseAnalyticalObject analyticalObject = (BaseAnalyticalObject) object;
         Schema schema = schemaService.getDynamicSchema( analyticalObject.getClass() );
         Session session = sessionFactory.getCurrentSession();
 

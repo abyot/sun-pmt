@@ -34,30 +34,42 @@ package org.hisp.dhis.common;
  */
 public enum Objects
 {
-    CONSTANT,
-    DATAELEMENT,
-    EXTENDEDDATAELEMENT,
-    DATAELEMENTGROUP,
-    DATAELEMENTGROUPSET,
-    INDICATORTYPE,
-    INDICATOR,
-    INDICATORGROUP,
-    INDICATORGROUPSET,
-    DATASET,
-    ORGANISATIONUNIT,
-    ORGANISATIONUNITGROUP,
-    ORGANISATIONUNITGROUPSET,
-    ORGANISATIONUNITLEVEL,
-    VALIDATIONRULE,
-    PERIOD,
-    DATAVALUE,
-    USER,
-    USERGROUP,
-    REPORTTABLE,
-    REPORT,
-    CHART,
-    MAP,
-    DASHBOARD,
-    PROGRAM,
-    PROGRAMSTAGEINSTANCE
+    CONSTANT( "constant" ),
+    DATAELEMENT( "dataElement" ),
+    EXTENDEDDATAELEMENT( "extendedDataElement" ),
+    DATAELEMENTGROUP( "dataElementGroup" ),
+    DATAELEMENTGROUPSET( "dataElementGroupSet" ),
+    INDICATORTYPE( "indicatorType" ),
+    INDICATOR( "indicator" ),
+    INDICATORGROUP( "indicatorGroup" ),
+    INDICATORGROUPSET( "indicatorGroupSet" ),
+    DATASET( "dataSet" ),
+    ORGANISATIONUNIT( "organisationUnit" ),
+    ORGANISATIONUNITGROUP( "organisationUnitGroup" ),
+    ORGANISATIONUNITGROUPSET( "organisationUnitGroupSet" ),
+    ORGANISATIONUNITLEVEL( "organisationUnitLevel" ),
+    VALIDATIONRULE( "validationRule" ),
+    PERIOD( "period" ),
+    DATAVALUE( "dataValue" ),
+    USER( "user" ),
+    USERGROUP( "userGroup" ),
+    REPORTTABLE( "reportTable" ),
+    REPORT( "report" ),
+    CHART( "chart" ),
+    MAP( "map" ),
+    DASHBOARD( "dashboard" ),
+    PROGRAM( "program" ),
+    PROGRAMSTAGEINSTANCE( "programStageInstance" );
+
+    private String value;
+
+    Objects( String value )
+    {
+        this.value = value;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
 }

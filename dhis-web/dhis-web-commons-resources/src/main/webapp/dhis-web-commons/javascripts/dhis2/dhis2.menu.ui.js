@@ -1201,8 +1201,8 @@
                         ctrl.headerBar.title = applicationTitle || 'District Health Information Software 2';
                     }
 
-                    function setHeaderLink(startModule) {
-                        ctrl.headerBar.link = [baseUrl, startModule || 'dhis-web-dashboard-integration', 'index.action'].join('/');
+                    function setHeaderLink() {
+                        ctrl.headerBar.link = [baseUrl, 'dhis-web-commons-about', 'redirect.action'].join('/');
                     }
 
                     function requestUserStyle() {

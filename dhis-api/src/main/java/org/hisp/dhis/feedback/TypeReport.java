@@ -66,7 +66,12 @@ public class TypeReport
         stats.merge( typeReport.getStats() );
 
         typeReport.getObjectReportMap().forEach( ( index, objectReport ) -> {
-            if ( !objectReportMap.containsKey( index ) ) objectReportMap.put( index, new ObjectReport( objectReport.getKlass(), objectReport.getIndex() ) );
+            if ( !objectReportMap.containsKey( index ) )
+            {
+                objectReportMap.put( index, objectReport );
+                return;
+            }
+
             objectReportMap.get( index ).addErrorReports( objectReport.getErrorReports() );
         } );
     }
@@ -75,7 +80,8 @@ public class TypeReport
     {
         if ( !objectReportMap.containsKey( objectReport.getIndex() ) )
         {
-            objectReportMap.put( objectReport.getIndex(), new ObjectReport( objectReport.getKlass(), objectReport.getIndex() ) );
+            objectReportMap.put( objectReport.getIndex(), objectReport );
+            return;
         }
 
         objectReportMap.get( objectReport.getIndex() ).merge( objectReport );

@@ -113,9 +113,20 @@ public class DataApproval
     }
 
     public DataApproval( DataApprovalLevel dataApprovalLevel, DataApprovalWorkflow workflow,
-                         Period period, OrganisationUnit organisationUnit,
-                         DataElementCategoryOptionCombo attributeOptionCombo,
-                         boolean accepted, Date created, User creator )
+        Period period, OrganisationUnit organisationUnit,
+        DataElementCategoryOptionCombo attributeOptionCombo )
+    {
+        this.dataApprovalLevel = dataApprovalLevel;
+        this.workflow = workflow;
+        this.period = period;
+        this.organisationUnit = organisationUnit;
+        this.attributeOptionCombo = attributeOptionCombo;
+    }
+
+    public DataApproval( DataApprovalLevel dataApprovalLevel, DataApprovalWorkflow workflow,
+        Period period, OrganisationUnit organisationUnit,
+        DataElementCategoryOptionCombo attributeOptionCombo,
+        boolean accepted, Date created, User creator )
     {
         this.dataApprovalLevel = dataApprovalLevel;
         this.workflow = workflow;

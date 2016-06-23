@@ -48,24 +48,6 @@ public class SaveSmsConfigurationAction
     private SmsConfigurationManager smsConfigurationManager;
 
     // -------------------------------------------------------------------------
-    // Output
-    // -------------------------------------------------------------------------
-
-    private Integer pollingInterval;
-
-    public void setPollingInterval( Integer pollingInterval )
-    {
-        this.pollingInterval = pollingInterval;
-    }
-
-    private String serverPhoneNumber;
-
-    public void setServerPhoneNumber( String longNumber )
-    {
-        this.serverPhoneNumber = longNumber;
-    }
-
-    // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
 
@@ -79,10 +61,6 @@ public class SaveSmsConfigurationAction
         {
             smsConfig = new SmsConfiguration( true );
         }
-
-        smsConfig.setPollingInterval( pollingInterval );
-
-        smsConfig.setLongNumber( serverPhoneNumber );
 
         smsConfigurationManager.updateSmsConfiguration( smsConfig );
 

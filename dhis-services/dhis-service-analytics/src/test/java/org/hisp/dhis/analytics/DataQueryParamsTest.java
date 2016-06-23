@@ -102,9 +102,9 @@ public class DataQueryParamsTest
         List<? extends DimensionalItemObject> dataElements = Lists.newArrayList( deA, deB, deC );
         List<? extends DimensionalItemObject> reportingRates = Lists.newArrayList( rrA, rrB );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDataElements( dataElements );
-        params.setReportingRates( reportingRates );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .withDataElements( dataElements )
+            .withReportingRates( reportingRates ).build();
         
         assertEquals( 3, params.getDataElements().size() );
         assertTrue( params.getDataElements().containsAll( dataElements ) );
@@ -148,22 +148,26 @@ public class DataQueryParamsTest
     @Test
     public void testHasPeriods()
     {
-        DataQueryParams params = new DataQueryParams();
+        DataQueryParams params = DataQueryParams.newBuilder().build();
         
         assertFalse( params.hasPeriods() );
         
         List<DimensionalItemObject> periods = new ArrayList<>();
         
-        params.getDimensions().add( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) );
+        params = DataQueryParams.newBuilder( params )
+            .addDimension( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) ).build();
         
         assertFalse( params.hasPeriods() );
         
-        params.removeDimension( PERIOD_DIM_ID );
+        params = DataQueryParams.newBuilder()
+            .removeDimension( PERIOD_DIM_ID ).build();
 
         assertFalse( params.hasPeriods() );
         
         periods.add( new Period() );
-        params.getDimensions().add( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) );
+        
+        params = DataQueryParams.newBuilder()
+            .addDimension( new BaseDimensionalObject( PERIOD_DIM_ID, DimensionType.PERIOD, periods ) ).build();
         
         assertTrue( params.hasPeriods() );
     }
@@ -182,7 +186,8 @@ public class DataQueryParamsTest
         assertEquals( 2, params.getDimensions().size() );
         assertEquals( 1, params.getFilters().size() );
         
-        params.pruneToDimensionType( DimensionType.ORGANISATION_UNIT );
+        params = DataQueryParams.newBuilder( params )
+            .pruneToDimensionType( DimensionType.ORGANISATION_UNIT ).build();
         
         assertEquals( 1, params.getDimensions().size() );
         assertEquals( DimensionType.ORGANISATION_UNIT, params.getDimensions().get( 0 ).getDimensionType() );
@@ -194,12 +199,13 @@ public class DataQueryParamsTest
     {
         List<DimensionalItemObject> items = Lists.newArrayList( inA, inB, deA, deB, deC, rrA, rrB );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addOrSetDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items ).build();
         
         assertEquals( 7, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         
-        params.retainDataDimension( DataDimensionItemType.DATA_ELEMENT );
+        params = DataQueryParams.newBuilder( params )
+            .retainDataDimension( DataDimensionItemType.DATA_ELEMENT ).build();
         
         assertEquals( 3, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         assertTrue( params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().contains( deA ) );
@@ -212,12 +218,13 @@ public class DataQueryParamsTest
     {
         List<DimensionalItemObject> items = Lists.newArrayList( inA, inB, deA, deB, deC, rrA, rrB );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addOrSetDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items ).build();
         
         assertEquals( 7, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         
-        params.retainDataDimensions( DataDimensionItemType.DATA_ELEMENT, DataDimensionItemType.REPORTING_RATE );
+        params = DataQueryParams.newBuilder( params )
+            .retainDataDimensions( DataDimensionItemType.DATA_ELEMENT, DataDimensionItemType.REPORTING_RATE ).build();
         
         assertEquals( 5, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         assertTrue( params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().contains( deA ) );
@@ -232,12 +239,13 @@ public class DataQueryParamsTest
     {
         List<DimensionalItemObject> items = Lists.newArrayList( inA, inB, deA, deB, deC, rrA, rrB, rrC, rrD );
         
-        DataQueryParams params = new DataQueryParams();
-        params.setDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items );
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addOrSetDimensionOptions( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, items ).build();
         
         assertEquals( 9, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         
-        params.retainDataDimensionReportingRates( ReportingRateMetric.REPORTING_RATE );
+        params = DataQueryParams.newBuilder( params )
+            .retainDataDimensionReportingRates( ReportingRateMetric.REPORTING_RATE ).build();
         
         assertEquals( 2, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
         assertTrue( params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().contains( rrA ) );
@@ -247,19 +255,19 @@ public class DataQueryParamsTest
     @Test
     public void testSetDimensionOptions()
     {
-        DataQueryParams params = new DataQueryParams();
-        
         List<DimensionalItemObject> itemsBefore = Lists.newArrayList( createIndicator( 'A', null ), 
             createIndicator( 'B', null ), createIndicator( 'C', null ), createIndicator( 'D', null ) );
         
         List<DimensionalItemObject> itemsAfter = Lists.newArrayList( createIndicator( 'A', null ), createIndicator( 'B', null ) );
-        
-        params.getDimensions().add( new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, null, itemsBefore ) );
+
+        DataQueryParams params = DataQueryParams.newBuilder()
+            .addDimension( new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, null, itemsBefore ) ).build();
         
         assertEquals( itemsBefore, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems() );
         
-        params.setDimensionOptions( DimensionalObject.DATA_X_DIM_ID, itemsAfter );
-
+        params = DataQueryParams.newBuilder( params )
+            .withDimensionOptions( DimensionalObject.DATA_X_DIM_ID, itemsAfter ).build();
+        
         assertEquals( itemsAfter, params.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems() );        
     }
 }

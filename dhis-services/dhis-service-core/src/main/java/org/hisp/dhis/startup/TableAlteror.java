@@ -131,6 +131,7 @@ public class TableAlteror
         executeSql( "DROP TABLE datadictionary" );
         executeSql( "ALTER TABLE categoryoptioncombo drop column userid" );
         executeSql( "ALTER TABLE categoryoptioncombo drop column publicaccess" );
+        executeSql( "ALTER TABLE categoryoptioncombo alter column name type text" );
         executeSql( "ALTER TABLE dataelementcategoryoption drop column categoryid" );
         executeSql( "ALTER TABLE reporttable DROP column paramleafparentorganisationunit" );
         executeSql( "ALTER TABLE reporttable DROP column dimension_type" );
@@ -762,6 +763,8 @@ public class TableAlteror
         executeSql( "UPDATE attribute SET optionsetattribute=false WHERE optionsetattribute IS NULL" );
         executeSql( "UPDATE attribute SET constantattribute=false WHERE constantattribute IS NULL" );
         executeSql( "UPDATE attribute SET legendsetattribute=false WHERE legendsetattribute IS NULL" );
+        executeSql( "UPDATE attribute SET programIndicatorAttribute=false WHERE programIndicatorAttribute IS NULL" );
+        executeSql( "UPDATE attribute SET sqlViewAttribute=false WHERE sqlViewAttribute IS NULL" );
 
         executeSql( "update attribute set isunique=false where isunique is null" );
 
@@ -865,6 +868,10 @@ public class TableAlteror
         executeSql( "update programstage set repeatable = false where repeatable is null" );
         executeSql( "alter table programstage drop column reportdatedescription" );
         executeSql( "alter table programstage drop column irregular" );
+        
+        executeSql( "update smscodes set compulsory = false where compulsory is null" );
+        
+        executeSql( "alter table programmessage drop column storecopy" );
 
         executeSql( "alter table programindicator drop column missingvaluereplacement" );
 
@@ -917,6 +924,8 @@ public class TableAlteror
 
         upgradeMapViewsToColumns();
         upgradeDataDimensionItemsToReportingRateMetric();
+
+        updateObjectTranslation();
 
         log.info( "Tables updated" );
     }
@@ -1215,7 +1224,7 @@ public class TableAlteror
             "JOIN expression e ON e.expressionid = ede.expressionid " +
             "JOIN validationrule v ON v.rightexpressionid = e.expressionid " +
             "WHERE v.ruletype='SURVEILLANCE' " +
-            "AND e.expression NOT LIKE '%AVG%' and e.expression NOT LIKE '%STDDEV%';");
+            "AND e.expression NOT LIKE '%AVG%' and e.expression NOT LIKE '%STDDEV%';" );
 
         executeSql( "update expression set expression=" + statementBuilder.concatenate( "'AVG('", "expression", "')'" ) +
             " from validationrule where ruletype='SURVEILLANCE' AND rightexpressionid=expressionid " +
@@ -1394,6 +1403,139 @@ public class TableAlteror
             log.debug( ex );
 
             return -1;
+        }
+    }
+
+    private void addTranslationTable( List<Map<String, String>> listTables,
+        String className, String translationTable, String objectTable, String objectId )
+    {
+        Map<String, String> mapTables = new HashMap<>();
+        mapTables.put( "className", className );
+        mapTables.put( "translationTable", translationTable );
+        mapTables.put( "objectTable", objectTable );
+        mapTables.put( "objectId", objectId );
+        listTables.add( mapTables );
+    }
+
+    private void updateObjectTranslation()
+    {
+        List<Map<String, String>> listTables = new ArrayList<>();
+
+        addTranslationTable( listTables, "DataElement", "dataelementtranslations", "dataelement", "dataelementid" );
+        addTranslationTable( listTables, "DataElementCategory", "dataelementcategorytranslations", "dataelementcategory", "dataelementcategoryid" );
+        addTranslationTable( listTables, "Attribute", "attributetranslations", "attribute", "attributeid" );
+        addTranslationTable( listTables, "Indicator", "indicatortranslations", "indicator", "indicatorid" );
+        addTranslationTable( listTables, "OrganisationUnit", "organisationUnittranslations", "organisationunit", "organisationunitid" );
+        addTranslationTable( listTables, "DataElementCategoryCombo", "categorycombotranslations", "categorycombo", "categorycomboid" );
+        addTranslationTable( listTables, "OrganisationUnit", "organisationUnittranslations", "organisationunit", "organisationunitid" );
+        addTranslationTable( listTables, "DataElementGroup", "dataelementgrouptranslations", "dataelementgroup", "dataelementgroupid" );
+        addTranslationTable( listTables, "DataSet", "datasettranslations", "dataset", "datasetid" );
+        addTranslationTable( listTables, "IndicatorType", "indicatortypetranslations", "indicatortype", "indicatortypeid" );
+        addTranslationTable( listTables, "Section", "datasetsectiontranslations", "section", "sectionid" );
+        addTranslationTable( listTables, "Chart", "charttranslations", "chart", "chartid" );
+        addTranslationTable( listTables, "Color", "colortranslations", "color", "colorid" );
+        addTranslationTable( listTables, "ColorSet", "colorsettranslations", "colorset", "colorsetid" );
+        addTranslationTable( listTables, "Constant", "constanttranslations", "constant", "constantid" );
+        addTranslationTable( listTables, "Dashboard", "dashboardtranslations", "dashboard", "dashboardid" );
+        addTranslationTable( listTables, "DashboardItem", "dashboarditemtranslations", "dashboarditemid", "dashboarditemid" );
+        addTranslationTable( listTables, "DataApprovalLevel", "dataapprovalleveltranslations", "dataapprovallevel", "dataapprovallevelid" );
+        addTranslationTable( listTables, "DataApprovalWorkflow", "dataapprovalworkflowtranslations", "dataapprovalworkflow", "workflowid" );
+        addTranslationTable( listTables, "CategoryOptionGroup", "categoryoptiongrouptranslations", "categoryoptiongroup", "categoryoptiongroupid" );
+        addTranslationTable( listTables, "CategoryOptionGroupSet", "categoryoptiongroupsettranslations", "categoryoptiongroupset", "categoryoptiongroupsetid" );
+        addTranslationTable( listTables, "DataElementCategoryOption", "categoryoptiontranslations", "dataelementcategoryoption", "categoryoptionid" );
+        addTranslationTable( listTables, "DataElementCategoryOptionCombo", "categoryoptioncombotranslations", "categoryoptioncombo", "categoryoptioncomboid" );
+        addTranslationTable( listTables, "DataElementGroupSet", "dataelementgroupsettranslations", "dataelementgroupset", "dataelementgroupsetid" );
+        addTranslationTable( listTables, "DataElementOperand", "dataelementoperandtranslations", "dataelementoperand", "dataelementoperandid" );
+        addTranslationTable( listTables, "DataEntryForm", "dataentryformtranslations", "dataentryform", "dataentryformid" );
+        addTranslationTable( listTables, "DataStatistics", "statisticstranslations", "datastatistics", "statisticsid" );
+        addTranslationTable( listTables, "Document", "documenttranslations", "document", "documentid" );
+        addTranslationTable( listTables, "EventChart", "eventcharttranslations", "eventchart", "eventchartid" );
+        addTranslationTable( listTables, "EventReport", "eventreporttranslations", "eventreport", "eventreportid" );
+        addTranslationTable( listTables, "IndicatorGroup", "indicatorgrouptranslations", "indicatorgroup", "indicatorgroupid" );
+        addTranslationTable( listTables, "IndicatorGroupSet", "indicatorgroupsettranslations", "indicatorgroupset", "indicatorgroupsetid" );
+        addTranslationTable( listTables, "Interpretation", "interpretationtranslations", "interpretation", "interpretationid" );
+        addTranslationTable( listTables, "InterpretationComment", "interpretationcommenttranslations", "interpretationcomment", "interpretationcommentid" );
+        addTranslationTable( listTables, "Legend", "maplegendtranslations", "maplegend", "maplegendid" );
+        addTranslationTable( listTables, "LegendSet", "maplegendsettranslations", "maplegendset", "maplegendsetid" );
+        addTranslationTable( listTables, "Map", "maptranslations", "map", "mapid" );
+        addTranslationTable( listTables, "MapLayer", "maplayertranslations", "maplayer", "maplayerid" );
+        addTranslationTable( listTables, "MapView", "mapviewtranslations", "mapview", "mapviewid" );
+        addTranslationTable( listTables, "Message", "messagetranslations", "message", "messageid" );
+        addTranslationTable( listTables, "MessageConversation", "messageconversationtranslations", "messageconversation", "messageconversationid" );
+        addTranslationTable( listTables, "MetaDataFilter", "metadatafiltertranslations", "metadatafilter", "metadatafilterid" );
+        addTranslationTable( listTables, "Option", "optionvaluetranslations", "optionvalue", "optionvalueid" );
+        addTranslationTable( listTables, "OptionSet", "optionsettranslations", "optionset", "optionsetid" );
+        addTranslationTable( listTables, "OrganisationUnit", "organisationunittranslations", "organisationunit", "organisationunitid" );
+        addTranslationTable( listTables, "OrganisationUnitGroup", "orgunitgrouptranslations", "orgunitgroup", "orgunitgroupid" );
+        addTranslationTable( listTables, "OrganisationUnitGroupSet", "orgunitgroupsettranslations", "orgunitgroupset", "orgunitgroupsetid" );
+        addTranslationTable( listTables, "OrganisationUnitLevel", "orgunitleveltranslations", "orgunitlevel", "orgunitlevelid" );
+        addTranslationTable( listTables, "Period", "periodtranslations", "period", "periodid" );
+        addTranslationTable( listTables, "Program", "programtranslations", "program", "programid" );
+        addTranslationTable( listTables, "ProgramDataElement", "programdataelementtranslations", "programdataelement", "programdataelementid" );
+        addTranslationTable( listTables, "ProgramIndicator", "programindicatortranslations", "programindicator", "programindicatorid" );
+        addTranslationTable( listTables, "ProgramInstance", "programinstancetranslations", "programinstance", "programinstanceid" );
+        addTranslationTable( listTables, "ProgramMessage", "programmessagetranslations", "programmessage", "id" );
+        addTranslationTable( listTables, "ProgramStage", "programstagetranslations", "programstage", "programstageid" );
+        addTranslationTable( listTables, "ProgramStageDataElement", "programstagedataelementtranslations", "programstagedataelement", "programstagedataelementid" );
+        addTranslationTable( listTables, "ProgramStageInstance", "programstageinstancetranslations", "programstageinstance", "programstageinstanceid" );
+        addTranslationTable( listTables, "ProgramStageSection", "programstagesectiontranslations", "programstagesection", "programstagesectionid" );
+        addTranslationTable( listTables, "ProgramTrackedEntityAttribute", "programattributestranslations", "programtrackedentityattribute", "programtrackedentityattributeid" );
+        addTranslationTable( listTables, "ProgramValidation", "programvalidationtranslations", "programvalidation", "programvalidationid" );
+        addTranslationTable( listTables, "ProgramRule", "programruletranslations", "programrule", "programruleid" );
+        addTranslationTable( listTables, "ProgramRuleAction", "programruleactiontranslations", "programruleaction", "programruleactionid" );
+        addTranslationTable( listTables, "ProgramRuleVariable", "programrulevariabletranslations", "programrulevariable", "programrulevariableid" );
+        addTranslationTable( listTables, "RelationshipType", "relationshiptypetranslations", "relationshiptype", "relationshiptypeid" );
+        addTranslationTable( listTables, "Report", "reporttranslations", "report", "reportid" );
+        addTranslationTable( listTables, "ReportTable", "reporttabletranslations", "reporttable", "reporttableid" );
+        addTranslationTable( listTables, "TrackedEntity", "trackedentitytranslations", "trackedentity", "trackedentityid" );
+        addTranslationTable( listTables, "TrackedEntityAttribute", "trackedentityattributetranslations", "trackedentityattribute", "trackedentityattributeid" );
+        addTranslationTable( listTables, "TrackedEntityAttributeGroup", "trackedentityattributegrouptranslations", "trackedentityattributegroup", "trackedentityattributegroupid" );
+        addTranslationTable( listTables, "TrackedEntityInstance", "trackedentityinstancetranslations", "trackedentityinstance", "trackedentityinstanceid" );
+        addTranslationTable( listTables, "TrackedEntityInstanceReminder", "trackedentityinstanceremindertranslations", "trackedentityinstancereminder", "trackedentityinstancereminderid" );
+        addTranslationTable( listTables, "User", "userinfotranslations", "userinfo", "userinfoid" );
+        addTranslationTable( listTables, "UserAuthorityGroup", "userroletranslations", "userrole", "userroleid" );
+        addTranslationTable( listTables, "UserCredentials", "usertranslations", "users", "userid" );
+        addTranslationTable( listTables, "UserGroup", "usergrouptranslations", "usergroup", "usergroupid" );
+        addTranslationTable( listTables, "ValidationCriteria", "validationcriteriatranslations", "validationcriteria", "validationcriteriaid" );
+        addTranslationTable( listTables, "ValidationRule", "validationruletranslations", "validationrule", "validationruleid" );
+        addTranslationTable( listTables, "ValidationRuleGroup", "validationrulegrouptranslations", "validationrulegroup", "validationrulegroupid" );
+
+        String sql;
+
+        for ( Map<String, String> table : listTables )
+        {
+            sql =
+                " insert into objecttranslation ( objecttranslationid, locale , property , value )  " +
+                    " select t.translationid, t.locale,  " +
+                    " case when t.objectproperty = 'shortName' then 'SHORT_NAME' " +
+                    " when t.objectproperty = 'formName' then 'FORM_NAME'   " +
+                    " when t.objectproperty = 'name' then 'NAME'  " +
+                    " when t.objectproperty = 'description' then'DESCRIPTION'" +
+                    " else t.objectproperty " +
+                    " end ," +
+                    " t.value " +
+                    " from  translation as t " +
+                    " where t.objectclass = '" + table.get( "className" ) + "'" +
+                    " and not exists ( select 1 from objecttranslation where objecttranslationid = t.translationid )  " +
+                    " and ( " +
+                    " exists ( select 1 from " + table.get( "objectTable" ) + "  where " + table.get( "objectId" ) + " = t.objectid )  " +
+                    " or  exists ( select 1 from " + table.get( "objectTable" ) + " where uid  = t.objectuid ) " +
+                    " ) ;";
+
+            executeSql( sql );
+
+            sql =
+                " insert into " + table.get( "translationTable" ) + " ( " + table.get( "objectId" ) + ", objecttranslationid ) " +
+                    " select " +
+                    " case when t.objectid is not null then t.objectid " +
+                    " else ( select " + table.get( "objectId" ) + " from " + table.get( "objectTable" )  + " where uid = t.objectuid ) " +
+                    " end," +
+                    " o.objecttranslationid  " +
+                    " from objecttranslation o inner join translation t on o.objecttranslationid = t.translationid and t.objectclass = '" + table.get( "className" ) + "'"+
+                    " and not exists ( select 1 from " + table.get( "translationTable" ) + " where objecttranslationid = o.objecttranslationid) ;" ;
+
+            executeSql( sql );
+
         }
     }
 }

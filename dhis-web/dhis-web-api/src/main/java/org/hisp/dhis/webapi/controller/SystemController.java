@@ -30,9 +30,11 @@ package org.hisp.dhis.webapi.controller;
 
 import com.google.common.collect.Lists;
 import org.hisp.dhis.common.CodeGenerator;
+import org.hisp.dhis.common.Objects;
 import org.hisp.dhis.dxf2.metadata.ImportSummary;
 import org.hisp.dhis.i18n.I18n;
 import org.hisp.dhis.i18n.I18nManager;
+import org.hisp.dhis.node.NodeUtils;
 import org.hisp.dhis.node.exception.InvalidTypeException;
 import org.hisp.dhis.node.types.CollectionNode;
 import org.hisp.dhis.node.types.RootNode;
@@ -43,12 +45,14 @@ import org.hisp.dhis.scheduling.TaskId;
 import org.hisp.dhis.setting.StyleManager;
 import org.hisp.dhis.setting.StyleObject;
 import org.hisp.dhis.setting.SystemSettingManager;
+import org.hisp.dhis.statistics.StatisticsProvider;
 import org.hisp.dhis.system.SystemInfo;
 import org.hisp.dhis.system.SystemService;
 import org.hisp.dhis.system.notification.Notification;
 import org.hisp.dhis.system.notification.Notifier;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion.Version;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -65,6 +69,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -72,7 +77,7 @@ import java.util.UUID;
  */
 @Controller
 @RequestMapping( value = SystemController.RESOURCE_PATH )
-@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
+@ApiVersion( { Version.DEFAULT, Version.ALL } )
 public class SystemController
 {
     public static final String RESOURCE_PATH = "/system";
@@ -97,6 +102,9 @@ public class SystemController
 
     @Autowired
     private I18nManager i18nManager;
+
+    @Autowired
+    private StatisticsProvider statisticsProvider;
 
     // -------------------------------------------------------------------------
     // UID Generator
@@ -199,7 +207,29 @@ public class SystemController
         return "info";
     }
 
+    @RequestMapping( value = "/objectCounts", method = RequestMethod.GET )
+    public @ResponseBody RootNode getObjectCounts()
+    {
+        Map<Objects, Integer> objectCounts = statisticsProvider.getObjectCounts();
+        RootNode rootNode = NodeUtils.createRootNode( "objectCounts" );
+
+        for ( Objects objects : objectCounts.keySet() )
+        {
+            rootNode.addChild( new SimpleNode( objects.getValue(), objectCounts.get( objects ) ) );
+        }
+
+        return rootNode;
+    }
+
     @RequestMapping( value = "/ping", method = RequestMethod.GET, produces = "text/plain" )
+    @ApiVersion( exclude = Version.V24 )
+    public @ResponseBody String pingLegacy()
+    {
+        return "pong";
+    }
+
+    @RequestMapping( value = "/ping", method = RequestMethod.GET )
+    @ApiVersion( exclude = { Version.DEFAULT, Version.V23 } )
     public @ResponseBody String ping()
     {
         return "pong";

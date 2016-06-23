@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.hisp.dhis.commons.util.TextUtils;
+import org.hisp.dhis.dataelement.CategoryOptionGroupSet;
 import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.resourcetable.ResourceTable;
 
@@ -43,9 +44,12 @@ import com.google.common.collect.Lists;
 public class CategoryResourceTable
     extends ResourceTable<DataElementCategory>
 {
-    public CategoryResourceTable( List<DataElementCategory> objects, String columnQuote )
+    private List<CategoryOptionGroupSet> groupSets;
+    
+    public CategoryResourceTable( List<DataElementCategory> objects, List<CategoryOptionGroupSet> groupSets, String columnQuote )
     {
         super( objects, columnQuote );
+        this.groupSets = groupSets;
     }
 
     @Override
@@ -67,6 +71,12 @@ public class CategoryResourceTable
             statement += columnQuote + category.getUid() + columnQuote + " character(11), ";
         }
 
+        for ( CategoryOptionGroupSet groupSet : groupSets )
+        {
+            statement += columnQuote + groupSet.getName() + columnQuote + " varchar(230), ";
+            statement += columnQuote + groupSet.getUid() + columnQuote + " character(11), ";
+        }
+        
         statement += "primary key (categoryoptioncomboid))";
         
         return statement;
@@ -96,6 +106,27 @@ public class CategoryResourceTable
                 "where coc.categoryoptioncomboid = cocco.categoryoptioncomboid " +
                 "and cco.categoryid = " + category.getId() + " " +
                 "limit 1) as " + columnQuote + category.getUid() + columnQuote + ", ";
+        }
+        
+        for ( CategoryOptionGroupSet groupSet : groupSets )
+        {
+            sql += "(" +
+                "select cog.name from categoryoptioncombos_categoryoptions cocco " +
+                "inner join categoryoptiongroupmembers cogm on cocco.categoryoptionid = cogm.categoryoptionid " +
+                "inner join categoryoptiongroup cog on cogm.categoryoptiongroupid = cog.categoryoptiongroupid " +
+                "inner join categoryoptiongroupsetmembers cogsm on cogm.categoryoptiongroupid = cogsm.categoryoptiongroupid " +
+                "where coc.categoryoptioncomboid = cocco.categoryoptioncomboid " +
+                "and cogsm.categoryoptiongroupsetid = " + groupSet.getId() + " " +
+                "limit 1) as " + columnQuote + groupSet.getName() + columnQuote + ", ";
+            
+            sql += "(" +
+                "select cog.uid from categoryoptioncombos_categoryoptions cocco " +
+                "inner join categoryoptiongroupmembers cogm on cocco.categoryoptionid = cogm.categoryoptionid " +
+                "inner join categoryoptiongroup cog on cogm.categoryoptiongroupid = cog.categoryoptiongroupid " +
+                "inner join categoryoptiongroupsetmembers cogsm on cogm.categoryoptiongroupid = cogsm.categoryoptiongroupid " +
+                "where coc.categoryoptioncomboid = cocco.categoryoptioncomboid " +
+                "and cogsm.categoryoptiongroupsetid = " + groupSet.getId() + " " +
+                "limit 1) as " + columnQuote + groupSet.getUid() + columnQuote + ", ";
         }
 
         sql = TextUtils.removeLastComma( sql ) + " ";

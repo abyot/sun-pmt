@@ -71,5 +71,21 @@
     <many-to-one name="organisationUnit" class="org.hisp.dhis.organisationunit.OrganisationUnit" column="organisationunitid"
       foreign-key="fk_programinstance_organisationunitid" not-null="false" lazy="false" />
 
+    <!-- Object Translation -->
+    <set name="translations" table="programinstancetranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="programinstanceid" foreign-key="fk_objecttranslation_programinstanceid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

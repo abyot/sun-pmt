@@ -70,9 +70,9 @@ public class ProgramRuleVariableStoreTest
     @Test
     public void testGetByProgram()
     {
-        ProgramRuleVariable varA = new ProgramRuleVariable( "VarA", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataelementA, null);
-        ProgramRuleVariable varB = new ProgramRuleVariable( "VarB", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataelementA, null);
-        ProgramRuleVariable varC = new ProgramRuleVariable( "VarC", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, null, dataelementA, null);
+        ProgramRuleVariable varA = new ProgramRuleVariable( "VarA", programA, ProgramRuleVariableSourceType.DATAELEMENT_CURRENT_EVENT, null, dataelementA, false, null);
+        ProgramRuleVariable varB = new ProgramRuleVariable( "VarB", programA, ProgramRuleVariableSourceType.DATAELEMENT_NEWEST_EVENT_PROGRAM, null, dataelementA, true, null);
+        ProgramRuleVariable varC = new ProgramRuleVariable( "VarC", programA, ProgramRuleVariableSourceType.TEI_ATTRIBUTE, null, dataelementA, null, null);
         
         variableStore.save( varA );
         variableStore.save( varB );

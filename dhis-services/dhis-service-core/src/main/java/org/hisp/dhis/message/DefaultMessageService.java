@@ -1,25 +1,5 @@
 package org.hisp.dhis.message;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hisp.dhis.configuration.ConfigurationService;
-import org.hisp.dhis.dataset.CompleteDataSetRegistration;
-import org.hisp.dhis.dataset.DataSet;
-import org.hisp.dhis.email.Email;
-import org.hisp.dhis.email.EmailService;
-import org.hisp.dhis.i18n.I18nManager;
-import org.hisp.dhis.i18n.locale.LocaleManager;
-import org.hisp.dhis.setting.SystemSettingManager;
-import org.hisp.dhis.system.velocity.VelocityManager;
-import org.hisp.dhis.user.*;
-import org.hisp.dhis.util.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -47,6 +27,26 @@ import java.util.stream.Collectors;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.configuration.ConfigurationService;
+import org.hisp.dhis.dataset.CompleteDataSetRegistration;
+import org.hisp.dhis.dataset.DataSet;
+import org.hisp.dhis.email.Email;
+import org.hisp.dhis.email.EmailService;
+import org.hisp.dhis.i18n.I18nManager;
+import org.hisp.dhis.i18n.locale.LocaleManager;
+import org.hisp.dhis.setting.SystemSettingManager;
+import org.hisp.dhis.system.velocity.VelocityManager;
+import org.hisp.dhis.user.*;
+import org.hisp.dhis.util.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Lars Helge Overland
@@ -199,7 +199,6 @@ public class DefaultMessageService
     @Override
     public int sendFeedback( String subject, String text, String metaData )
     {
-
         Set<User> users = new HashSet<>();
 
         // ---------------------------------------------------------------------

@@ -29,8 +29,6 @@ package org.hisp.dhis.preheat;
  */
 
 import org.hisp.dhis.common.IdentifiableObject;
-import org.hisp.dhis.feedback.ErrorReport;
-import org.hisp.dhis.feedback.TypeReport;
 
 import java.util.Collection;
 import java.util.List;
@@ -91,75 +89,6 @@ public interface PreheatService
     Map<Class<?>, Map<String, Map<String, Object>>> collectObjectReferences( Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> objects );
 
     /**
-     * Checks but does not connect any references, returns check report
-     *
-     * @param objects    Object to check
-     * @param preheat    Preheat Cache to use
-     * @param identifier Use this identifier type to check references
-     */
-    TypeReport checkReferences( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Checks but does not connect any references, returns check report
-     *
-     * @param object     Object to check
-     * @param preheat    Preheat Cache to use
-     * @param identifier Use this identifier type to check references
-     */
-    List<PreheatErrorReport> checkReferences( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check for properties that are unique.
-     *
-     * @param objects    Object to check
-     * @param preheat    Preheat Cache to use
-     * @param identifier Use this identifier type report issues
-     */
-    TypeReport checkUniqueness( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check for properties that are unique.
-     *
-     * @param object  Object to check
-     * @param preheat Preheat Cache to use
-     */
-    List<ErrorReport> checkUniqueness( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check that all required mandatory attributes are present.
-     *
-     * @param objects    Object to check
-     * @param preheat    Preheat Cache to use
-     * @param identifier Use this identifier type report issues
-     */
-    TypeReport checkMandatoryAttributes( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check that all required mandatory attributes are present.
-     *
-     * @param object  Object to check
-     * @param preheat Preheat Cache to use
-     */
-    List<ErrorReport> checkMandatoryAttributes( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check that all attribute values where attribute.unique=true is unique.
-     *
-     * @param objects    Object to check
-     * @param preheat    Preheat Cache to use
-     * @param identifier Use this identifier type report issues
-     */
-    TypeReport checkUniqueAttributes( Class<? extends IdentifiableObject> klass, List<IdentifiableObject> objects, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
-     * Check that all attribute values where attribute.unique=true is unique.
-     *
-     * @param object  Object to check
-     * @param preheat Preheat Cache to use
-     */
-    List<ErrorReport> checkUniqueAttributes( Class<? extends IdentifiableObject> klass, IdentifiableObject object, Preheat preheat, PreheatIdentifier identifier );
-
-    /**
      * Connects id object references on a given object using a given identifier + a preheated Preheat cache.
      *
      * @param object     Object to connect to
@@ -167,4 +96,11 @@ public interface PreheatService
      * @param identifier Use this identifier type to attach references
      */
     void connectReferences( Object object, Preheat preheat, PreheatIdentifier identifier );
+
+    /**
+     * Preheat object, and connect back references.
+     *
+     * @param object Object to refresh.
+     */
+    void refresh( IdentifiableObject object );
 }

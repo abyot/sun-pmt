@@ -29,14 +29,13 @@ package org.hisp.dhis.webapi.controller.event;
  */
 
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
-import org.hisp.dhis.program.message.DeliveryChannel;
 import org.hisp.dhis.program.message.ProgramMessage;
-import org.hisp.dhis.program.message.ProgramMessageCategory;
 import org.hisp.dhis.program.message.ProgramMessageQueryParams;
 import org.hisp.dhis.program.message.ProgramMessageService;
 import org.hisp.dhis.program.message.ProgramMessageStatus;
 import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +57,7 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping( value = "/messages" )
+@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.ALL } )
 public class ProgramMessageController
     extends AbstractCrudController<ProgramMessage>
 {
@@ -81,21 +81,22 @@ public class ProgramMessageController
     @PreAuthorize( "hasRole('ALL') or hasRole('F_MOBILE_SENDSMS')" )
     @RequestMapping( method = RequestMethod.GET, produces = { "application/json" } )
     public void getProgramMessages( @RequestParam( required = false ) Set<String> ou,
-        @RequestParam( required = false ) String trackedEntityInstance,
-        @RequestParam( required = false ) String emailAddress, @RequestParam( required = false ) String programInstance,
+        @RequestParam( required = false ) String programInstance,
         @RequestParam( required = false ) String programStageInstance,
         @RequestParam( required = false ) ProgramMessageStatus messageStatus,
-        @RequestParam( required = false ) Set<DeliveryChannel> deliveryChannels,
-        @RequestParam( required = false ) ProgramMessageCategory messageCatagory,
-        @RequestParam( required = false ) Date fromDate, @RequestParam( required = false ) Date afterDate,
-        @RequestParam( required = false ) Date beforeDate, @RequestParam( required = false ) Date toDate,
+        @RequestParam( required = false ) Date afterDate, @RequestParam( required = false ) Date beforeDate,
         @RequestParam( required = false ) Integer page, @RequestParam( required = false ) Integer pageSize,
-        HttpServletRequest request, HttpServletResponse response )
-        throws IOException
+        HttpServletRequest request, HttpServletResponse response)
+            throws IOException, WebMessageException
     {
-        ProgramMessageQueryParams params = programMessageService.getFromUrl( ou, trackedEntityInstance, emailAddress,
-            programInstance, programStageInstance, messageStatus, deliveryChannels, messageCatagory, page, pageSize,
-            fromDate, toDate, afterDate, beforeDate );
+        ProgramMessageQueryParams params = programMessageService.getFromUrl( ou, programInstance, programStageInstance,
+            messageStatus, page, pageSize, afterDate, beforeDate );
+
+        if ( programInstance == null && programStageInstance == null )
+        {
+            throw new WebMessageException(
+                WebMessageUtils.conflict( "ProgramInstance or ProgramStageInstance must be specified." ) );
+        }
 
         List<ProgramMessage> programMessages = programMessageService.getProgramMessages( params );
 
@@ -113,17 +114,17 @@ public class ProgramMessageController
     {
         ProgramMessage programMessage = renderService.fromJson( request.getInputStream(), ProgramMessage.class );
 
-        programMessageService.validateProgramMessagePayload( programMessage );
+        programMessageService.validatePayload( programMessage );
 
         String result = programMessageService.sendMessage( programMessage );
 
-        if ( result.equals( "success" ) )
+        if ( "success".equals( result ) )
         {
-            webMessageService.send( WebMessageUtils.created( "Message sent" ), response, request );
+            webMessageService.send( WebMessageUtils.created( "SENT" ), response, request );
         }
         else
         {
-            webMessageService.send( WebMessageUtils.error( "Message failed" ), response, request );
+            webMessageService.send( WebMessageUtils.error( "FAILED" ), response, request );
         }
     }
 }

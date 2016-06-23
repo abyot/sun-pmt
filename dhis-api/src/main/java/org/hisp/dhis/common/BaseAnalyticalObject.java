@@ -352,17 +352,17 @@ public abstract class BaseAnalyticalObject
 
             if ( userOrganisationUnit && user != null && user.hasOrganisationUnit() )
             {
-                items.add( user.getOrganisationUnit() );
+                items.addAll( user.getOrganisationUnits() );
             }
 
             if ( userOrganisationUnitChildren && user != null && user.hasOrganisationUnit() )
             {
-                items.addAll( user.getOrganisationUnit().getSortedChildren() );
+                user.getOrganisationUnits().forEach( ou -> items.addAll( ou.getSortedChildren() ) );
             }
 
             if ( userOrganisationUnitGrandChildren && user != null && user.hasOrganisationUnit() )
             {
-                items.addAll( user.getOrganisationUnit().getSortedGrandChildren() );
+                user.getOrganisationUnits().forEach( ou -> items.addAll( ou.getSortedGrandChildren() ) );
             }
 
             if ( organisationUnitLevels != null && !organisationUnitLevels.isEmpty() && organisationUnitsAtLevel != null )

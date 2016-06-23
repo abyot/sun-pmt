@@ -34,7 +34,7 @@ package org.hisp.dhis.common;
 public enum MergeMode
 {
     MERGE_ALWAYS, MERGE_IF_NOT_NULL,
-    MERGE, REPLACE;
+    MERGE, REPLACE, NONE;
 
     public boolean isMerge()
     {
@@ -44,5 +44,10 @@ public enum MergeMode
     public boolean isReplace()
     {
         return this == MERGE_ALWAYS || this == REPLACE;
+    }
+
+    public boolean isNone()
+    {
+        return this == NONE;
     }
 }

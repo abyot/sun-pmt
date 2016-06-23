@@ -28,5 +28,21 @@
     <many-to-one name="program" class="org.hisp.dhis.program.Program" not-null="true" 
       column="programid" foreign-key="fk_programvalidation_programid" />
 
+    <!-- Object Translation -->
+    <set name="translations" table="programvalidationtranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="programvalidationid" foreign-key="fk_objecttranslation_programvalidationid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

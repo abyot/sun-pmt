@@ -11,9 +11,11 @@
 			<generator class="increment" />
 		</id>
 
-		<property name="code" type="text" />
+		<property name="code" />
 
 		<property name="formula" type="text" />
+		
+		<property name="compulsory" />
 
 		<many-to-one name="dataElement" class="org.hisp.dhis.dataelement.DataElement"
 			column="dataelementid" foreign-key="fk_dataelement_dataelementid" />

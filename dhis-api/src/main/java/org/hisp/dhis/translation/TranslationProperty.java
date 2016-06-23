@@ -33,5 +33,19 @@ package org.hisp.dhis.translation;
  */
 public enum TranslationProperty
 {
-    NAME, SHORT_NAME, DESCRIPTION, FORM_NAME
+    NAME, SHORT_NAME, DESCRIPTION, FORM_NAME;
+
+    public static TranslationProperty fromValue( String value )
+    {
+        for ( TranslationProperty type : TranslationProperty.values() )
+        {
+            if ( type.name().equalsIgnoreCase( value ) )
+            {
+                return type;
+            }
+        }
+
+        return null;
+    }
+
 }

@@ -62,11 +62,28 @@
 					<option value="1">$i18n.getString("orgunit")</option>
 					<option value="2">$i18n.getString("program")</option>
 					<option value="3">$i18n.getString("program_within_orgunit")</option>
-				</select>
+				</select>				
 			</span>
 		</td>			
 	</tr>
 	
+	<tr id="generatedTR" name="generatedTR" style="display:none;">
+		<td><label for="generated">$i18n.getString( "generated" )</label></td>
+		<td>
+			<input type="checkbox" id="generated" name="generated" value="true" onchange="generatedOnChange()">
+		</td>	
+	</tr>
+	
+	<tr id="generatedPatternTR" name="generatedPatternTR" style="display:none;">
+		<td>
+			<label for="generated">$i18n.getString( "generated_pattern" )</label><br>
+			<span class="tipText">($i18n.getString( "generated_pattern_tips" ))</span>
+		</td>
+		<td>
+			<input type="text" id="pattern" name="pattern"/>
+		</td>
+	</tr>
+			
 	<tr>
 		<td><label for="inherit">$i18n.getString( "inherit" )</label></td>
 		<td>

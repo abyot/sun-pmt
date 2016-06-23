@@ -84,6 +84,9 @@ public class ObjectBundleServiceTest
     private ObjectBundleService objectBundleService;
 
     @Autowired
+    private ObjectBundleValidationService objectBundleValidationService;
+
+    @Autowired
     private IdentifiableObjectManager manager;
 
     @Autowired
@@ -158,7 +161,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertFalse( validate.isEmpty() );
 
         List<ObjectReport> objectReports = validate.getObjectReports( DataElement.class );
@@ -216,7 +219,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertFalse( validate.getTypeReportMap().isEmpty() );
 
         List<ObjectReport> objectReports = validate.getObjectReports( DataElement.class );
@@ -265,7 +268,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap().isEmpty() );
 
@@ -287,7 +290,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -306,7 +309,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertEquals( 3, validate.getTypeReportMap( DataElement.class ).getObjectReports().size() );
     }
@@ -326,7 +329,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertEquals( 1, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
         assertFalse( validate.getErrorReportsByCode( DataElement.class, ErrorCode.E4000 ).isEmpty() );
@@ -346,7 +349,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap( DataElement.class ).getObjectReports().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -365,7 +368,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap( DataElement.class ).getObjectReports().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -384,7 +387,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap( DataElement.class ).getObjectReports().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -403,7 +406,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap( DataElement.class ).getObjectReports().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -422,7 +425,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.getTypeReportMap( DataElement.class ).getObjectReports().isEmpty() );
         assertEquals( 3, validate.getErrorReportsByCode( DataElement.class, ErrorCode.E5001 ).size() );
@@ -441,7 +444,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertNotNull( validate );
     }
@@ -459,7 +462,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         List<DataElement> dataElements = manager.getAll( DataElement.class );
@@ -481,7 +484,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         List<DataElement> dataElements = manager.getAll( DataElement.class );
@@ -501,7 +504,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         List<OrganisationUnit> organisationUnits = manager.getAll( OrganisationUnit.class );
@@ -553,7 +556,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         List<OrganisationUnit> organisationUnits = manager.getAll( OrganisationUnit.class );
@@ -584,7 +587,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
@@ -596,7 +599,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
-        validate = objectBundleService.validate( bundle );
+        validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
@@ -636,7 +639,7 @@ public class ObjectBundleServiceTest
         assertNotNull( userGroup );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         DataElement dataElementA = dataElementMap.get( "deabcdefghA" );
@@ -695,7 +698,7 @@ public class ObjectBundleServiceTest
         assertNotNull( userGroup );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         DataElement dataElementA = dataElementMap.get( "deabcdefghA" );
@@ -746,7 +749,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -792,7 +795,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -860,10 +863,24 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
+
+        Section section1 = manager.get( Section.class, "JwcV2ZifEQf" );
+        assertNotNull( section1.getDataSet() );
+        assertNotNull( section1.getCategoryCombo() );
+        assertTrue( section1.getGreyedFields().isEmpty() );
+        assertEquals( 1, section1.getDataElements().size() );
+        assertNotNull( section1.getDataSet() );
+
+        Section section2 = manager.get( Section.class, "C50M0WxaI7y" );
+        assertNotNull( section2.getDataSet() );
+        assertNotNull( section2.getCategoryCombo() );
+        assertEquals( 1, section2.getGreyedFields().size() );
+        assertEquals( 1, section2.getDataElements().size() );
+        assertNotNull( section2.getDataSet() );
 
         metadata = renderService.fromMetadata( new ClassPathResource( "dxf2/dataset_with_sections_gf_update.json" ).getInputStream(), RenderFormat.JSON );
 
@@ -873,7 +890,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
-        validate = objectBundleService.validate( bundle );
+        validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -900,14 +917,14 @@ public class ObjectBundleServiceTest
         assertEquals( 2, dataSet.getSections().size() );
         assertNotNull( dataSet.getUser() );
 
-        Section section1 = manager.get( Section.class, "JwcV2ZifEQf" );
+        section1 = manager.get( Section.class, "JwcV2ZifEQf" );
         assertNotNull( section1.getDataSet() );
         assertNotNull( section1.getCategoryCombo() );
         assertEquals( 1, section1.getGreyedFields().size() );
         assertEquals( 1, section1.getDataElements().size() );
         assertNotNull( section1.getDataSet() );
 
-        Section section2 = manager.get( Section.class, "C50M0WxaI7y" );
+        section2 = manager.get( Section.class, "C50M0WxaI7y" );
         assertNotNull( section2.getDataSet() );
         assertNotNull( section2.getCategoryCombo() );
         assertTrue( section2.getGreyedFields().isEmpty() );
@@ -927,7 +944,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -966,7 +983,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -992,7 +1009,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -1040,7 +1057,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -1053,7 +1070,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
-        validate = objectBundleService.validate( bundle );
+        validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -1108,7 +1125,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        assertTrue( objectBundleService.validate( bundle ).getErrorReports().isEmpty() );
+        assertTrue( objectBundleValidationService.validate( bundle ).getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
         DataElement dataElementA = dataElementMap.get( "deabcdefghA" );
@@ -1166,7 +1183,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        assertTrue( objectBundleService.validate( bundle ).getErrorReports().isEmpty() );
+        assertTrue( objectBundleValidationService.validate( bundle ).getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
         DataElement dataElementA = manager.get( DataElement.class, "deabcdefghA" );
@@ -1223,7 +1240,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        assertTrue( objectBundleService.validate( bundle ).getErrorReports().isEmpty() );
+        assertTrue( objectBundleValidationService.validate( bundle ).getErrorReports().isEmpty() );
         objectBundleService.commit( bundle );
 
         DataElement dataElementE = manager.get( DataElement.class, "deabcdefghE" );
@@ -1249,7 +1266,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
 
         assertFalse( validate.isEmpty() );
         assertEquals( 1, validate.getErrorReportsByCode( UserAuthorityGroup.class, ErrorCode.E5003 ).size() );
@@ -1270,7 +1287,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         assertEquals( 1, manager.getAll( DataElement.class ).size() );
@@ -1293,7 +1310,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        assertTrue( objectBundleService.validate( bundle ).getErrorReports().isEmpty() );
+        assertTrue( objectBundleValidationService.validate( bundle ).getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
 
@@ -1314,7 +1331,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validate = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );
@@ -1327,7 +1344,7 @@ public class ObjectBundleServiceTest
         params.setObjects( metadata );
 
         bundle = objectBundleService.create( params );
-        validate = objectBundleService.validate( bundle );
+        validate = objectBundleValidationService.validate( bundle );
         assertTrue( validate.getErrorReports().isEmpty() );
 
         objectBundleService.commit( bundle );

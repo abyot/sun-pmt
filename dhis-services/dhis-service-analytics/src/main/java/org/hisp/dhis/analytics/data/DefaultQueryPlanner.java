@@ -223,8 +223,6 @@ public class DefaultQueryPlanner
         // Group queries which can be executed together
         // ---------------------------------------------------------------------
 
-        params = params.instance();
-
         final List<DataQueryParams> queries = new ArrayList<>( groupByPartition( params, plannerParams ) );
         
         List<Function<DataQueryParams, List<DataQueryParams>>> groupers = new ImmutableList.Builder<Function<DataQueryParams, List<DataQueryParams>>>().
@@ -295,7 +293,7 @@ public class DefaultQueryPlanner
 
             if ( dim == null || (values = dim.getItems()) == null || values.isEmpty() )
             {
-                subQueries.add( query.instance() );
+                subQueries.add( DataQueryParams.newBuilder( query ).build() );
                 continue;
             }
 
@@ -303,8 +301,9 @@ public class DefaultQueryPlanner
 
             for ( List<DimensionalItemObject> valuePage : valuePages )
             {
-                DataQueryParams subQuery = query.instance();
-                subQuery.setDimensionOptions( dim.getDimension(), valuePage );
+                DataQueryParams subQuery = DataQueryParams.newBuilder( query )
+                    .withDimensionOptions( dim.getDimension(), valuePage ).build();
+                
                 subQueries.add( subQuery );
             }
         }
@@ -333,8 +332,10 @@ public class DefaultQueryPlanner
 
         if ( params.isSkipPartitioning() )
         {
-            params.setPartitions( new Partitions().add( tableName ) );
-            queries.add( params );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withPartitions( new Partitions().add( tableName ) ).build();
+            
+            queries.add( query );
         }
         else if ( !params.getPeriods().isEmpty() )
         {
@@ -345,9 +346,10 @@ public class DefaultQueryPlanner
             {
                 if ( partitions.hasAny() )
                 {
-                    DataQueryParams query = params.instance();
-                    query.setPeriods( partitionPeriodMap.get( partitions ) );
-                    query.setPartitions( partitions );
+                    DataQueryParams query = DataQueryParams.newBuilder( params )
+                        .withPeriods( partitionPeriodMap.get( partitions ) )
+                        .withPartitions( partitions ).build();
+                    
                     queries.add( query );
                 }
             }
@@ -358,8 +360,9 @@ public class DefaultQueryPlanner
 
             if ( partitions.hasAny() )
             {
-                DataQueryParams query = params.instance();
-                query.setPartitions( partitions );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .withPartitions( partitions ).build();
+                
                 queries.add( query );
             }
         }
@@ -398,9 +401,10 @@ public class DefaultQueryPlanner
 
             for ( String periodType : periodTypePeriodMap.keySet() )
             {
-                DataQueryParams query = params.instance();
-                query.setDimensionOptions( PERIOD_DIM_ID, DimensionType.PERIOD, periodType.toLowerCase(), periodTypePeriodMap.get( periodType ) );
-                query.setPeriodType( periodType );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .addOrSetDimensionOptions( PERIOD_DIM_ID, DimensionType.PERIOD, periodType.toLowerCase(), periodTypePeriodMap.get( periodType ) )
+                    .withPeriodType( periodType ).build();
+                
                 queries.add( query );
             }
         }
@@ -410,19 +414,21 @@ public class DefaultQueryPlanner
 
             ListMap<String, DimensionalItemObject> periodTypePeriodMap = PartitionUtils.getPeriodTypePeriodMap( filter.getItems() );
 
-            params.removeFilter( PERIOD_DIM_ID ).setPeriodType( periodTypePeriodMap.keySet().iterator().next() ); // Using first period type
+            DataQueryParams.Builder query = DataQueryParams.newBuilder( params )
+                .removeFilter( PERIOD_DIM_ID )
+                .withPeriodType( periodTypePeriodMap.keySet().iterator().next() ); // Using first period type
 
             for ( String periodType : periodTypePeriodMap.keySet() )
             {
-                params.getFilters().add( new BaseDimensionalObject( filter.getDimension(),
-                    filter.getDimensionType(), periodType.toLowerCase(), filter.getDisplayName(), periodTypePeriodMap.get( periodType ) ) );
+                query.addFilter( new BaseDimensionalObject( filter.getDimension(), filter.getDimensionType(), 
+                    periodType.toLowerCase(), filter.getDisplayName(), periodTypePeriodMap.get( periodType ) ) );
             }
 
-            queries.add( params );
+            queries.add( query.build() );
         }
         else
         {
-            queries.add( params.instance() );
+            queries.add( DataQueryParams.newBuilder( params ).build() );
             return queries;
         }
 
@@ -446,31 +452,33 @@ public class DefaultQueryPlanner
 
             for ( Integer level : levelOrgUnitMap.keySet() )
             {
-                DataQueryParams query = params.instance();
-                query.setDimensionOptions( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, LEVEL_PREFIX + level, levelOrgUnitMap.get( level ) );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .addOrSetDimensionOptions( ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, LEVEL_PREFIX + level, levelOrgUnitMap.get( level ) ).build();
+                
                 queries.add( query );
             }
         }
         else if ( !params.getFilterOrganisationUnits().isEmpty() )
         {
-            DimensionalObject filter = params.getFilter( ORGUNIT_DIM_ID );
-
             ListMap<Integer, DimensionalItemObject> levelOrgUnitMap = 
                 QueryPlannerUtils.getLevelOrgUnitMap( params.getFilterOrganisationUnits() );
 
-            params.removeFilter( ORGUNIT_DIM_ID );
+            DimensionalObject filter = params.getFilter( ORGUNIT_DIM_ID );
+            
+            DataQueryParams.Builder query = DataQueryParams.newBuilder( params )
+                .removeFilter( ORGUNIT_DIM_ID );
 
             for ( Integer level : levelOrgUnitMap.keySet() )
             {
-                params.getFilters().add( new BaseDimensionalObject( filter.getDimension(),
+                query.addFilter( new BaseDimensionalObject( filter.getDimension(),
                     filter.getDimensionType(), LEVEL_PREFIX + level, filter.getDisplayName(), levelOrgUnitMap.get( level ) ) );
             }
 
-            queries.add( params );
+            queries.add( query.build() );
         }
         else
         {
-            queries.add( params.instance() );
+            queries.add( DataQueryParams.newBuilder( params ).build() );
             return queries;
         }
 
@@ -493,9 +501,9 @@ public class DefaultQueryPlanner
             {
                 Period period = (Period) item;
                 
-                DataQueryParams query = params.instance();
-                query.setStartDate( period.getStartDate() );
-                query.setEndDate( period.getEndDate() );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .withStartDate( period.getStartDate() )
+                    .withEndDate( period.getEndDate() ).build();
     
                 BaseDimensionalObject staticPeriod = (BaseDimensionalObject) query.getDimension( PERIOD_DIM_ID );
                 staticPeriod.setDimensionName( period.getIsoDate() );
@@ -508,10 +516,10 @@ public class DefaultQueryPlanner
         {
             Period period = (Period) params.getFilterPeriods().get( 0 );
 
-            DataQueryParams query = params.instance();
-            query.setStartDate( period.getStartDate() );
-            query.setEndDate( period.getEndDate() );
-            query.removeFilter( PERIOD_DIM_ID );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withStartDate( period.getStartDate() )
+                .withEndDate( period.getEndDate() )
+                .removeFilter( PERIOD_DIM_ID ).build();
             
             queries.add( query );
         }
@@ -542,16 +550,18 @@ public class DefaultQueryPlanner
 
             for ( DataType dataType : dataTypeDataElementMap.keySet() )
             {
-                DataQueryParams query = params.instance();
-                query.setDataElements( dataTypeDataElementMap.get( dataType ) );
-                query.setDataType( dataType );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .withDataElements( dataTypeDataElementMap.get( dataType ) )
+                    .withDataType( dataType ).build();
+                
                 queries.add( query );
             }
         }
         else
         {
-            DataQueryParams query = params.instance();
-            query.setDataType( DataType.NUMERIC );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withDataType( DataType.NUMERIC ).build();
+            
             queries.add( query );
         }
 
@@ -594,9 +604,10 @@ public class DefaultQueryPlanner
 
             for ( AggregationType aggregationType : aggregationTypeDataElementMap.keySet() )
             {
-                DataQueryParams query = params.instance();
-                query.setDataElements( aggregationTypeDataElementMap.get( aggregationType ) );
-                query.setAggregationType( aggregationType );
+                DataQueryParams query = DataQueryParams.newBuilder( params )
+                    .withDataElements( aggregationTypeDataElementMap.get( aggregationType ) )
+                    .withAggregationType( aggregationType ).build();
+                
                 queries.add( query );
             }
         }
@@ -604,27 +615,27 @@ public class DefaultQueryPlanner
         {
             DimensionalObject degs = params.getDataElementGroupSets().get( 0 );
             DataElementGroup deg = (DataElementGroup) (degs.hasItems() ? degs.getItems().get( 0 ) : null);
-
-            DataQueryParams query = params.instance();
+            
+            AggregationType aggregationType = ObjectUtils.firstNonNull( params.getAggregationType(), SUM );
 
             if ( deg != null && !deg.getMembers().isEmpty() )
             {
                 PeriodType periodType = PeriodType.getPeriodTypeByName( params.getPeriodType() );
-                AggregationType aggregationType = ObjectUtils.firstNonNull( params.getAggregationType(), deg.getAggregationType() );
-                query.setAggregationType( QueryPlannerUtils.getAggregationType( 
-                    deg.getValueType(), aggregationType, periodType, deg.getPeriodType() ) );
+                aggregationType = ObjectUtils.firstNonNull( params.getAggregationType(), deg.getAggregationType() );
+                aggregationType = QueryPlannerUtils.getAggregationType( 
+                    deg.getValueType(), aggregationType, periodType, deg.getPeriodType() );
             }
-            else
-            {
-                query.setAggregationType( ObjectUtils.firstNonNull( params.getAggregationType(), SUM ) );
-            }
+            
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withAggregationType( aggregationType ).build();
 
             queries.add( query );
         }
         else
         {
-            DataQueryParams query = params.instance();
-            query.setAggregationType( ObjectUtils.firstNonNull( params.getAggregationType(), SUM ) );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withAggregationType( ObjectUtils.firstNonNull( params.getAggregationType(), SUM ) ).build();
+            
             queries.add( query );
         }
 
@@ -649,7 +660,7 @@ public class DefaultQueryPlanner
 
         if ( params.getPeriods().isEmpty() || !params.isAggregationType( AggregationType.AVERAGE_SUM_INT ) )
         {
-            queries.add( params.instance() );
+            queries.add( DataQueryParams.newBuilder( params ).build() );
             return queries;
         }
 
@@ -660,8 +671,9 @@ public class DefaultQueryPlanner
 
         for ( Integer days : daysPeriodMap.keySet() )
         {
-            DataQueryParams query = params.instance();
-            query.setDimensionOptions( periodDim.getDimension(), periodDim.getDimensionType(), periodDim.getDimensionName(), daysPeriodMap.get( days ) );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .addOrSetDimensionOptions( periodDim.getDimension(), periodDim.getDimensionType(), periodDim.getDimensionName(), daysPeriodMap.get( days ) ).build();
+            
             queries.add( query );
         }
 
@@ -684,7 +696,7 @@ public class DefaultQueryPlanner
 
         if ( params.getDataElements().isEmpty() || !params.isDisaggregation() )
         {
-            queries.add( params.instance() );
+            queries.add( DataQueryParams.newBuilder( params ).build() );
             return queries;
         }
 
@@ -693,9 +705,10 @@ public class DefaultQueryPlanner
 
         for ( PeriodType periodType : periodTypeDataElementMap.keySet() )
         {
-            DataQueryParams query = params.instance();
-            query.setDataElements( periodTypeDataElementMap.get( periodType ) );
-            query.setDataPeriodType( periodType );
+            DataQueryParams query = DataQueryParams.newBuilder( params )
+                .withDataElements( periodTypeDataElementMap.get( periodType ) )
+                .withDataPeriodType( periodType ).build();
+            
             queries.add( query );
         }
 

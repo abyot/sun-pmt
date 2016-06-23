@@ -29,9 +29,13 @@ package org.hisp.dhis.dataadmin.action.sqlview;
  */
 
 import com.opensymphony.xwork2.Action;
+import org.hisp.dhis.attribute.AttributeService;
 import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.sqlview.SqlViewService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Updates a existing sqlview in database.
@@ -51,6 +55,9 @@ public class UpdateSqlViewAction
     {
         this.sqlViewService = sqlViewService;
     }
+
+    @Autowired
+    private AttributeService attributeService;
 
     // -------------------------------------------------------------------------
     // Input
@@ -84,12 +91,17 @@ public class UpdateSqlViewAction
         this.cacheStrategy = cacheStrategy;
     }
 
+    private List<String> jsonAttributeValues;
+
+    public void setJsonAttributeValues( List<String> jsonAttributeValues ) { this.jsonAttributeValues = jsonAttributeValues; }
+
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public String execute()
+    public String execute() throws Exception
     {
         SqlView sqlView = sqlViewService.getSqlView( id );
 
@@ -99,6 +111,12 @@ public class UpdateSqlViewAction
         if ( cacheStrategy != null )
         {
             sqlView.setCacheStrategy( cacheStrategy != null ? cacheStrategy : SqlView.DEFAULT_CACHE_STRATEGY );
+        }
+
+        System.out.println("jsonAttributeValues: "+jsonAttributeValues);
+        if ( jsonAttributeValues != null )
+        {
+            attributeService.updateAttributeValues( sqlView, jsonAttributeValues );
         }
 
         sqlViewService.updateSqlView( sqlView );

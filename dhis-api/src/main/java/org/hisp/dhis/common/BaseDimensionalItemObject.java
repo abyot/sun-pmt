@@ -104,11 +104,6 @@ public class BaseDimensionalItemObject
         return uid;
     }
 
-    public void setDimensionItem( String dimensionItem )
-    {
-        this.uid = dimensionItem;
-    }
-
     @Override
     @JsonProperty
     @JsonView( { DimensionalView.class } )

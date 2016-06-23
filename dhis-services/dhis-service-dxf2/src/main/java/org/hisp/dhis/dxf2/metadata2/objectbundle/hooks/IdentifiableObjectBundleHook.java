@@ -31,6 +31,7 @@ package org.hisp.dhis.dxf2.metadata2.objectbundle.hooks;
 import org.hibernate.Session;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeValue;
+import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
 import org.hisp.dhis.schema.Schema;
@@ -47,6 +48,8 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
     @Override
     public void preCreate( IdentifiableObject identifiableObject, ObjectBundle bundle )
     {
+        ((BaseIdentifiableObject) identifiableObject).setAutoFields();
+
         Schema schema = schemaService.getDynamicSchema( identifiableObject.getClass() );
         Session session = sessionFactory.getCurrentSession();
         handleAttributeValues( session, identifiableObject, bundle, schema );
@@ -55,13 +58,15 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
     }
 
     @Override
-    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        Schema schema = schemaService.getDynamicSchema( identifiableObject.getClass() );
+        ((BaseIdentifiableObject) object).setAutoFields();
+
+        Schema schema = schemaService.getDynamicSchema( object.getClass() );
         Session session = sessionFactory.getCurrentSession();
-        handleAttributeValues( session, identifiableObject, bundle, schema );
-        handleUserGroupAccesses( session, identifiableObject, bundle, schema );
-        handleObjectTranslations( session, identifiableObject, bundle, schema );
+        handleAttributeValues( session, object, bundle, schema );
+        handleUserGroupAccesses( session, object, bundle, schema );
+        handleObjectTranslations( session, object, bundle, schema );
     }
 
     private void handleAttributeValues( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )

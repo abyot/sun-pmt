@@ -58,7 +58,19 @@ public class ApiVersionMethodTest extends DhisWebSpringTest
         mvc.perform( get( "/23" + endpoint + "/a" ).session( session ) )
             .andExpect( status().isOk() );
 
+        mvc.perform( post( "/23" + endpoint + "/a" ).session( session ) )
+            .andExpect( status().isOk() );
+
+        mvc.perform( put( "/23" + endpoint + "/a" ).session( session ) )
+            .andExpect( status().isMethodNotAllowed() );
+
         mvc.perform( get( "/24" + endpoint + "/b" ).session( session ) )
+            .andExpect( status().isOk() );
+
+        mvc.perform( post( "/24" + endpoint + "/b" ).session( session ) )
+            .andExpect( status().isMethodNotAllowed() );
+
+        mvc.perform( put( "/24" + endpoint + "/b" ).session( session ) )
             .andExpect( status().isOk() );
     }
 

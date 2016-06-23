@@ -71,6 +71,9 @@ public class ObjectBundleServiceAttributesTest
     private ObjectBundleService objectBundleService;
 
     @Autowired
+    private ObjectBundleValidationService objectBundleValidationService;
+
+    @Autowired
     private IdentifiableObjectManager manager;
 
     @Autowired
@@ -101,7 +104,7 @@ public class ObjectBundleServiceAttributesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        objectBundleService.validate( bundle );
+        objectBundleValidationService.validate( bundle );
         objectBundleService.commit( bundle );
 
         List<OrganisationUnit> organisationUnits = manager.getAll( OrganisationUnit.class );
@@ -178,7 +181,7 @@ public class ObjectBundleServiceAttributesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validationReport = objectBundleValidationService.validate( bundle );
         List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
 
         assertFalse( objectReports.isEmpty() );
@@ -197,7 +200,7 @@ public class ObjectBundleServiceAttributesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validationReport = objectBundleValidationService.validate( bundle );
         List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
 
         assertFalse( objectReports.isEmpty() );
@@ -218,7 +221,7 @@ public class ObjectBundleServiceAttributesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validationReport = objectBundleValidationService.validate( bundle );
         List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
 
         assertFalse( objectReports.isEmpty() );
@@ -236,7 +239,7 @@ public class ObjectBundleServiceAttributesTest
         params.setObjects( metadata );
 
         ObjectBundle bundle = objectBundleService.create( params );
-        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validationReport = objectBundleValidationService.validate( bundle );
         List<ObjectReport> objectReports = validationReport.getObjectReports( DataElement.class );
 
         assertFalse( objectReports.isEmpty() );

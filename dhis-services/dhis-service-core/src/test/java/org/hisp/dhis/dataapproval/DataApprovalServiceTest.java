@@ -111,9 +111,6 @@ public class DataApprovalServiceTest
     @Autowired
     protected CurrentUserService currentUserService;
 
-    @Resource( name = "jdbcTemplate" )
-    private JdbcTemplate jdbcTemplate;
-    
     // -------------------------------------------------------------------------
     // Supporting data
     // -------------------------------------------------------------------------
@@ -315,28 +312,6 @@ public class DataApprovalServiceTest
         String uidD = organisationUnitD.getUid();
         String uidE = organisationUnitE.getUid();
         String uidF = organisationUnitF.getUid();
-
-        jdbcTemplate.execute(
-            "CREATE TABLE _orgunitstructure "+
-            "(" +
-            "  organisationunitid integer NOT NULL, " +
-            "  organisationunituid character(11) NOT NULL, " +
-            "  level integer, " +
-            "  idlevel1 integer, " +
-            "  idlevel2 integer, " +
-            "  idlevel3 integer, " +
-            "  idlevel4 integer, " +
-            "  CONSTRAINT _orgunitstructure_pkey PRIMARY KEY (organisationunitid)" +
-            ");" );
-
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idA + ", '" + uidA + "', 1, " + idA + ", null, null, null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idB + ", '" + uidB + "', 2, " + idA + ", " + idB + ", null, null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idC + ", '" + uidC + "', 3, " + idA + ", " + idB + ", " + idC + ", null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idD + ", '" + uidD + "', 4, " + idA + ", " + idB + ", " + idC + ", " + idD + ");" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idE + ", '" + uidE + "', 3, " + idA + ", " + idB + ", " + idE + ", null);" );
-        jdbcTemplate.execute( "INSERT INTO _orgunitstructure VALUES (" + idF + ", '" + uidF + "', 4, " + idA + ", " + idB + ", " + idE + ", " + idF + ");" );
-        
-        systemSettingManager.invalidateCache();
     }
 
     @Override
@@ -504,7 +479,7 @@ public class DataApprovalServiceTest
         assertEquals( userA.getId(), status.getCreator().getId() );
         DataApprovalLevel level = status.getApprovedLevel();
         assertNotNull( level );
-        assertEquals( level1, level );
+        assertEquals( level1.getName(), level.getName() );
 
         status = dataApprovalService.getDataApprovalStatus( workflow12A, periodA, organisationUnitB, defaultOptionCombo );
         assertEquals( DataApprovalState.APPROVED_ABOVE, status.getState() );
@@ -514,7 +489,7 @@ public class DataApprovalServiceTest
         assertEquals( userA.getId(), status.getCreator().getId() );
         level = status.getApprovedLevel();
         assertNotNull( level );
-        assertEquals( level2, level );
+        assertEquals( level2.getName(), level.getName() );
 
         status = dataApprovalService.getDataApprovalStatus( workflow12A, periodB, organisationUnitB, defaultOptionCombo );
         assertEquals( DataApprovalState.APPROVED_HERE, status.getState() );
@@ -524,7 +499,7 @@ public class DataApprovalServiceTest
         assertEquals( userA.getId(), status.getCreator().getId() );
         level = status.getApprovedLevel();
         assertNotNull( level );
-        assertEquals( level2, level );
+        assertEquals( level2.getName(), level.getName() );
 
         status = dataApprovalService.getDataApprovalStatus( workflow12B, periodA, organisationUnitB, defaultOptionCombo );
         assertEquals( DataApprovalState.APPROVED_HERE, status.getState() );
@@ -534,7 +509,7 @@ public class DataApprovalServiceTest
         assertEquals( userA.getId(), status.getCreator().getId() );
         level = status.getApprovedLevel();
         assertNotNull( level );
-        assertEquals( level2, level );
+        assertEquals( level2.getName(), level.getName() );
 
         status = dataApprovalService.getDataApprovalStatus( workflow12B, periodB, organisationUnitB, defaultOptionCombo );
         assertEquals( DataApprovalState.UNAPPROVED_READY, status.getState() );
@@ -891,9 +866,9 @@ public class DataApprovalServiceTest
         dataApprovalService.approveData( newArrayList( new DataApproval( level3, workflow1234, periodA, organisationUnitC, defaultOptionCombo, NOT_ACCEPTED, date, userA ) ) );
         assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitB, defaultOptionCombo ).getPermissions().isMayApprove());
         assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove());
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove() );
 
         // Level 1 (organisationUnitA) ready
         try
@@ -907,11 +882,11 @@ public class DataApprovalServiceTest
         }
         dataApprovalStore.addDataApproval( new DataApproval( level2, workflow1234, periodA, organisationUnitB, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
 
-        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitB, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove());
+        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitB, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove() );
 
         // Level 1 (organisationUnitA) try to approve
         try
@@ -963,10 +938,10 @@ public class DataApprovalServiceTest
         // Level 1 (organisationUnitA) ready
         dataApprovalService.approveData( newArrayList( new DataApproval( level2, workflow1234, periodA, organisationUnitB, defaultOptionCombo, NOT_ACCEPTED, date, userA ) ) );
         assertFalse( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitB, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove());
-        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove());
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitD, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitE, defaultOptionCombo ).getPermissions().isMayApprove() );
+        assertTrue( dataApprovalService.getDataApprovalStatusAndPermissions( workflow1234, periodA, organisationUnitF, defaultOptionCombo ).getPermissions().isMayApprove() );
 
         // Level 1 (organisationUnitA) try to approve
         try
@@ -1393,9 +1368,9 @@ public class DataApprovalServiceTest
     @Test
     public void testWorkflows() throws Exception
     {
-        Set<OrganisationUnit> units = newHashSet( organisationUnitC );
+        Set<OrganisationUnit> units = newHashSet( organisationUnitB );
 
-        CurrentUserService currentUserService = new MockCurrentUserService( units, null, AUTH_APPR_LEVEL, DataApproval.AUTH_APPROVE );
+        CurrentUserService currentUserService = new MockCurrentUserService( units, null, AUTH_APPR_LEVEL, DataApproval.AUTH_APPROVE, DataApproval.AUTH_APPROVE_LOWER_LEVELS );
         setCurrentUserServiceDependencies( currentUserService );
 
         assertEquals( "UNAPPROVED_WAITING level=null approve=F unapprove=F accept=F unaccept=F read=T", statusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ) );
@@ -1404,13 +1379,14 @@ public class DataApprovalServiceTest
 
         Date date = new Date();
 
+        dataApprovalStore.addDataApproval( new DataApproval( level4, workflow1234, periodA, organisationUnitD, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
         dataApprovalStore.addDataApproval( new DataApproval( level4, workflow1234, periodA, organisationUnitC, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
-        dataApprovalStore.addDataApproval( new DataApproval( level2, workflow12, periodA, organisationUnitC, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
+        dataApprovalStore.addDataApproval( new DataApproval( level2, workflow12, periodA, organisationUnitB, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
         dataApprovalStore.addDataApproval( new DataApproval( level3, workflow3, periodA, organisationUnitC, defaultOptionCombo, NOT_ACCEPTED, date, userA ) );
 
-        assertEquals( "APPROVED_HERE level=level4 approve=T unapprove=F accept=F unaccept=F read=T", statusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ) );
-        assertEquals( "APPROVED_HERE level=level2 approve=F unapprove=F accept=F unaccept=F read=T", statusAndPermissions( workflow12, periodA, organisationUnitC, defaultOptionCombo ) );
-        assertEquals( "APPROVED_HERE level=level3 approve=F unapprove=T accept=F unaccept=F read=T", statusAndPermissions( workflow3, periodA, organisationUnitC, defaultOptionCombo ) );
+        assertEquals( "APPROVED_HERE level=level4 approve=T unapprove=T accept=F unaccept=F read=T", statusAndPermissions( workflow1234, periodA, organisationUnitC, defaultOptionCombo ) );
+        assertEquals( "APPROVED_ABOVE level=null approve=F unapprove=F accept=F unaccept=F read=T", statusAndPermissions( workflow12, periodA, organisationUnitC, defaultOptionCombo ) );
+        assertEquals( "APPROVED_HERE level=level3 approve=T unapprove=T accept=F unaccept=F read=T", statusAndPermissions( workflow3, periodA, organisationUnitC, defaultOptionCombo ) );
     }
 
     @Test

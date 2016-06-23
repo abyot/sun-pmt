@@ -64,6 +64,8 @@ public class SqlViewServiceTest
     private String sqlD = "SELECT de.name, dv.sourceid, dv.value, p.startdate "
         + "FROM dataelement AS de, datavalue AS dv, period AS p " + "WHERE de.dataelementid=dv.dataelementid "
         + "AND dv.periodid=p.periodid LIMIT 10";
+
+    private String sqlE = "WITH foo as (SELECT * FROM organisationunit) SELECT * FROM foo LIMIT 2; " ;
     
     // -------------------------------------------------------------------------
     // Supportive methods
@@ -85,18 +87,25 @@ public class SqlViewServiceTest
     {
         SqlView sqlViewA = createSqlView( 'A', sqlA );
         SqlView sqlViewB = createSqlView( 'B', sqlB );
+        SqlView sqlViewE = createSqlView( 'E', sqlE );
 
         int idA = sqlViewService.saveSqlView( sqlViewA );
         int idB = sqlViewService.saveSqlView( sqlViewB );
+        int idE = sqlViewService.saveSqlView( sqlViewE );
 
         sqlViewA = sqlViewService.getSqlView( idA );
         sqlViewB = sqlViewService.getSqlView( idB );
+        sqlViewE = sqlViewService.getSqlView( idE );
 
         assertEquals( idA, sqlViewA.getId() );
         assertEq( 'A', sqlViewA, sqlA );
 
         assertEquals( idB, sqlViewB.getId() );
         assertEq( 'B', sqlViewB, sqlB );
+
+        assertEquals( idE, sqlViewE.getId() );
+        assertEq( 'E', sqlViewE, sqlE );
+
     }
 
     @Test
@@ -213,6 +222,15 @@ public class SqlViewServiceTest
         sqlViewService.validateSqlView( sqlView, null, null );
     }
 
+    @Test (expected = IllegalQueryException.class)
+    public void testValidateIllegalKeywordsCTE()
+    {
+        SqlView sqlView = new SqlView( "Name", "WITH foo as (delete FROM dataelement returning * ) SELECT * FROM foo;", SqlViewType.QUERY );
+
+         sqlViewService.validateSqlView( sqlView, null, null );
+
+    }
+
     @Test( expected = IllegalQueryException.class )
     public void testValidateProtectedTables()
     {
@@ -247,7 +265,7 @@ public class SqlViewServiceTest
         
         sqlViewService.validateSqlView( sqlView, null, null );
     }
-    
+
     @Test
     public void testValidateSuccessA()
     {
@@ -274,4 +292,6 @@ public class SqlViewServiceTest
         
         sqlViewService.validateSqlView( sqlView, null, null );
     }
+
+
 }

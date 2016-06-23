@@ -40,6 +40,7 @@ import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleMode;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleParams;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleService;
+import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundleValidationService;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.feedback.ObjectBundleCommitReport;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.feedback.ObjectBundleValidationReport;
 import org.hisp.dhis.importexport.ImportStrategy;
@@ -68,6 +69,9 @@ public class DefaultMetadataImportService implements MetadataImportService
     @Autowired
     private ObjectBundleService objectBundleService;
 
+    @Autowired
+    private ObjectBundleValidationService objectBundleValidationService;
+
     @Override
     public ImportReport importMetadata( MetadataImportParams params )
     {
@@ -87,7 +91,7 @@ public class DefaultMetadataImportService implements MetadataImportService
         ObjectBundleParams bundleParams = params.toObjectBundleParams();
         ObjectBundle bundle = objectBundleService.create( bundleParams );
 
-        ObjectBundleValidationReport validationReport = objectBundleService.validate( bundle );
+        ObjectBundleValidationReport validationReport = objectBundleValidationService.validate( bundle );
         report.addTypeReports( validationReport.getTypeReportMap() );
 
         if ( !(!validationReport.getErrorReports().isEmpty() && AtomicMode.ALL == bundle.getAtomicMode()) )

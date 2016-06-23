@@ -1,6 +1,17 @@
 package org.hisp.dhis.dxf2.metadata2.objectbundle.hooks;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.common.IdentifiableObject;
+import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
+import org.hisp.dhis.organisationunit.OrganisationUnit;
+import org.hisp.dhis.user.User;
+import org.hisp.dhis.user.UserCredentials;
+import org.hisp.dhis.user.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * Copyright (c) 2004-2016, University of Oslo
@@ -30,18 +41,6 @@ import org.apache.commons.lang3.StringUtils;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hisp.dhis.common.IdentifiableObject;
-import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
-import org.hisp.dhis.organisationunit.OrganisationUnit;
-import org.hisp.dhis.user.User;
-import org.hisp.dhis.user.UserCredentials;
-import org.hisp.dhis.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
@@ -53,21 +52,21 @@ public class UserObjectBundleHook extends AbstractObjectBundleHook
     private UserCredentials userCredentials;
 
     @Override
-    public void preCreate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preCreate( IdentifiableObject object, ObjectBundle bundle )
     {
-        if ( !User.class.isInstance( identifiableObject ) || ((User) identifiableObject).getUserCredentials() == null ) return;
+        if ( !User.class.isInstance( object ) || ((User) object).getUserCredentials() == null ) return;
 
-        User user = (User) identifiableObject;
+        User user = (User) object;
         userCredentials = user.getUserCredentials();
         user.setUserCredentials( null );
     }
 
     @Override
-    public void postCreate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void postCreate( IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !User.class.isInstance( identifiableObject ) || userCredentials == null ) return;
+        if ( !User.class.isInstance( persistedObject ) || userCredentials == null ) return;
 
-        User user = (User) identifiableObject;
+        User user = (User) persistedObject;
 
         if ( !StringUtils.isEmpty( userCredentials.getPassword() ) )
         {
@@ -82,19 +81,19 @@ public class UserObjectBundleHook extends AbstractObjectBundleHook
     }
 
     @Override
-    public void preUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !User.class.isInstance( identifiableObject ) || ((User) identifiableObject).getUserCredentials() == null ) return;
-        User user = (User) identifiableObject;
+        if ( !User.class.isInstance( object ) || ((User) object).getUserCredentials() == null ) return;
+        User user = (User) object;
         userCredentials = user.getUserCredentials();
     }
 
     @Override
-    public void postUpdate( IdentifiableObject identifiableObject, ObjectBundle bundle )
+    public void postUpdate( IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !User.class.isInstance( identifiableObject ) || userCredentials == null ) return;
+        if ( !User.class.isInstance( persistedObject ) || userCredentials == null ) return;
 
-        User user = (User) identifiableObject;
+        User user = (User) persistedObject;
         UserCredentials persistedUserCredentials = bundle.getPreheat().get( bundle.getPreheatIdentifier(), UserCredentials.class, user );
 
         if ( !StringUtils.isEmpty( userCredentials.getPassword() ) )

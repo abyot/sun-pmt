@@ -93,10 +93,6 @@
 		class="org.hisp.dhis.mobile.action.RemoveGatewayConfigAction" 
 		scope="prototype" />
 
-	<bean id="org.hisp.dhis.mobile.action.ReloadStartStopServiceAction"
-		class="org.hisp.dhis.mobile.action.ReloadStartStopServiceAction"
-		scope="prototype" />
-
 	<bean id="org.hisp.dhis.mobile.action.smscommand.SMSCommandAction"
 		class="org.hisp.dhis.mobile.action.smscommand.SMSCommandAction" 
 		scope="prototype">

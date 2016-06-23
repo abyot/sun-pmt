@@ -32,6 +32,7 @@ import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Markus Bekken
@@ -49,17 +50,26 @@ public interface TrackedEntityAttributeReservedValueService
      * null if no reserved value was fount
      */
     TrackedEntityAttributeReservedValue markTrackedEntityAttributeReservedValueAsUtilized(
-        TrackedEntityAttribute attribute, 
-        TrackedEntityInstance trackedEntityInstance,
-        String value );
+        TrackedEntityAttribute attribute, TrackedEntityInstance trackedEntityInstance, String value );
         
     /**
      * Gets a list of {@link TrackedEntityAttributeReservedValue} matching the parameters.
-     * @param trackedEntityAttribute {@link TrackedEntityAttribute} to get reserved values for.
-     * @param numberOfValuesToCreate how many reserved values to create and return
+     * @param attribute {@link TrackedEntityAttribute} to get reserved values for.
+     * @param valuesToCreate the number of reserved values to create and return
      * @return a list of {@link TrackedEntityAttributeReservedValue}
+     * @throws Exception 
      */
     List<TrackedEntityAttributeReservedValue> createTrackedEntityReservedValues( 
-        TrackedEntityAttribute trackedEntityAttribute,
-        int numberOfValuesToCreate );
+        TrackedEntityAttribute attribute, int valuesToCreate );
+    
+    /**
+     * Gets a generated non-taken value for the tracked entity attribute matching the parameters.
+     * The value is not reserved, but was not taken at the time whe it was generated.
+     * @param attribute {@link TrackedEntityAttribute} to get reserved values for
+     * @return String value
+     * @throws TimeoutException 
+     * @throws Exception 
+     */
+    String getGeneratedValue( TrackedEntityAttribute attribute ) 
+        throws TimeoutException;
 }

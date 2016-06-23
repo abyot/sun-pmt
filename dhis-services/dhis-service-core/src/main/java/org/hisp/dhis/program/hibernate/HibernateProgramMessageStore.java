@@ -33,11 +33,9 @@ import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.hisp.dhis.common.hibernate.HibernateIdentifiableObjectStore;
 import org.hisp.dhis.commons.util.SqlHelper;
-import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.program.message.ProgramMessage;
 import org.hisp.dhis.program.message.ProgramMessageQueryParams;
 import org.hisp.dhis.program.message.ProgramMessageStore;
-import org.hisp.dhis.system.util.DateUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -64,7 +62,7 @@ public class HibernateProgramMessageStore
         String hql = getHqlQuery( params );
 
         Query query = getQuery( hql );
-
+        
         if ( params.hasPaging() )
         {
             query.setFirstResult( params.getPage() );
@@ -101,53 +99,26 @@ public class HibernateProgramMessageStore
     {
         SqlHelper helper = new SqlHelper( true );
 
-        String hql = "";
-
-        hql = "from " + TABLE_NAME;
-
-        if ( params.hasOrignisationUnit() )
-        {
-            String ouClause = "";
-
-            for ( OrganisationUnit ou : params.getOrganisationUnit() )
-            {
-                ouClause += helper.whereAnd() + "organisationunituid='" + ou.getUid() + "'";
-            }
-
-            hql += ouClause;
-        }
-
-        if ( params.hasTrackedEntityInstance() )
-        {
-            hql += helper.whereAnd() + "trackedentityinstanceuid='" + params.getTrackedEntityInstance().getUid() + "'";
-        }
+        String hql = " select distinct pm from " + TABLE_NAME + " pm ";
 
         if ( params.hasProgramInstance() )
         {
-            hql += helper.whereAnd() + "programinstanceid=" + params.getProgramInstrance().getId();
+            hql += helper.whereAnd() + "pm.programInstance=" + params.getProgramInstrance().getId();
         }
 
         if ( params.hasProgramStageInstance() )
         {
-            hql += helper.whereAnd() + "programstageinstanceid=" + params.getProgramStageInstance().getId();
+            hql += helper.whereAnd() + "pm.programStageInstance=" + params.getProgramStageInstance().getId();
         }
 
-        hql += params.getCategory() != null ? helper.whereAnd() + "messageCategory='" + params.getCategory() + "'" : "";
         hql += params.getMessageStatus() != null
-            ? helper.whereAnd() + "messageStatus='" + params.getMessageStatus() + "'" : "";
+            ? helper.whereAnd() + "pm.messageStatus='" + params.getMessageStatus() + "'" : "";
 
-        if ( params.hasFromDate() && params.hasToDate() )
-        {
-            hql += helper.whereAnd() + "processeddate" + helper.betweenAnd() + "'"
-                + DateUtils.getSqlDateString( params.getFromDate() ) + "'" + helper.betweenAnd() + "'"
-                + DateUtils.getSqlDateString( params.getToDate() ) + "'";
-        }
+        hql += params.getAfterDate() != null ? helper.whereAnd() + "pm.processeddate > '" + params.getAfterDate() + "'"
+            : "";
 
-        hql += params.getAfterDate() != null ? helper.whereAnd() +
-            "processeddate > '" + params.getAfterDate() + "'" : "";
-
-        hql += params.getBeforeDate() != null ? helper.whereAnd() +
-            "processeddate < '" + params.getBeforeDate() + "'" : "";
+        hql += params.getBeforeDate() != null
+            ? helper.whereAnd() + "pm.processeddate < '" + params.getBeforeDate() + "'" : "";
 
         return hql;
     }

@@ -472,25 +472,6 @@ public class PreheatServiceTest
     }
 
     @Test
-    public void testPreheatReferenceCheckUID()
-    {
-        DataElementGroup dataElementGroup = fromJson( "preheat/degAUidRef_invalid.json", DataElementGroup.class );
-        defaultSetup();
-
-        PreheatParams params = new PreheatParams();
-        params.setPreheatMode( PreheatMode.REFERENCE );
-        params.getObjects().put( DataElementGroup.class, Lists.newArrayList( dataElementGroup ) );
-
-        preheatService.validate( params );
-        Preheat preheat = preheatService.preheat( params );
-        List<PreheatErrorReport> referenceErrors = preheatService.checkReferences( DataElementGroup.class, dataElementGroup, preheat, PreheatIdentifier.UID );
-        assertEquals( 3, referenceErrors.size() );
-        assertEquals( PreheatIdentifier.UID, referenceErrors.get( 0 ).getPreheatIdentifier() );
-        assertEquals( PreheatIdentifier.UID, referenceErrors.get( 1 ).getPreheatIdentifier() );
-        assertEquals( PreheatIdentifier.UID, referenceErrors.get( 2 ).getPreheatIdentifier() );
-    }
-
-    @Test
     public void testPreheatReferenceConnectUID()
     {
         DataElementGroup dataElementGroup = fromJson( "preheat/degAUidRef.json", DataElementGroup.class );

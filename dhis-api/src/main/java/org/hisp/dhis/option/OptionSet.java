@@ -81,6 +81,12 @@ public class OptionSet
     // Logic
     // -------------------------------------------------------------------------
 
+    public void addOption( Option option )
+    {
+        this.options.add( option );
+        option.setOptionSet( this );
+    }
+    
     public void removeAllOptions()
     {
         options.clear();

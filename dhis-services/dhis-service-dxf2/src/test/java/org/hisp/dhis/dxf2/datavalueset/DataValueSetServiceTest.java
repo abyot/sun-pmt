@@ -29,6 +29,7 @@ package org.hisp.dhis.dxf2.datavalueset;
  */
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.time.DateUtils;
 import org.hisp.dhis.DhisSpringTest;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeService;
@@ -71,8 +72,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -132,6 +137,7 @@ public class DataValueSetServiceTest
     private OrganisationUnit ouC;
     private Period peA;
     private Period peB;
+    private Period peC;
 
     private User user;
 
@@ -189,6 +195,7 @@ public class DataValueSetServiceTest
         ouC = createOrganisationUnit( 'C' );
         peA = createPeriod( PeriodType.getByNameIgnoreCase( MonthlyPeriodType.NAME ), getDate( 2012, 1, 1 ), getDate( 2012, 1, 31 ) );
         peB = createPeriod( PeriodType.getByNameIgnoreCase( MonthlyPeriodType.NAME ), getDate( 2012, 2, 1 ), getDate( 2012, 2, 29 ) );
+        peC = createPeriod( PeriodType.getByNameIgnoreCase( MonthlyPeriodType.NAME ), getDate( 2012, 3, 1 ), getDate( 2012, 3, 31 ) );
 
         ocA.setUid( "kjuiHgy67hg" );
         ocB.setUid( "Gad33qy67g5" );
@@ -248,6 +255,7 @@ public class DataValueSetServiceTest
         dataSetService.addDataSet( dsA );
         periodService.addPeriod( peA );
         periodService.addPeriod( peB );
+        periodService.addPeriod( peC );
 
         user = createUser( 'A' );
         user.setOrganisationUnits( Sets.newHashSet( ouA, ouB ) );
@@ -748,6 +756,110 @@ public class DataValueSetServiceTest
         assertEquals( ImportStatus.SUCCESS, summary.getStatus() );
     }
 
+    @Test
+    public void testImportDataValuesInvalidAttributeOptionComboDates()
+        throws Exception
+    {
+        categoryOptionA.setStartDate( peB.getStartDate() );
+        categoryOptionA.setEndDate( peB.getEndDate() );
+
+        categoryService.updateDataElementCategoryOption( categoryOptionA );
+
+        in = new ClassPathResource( "datavalueset/dataValueSetH.xml" ).getInputStream();
+
+        ImportSummary summary = dataValueSetService.saveDataValueSet( in );
+
+        assertEquals( summary.getConflicts().toString(), 2, summary.getConflicts().size() );
+        assertEquals( 1, summary.getImportCount().getImported() );
+        assertEquals( 0, summary.getImportCount().getUpdated() );
+        assertEquals( 0, summary.getImportCount().getDeleted() );
+        assertEquals( 2, summary.getImportCount().getIgnored() );
+        assertEquals( ImportStatus.SUCCESS, summary.getStatus() );
+
+        Collection<DataValue> dataValues = mockDataValueBatchHandler.getInserts();
+
+        assertNotNull( dataValues );
+        assertEquals( 1, dataValues.size() );
+        assertTrue( dataValues.contains( new DataValue( deB, peB, ouB, ocDef, ocA ) ) );
+    }
+
+    @Test
+    public void testImportDataValuesInvalidAttributeOptionComboOrgUnit()
+        throws Exception
+    {
+        categoryOptionA.setOrganisationUnits( Sets.newHashSet( ouA, ouB ) );
+
+        categoryService.updateDataElementCategoryOption( categoryOptionA );
+
+        in = new ClassPathResource( "datavalueset/dataValueSetH.xml" ).getInputStream();
+
+        ImportSummary summary = dataValueSetService.saveDataValueSet( in );
+
+        assertEquals( summary.getConflicts().toString(), 1, summary.getConflicts().size() );
+        assertEquals( 2, summary.getImportCount().getImported() );
+        assertEquals( 0, summary.getImportCount().getUpdated() );
+        assertEquals( 0, summary.getImportCount().getDeleted() );
+        assertEquals( 1, summary.getImportCount().getIgnored() );
+        assertEquals( ImportStatus.SUCCESS, summary.getStatus() );
+
+        Collection<DataValue> dataValues = mockDataValueBatchHandler.getInserts();
+
+        assertNotNull( dataValues );
+        assertEquals( 2, dataValues.size() );
+        assertTrue( dataValues.contains( new DataValue( deA, peA, ouA, ocDef, ocA ) ) );
+        assertTrue( dataValues.contains( new DataValue( deB, peB, ouB, ocDef, ocA ) ) );
+    }
+
+    @Test
+    public void testImportDataValuesWithDatasetAllowsPeriods ( )
+    throws Exception
+    {
+        dsA.setExpiryDays( 62 );
+        dsA.setOpenFuturePeriods( 2 );
+
+        dataSetService.updateDataSet( dsA );
+
+        Date thisMonth = DateUtils.truncate( new Date(), Calendar.MONTH );
+
+        Period tooEarly = createMonthlyPeriod( DateUtils.addMonths( thisMonth, 4 ) );
+        Period okBefore = createMonthlyPeriod( DateUtils.addMonths( thisMonth, 1 ) );
+        Period okAfter = createMonthlyPeriod( DateUtils.addMonths( thisMonth, -1 ) );
+        Period tooLate = createMonthlyPeriod( DateUtils.addMonths( thisMonth, -4 ) );
+
+        periodService.addPeriod( tooEarly );
+        periodService.addPeriod( okBefore );
+        periodService.addPeriod( okAfter );
+        periodService.addPeriod( tooLate );
+
+        String importData =
+            "<dataValueSet xmlns=\"http://dhis2.org/schema/dxf/2.0\" idScheme=\"code\" dataSet=\"DS_A\" orgUnit=\"OU_A\">\n" +
+                "  <dataValue dataElement=\"DE_A\" period=\"" + tooEarly.getIsoDate() + "\" value=\"10001\" />\n" +
+                "  <dataValue dataElement=\"DE_B\" period=\"" + okBefore.getIsoDate() + "\" value=\"10002\" />\n" +
+                "  <dataValue dataElement=\"DE_C\" period=\"" + okAfter.getIsoDate() + "\" value=\"10003\" />\n" +
+                "  <dataValue dataElement=\"DE_D\" period=\"" + tooLate.getIsoDate() + "\" value=\"10004\" />\n" +
+                "</dataValueSet>\n";
+
+        in = new ByteArrayInputStream( importData.getBytes( StandardCharsets.UTF_8 ) );
+
+        ImportOptions options = new ImportOptions().setDatasetAllowsPeriods( true );
+
+        ImportSummary summary = dataValueSetService.saveDataValueSet( in, options );
+
+        assertEquals( summary.getConflicts().toString(), 2, summary.getConflicts().size() );
+        assertEquals( 2, summary.getImportCount().getImported() );
+        assertEquals( 0, summary.getImportCount().getUpdated() );
+        assertEquals( 0, summary.getImportCount().getDeleted() );
+        assertEquals( 2, summary.getImportCount().getIgnored() );
+        assertEquals( ImportStatus.SUCCESS, summary.getStatus() );
+
+        Collection<DataValue> dataValues = mockDataValueBatchHandler.getInserts();
+
+        assertNotNull( dataValues );
+        assertEquals( 2, dataValues.size() );
+        assertTrue( dataValues.contains( new DataValue( deB, okBefore, ouA, ocDef, ocDef ) ) );
+        assertTrue( dataValues.contains( new DataValue( deC, okAfter, ouA, ocDef, ocDef ) ) );
+    }
+
     // -------------------------------------------------------------------------
     // Supportive methods
     // -------------------------------------------------------------------------
@@ -773,5 +885,12 @@ public class DataValueSetServiceTest
         assertTrue( dataValues.contains( new DataValue( deC, peA, ouB, ocDef, ocDef ) ) );
         assertTrue( dataValues.contains( new DataValue( deC, peB, ouA, ocDef, ocDef ) ) );
         assertTrue( dataValues.contains( new DataValue( deC, peB, ouB, ocDef, ocDef ) ) );
+    }
+
+    private Period createMonthlyPeriod( Date monthStart )
+    {
+        Date monthEnd = DateUtils.addDays( DateUtils.addMonths( monthStart, 1 ), -1 );
+
+        return createPeriod( PeriodType.getByNameIgnoreCase( MonthlyPeriodType.NAME ), monthStart, monthEnd );
     }
 }

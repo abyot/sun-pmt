@@ -229,9 +229,9 @@ public class DefaultEventQueryPlanner
             Period queryPeriod = new Period();
             queryPeriod.setStartDate( params.getStartDate() );
             queryPeriod.setEndDate( params.getEndDate() );
-            
-            EventQueryParams query = params.instance();
-            query.setPartitions( PartitionUtils.getPartitions( queryPeriod, EVENT_ANALYTICS_TABLE_NAME, tableSuffix, validPartitions ) );
+                        
+            EventQueryParams query = new EventQueryParams.Builder( params )
+                .withPartitions( PartitionUtils.getPartitions( queryPeriod, EVENT_ANALYTICS_TABLE_NAME, tableSuffix, validPartitions ) ).build();
             
             if ( query.getPartitions().hasAny() )
             {
@@ -262,26 +262,27 @@ public class DefaultEventQueryPlanner
         {
             for ( QueryItem item : params.getItemsAndItemFilters() )
             {
-                EventQueryParams query = params.instance();
-                query.getItems().clear();
-                query.getItemProgramIndicators().clear();
-                query.setValue( item.getItem() );
+                EventQueryParams.Builder query = new EventQueryParams.Builder( params )
+                    .removeItems()
+                    .removeItemProgramIndicators()
+                    .withValue( item.getItem() );
                 
                 if ( item.hasProgram() )
                 {
-                    query.setProgram( item.getProgram() );
+                    query.withProgram( item.getProgram() );
                 }
                 
-                queries.add( query );
+                queries.add( query.build() );
             }
             
             for ( ProgramIndicator programIndicator : params.getItemProgramIndicators() )
             {
-                EventQueryParams query = params.instance();
-                query.getItems().clear();
-                query.getItemProgramIndicators().clear();
-                query.setProgramIndicator( programIndicator );
-                query.setProgram( programIndicator.getProgram() );
+                EventQueryParams query = new EventQueryParams.Builder( params )
+                    .removeItems()
+                    .removeItemProgramIndicators()
+                    .withProgramIndicator( programIndicator )
+                    .withProgram( programIndicator.getProgram() ).build();
+                
                 queries.add( query );
             }
         }
@@ -289,16 +290,17 @@ public class DefaultEventQueryPlanner
         {
             for ( QueryItem item : params.getItems() )
             {
-                EventQueryParams query = params.instance();
-                query.getItems().clear();
-                query.getItems().add( item );
-                query.setProgram( item.getProgram() );
+                EventQueryParams query = new EventQueryParams.Builder( params )
+                    .removeItems()
+                    .addItem( item )
+                    .withProgram( item.getProgram() ).build();
+                
                 queries.add( query );
             }
         }
         else
         {
-            queries.add( params.instance() );
+            queries.add( new EventQueryParams.Builder( params ).build() );
         }
         
         return queries;

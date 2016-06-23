@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.sms.outbound.GatewayResponse;
@@ -74,7 +73,6 @@ import com.google.common.collect.Sets;
  * <li>password
  * </ul>
  */
-
 public class SimplisticHttpGetGateWay
     implements SmsGateway
 {
@@ -105,9 +103,6 @@ public class SimplisticHttpGetGateWay
 
         UriComponentsBuilder uri = buildUrl( genericHttpConfiguraiton, text, recipients );
 
-        String line = StringUtils.EMPTY;
-        String response = StringUtils.EMPTY; //TODO why is this never used?
-
         BufferedReader reader = null;
 
         Set<Integer> okCodes = Sets.newHashSet( HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED,
@@ -122,11 +117,6 @@ public class SimplisticHttpGetGateWay
             URLConnection conn = requestURL.openConnection();
 
             reader = new BufferedReader( new InputStreamReader( conn.getInputStream() ) );
-
-            while ( (line = reader.readLine()) != null )
-            {
-                response += line;
-            }
 
             HttpURLConnection httpConnection = (HttpURLConnection) conn;
 

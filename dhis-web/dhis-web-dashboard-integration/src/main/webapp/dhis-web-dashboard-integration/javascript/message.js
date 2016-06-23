@@ -136,16 +136,18 @@ function updatePriority(id) {
 function togglePriority( id, priority) {
 
     $.ajax({
-        url: "/api/messageConversations/"+id+"/priority",
+        url: "../api/messageConversations/"+id+"/priority",
         type: "POST",
         data: {"messageConversationPriority": priority}
     });
 
 }
 
-function setStatusFilter() {
-    window.location.replace(window.location.origin + window.location.pathname + "?ticketStatus=" + $("#statusFilter").val());
-
+function setStatusFilter(status) {
+    if(status != "ALL")
+        return window.location.replace(window.location.origin + window.location.pathname + "?ticketStatus=" + status);
+    else
+        return window.location.replace(window.location.origin + window.location.pathname);
 }
 
 function updateStatus(id) {
@@ -155,7 +157,7 @@ function updateStatus(id) {
 function toggleStatus( id, status) {
 
     $.ajax({
-        url: "/api/messageConversations/"+id+"/status",
+        url: "../api/messageConversations/"+id+"/status",
         type: "POST",
         data: {"messageConversationStatus": status}
     });

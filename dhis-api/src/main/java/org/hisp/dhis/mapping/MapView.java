@@ -119,8 +119,6 @@ public class MapView
 
     private String layer;
     
-    private String key;
-
     private Integer method;
 
     private Integer classes;
@@ -128,6 +126,11 @@ public class MapView
     private String colorLow;
 
     private String colorHigh;
+    
+    /**
+     * Comma-separated value of hex colors.
+     */
+    private String colorScale;
 
     private LegendSet legendSet;
 
@@ -158,6 +161,12 @@ public class MapView
     private String eventPointColor;
     
     private int eventPointRadius;
+
+    /**
+     * General configuration property for JSON values used to store information
+     * for layers with arbitrary configuration needs.
+     */
+    private String config;
 
     // -------------------------------------------------------------------------
     // Transient properties
@@ -363,19 +372,6 @@ public class MapView
     @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public String getKey()
-    {
-        return key;
-    }
-
-    public void setKey( String key )
-    {
-        this.key = key;
-    }
-
-    @JsonProperty
-    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public Integer getMethod()
     {
         return method;
@@ -425,6 +421,19 @@ public class MapView
     public void setColorHigh( String colorHigh )
     {
         this.colorHigh = colorHigh;
+    }
+
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getColorScale()
+    {
+        return colorScale;
+    }
+
+    public void setColorScale( String colorScale )
+    {
+        this.colorScale = colorScale;
     }
 
     @JsonProperty
@@ -625,6 +634,19 @@ public class MapView
     }
 
     @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class, DimensionalView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getConfig()
+    {
+        return config;
+    }
+
+    public void setConfig( String config )
+    {
+        this.config = config;
+    }
+
+    @JsonProperty
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getParentGraph()
@@ -662,11 +684,11 @@ public class MapView
             if ( mergeMode.isReplace() )
             {
                 layer = mapView.getLayer();
-                key = mapView.getKey();
                 method = mapView.getMethod();
                 classes = mapView.getClasses();
                 colorLow = mapView.getColorLow();
                 colorHigh = mapView.getColorHigh();
+                colorScale = mapView.getColorScale();
                 legendSet = mapView.getLegendSet();
                 radiusLow = mapView.getRadiusLow();
                 radiusHigh = mapView.getRadiusHigh();
@@ -679,15 +701,19 @@ public class MapView
                 labelFontWeight = mapView.getLabelFontWeight();
                 labelFontStyle = mapView.getLabelFontStyle();
                 labelFontColor = mapView.getLabelFontColor();
+                eventClustering = mapView.isEventClustering();
+                eventPointColor = mapView.getEventPointColor();
+                eventPointRadius = mapView.getEventPointRadius();
+                config = mapView.getConfig();
             }
             else if ( mergeMode.isMerge() )
             {
                 layer = mapView.getLayer() == null ? layer : mapView.getLayer();
-                key = mapView.getKey() == null ? key : mapView.getKey();
                 method = mapView.getMethod() == null ? method : mapView.getMethod();
                 classes = mapView.getClasses() == null ? classes : mapView.getClasses();
                 colorLow = mapView.getColorLow() == null ? colorLow : mapView.getColorLow();
                 colorHigh = mapView.getColorHigh() == null ? colorHigh : mapView.getColorHigh();
+                colorScale = mapView.getColorScale() == null ? colorScale : mapView.getColorScale();
                 legendSet = mapView.getLegendSet() == null ? legendSet : mapView.getLegendSet();
                 radiusLow = mapView.getRadiusLow() == null ? radiusLow : mapView.getRadiusLow();
                 radiusHigh = mapView.getRadiusHigh() == null ? radiusHigh : mapView.getRadiusHigh();
@@ -700,6 +726,10 @@ public class MapView
                 labelFontWeight = mapView.getLabelFontWeight() == null ? labelFontWeight : mapView.getLabelFontWeight();
                 labelFontStyle = mapView.getLabelFontStyle() == null ? labelFontStyle : mapView.getLabelFontStyle();
                 labelFontColor = mapView.getLabelFontColor() == null ? labelFontColor : mapView.getLabelFontColor();
+                eventClustering = mapView.isEventClustering();
+                eventPointColor = mapView.getEventPointColor() == null ? eventPointColor : mapView.getEventPointColor();
+                eventPointRadius = mapView.getEventPointRadius();
+                config = mapView.getConfig() == null ? config : mapView.getConfig();
             }
         }
     }

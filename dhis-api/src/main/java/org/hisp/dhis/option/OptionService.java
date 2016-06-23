@@ -60,14 +60,6 @@ public interface OptionService
     List<Option> getOptions( String optionSetUid, String key, Integer max );
     
     List<Option> getOptions( int optionSetId, String name, Integer max );
-
-    Integer getOptionSetsCountByName( String name );
-
-    List<OptionSet> getOptionSetsBetweenByName( String name, int first, int max );
-
-    List<OptionSet> getOptionSetsBetween( int first, int max );
-    
-    Integer getOptionSetCount();
     
     // -------------------------------------------------------------------------
     // Option
@@ -80,10 +72,6 @@ public interface OptionService
     Option getOptionByCode( String code );
         
     void deleteOption( Option option  );
-    
-    Option getOptionByName( OptionSet optionSet, String name );
-
-    Option getOptionByCode( OptionSet optionSet, String code );
-    
+        
     List<Option> getOptions( OptionSet optionSet, String option, Integer min, Integer max );
 }

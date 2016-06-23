@@ -65,7 +65,6 @@ import java.util.regex.Pattern;
 /**
  * Zubair <rajazubair.asghar@gmail.com>
  */
-
 public class SingleEventListener
     implements IncomingSmsListener
 {
@@ -97,7 +96,6 @@ public class SingleEventListener
     @Autowired
     private ProgramStageInstanceService programStageInstanceService;
 
-    @Autowired
     @Resource( name = "smsMessageSender" )
     private MessageSender smsSender;
 
@@ -236,7 +234,7 @@ public class SingleEventListener
     {
         for ( SMSCode smsCode : smsCodes )
         {
-            if ( !keySet.contains( smsCode.getCode() ) )
+            if ( smsCode.isCompulsory() && !keySet.contains( smsCode.getCode() ) )
             {
                 return false;
             }

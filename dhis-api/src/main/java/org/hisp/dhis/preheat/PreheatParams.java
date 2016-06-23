@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.user.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +46,7 @@ public class PreheatParams
 {
     private User user;
 
-    private PreheatMode preheatMode = PreheatMode.ALL;
+    private PreheatMode preheatMode = PreheatMode.REFERENCE;
 
     private PreheatIdentifier preheatIdentifier = PreheatIdentifier.UID;
 
@@ -108,6 +109,23 @@ public class PreheatParams
     public void setObjects( Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> objects )
     {
         this.objects = objects;
+    }
+
+    public PreheatParams addObject( IdentifiableObject object )
+    {
+        if ( object == null )
+        {
+            return this;
+        }
+
+        if ( !objects.containsKey( object.getClass() ) )
+        {
+            objects.put( object.getClass(), new ArrayList<>() );
+        }
+
+        objects.get( object.getClass() ).add( object );
+
+        return this;
     }
 
     @Override

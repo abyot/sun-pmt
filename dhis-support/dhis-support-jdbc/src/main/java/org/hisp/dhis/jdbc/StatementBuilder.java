@@ -143,6 +143,15 @@ public interface StatementBuilder
     String concatenate( String... s );
 
     /**
+     * Returns the position of substring in string, or 0 if not there.
+     *
+     * @param substring string to search for
+     * @param string string in which to search
+     * @return position, or 0 if not found
+     */
+    String position( String substring, String string );
+
+    /**
      * Returns a function to get a random integer between 0 and n
      *
      * @param n the maximum random value

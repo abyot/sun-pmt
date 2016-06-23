@@ -258,9 +258,9 @@ public class DefaultAnalyticsService
     {
         if ( !params.getIndicators().isEmpty() && !params.isSkipData() )
         {
-            DataQueryParams dataSourceParams = params.instance();
-            dataSourceParams.retainDataDimension( DataDimensionItemType.INDICATOR );
-
+            DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+                .retainDataDimension( DataDimensionItemType.INDICATOR ).build();
+            
             List<Indicator> indicators = asTypedList( dataSourceParams.getIndicators() );
 
             Period filterPeriod = dataSourceParams.getFilterPeriod();
@@ -326,8 +326,8 @@ public class DefaultAnalyticsService
     {
         if ( !params.getAllDataElements().isEmpty() && !params.isSkipData() )
         {
-            DataQueryParams dataSourceParams = params.instance();
-            dataSourceParams.retainDataDimension( DataDimensionItemType.DATA_ELEMENT );
+            DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+                .retainDataDimension( DataDimensionItemType.DATA_ELEMENT ).build();
 
             Map<String, Object> aggregatedDataMap = getAggregatedDataValueMapObjectTyped( dataSourceParams );
 
@@ -351,8 +351,8 @@ public class DefaultAnalyticsService
     {
         if ( !params.getDataElementOperands().isEmpty() && !params.isSkipData() )
         {
-            DataQueryParams dataSourceParams = params.instance();
-            dataSourceParams.retainDataDimension( DataDimensionItemType.DATA_ELEMENT_OPERAND );
+            DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+                .retainDataDimension( DataDimensionItemType.DATA_ELEMENT_OPERAND ).build();
             
             // -----------------------------------------------------------------
             // Replace operands with data element and option combo dimensions
@@ -363,12 +363,14 @@ public class DefaultAnalyticsService
             List<DimensionalItemObject> categoryOptionCombos = Lists.newArrayList( DimensionalObjectUtils.getCategoryOptionCombos( operands ) );
 
             //TODO check if data was dim or filter
+            //TODO move add/remove to builder
             
-            dataSourceParams.removeDimension( DATA_X_DIM_ID );
-            dataSourceParams.addDimension( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, dataElements ) );
-            dataSourceParams.addDimension( new BaseDimensionalObject( CATEGORYOPTIONCOMBO_DIM_ID, DimensionType.CATEGORY_OPTION_COMBO, categoryOptionCombos ) );
+            DataQueryParams operandParams = DataQueryParams.newBuilder( dataSourceParams )
+                .removeDimension( DATA_X_DIM_ID )
+                .addDimension( new BaseDimensionalObject( DATA_X_DIM_ID, DimensionType.DATA_X, dataElements ) )
+                .addDimension( new BaseDimensionalObject( CATEGORYOPTIONCOMBO_DIM_ID, DimensionType.CATEGORY_OPTION_COMBO, categoryOptionCombos ) ).build();
 
-            Map<String, Object> aggregatedDataMap = getAggregatedDataValueMapObjectTyped( dataSourceParams );
+            Map<String, Object> aggregatedDataMap = getAggregatedDataValueMapObjectTyped( operandParams );
             
             aggregatedDataMap = AnalyticsUtils.convertDxToOperand( aggregatedDataMap );
 
@@ -376,7 +378,7 @@ public class DefaultAnalyticsService
             {
                 grid.addRow();
                 grid.addValues( entry.getKey().split( DIMENSION_SEP ) );
-                grid.addValue( AnalyticsUtils.getRoundedValueObject( dataSourceParams, entry.getValue() ) );
+                grid.addValue( AnalyticsUtils.getRoundedValueObject( operandParams, entry.getValue() ) );
             }
         }
     }
@@ -394,11 +396,11 @@ public class DefaultAnalyticsService
         {
             for ( ReportingRateMetric metric : ReportingRateMetric.values() )
             {
-                DataQueryParams dataSourceParams = params.instance();
-                dataSourceParams.retainDataDimensionReportingRates( metric );
-                dataSourceParams.ignoreDataApproval(); // No approval for reporting rates
-                dataSourceParams.setAggregationType( AggregationType.COUNT );
-                dataSourceParams.setTimely( ( REPORTING_RATE_ON_TIME == metric || ACTUAL_REPORTS_ON_TIME == metric ) );
+                DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+                    .retainDataDimensionReportingRates( metric )
+                    .ignoreDataApproval() // No approval for reporting rates
+                    .withAggregationType( AggregationType.COUNT )
+                    .withTimely( ( REPORTING_RATE_ON_TIME == metric || ACTUAL_REPORTS_ON_TIME == metric ) ).build();
                 
                 addReportingRates( dataSourceParams, grid, metric );
             }
@@ -435,15 +437,14 @@ public class DefaultAnalyticsService
             List<Integer> completenessDimIndexes = dataSourceParams.getCompletenessDimensionIndexes();
             List<Integer> completenessFilterIndexes = dataSourceParams.getCompletenessFilterIndexes();
 
-            DataQueryParams targetParams = dataSourceParams.instance();
-
-            targetParams.setDimensions( ListUtils.getAtIndexes( targetParams.getDimensions(), completenessDimIndexes ) );
-            targetParams.setFilters( ListUtils.getAtIndexes( targetParams.getFilters(), completenessFilterIndexes ) );
-            targetParams.setSkipPartitioning( true );
-            targetParams.setTimely( false ); // No timeliness for targets
-            targetParams.setRestrictByOrgUnitOpeningClosedDate( true );
-            targetParams.setRestrictByCategoryOptionStartEndDate( true );
-            targetParams.setAggregationType( AggregationType.SUM );
+            DataQueryParams targetParams = DataQueryParams.newBuilder( dataSourceParams )
+                .retainDimensions( completenessDimIndexes )
+                .retainFilters( completenessFilterIndexes )
+                .withSkipPartitioning( true )
+                .withTimely( false )
+                .withRestrictByOrgUnitOpeningClosedDate( true )
+                .withRestrictByCategoryOptionStartEndDate( true )
+                .withAggregationType( AggregationType.SUM ).build();
 
             Map<String, Double> targetMap = getAggregatedCompletenessTargetMap( targetParams );
 
@@ -458,7 +459,7 @@ public class DefaultAnalyticsService
             // Join data maps, calculate completeness and add to grid
             // -----------------------------------------------------------------
 
-            //FIXME If target value exists, but not actual reports exist we must still display target
+            //FIXME If target value exists, but not actual reports exist we could still display target
             //FIXME avoid duplicate requests for actual reports
             
             for ( Map.Entry<String, Double> entry : aggregatedDataMap.entrySet() )
@@ -526,12 +527,12 @@ public class DefaultAnalyticsService
     {
         if ( ( !params.getAllProgramDataElementsAndAttributes().isEmpty() || !params.getProgramIndicators().isEmpty() ) && !params.isSkipData() )
         {
-            DataQueryParams dataSourceParams = params.instance();
-            dataSourceParams.retainDataDimensions( DataDimensionItemType.PROGRAM_DATA_ELEMENT, 
-                DataDimensionItemType.PROGRAM_ATTRIBUTE, DataDimensionItemType.PROGRAM_INDICATOR );
+            DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+                .retainDataDimensions( DataDimensionItemType.PROGRAM_DATA_ELEMENT, 
+                    DataDimensionItemType.PROGRAM_ATTRIBUTE, DataDimensionItemType.PROGRAM_INDICATOR ).build();
             
-            EventQueryParams eventQueryParams = EventQueryParams.fromDataQueryParams( dataSourceParams );
-            eventQueryParams.setSkipMeta( true );
+            EventQueryParams eventQueryParams = new EventQueryParams.Builder( EventQueryParams.fromDataQueryParams( dataSourceParams ) )
+                .withSkipMeta( true ).build();
             
             Grid eventGrid = eventAnalyticsService.getAggregatedEventData( eventQueryParams );
             
@@ -551,7 +552,7 @@ public class DefaultAnalyticsService
     {
         if ( params.getDataDimensionAndFilterOptions().isEmpty() && !params.isSkipData() )
         {
-            Map<String, Double> aggregatedDataMap = getAggregatedDataValueMap( params.instance() );
+            Map<String, Double> aggregatedDataMap = getAggregatedDataValueMap( DataQueryParams.newBuilder( params ).build() ); //TODO pass directly
 
             for ( Map.Entry<String, Double> entry : aggregatedDataMap.entrySet() )
             {
@@ -643,7 +644,7 @@ public class DefaultAnalyticsService
         {
             List<DimensionalItemObject> items = params.getAllDimensionItems();
             
-            Map<String, String> map = NameableObjectUtils.getUidPropertyMap( items, params.getOutputIdScheme() );
+            Map<String, String> map = IdentifiableObjectUtils.getUidPropertyMap( items, params.getOutputIdScheme() );
             
             grid.substituteMetaData( map );
         }
@@ -764,9 +765,10 @@ public class DefaultAnalyticsService
             return null;
         }
 
-        DataQueryParams orgUnitTargetParams = params.instance().pruneToDimensionType( DimensionType.ORGANISATION_UNIT );
-        orgUnitTargetParams.getDimensions().add( new BaseDimensionalObject( DimensionalObject.ORGUNIT_GROUP_DIM_ID, null, new ArrayList<DimensionalItemObject>( orgUnitGroups ) ) );
-        orgUnitTargetParams.setSkipPartitioning( true );
+        DataQueryParams orgUnitTargetParams = DataQueryParams.newBuilder( params )
+            .pruneToDimensionType( DimensionType.ORGANISATION_UNIT )
+            .addDimension( new BaseDimensionalObject( DimensionalObject.ORGUNIT_GROUP_DIM_ID, null, new ArrayList<DimensionalItemObject>( orgUnitGroups ) ) )
+            .withSkipPartitioning( true ).build();
 
         Map<String, Double> orgUnitCountMap = getAggregatedOrganisationUnitTargetMap( orgUnitTargetParams );
 
@@ -978,11 +980,10 @@ public class DefaultAnalyticsService
 
         DimensionalObject dimension = new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, DISPLAY_NAME_DATA_X, items );
         
-        DataQueryParams dataSourceParams = params.instance();
-        dataSourceParams.removeDimension( DimensionalObject.DATA_X_DIM_ID );
-        dataSourceParams.addDimension( dimension );
-        dataSourceParams.setSkipHeaders( true );
-        dataSourceParams.setSkipMeta( true );
+        DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
+            .replaceDimension( dimension )
+            .withSkipHeaders( true )
+            .withSkipMeta( true ).build();
         
         Grid grid = getAggregatedDataValueGridInternal( dataSourceParams );
         

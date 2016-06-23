@@ -88,7 +88,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-tracker-capture</artifactId>
-                  <version>2.24-SNAPSHOT</version>
+                  <version>${apps.version}</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-tracker-capture</outputDirectory>
                   <includes>**/*.*</includes>
@@ -97,7 +97,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-event-capture</artifactId>
-                  <version>2.24-SNAPSHOT</version>
+                  <version>${apps.version}</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-event-capture</outputDirectory>
                   <includes>**/*.*</includes>

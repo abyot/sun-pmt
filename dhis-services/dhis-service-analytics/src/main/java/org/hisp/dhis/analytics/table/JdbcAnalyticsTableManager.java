@@ -181,8 +181,6 @@ public class JdbcAnalyticsTableManager
 
             populateTable( table, "0", "null", Sets.newHashSet( ValueType.BOOLEAN ), "dv.value = 'false'", approvalClause );
 
-            populateTable( table, "1", "null", Sets.newHashSet( ValueType.TRUE_ONLY ), "dv.value = 'true'", approvalClause );
-
             populateTable( table, "null", "dv.value", ValueType.TEXT_TYPES, null, approvalClause );
         }
 
@@ -232,8 +230,6 @@ public class JdbcAnalyticsTableManager
                 "from datavalue dv " +
                 "left join _dataelementgroupsetstructure degs on dv.dataelementid=degs.dataelementid " +
                 "left join _organisationunitgroupsetstructure ougs on dv.sourceid=ougs.organisationunitid " +
-                "left join _categoryoptiongroupsetstructure cogs on dv.categoryoptioncomboid=cogs.categoryoptioncomboid " +
-                "left join _categoryoptiongroupsetstructure aogs on dv.attributeoptioncomboid=aogs.categoryoptioncomboid " +
                 "left join _categorystructure dcs on dv.categoryoptioncomboid=dcs.categoryoptioncomboid " +
                 "left join _categorystructure acs on dv.attributeoptioncomboid=acs.categoryoptioncomboid " +
                 "left join _orgunitstructure ous on dv.sourceid=ous.organisationunitid " +
@@ -325,12 +321,12 @@ public class JdbcAnalyticsTableManager
 
         for ( CategoryOptionGroupSet groupSet : disaggregationCategoryOptionGroupSets )
         {
-            columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "cogs." + quote( groupSet.getUid() ) ) );
+            columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "dcs." + quote( groupSet.getUid() ) ) );
         }
 
         for ( CategoryOptionGroupSet groupSet : attributeCategoryOptionGroupSets )
         {
-            columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "aogs." + quote( groupSet.getUid() ) ) );
+            columns.add( new AnalyticsTableColumn( quote( groupSet.getUid() ), "character(11)", "acs." + quote( groupSet.getUid() ) ) );
         }
 
         for ( DataElementCategory category : disaggregationCategories )

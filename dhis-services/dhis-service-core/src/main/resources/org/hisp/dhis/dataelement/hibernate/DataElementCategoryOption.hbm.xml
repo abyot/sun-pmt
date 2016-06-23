@@ -49,6 +49,17 @@
       <many-to-many class="org.hisp.dhis.dataelement.CategoryOptionGroup" column="categoryoptiongroupid" />
     </set>
 
+    <!-- Object Translation -->
+    <set name="translations" table="categoryoptiontranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="categoryoptionid" foreign-key="fk_objecttranslation_categoryoptionid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
     <!-- Dynamic attribute values -->
 
     <set name="attributeValues" table="dataelementcategoryoptionattributevalues" cascade="delete-orphan">
@@ -69,4 +80,9 @@
     </set>
 
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

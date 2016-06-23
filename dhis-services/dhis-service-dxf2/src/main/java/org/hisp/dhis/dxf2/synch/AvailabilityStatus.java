@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.hisp.dhis.common.DxfNamespaces;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author Lars Helge Overland
@@ -42,15 +43,18 @@ public class AvailabilityStatus
     private boolean available;
 
     private String message;
+    
+    private HttpStatus httpStatus;
 
     protected AvailabilityStatus()
     {
     }
 
-    public AvailabilityStatus( boolean available, String message )
+    public AvailabilityStatus( boolean available, String message, HttpStatus httpStatus )
     {
         this.available = available;
         this.message = message;
+        this.httpStatus = httpStatus;
     }
 
     @JsonProperty
@@ -67,9 +71,23 @@ public class AvailabilityStatus
         return message;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public int getStatusCode()
+    {
+        return httpStatus != null ? httpStatus.value() : null;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getStatusPhrase()
+    {
+        return httpStatus != null ? httpStatus.getReasonPhrase() : null;
+    }
+
     @Override
     public String toString()
     {
-        return "[Available: " + available + ", message: " + message + "]";
+        return "[Available: " + available + ", message: " + message + ", HTTP status: " + httpStatus + "]";
     }
 }

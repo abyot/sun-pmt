@@ -73,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.csvreader.CsvReader;
 
 /**
+ * TODO Unit testing
+ * 
  * @author Lars Helge Overland
  */
 public class DefaultCsvImportService
@@ -154,6 +156,7 @@ public class DefaultCsvImportService
             {
                 DataElementCategoryOption object = new DataElementCategoryOption();
                 setIdentifiableObject( object, values );
+                object.setShortName( getSafe( values, 3, object.getName(), 50 ) );
                 list.add( object );
             }
         }
@@ -174,6 +177,7 @@ public class DefaultCsvImportService
             {
                 CategoryOptionGroup object = new CategoryOptionGroup();
                 setIdentifiableObject( object, values );
+                object.setShortName( getSafe( values, 3, object.getName(), 50 ) );
                 list.add( object );
             }
         }
@@ -196,7 +200,6 @@ public class DefaultCsvImportService
             {
                 DataElement object = new DataElement();
                 setIdentifiableObject( object, values );
-                object.setCode( getSafe( values, 2, null, 50 ) );
                 object.setShortName( getSafe( values, 3, object.getName(), 50 ) );
                 object.setDescription( getSafe( values, 4, null, null ) );
                 object.setFormName( getSafe( values, 5, null, 230 ) );
@@ -257,6 +260,7 @@ public class DefaultCsvImportService
             {
                 DataElementGroup object = new DataElementGroup();
                 setIdentifiableObject( object, values );
+                object.setShortName( getSafe( values, 3, object.getName(), 50 ) );
                 list.add( object );
             }
         }
@@ -362,6 +366,7 @@ public class DefaultCsvImportService
             {
                 OrganisationUnitGroup object = new OrganisationUnitGroup();
                 setIdentifiableObject( object, values );
+                object.setShortName( getSafe( values, 3, object.getName(), 50 ) );
                 list.add( object );
             }
         }

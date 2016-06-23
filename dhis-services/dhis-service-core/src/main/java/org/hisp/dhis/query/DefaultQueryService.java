@@ -61,7 +61,7 @@ public class DefaultQueryService
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
     public List<? extends IdentifiableObject> query( Query query, ResultTransformer transformer )
     {
         List<? extends IdentifiableObject> objects = queryObjects( query );

@@ -28,30 +28,11 @@ package org.hisp.dhis.expression;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.expression.Expression.EXP_CLOSE;
-import static org.hisp.dhis.expression.Expression.EXP_OPEN;
-import static org.hisp.dhis.expression.Expression.PAR_CLOSE;
-import static org.hisp.dhis.expression.Expression.PAR_OPEN;
-import static org.hisp.dhis.expression.Expression.SEPARATOR;
-import static org.hisp.dhis.system.util.MathUtils.calculateExpression;
-import static org.hisp.dhis.system.util.MathUtils.calculateGenericExpression;
-import static org.hisp.dhis.system.util.MathUtils.isEqual;
-import static org.hisp.dhis.expression.MissingValueStrategy.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.DimensionService;
 import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.GenericStore;
@@ -59,6 +40,8 @@ import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.ListMap;
 import org.hisp.dhis.common.RegexUtils;
 import org.hisp.dhis.common.exception.InvalidIdentifierReferenceException;
+import org.hisp.dhis.commons.collection.CachingMap;
+import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.constant.ConstantService;
 import org.hisp.dhis.dataelement.DataElement;
@@ -74,12 +57,23 @@ import org.hisp.dhis.period.Period;
 import org.hisp.dhis.system.jep.CustomFunctions;
 import org.hisp.dhis.system.util.DateUtils;
 import org.hisp.dhis.system.util.MathUtils;
-import org.hisp.dhis.commons.collection.CachingMap;
-import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.validation.ValidationRule;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.hisp.dhis.expression.Expression.*;
+import static org.hisp.dhis.expression.MissingValueStrategy.*;
+import static org.hisp.dhis.system.util.MathUtils.*;
 
 /**
  * The expression is a string describing a formula containing data element ids
@@ -353,6 +347,18 @@ public class DefaultExpressionService
         }
 
         return operandsInExpression;
+    }
+
+    @Override
+    @Transactional
+    public Set<BaseDimensionalItemObject> getDataInputsInExpression( String expression )
+    {
+        Set<BaseDimensionalItemObject> results=new HashSet<BaseDimensionalItemObject>();
+
+        results.addAll( getDataElementsInExpression( expression ) );
+        results.addAll( getOperandsInExpression( expression ) );
+
+        return results;
     }
 
     @Override

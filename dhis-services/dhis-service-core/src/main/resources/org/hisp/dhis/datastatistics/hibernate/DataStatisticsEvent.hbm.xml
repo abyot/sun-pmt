@@ -19,7 +19,7 @@
     </property>
     
     <property name="timestamp" column="timestamp" type="timestamp" />
-    <property name="userName" column="username" />
+    <property name="username" column="username" />
     <property name="favoriteUid" column="favoriteuid" />
     
   </class>

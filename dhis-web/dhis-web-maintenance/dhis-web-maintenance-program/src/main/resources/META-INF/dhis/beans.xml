@@ -730,6 +730,8 @@
     </property>
   </bean>
 
+
+
   <bean
     id="org.hisp.dhis.trackedentity.action.programindicator.RemoveProgramIndicatorAction"
     class="org.hisp.dhis.trackedentity.action.programindicator.RemoveProgramIndicatorAction"

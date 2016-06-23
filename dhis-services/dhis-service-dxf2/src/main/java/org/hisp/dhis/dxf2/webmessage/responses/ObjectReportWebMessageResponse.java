@@ -49,7 +49,7 @@ public class ObjectReportWebMessageResponse
 
     public ObjectReportWebMessageResponse( ObjectReport objectReport )
     {
-        Assert.notNull( objectReport, "ObjectReport is require to be non-null." );
+        Assert.notNull( objectReport, "ObjectReport is required to be non-null." );
         this.objectReport = objectReport;
     }
 
@@ -58,6 +58,13 @@ public class ObjectReportWebMessageResponse
     public Class<?> getKlass()
     {
         return objectReport.getKlass();
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( isAttribute = true )
+    public String getUid()
+    {
+        return objectReport.getUid();
     }
 
     @JsonProperty

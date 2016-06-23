@@ -119,7 +119,21 @@ public class AddAttributeAction
     {
         this.valueType = valueType;
     }
+    
+    private Boolean generated;
 
+    public void setGenerated( Boolean generated )
+    {
+        this.generated = generated;
+    }
+
+    private String pattern;
+
+    public void setPattern( String pattern )
+    {
+        this.pattern = pattern;
+    }
+    
     private String aggregationType;
 
     public void setAggregationType( String aggregationType )
@@ -216,6 +230,8 @@ public class AddAttributeAction
         trackedEntityAttribute.setCode( StringUtils.trimToNull( code ) );
         trackedEntityAttribute.setDescription( StringUtils.trimToNull( description ) );
         trackedEntityAttribute.setValueType( valueType );
+        trackedEntityAttribute.setGenerated( generated );
+        trackedEntityAttribute.setPattern( pattern );
         trackedEntityAttribute.setAggregationType( AggregationType.fromValue( aggregationType ) );
         trackedEntityAttribute.setExpression( expression );
         trackedEntityAttribute.setDisplayOnVisitSchedule( false );
@@ -257,6 +273,16 @@ public class AddAttributeAction
         else if ( ValueType.TRACKER_ASSOCIATE == valueType )
         {
             trackedEntityAttribute.setTrackedEntity( trackedEntityService.getTrackedEntity( trackedEntityId ) );
+        }
+        
+        if( !unique ) 
+        {
+            trackedEntityAttribute.setGenerated( false );
+            trackedEntityAttribute.setPattern( "" );
+        }
+        else if( !generated ) 
+        {
+            trackedEntityAttribute.setPattern( "" );
         }
 
         if ( legendSetId != null )

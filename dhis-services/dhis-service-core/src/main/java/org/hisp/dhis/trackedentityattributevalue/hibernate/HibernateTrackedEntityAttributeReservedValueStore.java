@@ -68,6 +68,7 @@ public class HibernateTrackedEntityAttributeReservedValueStore
         
         Session session = sessionFactory.getCurrentSession();
         session.save( trackedEntityAttributeReservedValue );
+        session.flush();
         
         return trackedEntityAttributeReservedValue;
     }

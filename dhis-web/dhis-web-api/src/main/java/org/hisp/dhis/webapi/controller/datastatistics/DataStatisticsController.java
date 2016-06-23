@@ -42,8 +42,10 @@ import org.springframework.http.HttpStatus;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hisp.dhis.datastatistics.DataStatisticsEvent;
+import org.hisp.dhis.analytics.SortOrder;
 import org.hisp.dhis.datastatistics.AggregatedStatistics;
 import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.util.ObjectUtils;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.datastatistics.DataStatisticsEventType;
 import org.hisp.dhis.datastatistics.DataStatisticsService;
@@ -79,7 +81,7 @@ public class DataStatisticsController
     }
 
     @RequestMapping( value = "/dataStatistics", method = RequestMethod.GET )
-    public @ResponseBody List<AggregatedStatistics> report( @RequestParam Date startDate,
+    public @ResponseBody List<AggregatedStatistics> getReports( @RequestParam Date startDate,
         @RequestParam Date endDate, @RequestParam EventInterval interval, HttpServletResponse response )
         throws WebMessageException
     {
@@ -92,15 +94,14 @@ public class DataStatisticsController
     }
 
     @RequestMapping( value= "/dataStatistics/favorites", method = RequestMethod.GET )
-    public @ResponseBody List<FavoriteStatistics> favorite( @RequestParam DataStatisticsEventType eventType,
-        @RequestParam Integer pageSize, @RequestParam String sortOrder )
+    public @ResponseBody List<FavoriteStatistics> getTopFavorites( @RequestParam DataStatisticsEventType eventType,
+        @RequestParam( required = false ) Integer pageSize, @RequestParam( required = false ) SortOrder sortOrder,
+        @RequestParam( required = false ) String username )
         throws WebMessageException
     {
-        if ( !( sortOrder.equals( "DESC" ) || sortOrder.equals( "ASC" ) ) )
-        {
-            throw new WebMessageException( WebMessageUtils.conflict( "Sort order is not ASC or DESC" ) );
-        }
-
-        return dataStatisticsService.getTopFavorites( eventType, pageSize, sortOrder );
+        pageSize = ObjectUtils.firstNonNull( pageSize, 20 );
+        sortOrder = ObjectUtils.firstNonNull( sortOrder, SortOrder.DESC );
+        
+        return dataStatisticsService.getTopFavorites( eventType, pageSize, sortOrder, username );
     }
 }

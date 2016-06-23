@@ -66,10 +66,10 @@ public class AnalyticsUtilsTest
         
         List<DimensionalItemObject> list = Lists.newArrayList( deA, deB, pdeA, pdeB, piA );
         
-        assertEquals( Lists.newArrayList( deA, deB ), AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.DATA_ELEMENT, list ) );
-        assertEquals( Lists.newArrayList( pdeA, pdeB ), AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.PROGRAM_DATA_ELEMENT, list ) );
-        assertEquals( Lists.newArrayList( piA ), AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.PROGRAM_INDICATOR, list ) );
-        assertEquals( Lists.newArrayList(), AnalyticsUtils.getByDataDimensionType( DataDimensionItemType.PROGRAM_ATTRIBUTE, list ) );
+        assertEquals( Lists.newArrayList( deA, deB ), AnalyticsUtils.getByDataDimensionItemType( DataDimensionItemType.DATA_ELEMENT, list ) );
+        assertEquals( Lists.newArrayList( pdeA, pdeB ), AnalyticsUtils.getByDataDimensionItemType( DataDimensionItemType.PROGRAM_DATA_ELEMENT, list ) );
+        assertEquals( Lists.newArrayList( piA ), AnalyticsUtils.getByDataDimensionItemType( DataDimensionItemType.PROGRAM_INDICATOR, list ) );
+        assertEquals( Lists.newArrayList(), AnalyticsUtils.getByDataDimensionItemType( DataDimensionItemType.PROGRAM_ATTRIBUTE, list ) );
     }
     
     @Test

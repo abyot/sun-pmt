@@ -10,7 +10,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link type="text/css" rel="stylesheet" href="../dhis-web-commons/font-awesome/css/font-awesome.min.css?_rev=$!{buildRevision}" />
     <link type="text/css" rel="stylesheet" media="screen" href="../dhis-web-commons/javascripts/jQuery/ui/css/redmond/jquery-ui.css?_rev=$!{buildRevision}" />
-    <link type="text/css" rel="stylesheet" media="screen,print" href="../dhis-web-commons/css/${keyStyle}?_rev=$!{buildRevision}" />
+    <link type="text/css" rel="stylesheet" media="screen,print" href="../dhis-web-commons/css/$encoder.htmlEncode( ${keyStyle} )?_rev=$!{buildRevision}" />
     <link type="text/css" rel="stylesheet" media="screen,print" href="../dhis-web-commons/css/widgets.css?_rev=$!{buildRevision}" />
     <link type="text/css" rel="stylesheet" media="print" href="../dhis-web-commons/css/print.css?_rev=$!{buildRevision}" />
     <link type="text/css" rel="stylesheet" media="screen" href="../dhis-web-commons/css/menu.css?_rev=$!{buildRevision}" />
@@ -111,10 +111,10 @@
   <body>
     #parse( "macros.vm" )
     <div id="header">
-      <img id="headerBanner" src="${logoBanner}" onclick="window.location.href='../${startModule}/index.action'"
+      <img id="headerBanner" src="${logoBanner}" onclick="window.location.href='../dhis-web-commons-about/redirect.action'"
       	style="cursor:pointer" title="$i18n.getString( 'view_home_page' )">
 
-      <span id="headerText" onclick="window.location.href='../${startModule}/index.action'" style="cursor:pointer" title="$i18n.getString( 'view_home_page' )">
+      <span id="headerText" onclick="window.location.href='../dhis-web-commons-about/redirect.action'" style="cursor:pointer" title="$i18n.getString( 'view_home_page' )">
         $encoder.htmlEncode( $applicationTitle )
       </span>
 

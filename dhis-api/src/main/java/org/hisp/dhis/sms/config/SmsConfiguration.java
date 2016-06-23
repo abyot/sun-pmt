@@ -49,13 +49,7 @@ public class SmsConfiguration
 {
     private static final long serialVersionUID = 7460688383539123303L;
 
-    private boolean enabled = false;
-
-    private String longNumber;
-
-    private Integer pollingInterval;
-
-    private List<SmsGatewayConfig> gateways;
+    private List<SmsGatewayConfig> gateways = new ArrayList<>();
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -68,33 +62,12 @@ public class SmsConfiguration
 
     public SmsConfiguration( boolean enabled )
     {
-        this.enabled = enabled;
         this.gateways = new ArrayList<>();
     }
 
     // -------------------------------------------------------------------------
     // Getter && Setter
     // -------------------------------------------------------------------------
-
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    public void setEnabled( boolean enabled )
-    {
-        this.enabled = enabled;
-    }
-
-    public String getLongNumber()
-    {
-        return longNumber;
-    }
-
-    public void setLongNumber( String longNumber )
-    {
-        this.longNumber = longNumber;
-    }
 
     @JsonProperty( value = "gateways" )
     @XmlElementWrapper( name = "gateways" )
@@ -109,28 +82,5 @@ public class SmsConfiguration
     public void setGateways( List<SmsGatewayConfig> gateways )
     {
         this.gateways = gateways;
-    }
-
-    public Integer getPollingInterval()
-    {
-        return pollingInterval;
-    }
-
-    public void setPollingInterval( Integer pollingInterval )
-    {
-        this.pollingInterval = pollingInterval;
-    }
-
-    public SmsGatewayConfig getDefaultGateway()
-    {
-        for ( SmsGatewayConfig gw : gateways )
-        {
-            if ( gw.isDefault() )
-            {
-                return gw;
-            }
-        }
-
-        return null;
     }
 }

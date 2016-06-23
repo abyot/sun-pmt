@@ -30,7 +30,9 @@ package org.hisp.dhis.webapi.mvc;
 
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -65,6 +67,13 @@ public class CustomRequestMappingHandlerMapping
             return info;
         }
 
+        RequestMethodsRequestCondition methodsCondition = info.getMethodsCondition();
+
+        if ( methodsCondition.getMethods().isEmpty() )
+        {
+            methodsCondition = new RequestMethodsRequestCondition( RequestMethod.GET );
+        }
+
         Set<String> rqmPatterns = info.getPatternsCondition().getPatterns();
         Set<String> patterns = new HashSet<>();
 
@@ -91,7 +100,7 @@ public class CustomRequestMappingHandlerMapping
             patterns.toArray( new String[]{} ), null, null, true, true, null );
 
         return new RequestMappingInfo(
-            null, patternsRequestCondition, info.getMethodsCondition(), info.getParamsCondition(), info.getHeadersCondition(), info.getConsumesCondition(),
+            null, patternsRequestCondition, methodsCondition, info.getParamsCondition(), info.getHeadersCondition(), info.getConsumesCondition(),
             info.getProducesCondition(), info.getCustomCondition()
         );
     }

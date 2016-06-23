@@ -248,47 +248,15 @@ public class DefaultDataApprovalLevelService
     @Override
     public List<DataApprovalLevel> getUserDataApprovalLevels()
     {
-        UserCredentials userCredentials = currentUserService.getCurrentUser().getUserCredentials();
-
-        boolean mayApprove = userCredentials.isAuthorized( DataApproval.AUTH_APPROVE );
-        boolean mayApproveAtLowerLevels = userCredentials.isAuthorized( DataApproval.AUTH_APPROVE_LOWER_LEVELS );
-        boolean mayAcceptAtLowerLevels = userCredentials.isAuthorized( DataApproval.AUTH_ACCEPT_LOWER_LEVELS );
-
-        if ( !mayApprove && !mayApproveAtLowerLevels && ! mayAcceptAtLowerLevels )
-        {
-            return new ArrayList<>();
-        }
-
-        int lowestNumberOrgUnitLevel = getCurrentUsersLowestNumberOrgUnitLevel();
-
-        boolean canSeeAllDimensions = CollectionUtils.isEmpty( categoryService.getCoDimensionConstraints( userCredentials ) )
-            && CollectionUtils.isEmpty( categoryService.getCogDimensionConstraints( userCredentials ) );
-
-        List<DataApprovalLevel> approvalLevels = getAllDataApprovalLevels();
-        List<DataApprovalLevel> userDataApprovalLevels = new ArrayList<>();
-
-        boolean addLevel = false;
-
-        for ( DataApprovalLevel approvalLevel : approvalLevels )
-        {
-            if ( !addLevel && approvalLevel.getOrgUnitLevel() >= lowestNumberOrgUnitLevel )
-            {
-                CategoryOptionGroupSet cogs = approvalLevel.getCategoryOptionGroupSet();
-
-                addLevel = securityService.canRead( approvalLevel ) &&
-                    cogs == null ? canSeeAllDimensions :
-                    ( securityService.canRead( cogs ) && !CollectionUtils.isEmpty( categoryService.getCategoryOptionGroups( cogs ) ) );
-            }
-
-            if ( addLevel )
-            {
-                userDataApprovalLevels.add( approvalLevel );
-            }
-        }
-
-        return userDataApprovalLevels;
+        return subsetUserDataApprovalLevels( getAllDataApprovalLevels() );
     }
-    
+
+    @Override
+    public List<DataApprovalLevel> getUserDataApprovalLevels( DataApprovalWorkflow workflow )
+    {
+        return subsetUserDataApprovalLevels( workflow.getSortedLevels() );
+    }
+
     @Override
     public List<DataApprovalLevel> getDataApprovalLevelsByOrgUnitLevel( int orgUnitLevel )
     {
@@ -744,5 +712,44 @@ public class DefaultDataApprovalLevelService
         }
 
         return !CollectionUtils.isEmpty( categoryService.getCategoryOptionGroups( cogs ) );
+    }
+
+    /**
+     * Returns the subset of approval levels that the user is allowed to access.
+     *
+     * @param approvalLevels the approval levels to test.
+     * @return the subset of approval levels to which the user has access.
+     */
+    private List<DataApprovalLevel> subsetUserDataApprovalLevels( List<DataApprovalLevel> approvalLevels )
+    {
+        UserCredentials userCredentials = currentUserService.getCurrentUser().getUserCredentials();
+
+        int lowestNumberOrgUnitLevel = getCurrentUsersLowestNumberOrgUnitLevel();
+
+        boolean canSeeAllDimensions = CollectionUtils.isEmpty( categoryService.getCoDimensionConstraints( userCredentials ) )
+            && CollectionUtils.isEmpty( categoryService.getCogDimensionConstraints( userCredentials ) );
+
+        List<DataApprovalLevel> userDataApprovalLevels = new ArrayList<>();
+
+        boolean addLevel = false;
+
+        for ( DataApprovalLevel approvalLevel : approvalLevels )
+        {
+            if ( !addLevel && approvalLevel.getOrgUnitLevel() >= lowestNumberOrgUnitLevel )
+            {
+                CategoryOptionGroupSet cogs = approvalLevel.getCategoryOptionGroupSet();
+
+                addLevel = securityService.canRead( approvalLevel ) &&
+                    cogs == null ? canSeeAllDimensions :
+                    ( securityService.canRead( cogs ) && !CollectionUtils.isEmpty( categoryService.getCategoryOptionGroups( cogs ) ) );
+            }
+
+            if ( addLevel )
+            {
+                userDataApprovalLevels.add( approvalLevel );
+            }
+        }
+
+        return userDataApprovalLevels;
     }
 }

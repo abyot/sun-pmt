@@ -149,11 +149,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanAggregateQueryA()
     {        
-        EventQueryParams params = new EventQueryParams();
-        params.setProgram( prA );
-        params.setStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() );
-        params.setEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() );
-        params.setOrganisationUnits( Lists.newArrayList( ouA ) );
+        EventQueryParams params = new EventQueryParams.Builder()
+            .withProgram( prA )
+            .withStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() )
+            .withEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() )
+            .withOrganisationUnits( Lists.newArrayList( ouA ) ).build();
         
         List<EventQueryParams> queries = queryPlanner.planAggregateQuery( params );
         
@@ -175,11 +175,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanAggregateQueryB()
     {        
-        EventQueryParams params = new EventQueryParams();
-        params.setProgram( prA );
-        params.setStartDate( new DateTime( 2010, 3, 1, 0, 0 ).toDate() );
-        params.setEndDate( new DateTime( 2010, 9, 20, 0, 0 ).toDate() );
-        params.setOrganisationUnits( Lists.newArrayList( ouA ) );
+        EventQueryParams params = new EventQueryParams.Builder()
+            .withProgram( prA )
+            .withStartDate( new DateTime( 2010, 3, 1, 0, 0 ).toDate() )
+            .withEndDate( new DateTime( 2010, 9, 20, 0, 0 ).toDate() )
+            .withOrganisationUnits( Lists.newArrayList( ouA ) ).build();
         
         List<EventQueryParams> queries = queryPlanner.planAggregateQuery( params );
 
@@ -199,11 +199,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanAggregateQueryC()
     {        
-        EventQueryParams params = new EventQueryParams();
-        params.setProgram( prA );
-        params.setStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() );
-        params.setEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() );
-        params.setOrganisationUnits( Lists.newArrayList( ouA, ouB ) );
+        EventQueryParams params = new EventQueryParams.Builder()
+            .withProgram( prA )
+            .withStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() )
+            .withEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() )
+            .withOrganisationUnits( Lists.newArrayList( ouA, ouB ) ).build();
         
         List<EventQueryParams> queries = queryPlanner.planAggregateQuery( params );
         
@@ -215,11 +215,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanEventQueryA()
     {        
-        EventQueryParams params = new EventQueryParams();
-        params.setProgram( prA );
-        params.setStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() );
-        params.setEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() );
-        params.setOrganisationUnits( Lists.newArrayList( ouA ) );
+        EventQueryParams params = new EventQueryParams.Builder()
+            .withProgram( prA )
+            .withStartDate( new DateTime( 2010, 6, 1, 0, 0 ).toDate() )
+            .withEndDate( new DateTime( 2012, 3, 20, 0, 0 ).toDate() )
+            .withOrganisationUnits( Lists.newArrayList( ouA ) ).build();
         
         params = queryPlanner.planEventQuery( params );
         
@@ -237,11 +237,11 @@ public class EventQueryPlannerTest
     @Test
     public void testPlanEventQueryB()
     {        
-        EventQueryParams params = new EventQueryParams();
-        params.setProgram( prA );
-        params.setStartDate( new DateTime( 2010, 3, 1, 0, 0 ).toDate() );
-        params.setEndDate( new DateTime( 2010, 9, 20, 0, 0 ).toDate() );
-        params.setOrganisationUnits( Lists.newArrayList( ouA ) );
+        EventQueryParams params = new EventQueryParams.Builder()
+            .withProgram( prA )
+            .withStartDate( new DateTime( 2010, 3, 1, 0, 0 ).toDate() )
+            .withEndDate( new DateTime( 2010, 9, 20, 0, 0 ).toDate() )
+            .withOrganisationUnits( Lists.newArrayList( ouA ) ).build();
         
         params = queryPlanner.planEventQuery( params );
 

@@ -231,6 +231,7 @@ public class EditSMSCommandForm
                             SMSCode c = new SMSCode();
                             c.setCode( regCode.get( "code" ).asText() );      
                             c.setDataElement( dataElementService.getDataElement( regCode.get( "programStageDataElementId" ).asInt() ) );
+                            c.setCompulsory( regCode.get( "compulsory" ).asBoolean() );
                             codeSet.add( c );
                         }
                     } );

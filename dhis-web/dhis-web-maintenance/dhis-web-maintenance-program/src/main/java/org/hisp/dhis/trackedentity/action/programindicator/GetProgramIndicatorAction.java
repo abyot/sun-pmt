@@ -30,9 +30,14 @@ package org.hisp.dhis.trackedentity.action.programindicator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.hisp.dhis.attribute.Attribute;
+import org.hisp.dhis.attribute.AttributeService;
+import org.hisp.dhis.attribute.comparator.AttributeSortOrderComparator;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.constant.ConstantService;
 import org.hisp.dhis.legend.LegendService;
@@ -42,6 +47,7 @@ import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramIndicatorService;
 import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.system.predicate.ArithmeticValueTypeTrackedEntityAttributeFilter;
+import org.hisp.dhis.system.util.AttributeUtils;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,6 +78,9 @@ public class GetProgramIndicatorAction
     
     @Autowired
     private LegendService legendService;
+
+    @Autowired
+    private AttributeService attributeService;
 
     // -------------------------------------------------------------------------
     // Setters
@@ -147,6 +156,14 @@ public class GetProgramIndicatorAction
         return legendSets;
     }
 
+    private List<Attribute> attributes;
+
+    public List<Attribute> getAttributes() { return attributes;  }
+
+    private Map<Integer, String> attributeValues = new HashMap<>();
+
+    public Map<Integer, String> getAttributeValues() { return attributeValues; }
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
@@ -161,7 +178,10 @@ public class GetProgramIndicatorAction
             program = programIndicator.getProgram();
             expressionDescription = programIndicatorService.getExpressionDescription( programIndicator.getExpression() );
             filterDescription = programIndicatorService.getExpressionDescription( programIndicator.getFilter() );
-            filter = programIndicatorService.getExpressionDescription( programIndicator.getFilter() );            
+            filter = programIndicatorService.getExpressionDescription( programIndicator.getFilter() );
+
+            attributeValues = AttributeUtils.getAttributeValueMap( programIndicator.getAttributeValues() );
+
         }
         else if ( programId != null )
         {            
@@ -173,7 +193,10 @@ public class GetProgramIndicatorAction
         legendSets = legendService.getAllLegendSets();
 
         expressionAttributes = expressionAttributes.stream().filter( ArithmeticValueTypeTrackedEntityAttributeFilter.INSTANCE ).collect( Collectors.toList() );
-        
+
+        attributes = new ArrayList<>( attributeService.getAttributes( ProgramIndicator.class ) );
+
+        Collections.sort( attributes, AttributeSortOrderComparator.INSTANCE );
         Collections.sort( expressionAttributes );
         Collections.sort( constants );
         Collections.sort( legendSets );

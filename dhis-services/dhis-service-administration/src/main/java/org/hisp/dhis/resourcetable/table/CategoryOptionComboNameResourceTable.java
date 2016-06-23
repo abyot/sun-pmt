@@ -84,7 +84,7 @@ public class CategoryOptionComboNameResourceTable
                 continue;
             }
             
-            for ( DataElementCategoryOptionCombo coc : combo.getSortedOptionCombos() )
+            for ( DataElementCategoryOptionCombo coc : combo.getOptionCombos() )
             {
                 List<Object> values = new ArrayList<>();
                 

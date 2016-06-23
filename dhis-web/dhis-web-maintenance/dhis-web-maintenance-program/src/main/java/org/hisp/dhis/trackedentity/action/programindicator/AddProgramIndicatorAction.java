@@ -30,6 +30,7 @@ package org.hisp.dhis.trackedentity.action.programindicator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.analytics.AggregationType;
+import org.hisp.dhis.attribute.AttributeService;
 import org.hisp.dhis.legend.LegendService;
 import org.hisp.dhis.legend.LegendSet;
 import org.hisp.dhis.program.Program;
@@ -39,6 +40,8 @@ import org.hisp.dhis.program.ProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.Action;
+
+import java.util.List;
 
 /**
  * @author Chau Thu Tran
@@ -64,7 +67,10 @@ public class AddProgramIndicatorAction
     {
         this.programIndicatorService = programIndicatorService;
     }
-    
+
+    @Autowired
+    private AttributeService attributeService;
+
     @Autowired
     private LegendService legendService;
 
@@ -153,6 +159,13 @@ public class AddProgramIndicatorAction
     {
         this.displayInForm = displayInForm;
     }
+
+    private List<String> jsonAttributeValues;
+
+    public void setJsonAttributeValues( List<String> jsonAttributeValues )
+    {
+            this.jsonAttributeValues = jsonAttributeValues;
+    }
     
     // -------------------------------------------------------------------------
     // Action implementation
@@ -178,6 +191,11 @@ public class AddProgramIndicatorAction
         indicator.setDecimals( decimals );
         indicator.setLegendSet( legendSet );
         indicator.setDisplayInForm( displayInForm );
+
+        if ( jsonAttributeValues != null )
+        {
+            attributeService.updateAttributeValues( indicator, jsonAttributeValues );
+        }
 
         programIndicatorService.addProgramIndicator( indicator );
 

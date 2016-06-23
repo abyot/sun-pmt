@@ -28,10 +28,7 @@ package org.hisp.dhis.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Lars Helge Overland
@@ -69,5 +66,29 @@ public class ListMap<T, V>
         {
             putValue( entry.getKey(), entry.getValue() );
         }
+    }
+
+    public Collection<V> allValues()
+    {
+        Collection<V> results=new ArrayList<>();
+        
+        for ( Map.Entry<T, List<V>> entry: entrySet() )
+        {
+            results.addAll( entry.getValue() );
+        }
+        
+        return results;
+    }
+
+    public Set<V> uniqueValues( )
+    {
+        Set<V> results=new HashSet<>();
+        
+        for ( Map.Entry<T, List<V>> entry: entrySet() )
+        {
+            results.addAll(entry.getValue());
+        }
+        
+        return results;
     }
 }

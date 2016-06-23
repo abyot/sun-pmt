@@ -36,7 +36,6 @@ import org.hisp.dhis.sms.config.BulkSmsGatewayConfig;
 import org.hisp.dhis.sms.config.ClickatellGatewayConfig;
 import org.hisp.dhis.sms.config.GatewayAdministrationService;
 import org.hisp.dhis.sms.config.GenericHttpGatewayConfig;
-import org.hisp.dhis.sms.config.SMPPGatewayConfig;
 import org.hisp.dhis.sms.config.SmsConfiguration;
 import org.hisp.dhis.sms.config.SmsConfigurationManager;
 import org.hisp.dhis.sms.config.SmsGatewayConfig;
@@ -107,11 +106,6 @@ public class RemoveGatewayConfigAction
                 }
 
                 if ( gatewayConfig instanceof GenericHttpGatewayConfig )
-                {
-                    gatewayAdminService.getGatewayConfigurationMap().remove( gatewayConfig.getName() );
-                }
-
-                if ( gatewayConfig instanceof SMPPGatewayConfig )
                 {
                     gatewayAdminService.getGatewayConfigurationMap().remove( gatewayConfig.getName() );
                 }

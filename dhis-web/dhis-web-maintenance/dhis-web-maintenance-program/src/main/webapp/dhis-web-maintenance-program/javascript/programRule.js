@@ -182,7 +182,9 @@ function addProgramRuleAttrVariable()
 		var sourceType = getFieldValue('sourceType');
 		var programStageId = getFieldValue('programStageId');
 		var attributeName = $('#attributeId option:selected').text();
-		var json_Data = getAttrVariableJson( variableName, sourceType, attributeId );
+		var useOptionSetCode = $('#useOptionSetCode').is(":checked") === true;
+                
+		var json_Data = getAttrVariableJson( variableName, sourceType, attributeId, useOptionSetCode );
 		
 		var clazz = "listAlternateRow";
 		if( $("#sourceFieldList tr").length % 2 == 0 )
@@ -213,7 +215,9 @@ function addProgramRuleDEVariable()
 		var sourceType = getFieldValue('sourceType');
 		var programStageId = getFieldValue('programStageId');
 		var dataElementName = $('#dataElementId option:selected').text();
-		var json_Data = getDEVariableJson( variableName, sourceType, dataElementId, programStageId );
+		var useOptionSetCode = $('#useOptionSetCode').is(":checked") === true;
+                
+		var json_Data = getDEVariableJson( variableName, sourceType, dataElementId, programStageId, useOptionSetCode );
 		
 		var clazz = "listAlternateRow";
 		if( $("#sourceFieldList tr").length % 2 == 0 )
@@ -248,13 +252,14 @@ function insertVariable(_this)
 	insertTextCommon('condition', _this.value + " "); 
 }
 
-function getDEVariableJson( variableName, sourceType, dataElementId, programStageId )
+function getDEVariableJson( variableName, sourceType, dataElementId, programStageId, useOptionSetCode )
 {
 	var json_Data = '{ '
 		+ '"name": "' + variableName + '",'
 		+ '"programRuleVariableSourceType": "' +  sourceType + '",'
 		+ '"dataElement": { "id" : "' + dataElementId + '"},'
 		+ '"program": { "id" :"' + getFieldValue("programId") + '"},'
+                + '"useCodeForOptionSet": "' + useOptionSetCode + '",'
 		+ '"programStage": { "id" :  "' + programStageId + '"}'
 	+ '}';
 	
@@ -262,12 +267,13 @@ function getDEVariableJson( variableName, sourceType, dataElementId, programStag
 }
 
 
-function getAttrVariableJson( variableName, sourceType, attributeId )
+function getAttrVariableJson( variableName, sourceType, attributeId, useOptionSetCode )
 {
 	var json_Data = '{ '
 		+ '"name": "' + variableName + '",'
 		+ '"programRuleVariableSourceType": "' +  sourceType + '",'
 		+ '"trackedEntityAttribute": { "id" : "' + attributeId + '"},'
+                + '"useCodeForOptionSet": "' + useOptionSetCode + '",'
 		+ '"program": { "id" :"' + getFieldValue("programId") + '"}'
 	+ '}';
 	
@@ -476,6 +482,7 @@ function addMoreAction()
 {        
 	var table = $("#actionTB");
 	var dataElementSelector = "<select class='actionDEs' style='width:100%;' >";
+        dataElementSelector += "<option value=''>" + i18n_none + "</option>";
         dataElementSelector += "<optgroup label='" + i18n_data_element_label + "'>";
 	for( var i in program_DataElements )
 	{
@@ -500,6 +507,8 @@ function addMoreAction()
 			+ "	<option value='HIDEFIELD' errorMessage='" + i18n_please_enter_alert_message_when_hiding_a_field + "' >" + i18n_hide_field + "</option>"
 			+ "	<option value='SHOWWARNING' errorMessage='" + i18n_please_enter_warning_message + "' >" + i18n_show_warning + "</option>"
 			+ "	<option value='SHOWERROR' errorMessage='" + i18n_please_enter_error_message + "' >" + i18n_show_error + "</option>"
+                        + "     <option value='WARNINGONCOMPLETE' errorMessage='" + i18n_please_enter_warning_message + "' > " + i18n_show_warning_on_complete + "</option>"
+                        + "     <option value='ERRORONCOMPLETE' errorMessage='" + i18n_please_enter_error_message + "' >" + i18n_show_error_on_complete + "</option>"
 			+ "	<option value='HIDESECTION' errorMessage='" + i18n_please_enter_alert_message_when_hiding_a_section + "' >" + i18n_hide_section + "</option>"
 			+ "</select>"
 			+ "</td>"

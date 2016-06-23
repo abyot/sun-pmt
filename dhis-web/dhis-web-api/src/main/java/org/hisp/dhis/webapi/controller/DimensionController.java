@@ -120,14 +120,14 @@ public class DimensionController
             fields.addAll( Preset.defaultPreset().getFields() );
         }
 
+        setUserContext( translateParams );
+
         List<DimensionalItemObject> items = dimensionService.getCanReadDimensionItems( uid );
         Query query = queryService.getQueryFromUrl( getEntityClass(), filters, new ArrayList<>() );
         query.setObjects( items );
         query.setDefaultOrder();
 
         items = (List<DimensionalItemObject>) queryService.query( query );
-
-        translate( items, translateParams );
 
         RootNode rootNode = NodeUtils.createMetadata();
 

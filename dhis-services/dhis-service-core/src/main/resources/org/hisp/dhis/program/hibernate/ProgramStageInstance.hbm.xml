@@ -65,5 +65,21 @@
       <many-to-many column="trackedentitycommentid" unique="true" class="org.hisp.dhis.trackedentitycomment.TrackedEntityComment" />
     </list>
 
+    <!-- Object Translation -->
+    <set name="translations" table="programstageinstancetranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="programstageinstanceid" foreign-key="fk_objecttranslation_programstageinstanceid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

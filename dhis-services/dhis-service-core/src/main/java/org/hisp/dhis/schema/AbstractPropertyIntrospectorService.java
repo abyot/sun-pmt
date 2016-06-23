@@ -243,8 +243,8 @@ public abstract class AbstractPropertyIntrospectorService
                 property.setOwner( !persister.isInverse() );
                 property.setManyToMany( persister.isManyToMany() );
 
-                property.setMin( 0 );
-                property.setMax( Integer.MAX_VALUE );
+                property.setMin( 0d );
+                property.setMax( Double.MAX_VALUE );
 
                 if ( property.isOwner() )
                 {
@@ -265,15 +265,32 @@ public abstract class AbstractPropertyIntrospectorService
 
                 property.setUnique( column.isUnique() );
                 property.setRequired( !column.isNullable() );
-                property.setMin( 0 );
-                property.setMax( column.getLength() );
+                property.setMin( 0d );
+                property.setMax( (double) column.getLength() );
                 property.setLength( column.getLength() );
 
-                if ( TextType.class.isInstance( type ) || LongType.class.isInstance( type )
-                    || IntegerType.class.isInstance( type ) || DoubleType.class.isInstance( type ) )
+                if ( TextType.class.isInstance( type ) )
                 {
-                    property.setMin( 0 );
-                    property.setMax( Integer.MAX_VALUE );
+                    property.setMin( 0d );
+                    property.setMax( (double) Integer.MAX_VALUE );
+                    property.setLength( Integer.MAX_VALUE );
+                }
+                else if ( IntegerType.class.isInstance( type ) )
+                {
+                    property.setMin( 0d );
+                    property.setMax( (double) Integer.MAX_VALUE );
+                    property.setLength( Integer.MAX_VALUE );
+                }
+                else if ( LongType.class.isInstance( type ) )
+                {
+                    property.setMin( 0d );
+                    property.setMax( (double) Long.MAX_VALUE );
+                    property.setLength( Integer.MAX_VALUE );
+                }
+                else if ( DoubleType.class.isInstance( type ) )
+                {
+                    property.setMin( 0d );
+                    property.setMax( Double.MAX_VALUE );
                     property.setLength( Integer.MAX_VALUE );
                 }
             }
@@ -281,7 +298,7 @@ public abstract class AbstractPropertyIntrospectorService
             if ( ManyToOneType.class.isInstance( type ) )
             {
                 property.setManyToOne( true );
-                property.setRequired( property.isRequired() && property.isCollection() );
+                property.setRequired( property.isRequired() && !property.isCollection() );
 
                 if ( property.isOwner() )
                 {

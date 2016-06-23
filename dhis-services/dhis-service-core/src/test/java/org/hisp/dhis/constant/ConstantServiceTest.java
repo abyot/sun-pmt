@@ -33,7 +33,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hisp.dhis.DhisSpringTest;
@@ -177,84 +176,5 @@ public class ConstantServiceTest
         assertEq( 'B', constantService.getConstantByName( "ConstantB" ) );
         assertEq( 'C', constantService.getConstantByName( "ConstantC" ) );
         assertEq( 'D', constantService.getConstantByName( "ConstantD" ) );
-    }
-
-    @Test
-    public void testGetConstantCount()
-    {
-        Constant constantA = createConstant( 'A', 1.23d );
-        Constant constantB = createConstant( 'B', 3.21 );
-        Constant constantC = createConstant( 'C', 3.3d );
-
-        constantService.saveConstant( constantA );
-        constantService.saveConstant( constantB );
-        constantService.saveConstant( constantC );
-
-        assertEquals( 3, constantService.getConstantCount() );
-    }
-
-    @Test
-    public void testGetConstantCountByName()
-    {
-        Constant constantA = createConstant( 'A', 1.23d );
-        Constant constantB = createConstant( 'B', 3.21 );
-        Constant constantC = createConstant( 'C', 3.3d );
-
-        constantService.saveConstant( constantA );
-        constantService.saveConstant( constantB );
-        constantService.saveConstant( constantC );
-
-        assertEquals( 1, constantService.getConstantCountByName( "ConstantA" ) );
-        assertEquals( 1, constantService.getConstantCountByName( "ConstantB" ) );
-        assertEquals( 1, constantService.getConstantCountByName( "ConstantC" ) );
-    }
-
-    @Test
-    public void testGetConstantsBetween()
-    {
-        Constant constantA = createConstant( 'A', 1.23d );
-        Constant constantB = createConstant( 'B', 3.21 );
-        Constant constantC = createConstant( 'C', 3.3d );
-        Constant constantD = createConstant( 'D', 23.11d );
-        Constant constantE = createConstant( 'E', 2.1d );
-
-        constantService.saveConstant( constantA );
-        constantService.saveConstant( constantB );
-        constantService.saveConstant( constantC );
-        constantService.saveConstant( constantD );
-        constantService.saveConstant( constantE );
-
-        List<Constant> results = constantService.getConstantsBetween( 1, 3 );
-
-        assertTrue( !results.contains( constantA ) );
-        assertTrue( results.contains( constantB ) );
-        assertTrue( results.contains( constantC ) );
-        assertTrue( results.contains( constantD ) );
-        assertTrue( !results.contains( constantE ) );
-    }
-
-    @Test
-    public void testGetConstantsBetweenByName()
-    {
-        Constant constantA = createConstant( 'A', 1.23d );
-        Constant constantB = createConstant( 'B', 3.21 );
-        Constant constantC = createConstant( 'C', 3.3d );
-        Constant constantD = createConstant( 'D', 23.11d );
-        Constant constantE = createConstant( 'E', 2.1d );
-
-        List<Constant> constantCollection = new ArrayList<>();
-
-        constantCollection.add( constantB );
-        constantCollection.add( constantC );
-        constantCollection.add( constantD );
-
-        constantService.saveConstant( constantA );
-        constantService.saveConstant( constantB );
-        constantService.saveConstant( constantC );
-        constantService.saveConstant( constantD );
-        constantService.saveConstant( constantE );
-
-        assertTrue( constantService.getConstantsBetween( 4, 1 ).contains( constantE ) );
-        assertTrue( !constantService.getConstantsBetweenByName( "ConstantE", 4, 1 ).contains( constantE ) );
     }
 }

@@ -32,16 +32,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
+import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.program.message.DeliveryChannel;
-import org.hisp.dhis.sms.config.GatewayAdministrationService;
-import org.hisp.dhis.sms.config.SmsGatewayConfig;
 import org.hisp.dhis.sms.outbound.GatewayResponse;
 import org.hisp.dhis.system.util.SmsUtils;
+import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserSettingKey;
 import org.hisp.dhis.user.UserSettingService;
@@ -49,12 +48,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
 
-import java.io.Serializable;
-
 /**
  * @author Nguyen Kim Lai
  */
-
 public class SmsMessageSender
     implements MessageSender
 {
@@ -65,13 +61,20 @@ public class SmsMessageSender
     // -------------------------------------------------------------------------
 
     @Autowired
-    private UserSettingService userSettingService;
-
-    @Autowired
     private GatewayAdministrationService gatewayAdminService;
 
     @Autowired
     private List<SmsGateway> smsGateways;
+
+    @Autowired
+    private CurrentUserService currentUserService;
+
+    @Autowired
+    private UserSettingService userSettingService;
+    
+    // -------------------------------------------------------------------------
+    // Implementation methods
+    // -------------------------------------------------------------------------
 
     @Override
     public String sendMessage( String subject, String text, String footer, User sender, Set<User> users,
@@ -79,11 +82,27 @@ public class SmsMessageSender
     {
         Set<User> toSendList = new HashSet<>();
 
-        toSendList.addAll( users );
+        User currentUser = currentUserService.getCurrentUser();
 
-        Set<String> phoneNumbers = null;
+        if ( !forceSend )
+        {
+            for ( User user : users )
+            {
+                if ( currentUser == null || !currentUser.equals( user ) )
+                {
+                    if ( isQualifiedReceiver( user ) )
+                    {
+                        toSendList.add( user );
+                    }
+                }
+            }
+        }
+        else
+        {
+            toSendList.addAll( users );
+        }
 
-        phoneNumbers = SmsUtils.getRecipientsPhoneNumber( toSendList );
+        Set<String> phoneNumbers = SmsUtils.getRecipientsPhoneNumber( toSendList );
 
         return sendMessage( subject, text, phoneNumbers );
     }
@@ -107,27 +126,15 @@ public class SmsMessageSender
     @Override
     public boolean accept( Set<DeliveryChannel> channels )
     {
-        if ( channels.contains( DeliveryChannel.SMS ) )
-        {
-            return true;
-        }
-
-        return false;
+        return channels.contains( DeliveryChannel.SMS );
     }
 
     @Override
     public boolean isServiceReady()
     {
-        Map<String, SmsGatewayConfig> gatewayMap = new HashMap<>();
+        Map<String, SmsGatewayConfig> gatewayMap = gatewayAdminService.getGatewayConfigurationMap();
 
-        gatewayMap = gatewayAdminService.getGatewayConfigurationMap();
-
-        if ( gatewayMap.isEmpty() )
-        {
-            return false;
-        }
-
-        return true;
+        return !gatewayMap.isEmpty();
     }
 
     @Override
@@ -139,6 +146,21 @@ public class SmsMessageSender
     // -------------------------------------------------------------------------
     // Supportive methods
     // -------------------------------------------------------------------------
+
+    private boolean isQualifiedReceiver( User user )
+    {
+        if ( user.getFirstName() == null ) 
+        {
+            return true;
+        }
+        else
+        {
+            Serializable userSetting = userSettingService.getUserSetting( UserSettingKey.MESSAGE_SMS_NOTIFICATION,
+                user );
+
+            return userSetting != null ? (Boolean) userSetting : false;
+        }
+    }
 
     private GatewayResponse sendMessage( String subject, String text, Set<String> recipients,
         SmsGatewayConfig gatewayConfig )
@@ -195,21 +217,6 @@ public class SmsMessageSender
             log.info( "Failure cause: " + gatewayResponse.getResponseMessage() );
 
             return gatewayResponse;
-        }
-    }
-
-    private boolean isQualifiedReceiver( User user )
-    {
-        if ( user.getFirstName() == null ) // Receiver is raw number
-        {
-            return true;
-        }
-        else // Receiver is user
-        {
-            Serializable userSetting = userSettingService.getUserSetting( UserSettingKey.MESSAGE_SMS_NOTIFICATION,
-                user );
-
-            return userSetting != null ? (Boolean) userSetting : false;
         }
     }
 }

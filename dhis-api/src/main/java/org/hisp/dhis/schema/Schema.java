@@ -524,22 +524,15 @@ public class Schema implements Ordered, Klass
         return null;
     }
 
-    private Map<AuthorityType, List<String>> authorityMap = Maps.newHashMap();
-
     public List<String> getAuthorityByType( AuthorityType type )
     {
-        if ( !authorityMap.containsKey( type ) )
-        {
-            List<String> authorityList = Lists.newArrayList();
+        List<String> authorityList = Lists.newArrayList();
 
-            authorities.stream()
-                .filter( authority -> type.equals( authority.getType() ) )
-                .forEach( authority -> authorityList.addAll( authority.getAuthorities() ) );
+        authorities.stream()
+            .filter( authority -> type.equals( authority.getType() ) )
+            .forEach( authority -> authorityList.addAll( authority.getAuthorities() ) );
 
-            authorityMap.put( type, authorityList );
-        }
-
-        return authorityMap.get( type );
+        return authorityList;
     }
 
     @Override
@@ -560,7 +553,7 @@ public class Schema implements Ordered, Klass
     public int hashCode()
     {
         return Objects.hashCode( klass, identifiableObject, nameableObject, singular, plural, namespace, name,
-            collectionName, shareable, relativeApiEndpoint, metadata, authorities, propertyMap, order, authorityMap );
+            collectionName, shareable, relativeApiEndpoint, metadata, authorities, propertyMap, order );
     }
 
     @Override
@@ -583,8 +576,7 @@ public class Schema implements Ordered, Klass
             && Objects.equal( this.name, other.name ) && Objects.equal( this.collectionName, other.collectionName )
             && Objects.equal( this.shareable, other.shareable ) && Objects.equal( this.relativeApiEndpoint, other.relativeApiEndpoint )
             && Objects.equal( this.metadata, other.metadata ) && Objects.equal( this.authorities, other.authorities )
-            && Objects.equal( this.propertyMap, other.propertyMap ) && Objects.equal( this.order, other.order )
-            && Objects.equal( this.authorityMap, other.authorityMap );
+            && Objects.equal( this.propertyMap, other.propertyMap ) && Objects.equal( this.order, other.order );
     }
 
     @Override
@@ -604,7 +596,6 @@ public class Schema implements Ordered, Klass
             .add( "metadata", metadata )
             .add( "authorities", authorities )
             .add( "propertyMap", propertyMap )
-            .add( "authorityMap", authorityMap )
             .toString();
     }
 }

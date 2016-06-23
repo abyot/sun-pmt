@@ -48,6 +48,7 @@ import org.hisp.dhis.expression.Expression;
 import org.hisp.dhis.expression.ExpressionService;
 import org.hisp.dhis.indicator.Indicator;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
+import org.hisp.dhis.predictor.Predictor;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
 import org.hisp.dhis.system.util.AnnotationUtils;
@@ -77,7 +78,8 @@ public class DefaultMetaDataDependencyService
     private static final Log log = LogFactory.getLog( DefaultMetaDataDependencyService.class );
 
     @SuppressWarnings( "unchecked" )
-    private final Set<Class<? extends BaseIdentifiableObject>> SPECIAL_CASE_CLASSES = Sets.newHashSet( DataElement.class, DataElementCategoryCombo.class, Indicator.class, OrganisationUnit.class, ValidationRule.class );
+    private final Set<Class<? extends BaseIdentifiableObject>> SPECIAL_CASE_CLASSES =
+        Sets.newHashSet( DataElement.class, DataElementCategoryCombo.class, Indicator.class, OrganisationUnit.class, ValidationRule.class, Predictor.class );
 
     @SuppressWarnings( "unchecked" )
     private final Set<Class<User>> SKIP_DEPENDENCY_CHECK_CLASSES = Sets.newHashSet( User.class );
@@ -359,9 +361,44 @@ public class DefaultMetaDataDependencyService
 
             Expression leftSide = ReflectionUtils.invokeGetterMethod( "leftSide", identifiableObject );
             Expression rightSide = ReflectionUtils.invokeGetterMethod( "rightSide", identifiableObject );
+            Expression skipTest= ReflectionUtils.invokeGetterMethod( "sampleSkipTest", identifiableObject );
 
             dataElementSet.addAll( expressionService.getDataElementsInExpression( leftSide.getExpression() ) );
+            dataElementSet.addAll( expressionService.getSampleElementsInExpression( leftSide.getExpression() ) );
             dataElementSet.addAll( expressionService.getDataElementsInExpression( rightSide.getExpression() ) );
+            dataElementSet.addAll( expressionService.getSampleElementsInExpression( rightSide.getExpression() ) );
+            if (skipTest != null)
+            {
+                dataElementSet.addAll( expressionService.getDataElementsInExpression( skipTest.getExpression() ) );
+                dataElementSet.addAll( expressionService.getSampleElementsInExpression( skipTest.getExpression() ) );
+            }
+
+            resultSet.addAll( dataElementSet );
+            resultSet.addAll( getDependencySet( dataElementSet ) );
+
+            Set<Constant> constantSet = new HashSet<>();
+            constantSet.addAll( constantService.getAllConstants() );
+
+            resultSet.addAll( constantSet );
+            resultSet.addAll( getDependencySet( constantSet ) );
+
+            return resultSet;
+        }
+        else if ( identifiableObject instanceof Predictor )
+        {
+            Set<DataElement> dataElementSet = new HashSet<>();
+
+            Expression generator = ReflectionUtils.invokeGetterMethod( "generator", identifiableObject );
+            Expression skipTest = ReflectionUtils.invokeGetterMethod( "sampleSkipTest", identifiableObject );
+
+            dataElementSet.addAll( expressionService.getDataElementsInExpression( generator.getExpression() ) );
+            dataElementSet.addAll( expressionService.getSampleElementsInExpression( generator.getExpression() ) );
+            
+            if (skipTest != null)
+            {
+                dataElementSet.addAll( expressionService.getDataElementsInExpression( skipTest.getExpression() ) );
+                dataElementSet.addAll( expressionService.getSampleElementsInExpression( skipTest.getExpression() ) );
+            }
 
             resultSet.addAll( dataElementSet );
             resultSet.addAll( getDependencySet( dataElementSet ) );

@@ -26,6 +26,25 @@
         foreign-key="fk_dataelementgroup_dataelementid" />
     </set>
 
+    <!-- Dynamic attribute values -->
+
+    <set name="attributeValues" table="dataelementgroupattributevalues" cascade="delete-orphan">
+      <cache usage="read-write" />
+      <key column="dataelementgroupid" />
+      <many-to-many class="org.hisp.dhis.attribute.AttributeValue" column="attributevalueid" unique="true" />
+    </set>
+
+    <!-- Object Translation -->
+    <set name="translations" table="dataelementgrouptranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="dataelementgroupid" foreign-key="fk_objecttranslation_dataelementgroupid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
     <!-- Access properties -->
     <many-to-one name="user" class="org.hisp.dhis.user.User" column="userid" foreign-key="fk_dataelementgroup_userid" />
 
@@ -37,18 +56,14 @@
       <many-to-many class="org.hisp.dhis.user.UserGroupAccess" column="usergroupaccessid" unique="true" />
     </set>
 
-    <!-- Dynamic attribute values -->
-
-    <set name="attributeValues" table="dataelementgroupattributevalues" cascade="delete-orphan">
-      <cache usage="read-write" />
-      <key column="dataelementgroupid" />
-      <many-to-many class="org.hisp.dhis.attribute.AttributeValue" column="attributevalueid" unique="true" />
-    </set>
-
     <join table="dataelementgroupsetmembers" inverse="true">
       <key column="dataelementgroupid" />
       <many-to-one column="dataelementgroupsetid" name="groupSet" />
     </join>
 
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
 </hibernate-mapping>

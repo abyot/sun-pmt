@@ -692,13 +692,10 @@ public class DefaultDataElementCategoryService
     {
         for ( DataElementCategoryCombo categoryCombo : getAllDataElementCategoryCombos() )
         {
-        	for ( DataElementCategory cat : categoryCombo.getCategories() )
-        	{        		
-        		if( cat.getUid().equals( category.getUid() ) )
-        		{
-        			updateOptionCombos( categoryCombo );
-        		}
-        	}
+            if ( categoryCombo.getCategories().contains( category ) )
+            {
+                updateOptionCombos( categoryCombo );
+            }
         }
     }
 

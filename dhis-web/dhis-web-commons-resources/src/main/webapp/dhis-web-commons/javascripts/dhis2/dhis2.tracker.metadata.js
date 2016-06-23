@@ -90,9 +90,9 @@ dhis2.tracker.checkAndGetTrackerObjects  = function( obj, store, url, filter, db
             var d = $.Deferred();
             var p = d.promise();
             db.get(store, obj.id).done(function(o) {
-                if(!o) {                    
+                //if(!o) {                    
                     ids.push( obj.id );
-                }
+                //}
                 d.resolve();
             });
 

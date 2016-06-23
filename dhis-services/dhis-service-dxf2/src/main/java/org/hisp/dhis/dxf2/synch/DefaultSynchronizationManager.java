@@ -111,14 +111,14 @@ public class DefaultSynchronizationManager
 
         if ( !isRemoteServerConfigured( config ) )
         {
-            return new AvailabilityStatus( false, "Remote server is not configured" );
+            return new AvailabilityStatus( false, "Remote server is not configured", HttpStatus.BAD_GATEWAY );
         }
 
         String url = systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_URL ) + PING_PATH;
         String username = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_USERNAME );
         String password = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_PASSWORD );
 
-        log.info( "Remote server ping URL: " + url + ", username: " + username );
+        log.debug( "Remote server ping URL: " + url + ", username: " + username );
 
         HttpEntity<String> request = getBasicAuthRequestEntity( username, password );
 
@@ -144,38 +144,33 @@ public class DefaultSynchronizationManager
         }
         catch ( ResourceAccessException ex )
         {
-            return new AvailabilityStatus( false, "Network is unreachable" );
+            return new AvailabilityStatus( false, "Network is unreachable", HttpStatus.BAD_GATEWAY );
         }
         
-        log.info( "Response status code: " + sc );
+        log.debug( "Response status code: " + sc );
 
         if ( HttpStatus.FOUND.equals( sc ) )
         {
-            status = new AvailabilityStatus( false,
-                "Server is available but no authentication was provided, status code: " + sc );
+            status = new AvailabilityStatus( false, "No authentication was provided", sc );
         }
         else if ( HttpStatus.UNAUTHORIZED.equals( sc ) )
         {
-            status = new AvailabilityStatus( false,
-                "Server is available but authentication failed, status code: " + sc );
+            status = new AvailabilityStatus( false, "Authentication failed", sc );
         }
         else if ( HttpStatus.INTERNAL_SERVER_ERROR.equals( sc ) )
         {
-            status = new AvailabilityStatus( false,
-                "Server is available but experienced an internal error, status code: " + sc );
+            status = new AvailabilityStatus( false, "Remote server experienced an internal error", sc );
         }
         else if ( HttpStatus.OK.equals( sc ) )
         {
-            status = new AvailabilityStatus( true,
-                "Server is available and authentication was successful" );
+            status = new AvailabilityStatus( true, "Authentication was successful", sc );
         }
         else
         {
-            status = new AvailabilityStatus( false,
-                "Server is not available, status code: " + sc + ", text: " + st );
+            status = new AvailabilityStatus( false, "Server is not available: " + st, sc );
         }
 
-        log.info( status );
+        log.info( "Status: " + status );
 
         return status;
     }
@@ -191,6 +186,23 @@ public class DefaultSynchronizationManager
             return null;
         }
 
+        String url = systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_URL ) + "/api/dataValueSets";
+        String username = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_USERNAME );
+        String password = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_PASSWORD );
+        
+        SystemInstance instance = new SystemInstance( url, username, password );
+        
+        return executeDataPush( instance );
+    }
+    
+    /**
+     * Executes a push of data values to the given remote instance.
+     * 
+     * @param instance the remote system instance.
+     * @return an ImportSummary.
+     */
+    private ImportSummary executeDataPush( SystemInstance instance )
+    {
         // ---------------------------------------------------------------------
         // Set time for last success to start of process to make data saved
         // subsequently part of next synch process without being ignored
@@ -198,24 +210,18 @@ public class DefaultSynchronizationManager
 
         final Date startTime = new Date();
         final Date lastSuccessTime = getLastSynchSuccessFallback();
-
-        int lastUpdatedCount = dataValueService.getDataValueCountLastUpdatedAfter( lastSuccessTime );
-
-        log.info( "Values: " + lastUpdatedCount + " since last synch success: " + lastSuccessTime );
+        
+        final int lastUpdatedCount = dataValueService.getDataValueCountLastUpdatedAfter( lastSuccessTime );
 
         if ( lastUpdatedCount == 0 )
         {
-            log.info( "Skipping synch, no new or updated data values" );
+            log.debug( "Skipping synch, no new or updated data values" );
             return null;
         }
 
-        String url = systemSettingManager.getSystemSetting(
-            SettingKey.REMOTE_INSTANCE_URL ) + "/api/dataValueSets";
+        log.info( "Values: " + lastUpdatedCount + " since last synch success: " + lastSuccessTime );
 
-        log.info( "Remote server POST URL: " + url );
-
-        final String username = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_USERNAME );
-        final String password = (String) systemSettingManager.getSystemSetting( SettingKey.REMOTE_INSTANCE_PASSWORD );
+        log.info( "Remote server POST URL: " + instance.getUrl() );
         
         final RequestCallback requestCallback = new RequestCallback()
         {
@@ -224,7 +230,7 @@ public class DefaultSynchronizationManager
                 throws IOException
             {   
                 request.getHeaders().setContentType( MediaType.APPLICATION_JSON );
-                request.getHeaders().add( HEADER_AUTHORIZATION, CodecUtils.getBasicAuthString( username, password ) );
+                request.getHeaders().add( HEADER_AUTHORIZATION, CodecUtils.getBasicAuthString( instance.getUsername(), instance.getPassword() ) );
 
                 dataValueSetService.writeDataValueSetJson( lastSuccessTime, request.getBody(), new IdSchemes() );
             }
@@ -233,7 +239,7 @@ public class DefaultSynchronizationManager
         ResponseExtractor<ImportSummary> responseExtractor = new ImportSummaryResponseExtractor();
 
         ImportSummary summary = restTemplate
-            .execute( url, HttpMethod.POST, requestCallback, responseExtractor );
+            .execute( instance.getUrl(), HttpMethod.POST, requestCallback, responseExtractor );
 
         log.info( "Synch summary: " + summary );
 
@@ -244,7 +250,7 @@ public class DefaultSynchronizationManager
         }
         else
         {
-            log.debug( "Sync failed: " + summary );
+            log.warn( "Sync failed: " + summary );
         }
 
         return summary;

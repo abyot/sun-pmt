@@ -33,5 +33,21 @@
     <many-to-one name="trackedEntity" class="org.hisp.dhis.trackedentity.TrackedEntity"
       column="trackedentityid" foreign-key="fk_trackedentityinstance_trackedentityid" lazy="false" />
 
+    <!-- Object Translation -->
+    <set name="translations" table="trackedentityinstancetranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="trackedentityinstanceid" foreign-key="fk_objecttranslation_trackedentityinstanceid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -133,7 +134,7 @@ public class UserSettingController
     }
 
     @RequestMapping( value = "/{key}", method = RequestMethod.GET )
-    public void getUserSetting(
+    public @ResponseBody String getUserSetting(
         @PathVariable( "key" ) String key,
         @RequestParam( value = "user", required = false ) String username,
         HttpServletRequest request, HttpServletResponse response )
@@ -169,21 +170,18 @@ public class UserSettingController
             throw new WebMessageException( WebMessageUtils.notFound( "User setting not found for key: " + key ) );
         }
 
-        String stringVal = String.valueOf( value );
-
-        String contentType = null;
+        String settingValue = String.valueOf( value );
 
         if ( request.getHeader( "Accept" ) == null || "*/*".equals( request.getHeader( "Accept" ) ) )
         {
-            contentType = MediaType.TEXT_PLAIN_VALUE;
+            response.setContentType( MediaType.TEXT_PLAIN_VALUE );
         }
         else
         {
-            contentType = request.getHeader( "Accept" );
+            response.setContentType( request.getHeader( "Accept" ) );
         }
-
-        response.setContentType( contentType );
-        response.getWriter().println( stringVal );
+        
+        return settingValue;
     }
 
     @RequestMapping( method = RequestMethod.GET, produces = ContextUtils.CONTENT_TYPE_JSON )

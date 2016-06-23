@@ -28,8 +28,11 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Lists;
 import org.hisp.dhis.common.DisplayDensity;
 import org.hisp.dhis.common.view.ExportView;
+import org.hisp.dhis.dataelement.DataElement;
+import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.dataentryform.DataEntryForm;
 import org.hisp.dhis.dataentryform.DataEntryFormService;
 import org.hisp.dhis.dataset.DataSet;
@@ -37,17 +40,20 @@ import org.hisp.dhis.dataset.DataSetService;
 import org.hisp.dhis.datavalue.DataValue;
 import org.hisp.dhis.datavalue.DataValueService;
 import org.hisp.dhis.dxf2.common.JacksonUtils;
+import org.hisp.dhis.dxf2.common.TranslateParams;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSetService;
 import org.hisp.dhis.dxf2.metadata.ExportService;
 import org.hisp.dhis.dxf2.metadata.Metadata;
 import org.hisp.dhis.dxf2.metadata2.MetadataExportService;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
+import org.hisp.dhis.node.NodeUtils;
 import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.schema.descriptors.DataSetSchemaDescriptor;
+import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.webapi.utils.FormUtils;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.hisp.dhis.webapi.view.ClassPathUriResolver;
@@ -56,6 +62,7 @@ import org.hisp.dhis.webapi.webdomain.form.Form;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,6 +73,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -75,9 +83,11 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -146,13 +156,13 @@ public class DataSetController
         {
             throw new WebMessageException( WebMessageUtils.conflict( "Data set does not exist: " + uid ) );
         }
-        
+
         Map<String, Integer> versionMap = new HashMap<>();
         versionMap.put( "version", dataSet.getVersion() );
 
         renderService.toJson( response.getOutputStream(), versionMap );
     }
-    
+
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @RequestMapping( value = "/{uid}/version", method = RequestMethod.POST )
     public void bumpVersion( @PathVariable( "uid" ) String uid )
@@ -164,10 +174,35 @@ public class DataSetController
         {
             throw new WebMessageException( WebMessageUtils.conflict( "Data set does not exist: " + uid ) );
         }
-        
+
         dataSet.increaseVersion();
-        
+
         dataSetService.updateDataSet( dataSet );
+    }
+
+    @RequestMapping( value = "/{uid}/categoryCombos", method = RequestMethod.GET )
+    public @ResponseBody RootNode getCategoryCombinations( @PathVariable( "uid" ) String uid, HttpServletRequest request,
+        TranslateParams translateParams, HttpServletResponse response )
+        throws Exception
+    {
+        setUserContext( translateParams );
+        DataSet dataSet = manager.get( DataSet.class, uid );
+
+        if ( dataSet == null )
+        {
+            throw new WebMessageException( WebMessageUtils.conflict( "Data set does not exist: " + uid ) );
+        }
+
+        List<DataElementCategoryCombo> categoryCombos = dataSet.getDataElements().stream().
+            map( DataElement::getCategoryCombo ).distinct().collect( Collectors.toList() );
+
+        Collections.sort( categoryCombos );
+
+        List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
+
+        RootNode rootNode = NodeUtils.createMetadata();
+        rootNode.addChild( fieldFilterService.filter( DataElementCategoryCombo.class, categoryCombos, fields ) );
+        return rootNode;
     }
 
     @RequestMapping( value = "/{uid}/dataValueSet", method = RequestMethod.GET )
@@ -177,8 +212,9 @@ public class DataSetController
         @RequestParam( value = "period", defaultValue = "", required = false ) String period,
         @RequestParam( value = "orgUnit", defaultValue = "", required = false ) List<String> orgUnits,
         @RequestParam( value = "comment", defaultValue = "true", required = false ) boolean comment,
-        HttpServletResponse response ) throws IOException, WebMessageException
+        TranslateParams translateParams, HttpServletResponse response ) throws IOException, WebMessageException
     {
+        setUserContext( translateParams );
         List<DataSet> dataSets = getEntity( uid, NO_WEB_OPTIONS );
 
         if ( dataSets.isEmpty() )
@@ -195,8 +231,10 @@ public class DataSetController
         @PathVariable( "uid" ) String uid,
         @RequestParam( value = "ou", required = false ) String orgUnit,
         @RequestParam( value = "pe", required = false ) String period,
-        @RequestParam( required = false ) boolean metaData, HttpServletResponse response ) throws IOException, WebMessageException
+        @RequestParam( required = false ) boolean metaData,
+        TranslateParams translateParams, HttpServletResponse response ) throws IOException, WebMessageException
     {
+        setUserContext( translateParams );
         List<DataSet> dataSets = getEntity( uid, NO_WEB_OPTIONS );
 
         if ( dataSets.isEmpty() )
@@ -223,8 +261,10 @@ public class DataSetController
         @PathVariable( "uid" ) String uid,
         @RequestParam( value = "ou", required = false ) String orgUnit,
         @RequestParam( value = "pe", required = false ) String period,
-        @RequestParam( required = false ) boolean metaData, HttpServletResponse response ) throws IOException, WebMessageException
+        @RequestParam( required = false ) boolean metaData,
+        TranslateParams translateParams, HttpServletResponse response ) throws IOException, WebMessageException
     {
+        setUserContext( translateParams );
         List<DataSet> dataSets = getEntity( uid, NO_WEB_OPTIONS );
 
         if ( dataSets.isEmpty() )
@@ -270,7 +310,7 @@ public class DataSetController
 
     @RequestMapping( value = { "/{uid}/customDataEntryForm", "/{uid}/form" }, method = { RequestMethod.PUT, RequestMethod.POST }, consumes = "text/html" )
     @PreAuthorize( "hasRole('ALL')" )
-    public void updateCustomDataEntryForm( @PathVariable( "uid" ) String uid,
+    public void updateCustomDataEntryFormHtml( @PathVariable( "uid" ) String uid,
         @RequestBody String formContent,
         HttpServletResponse response ) throws Exception
     {
@@ -299,8 +339,63 @@ public class DataSetController
         dataSetService.updateDataSet( dataSet );
     }
 
+    @RequestMapping( value = "/{uid}/form", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE )
+    @PreAuthorize( "hasRole('ALL')" )
+    @ApiVersion( value = ApiVersion.Version.ALL, exclude = ApiVersion.Version.V23 )
+    public void updateCustomDataEntryFormJson( @PathVariable( "uid" ) String uid, HttpServletRequest request ) throws WebMessageException
+    {
+        DataSet dataSet = dataSetService.getDataSet( uid );
+
+        if ( dataSet == null )
+        {
+            throw new WebMessageException( WebMessageUtils.notFound( "DataSet not found for uid: " + uid ) );
+        }
+
+        DataEntryForm form = dataSet.getDataEntryForm();
+        DataEntryForm newForm;
+
+        try
+        {
+            newForm = renderService.fromJson( request.getInputStream(), DataEntryForm.class );
+        }
+        catch ( IOException e )
+        {
+            throw new WebMessageException( WebMessageUtils.badRequest( "Failed to parse request", e.getMessage() ) );
+        }
+
+        if ( form == null )
+        {
+            if ( !newForm.hasForm() )
+            {
+                throw new WebMessageException( WebMessageUtils.badRequest( "Missing required parameter 'htmlCode'" ) );
+            }
+
+            newForm.setName( dataSet.getName() );
+            dataEntryFormService.addDataEntryForm( newForm );
+            dataSet.setDataEntryForm( newForm );
+        }
+        else
+        {
+            if ( newForm.hasForm() )
+            {
+                form.setHtmlCode( dataEntryFormService.prepareDataEntryFormForSave( newForm.getHtmlCode() ) );
+            }
+
+            if ( newForm.getStyle() != null )
+            {
+                form.setStyle( newForm.getStyle() );
+            }
+
+            dataEntryFormService.updateDataEntryForm( form );
+        }
+
+        dataSet.increaseVersion();
+        dataSetService.updateDataSet( dataSet );
+    }
+
     @RequestMapping( value = "/{uid}/metadata", method = RequestMethod.GET )
-    public @ResponseBody RootNode getDataSetWithDependencies( @PathVariable( "uid" ) String pvUid, HttpServletResponse response ) throws WebMessageException, IOException
+    public @ResponseBody RootNode getDataSetWithDependencies( @PathVariable( "uid" ) String pvUid, HttpServletResponse response )
+        throws WebMessageException, IOException
     {
         DataSet dataSet = dataSetService.getDataSet( pvUid );
 

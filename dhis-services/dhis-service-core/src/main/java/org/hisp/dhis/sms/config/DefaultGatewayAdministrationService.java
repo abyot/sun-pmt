@@ -1,5 +1,6 @@
 package org.hisp.dhis.sms.config;
 
+import java.util.Collections;
 import java.util.HashMap;
 
 /*
@@ -62,24 +63,19 @@ public class DefaultGatewayAdministrationService
     // -------------------------------------------------------------------------
 
     @Override
-    public SmsConfiguration listGateways()
+    public List<SmsGatewayConfig> listGateways()
     {
         SmsConfiguration smsConfig = getSmsConfiguration();
 
-        return smsConfig == null ? null : smsConfig;
+        return smsConfig != null ? smsConfig.getGateways() : Collections.emptyList();
     }
 
     @Override
     public String setDefaultGateway( String uid )
     {
-        List<SmsGatewayConfig> list = getGatewayList();
+        List<SmsGatewayConfig> list = listGateways();
 
-        String gatewayName = null;
-
-        if ( !exists( list, uid ) )
-        {
-            return null;
-        }
+        String gatewayName = "";
 
         for ( SmsGatewayConfig gateway : list )
         {
@@ -146,7 +142,7 @@ public class DefaultGatewayAdministrationService
     @Override
     public boolean removeGatewayByUid( String uid )
     {
-        List<SmsGatewayConfig> list = getGatewayList();
+        List<SmsGatewayConfig> list = listGateways();
 
         for ( SmsGatewayConfig gateway : list )
         {
@@ -170,9 +166,9 @@ public class DefaultGatewayAdministrationService
     @Override
     public SmsGatewayConfig getGatewayConfigurationByUid( String uid )
     {
-        List<SmsGatewayConfig> list = getGatewayList();
+        List<SmsGatewayConfig> list = listGateways();
 
-        if ( list != null && !list.isEmpty() )
+        if ( !list.isEmpty() )
         {
             for ( SmsGatewayConfig gw : list )
             {
@@ -201,9 +197,9 @@ public class DefaultGatewayAdministrationService
     @Override
     public SmsGatewayConfig getDefaultGateway()
     {
-        List<SmsGatewayConfig> list = getGatewayList();
+        List<SmsGatewayConfig> list = listGateways();
 
-        if ( list != null )
+        if (  !list.isEmpty() )
         {
             for ( SmsGatewayConfig gw : list )
             {
@@ -234,7 +230,7 @@ public class DefaultGatewayAdministrationService
 
         return false;
     }
-    
+
     @Override
     public Map<String, SmsGatewayConfig> getGatewayConfigurationMap()
     {
@@ -245,22 +241,9 @@ public class DefaultGatewayAdministrationService
     // Supportive methods
     // -------------------------------------------------------------------------
 
-    private boolean exists( List<SmsGatewayConfig> list, String uid )
-    {
-        for ( SmsGatewayConfig gateway : list )
-        {
-            if ( gateway.getUid().equals( uid ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private String getUidByGatewayName( String gatewayName )
     {
-        List<SmsGatewayConfig> list = getGatewayList();
+        List<SmsGatewayConfig> list = listGateways();
 
         for ( SmsGatewayConfig gw : list )
         {
@@ -271,13 +254,6 @@ public class DefaultGatewayAdministrationService
         }
 
         return null;
-    }
-
-    private List<SmsGatewayConfig> getGatewayList()
-    {
-        SmsConfiguration smsConfig = getSmsConfiguration();
-
-        return smsConfig != null ? smsConfig.getGateways() : null;
     }
 
     private SmsConfiguration getSmsConfiguration()

@@ -72,5 +72,21 @@
     <many-to-one name="legendSet" class="org.hisp.dhis.legend.LegendSet" column="legendsetid"
       foreign-key="fk_indicator_legendset" />
 
+    <!-- Object Translation -->
+    <set name="translations" table="indicatortranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="indicatorid" foreign-key="fk_objecttranslation_indicatorid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

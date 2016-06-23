@@ -60,7 +60,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -90,7 +95,7 @@ public class MessageConversationController
     private UserGroupService userGroupService;
 
     @Override
-    public void postProcessEntity( org.hisp.dhis.message.MessageConversation entity, WebOptions options,
+    protected void postProcessEntity( org.hisp.dhis.message.MessageConversation entity, WebOptions options,
         Map<String, String> parameters, TranslateParams translateParams )
         throws Exception
     {
@@ -177,7 +182,7 @@ public class MessageConversationController
         postObject( response, request, messageConversation );
     }
 
-    public void postObject( HttpServletResponse response, HttpServletRequest request,
+    private void postObject( HttpServletResponse response, HttpServletRequest request,
         MessageConversation messageConversation )
         throws WebMessageException
     {
@@ -244,7 +249,10 @@ public class MessageConversationController
     //--------------------------------------------------------------------------
 
     @RequestMapping( value = "/{uid}", method = RequestMethod.POST )
-    public void postMessageConversationReply( @PathVariable( "uid" ) String uid, @RequestBody String body,
+    public void postMessageConversationReply(
+        @PathVariable( "uid" ) String uid,
+        @RequestParam( value = "internal", defaultValue = "false" ) boolean internal,
+        @RequestBody String body,
         HttpServletRequest request, HttpServletResponse response )
         throws Exception
     {
@@ -257,7 +265,7 @@ public class MessageConversationController
             throw new WebMessageException( WebMessageUtils.notFound( "Message conversation does not exist: " + uid ) );
         }
 
-        messageService.sendReply( conversation, body, metaData, false );
+        messageService.sendReply( conversation, body, metaData, internal );
 
         response
             .addHeader( "Location", MessageConversationSchemaDescriptor.API_ENDPOINT + "/" + conversation.getUid() );
@@ -286,14 +294,10 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{uid}/priority", method = RequestMethod.POST, produces = {
         MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode setMessagePriority(
-        @PathVariable String uid,
-        @RequestParam( required = true ) MessageConversationPriority messageConversationPriority,
+    public @ResponseBody RootNode setMessagePriority(
+        @PathVariable String uid, @RequestParam MessageConversationPriority messageConversationPriority,
         HttpServletResponse response )
     {
-
         RootNode responseNode = new RootNode( "response" );
 
         User user = currentUserService.getCurrentUser();
@@ -332,14 +336,11 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{uid}/status", method = RequestMethod.POST, produces = {
         MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode setMessageStatus(
+    public @ResponseBody RootNode setMessageStatus(
         @PathVariable String uid,
         @RequestParam( required = true ) MessageConversationStatus messageConversationStatus,
         HttpServletResponse response )
     {
-
         RootNode responseNode = new RootNode( "response" );
 
         User user = currentUserService.getCurrentUser();
@@ -378,9 +379,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{uid}/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode markMessageConversationRead(
+    public @ResponseBody RootNode markMessageConversationRead(
         @PathVariable String uid, @RequestParam( required = false ) String userUid, HttpServletResponse response )
     {
         return modifyMessageConversationRead( userUid, Lists.newArrayList( uid ), response, true );
@@ -388,9 +387,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "/read", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode markMessageConversationsRead(
+    public @ResponseBody RootNode markMessageConversationsRead(
         @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
         HttpServletResponse response )
     {
@@ -403,9 +400,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{uid}/unread", method = RequestMethod.POST, produces = {
         MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode markMessageConversationUnread(
+    public @ResponseBody RootNode markMessageConversationUnread(
         @PathVariable String uid, @RequestParam( required = false ) String userUid, HttpServletResponse response )
     {
         return modifyMessageConversationRead( userUid, Lists.newArrayList( uid ), response, false );
@@ -413,9 +408,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "/unread", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode markMessageConversationsUnread(
+    public @ResponseBody RootNode markMessageConversationsUnread(
         @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
         HttpServletResponse response )
     {
@@ -428,9 +421,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "followup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode markMessageConversationFollowup(
+    public @ResponseBody RootNode markMessageConversationFollowup(
         @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
         HttpServletResponse response )
     {
@@ -485,9 +476,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "unfollowup", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode unmarkMessageConversationFollowup(
+    public @ResponseBody RootNode unmarkMessageConversationFollowup(
         @RequestParam( value = "user", required = false ) String userUid, @RequestBody List<String> uids,
         HttpServletResponse response )
     {
@@ -562,9 +551,7 @@ public class MessageConversationController
 
     @RequestMapping( value = "/{mc-uid}/{user-uid}", method = RequestMethod.DELETE, produces = {
         MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode removeUserFromMessageConversation(
+    public @ResponseBody RootNode removeUserFromMessageConversation(
         @PathVariable( value = "mc-uid" ) String mcUid, @PathVariable( value = "user-uid" ) String userUid,
         HttpServletResponse response )
         throws DeleteAccessDeniedException
@@ -614,9 +601,7 @@ public class MessageConversationController
 
     @RequestMapping( method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE } )
-    public
-    @ResponseBody
-    RootNode removeUserFromMessageConversations(
+    public @ResponseBody RootNode removeUserFromMessageConversations(
         @RequestParam( "mc" ) List<String> mcUids, @RequestParam( value = "user", required = false ) String userUid,
         HttpServletResponse response )
         throws DeleteAccessDeniedException

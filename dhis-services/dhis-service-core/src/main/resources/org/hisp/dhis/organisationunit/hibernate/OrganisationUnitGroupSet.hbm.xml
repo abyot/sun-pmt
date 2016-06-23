@@ -38,6 +38,17 @@
       <many-to-many class="org.hisp.dhis.attribute.AttributeValue" column="attributevalueid" unique="true" />
     </set>
 
+    <!-- Object Translation -->
+    <set name="translations" table="orgunitgroupsettranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="orgunitgroupsetid" foreign-key="fk_objecttranslation_orgunitgroupsetid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
     <!-- Access properties -->
     <many-to-one name="user" class="org.hisp.dhis.user.User" column="userid" foreign-key="fk_orgunitgroupset_userid" />
 
@@ -50,4 +61,9 @@
     </set>
 
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

@@ -30,6 +30,7 @@ package org.hisp.dhis.dxf2.events.event;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
@@ -89,6 +90,18 @@ public class JacksonEventService extends AbstractEventService
         JSON_MAPPER.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true );
         JSON_MAPPER.configure( DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true );
         JSON_MAPPER.configure( DeserializationFeature.WRAP_EXCEPTIONS, true );
+
+        XML_MAPPER.disable( MapperFeature.AUTO_DETECT_FIELDS );
+        XML_MAPPER.disable( MapperFeature.AUTO_DETECT_CREATORS );
+        XML_MAPPER.disable( MapperFeature.AUTO_DETECT_GETTERS );
+        XML_MAPPER.disable( MapperFeature.AUTO_DETECT_SETTERS );
+        XML_MAPPER.disable( MapperFeature.AUTO_DETECT_IS_GETTERS );
+
+        JSON_MAPPER.disable( MapperFeature.AUTO_DETECT_FIELDS );
+        JSON_MAPPER.disable( MapperFeature.AUTO_DETECT_CREATORS );
+        JSON_MAPPER.disable( MapperFeature.AUTO_DETECT_GETTERS );
+        JSON_MAPPER.disable( MapperFeature.AUTO_DETECT_SETTERS );
+        JSON_MAPPER.disable( MapperFeature.AUTO_DETECT_IS_GETTERS );
     }
 
     @Override

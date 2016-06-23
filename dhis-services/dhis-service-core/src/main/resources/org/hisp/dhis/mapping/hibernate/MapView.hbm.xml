@@ -17,7 +17,6 @@
     <property name="lastUpdated" type="timestamp"/>
 
     <property name="layer" not-null="true" />
-    <property name="key" />
 
     <!-- AnalyticalObject -->
 
@@ -109,6 +108,8 @@
     <property name="colorLow" />
 
     <property name="colorHigh" />
+    
+    <property name="colorScale" />
 
     <many-to-one name="legendSet" class="org.hisp.dhis.legend.LegendSet" column="legendsetid"
       foreign-key="fk_mapview_maplegendsetid" />
@@ -141,6 +142,24 @@
     <property name="eventPointColor" />
     
     <property name="eventPointRadius" />
+    
+    <property name="config" type="text" />
+
+    <!-- Object Translation -->
+    <set name="translations" table="mapviewtranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="mapviewid" foreign-key="fk_objecttranslation_mapviewid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
 
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

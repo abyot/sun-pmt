@@ -30,48 +30,88 @@ package org.hisp.dhis.dxf2.metadata2.objectbundle.hooks;
 
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
+import org.hisp.dhis.expression.Expression;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.validation.ValidationRule;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
-public class ValidationRuleObjectBundleHook extends AbstractObjectBundleHook
+public class ValidationRuleObjectBundleHook
+    extends AbstractObjectBundleHook
 {
     @Override
     public void preCreate( IdentifiableObject object, ObjectBundle bundle )
     {
-        if ( !ValidationRule.class.isInstance( object ) ) return;
-        ValidationRule validationRule = (ValidationRule) object;
+        if ( !ValidationRule.class.isInstance( object ) )
+        {
+            return;
+        }
 
-        preheatService.connectReferences( validationRule.getLeftSide(), bundle.getPreheat(), bundle.getPreheatIdentifier() );
-        preheatService.connectReferences( validationRule.getRightSide(), bundle.getPreheat(), bundle.getPreheatIdentifier() );
+        ValidationRule validationRule = (ValidationRule) object;
+        Expression skipTest = validationRule.getSampleSkipTest();
+
+        preheatService.connectReferences( validationRule.getLeftSide(), bundle.getPreheat(),
+            bundle.getPreheatIdentifier() );
+
+        preheatService.connectReferences( validationRule.getRightSide(), bundle.getPreheat(),
+            bundle.getPreheatIdentifier() );
+
+        if ( skipTest != null )
+        {
+            preheatService.connectReferences( skipTest, bundle.getPreheat(), bundle.getPreheatIdentifier() );
+        }
 
         sessionFactory.getCurrentSession().save( validationRule.getLeftSide() );
         sessionFactory.getCurrentSession().save( validationRule.getRightSide() );
 
+        if ( skipTest != null )
+        {
+            sessionFactory.getCurrentSession().save( skipTest );
+        }
+
         if ( validationRule.getPeriodType() != null )
         {
-            PeriodType periodType = bundle.getPreheat().getPeriodTypeMap().get( validationRule.getPeriodType().getName() );
+            PeriodType periodType = bundle.getPreheat().getPeriodTypeMap()
+                .get( validationRule.getPeriodType().getName() );
             validationRule.setPeriodType( periodType );
         }
     }
 
     @Override
-    public void preUpdate( IdentifiableObject object, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !ValidationRule.class.isInstance( object ) ) return;
-        ValidationRule validationRule = (ValidationRule) object;
+        if ( !ValidationRule.class.isInstance( object ) )
+        {
+            return;
+        }
 
-        preheatService.connectReferences( validationRule.getLeftSide(), bundle.getPreheat(), bundle.getPreheatIdentifier() );
-        preheatService.connectReferences( validationRule.getRightSide(), bundle.getPreheat(), bundle.getPreheatIdentifier() );
+        ValidationRule validationRule = (ValidationRule) object;
+        Expression skipTest = validationRule.getSampleSkipTest();
+
+        preheatService.connectReferences( validationRule.getLeftSide(), bundle.getPreheat(),
+            bundle.getPreheatIdentifier() );
+
+        preheatService.connectReferences( validationRule.getRightSide(), bundle.getPreheat(),
+            bundle.getPreheatIdentifier() );
+
+        if ( skipTest != null )
+        {
+            preheatService.connectReferences( skipTest, bundle.getPreheat(), bundle.getPreheatIdentifier() );
+        }
 
         sessionFactory.getCurrentSession().save( validationRule.getLeftSide() );
         sessionFactory.getCurrentSession().save( validationRule.getRightSide() );
 
+        if ( skipTest != null )
+        {
+            sessionFactory.getCurrentSession().save( skipTest );
+        }
+
         if ( validationRule.getPeriodType() != null )
         {
-            PeriodType periodType = bundle.getPreheat().getPeriodTypeMap().get( validationRule.getPeriodType().getName() );
+            PeriodType periodType = bundle.getPreheat().getPeriodTypeMap()
+                .get( validationRule.getPeriodType().getName() );
             validationRule.setPeriodType( periodType );
         }
     }

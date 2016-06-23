@@ -736,7 +736,28 @@ public class DataQueryServiceTest
         dataQueryService.getFromUrl( dimensionParams, null, null, null, 
             false, false, false, false, false, false, false, false, null, null, null, null, null, null, null );
     }
-    
+
+    @Test
+    public void testGetFromUrlPeriodOrder()
+    {
+        Set<String> dimensionParams = new HashSet<>();
+        dimensionParams.add( "dx:" + deA.getUid() + ";" + deB.getUid() + ";" + deC.getUid() + ";" + deD.getUid() );
+        dimensionParams.add( "pe:2013;2012Q4;2012S2" );
+        
+        Set<String> filterParams = new HashSet<>();
+        filterParams.add( "ou:" + ouA.getUid() );
+        
+        DataQueryParams params = dataQueryService.getFromUrl( dimensionParams, filterParams, null, null, 
+            false, false, false, false, false, false, false, false, null, null, null, null, null, null, null );
+        
+        List<DimensionalItemObject> periods = params.getPeriods();
+        
+        assertEquals( 3, periods.size() );
+        assertEquals( "2013", periods.get( 0 ).getUid() );
+        assertEquals( "2012Q4", periods.get( 1 ).getUid() );
+        assertEquals( "2012S2", periods.get( 2 ).getUid() );        
+    }
+
     @Test
     public void testGetFromAnalyticalObjectA()
     {

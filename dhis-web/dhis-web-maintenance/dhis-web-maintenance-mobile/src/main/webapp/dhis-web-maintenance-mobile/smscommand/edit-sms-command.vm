@@ -60,17 +60,21 @@
 		$("#trackedEntityAttributeCodes").val(trackedEntityAttributeCodes);
 		
 		
+		
+		
 		var programStageDataElementCodes = '{"programStageDataElementCodes":[';	
 		
 		for (var i=1; i<= jQuery('.programStageDataElement').length; i++)
 		{ 
 			programStageDataElementCodes += '{"programStageDataElementId" :"'+document.getElementById("attId"+i).value+'",';
+			programStageDataElementCodes += '"compulsory" : "'+document.getElementById("attreq"+i).value+'",';
 			programStageDataElementCodes += '"code" :"'+document.getElementById("attCode"+i).value+'"},';	
 		}
 		
 		programStageDataElementCodes = programStageDataElementCodes.slice(0,programStageDataElementCodes.length-1);
 		programStageDataElementCodes += ']}';
 		$("#programStageDataElementCodes").val(programStageDataElementCodes);		
+		
 		
 		$("#updateSMSCommandForm").submit();
     };
@@ -340,10 +344,13 @@
 	    
     		 <tr class="programStageDataElement">
                <td>
-				   <label for="attCode$index">$attribute.name</label>
-				   <input type="hidden" id="attId$index" name="attId$index" value="$attribute.id"/>
+				   <label for="attCode$index">$attribute.dataElement.name</label>
+				   <input type="hidden" id="attId$index" name="attId$index" value="$attribute.dataElement.id"/>
+				   
+				   <input type="hidden" id="attreq$index" name="attreq$index" value="$attribute.compulsory"/>
+				   
 			   </td>
-               <td><input type="text" name="attCode$index" id="attCode$index" class="{validate:{required:true}}" value='$!codes["$attribute.id"]'></td>   
+               <td><input type="text" name="attCode$index" id="attCode$index" class="{validate:{required:true}}" value='$!codes["$attribute.dataElement.id"]'></td>   
             </tr>      
 	    #end
     #end

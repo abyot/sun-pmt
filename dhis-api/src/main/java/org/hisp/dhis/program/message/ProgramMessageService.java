@@ -32,24 +32,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.hisp.dhis.user.User;
+
 /**
  * @author Zubair <rajazubair.asghar@gmail.com>
  */
 
 public interface ProgramMessageService
 {
-    ProgramMessageQueryParams getFromUrl( Set<String> ou, String trackedEntityInstance, String emailAddress,
-        String programInstance, String programStageInstance, ProgramMessageStatus messageStatus,
-        Set<DeliveryChannel> deliveryChannels, ProgramMessageCategory catagory, Integer page, Integer pageSize, Date fromDate,
-        Date toDate, Date afterDate, Date beforeDate );
+    ProgramMessageQueryParams getFromUrl( Set<String> ou, String programInstance, String programStageInstance,
+        ProgramMessageStatus messageStatus, Integer page, Integer pageSize, Date afterDate, Date beforeDate );
 
     boolean exists( String uid );
 
-    void hasAccess( ProgramMessageQueryParams params );
+    void hasAccess( ProgramMessageQueryParams params, User user );
 
-    void validateParams( ProgramMessageQueryParams params );
+    void validateQueryParameters( ProgramMessageQueryParams params );
 
-    void validateProgramMessagePayload( ProgramMessage message );
+    void validatePayload( ProgramMessage message );
 
     // -------------------------------------------------------------------------
     // Transport Service methods

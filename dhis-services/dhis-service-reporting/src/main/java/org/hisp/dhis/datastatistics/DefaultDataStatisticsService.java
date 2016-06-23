@@ -1,5 +1,7 @@
 package org.hisp.dhis.datastatistics;
 
+import org.hisp.dhis.analytics.SortOrder;
+
 /*
  * Copyright (c) 2004-2016, University of Oslo
  * All rights reserved.
@@ -139,8 +141,8 @@ public class DefaultDataStatisticsService
     }
 
     @Override
-    public List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, String sortOrder )
+    public List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, SortOrder sortOrder, String username )
     {
-        return dataStatisticsEventStore.getFavoritesData( eventType, pageSize, sortOrder );
+        return dataStatisticsEventStore.getFavoritesData( eventType, pageSize, sortOrder, username );
     }
 }

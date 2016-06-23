@@ -47,6 +47,7 @@ import org.hisp.dhis.user.UserGroup;
 import org.hisp.dhis.user.UserService;
 import org.hisp.dhis.user.UserSettingKey;
 import org.hisp.dhis.user.UserSettingService;
+import org.hisp.dhis.util.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -264,10 +265,8 @@ public class SetupTreeAction
 
             currentLocaleDb = (Locale) userSettingService.getUserSetting( UserSettingKey.DB_LOCALE, user );
         }
-        else
-        {
-            currentLocale = LocaleManager.DEFAULT_LOCALE;
-        }
+        
+        currentLocale = ObjectUtils.firstNonNull( currentLocale, LocaleManager.DEFAULT_LOCALE );
 
         availableLocales = localeManager.getAvailableLocales();
 

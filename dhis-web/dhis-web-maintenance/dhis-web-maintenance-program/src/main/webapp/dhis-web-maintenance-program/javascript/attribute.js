@@ -28,6 +28,11 @@ function showAttributeDetails(context) {
 
       var unique = ( json.attribute.unique == 'true') ? i18n_yes : i18n_no;
       setInnerHTML('uniqueField', unique);
+      
+      var generated = ( json.attribute.generated == 'true') ? i18n_yes : i18n_no;
+      setInnerHTML('generatedField', unique);
+      
+      setInnerHTML('patternField', json.attribute.pattern);
 
       var inherit = ( json.attribute.inherit == 'true') ? i18n_yes : i18n_no;
       setInnerHTML('inheritField', inherit);
@@ -120,6 +125,9 @@ function uniqueOnChange() {
     jQuery('#valueType [value=DATE]').hide();
     jQuery('#valueType [value=TRACKER_ASSOCIATE]').hide();
     jQuery('#valueType [value=USERNAME]').hide();
+    
+    jQuery('[name=generatedTR]').show();
+    generatedOnChange();
   }
   else {
     jQuery('[name=uniqueTR]').hide();
@@ -128,6 +136,19 @@ function uniqueOnChange() {
     jQuery('#valueType [value=DATE]').show();
     jQuery('#valueType [value=TRACKER_ASSOCIATE]').show();
     jQuery('#valueType [value=USERNAME]').show();
+    
+    jQuery('[name=generatedTR]').hide();
+    generatedOnChange();
+  }
+}
+
+function generatedOnChange() {
+  if( $('#generated').attr('checked') == "checked" &&
+          $('#unique').attr('checked') == "checked" ) {
+    jQuery('[name=generatedPatternTR]').show();
+  }
+  else {
+    jQuery('[name=generatedPatternTR]').hide();   
   }
 }
 

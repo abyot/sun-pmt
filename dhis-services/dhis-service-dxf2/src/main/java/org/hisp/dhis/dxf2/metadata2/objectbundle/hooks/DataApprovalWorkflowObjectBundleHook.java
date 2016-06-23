@@ -52,7 +52,7 @@ public class DataApprovalWorkflowObjectBundleHook extends AbstractObjectBundleHo
     }
 
     @Override
-    public <T extends IdentifiableObject> void preUpdate( T object, ObjectBundle bundle )
+    public <T extends IdentifiableObject> void preUpdate( T object, T persistedObject, ObjectBundle bundle )
     {
         if ( !DataApprovalWorkflow.class.isInstance( object ) ) return;
         DataApprovalWorkflow dataApprovalWorkflow = (DataApprovalWorkflow) object;

@@ -79,6 +79,12 @@ public class H2StatementBuilder
     }
 
     @Override
+    public String position( String substring, String string )
+    {
+        return ("POSITION(" + substring + ", " + string + ")");
+    }
+
+    @Override
     public String getRandom( int n )
     {
         return "cast(trunc(" + n + "*random(),0) as int)";

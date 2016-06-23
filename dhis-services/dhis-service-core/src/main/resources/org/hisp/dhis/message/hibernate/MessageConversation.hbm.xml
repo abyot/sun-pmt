@@ -55,7 +55,18 @@
                           unique="true" foreign-key="fk_messageconversation_messages_messageid"/>
         </list>
 
-        <many-to-one name="lastSender" class="org.hisp.dhis.user.User" column="lastsenderid"
+      <!-- Object Translation -->
+      <set name="translations" table="messageconversationtranslations" cascade="delete-orphan" lazy="false">
+        <cache usage="read-write" />
+        <key column="messageconversationid" foreign-key="fk_objecttranslation_messageconversationid" />
+
+        <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+          <column name="objecttranslationid" unique="true" />
+          <filter name="locale" condition="locale = :locale" />
+        </many-to-many>
+      </set>
+
+      <many-to-one name="lastSender" class="org.hisp.dhis.user.User" column="lastsenderid"
                      foreign-key="fk_messageconversation_lastsender_userid"/>
 
         <property name="lastMessage" column="lastmessage" index="messageconversation_lastmessage"/>

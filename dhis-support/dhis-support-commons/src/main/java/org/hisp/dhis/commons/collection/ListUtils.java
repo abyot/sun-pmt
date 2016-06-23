@@ -91,7 +91,8 @@ public class ListUtils
     }
     
     /**
-     * Returns a sublist of the given list with the elements at the given indexes.
+     * Returns a sublist of the given list with the elements at the given
+     * indexes. Does not modify the given list of elements.
      * 
      * @param <T> type.
      * @param list the list to select from.

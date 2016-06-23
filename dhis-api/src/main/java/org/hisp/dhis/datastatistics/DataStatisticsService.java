@@ -31,6 +31,8 @@ package org.hisp.dhis.datastatistics;
 import java.util.Date;
 import java.util.List;
 
+import org.hisp.dhis.analytics.SortOrder;
+
 /**
  * @author Yrjan A. F. Fraschetti
  * @author Julie Hill Roa
@@ -84,8 +86,10 @@ public interface DataStatisticsService
      *
      * @param eventType that should be counted
      * @param pageSize number of favorites
-     * @param sortOrder DESC or ASC
+     * @param sortOrder sort order of the favorites
+     * @param username name of user, makes the query specified to this user
      * @return list of FavoriteStatistics
      */
-    List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, String sortOrder );
+    List<FavoriteStatistics> getTopFavorites( DataStatisticsEventType eventType, int pageSize, SortOrder sortOrder, String username );
+
 }

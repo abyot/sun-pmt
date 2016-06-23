@@ -42,7 +42,18 @@
       <list-index column="sort_order" base="0" />
       <many-to-many column="resourceid" class="org.hisp.dhis.document.Document" foreign-key="fk_dashboarditem_resources_resourceid" />
     </list>
-        
+
+    <!-- Object Translation -->
+    <set name="translations" table="dashboarditemtranslations" cascade="delete-orphan" lazy="false">
+      <cache usage="read-write" />
+      <key column="dashboarditemid" foreign-key="fk_objecttranslation_dashboarditemid" />
+
+      <many-to-many class="org.hisp.dhis.translation.ObjectTranslation">
+        <column name="objecttranslationid" unique="true" />
+        <filter name="locale" condition="locale = :locale" />
+      </many-to-many>
+    </set>
+
     <property name="messages" />
 
     <property name="appKey" />
@@ -56,4 +67,9 @@
     </property>
 
   </class>
+
+  <filter-def name="locale">
+    <filter-param name="locale" type="string" />
+  </filter-def>
+
 </hibernate-mapping>

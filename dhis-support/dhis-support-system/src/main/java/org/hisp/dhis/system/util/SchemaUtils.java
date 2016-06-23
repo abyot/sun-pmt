@@ -78,25 +78,41 @@ public final class SchemaUtils
             {
                 PropertyRange propertyRange = AnnotationUtils.getAnnotation( property.getGetterMethod(), PropertyRange.class );
 
-                if ( property.getMax() == null || propertyRange.max() <= property.getMax() )
+                double max = propertyRange.max();
+                double min = propertyRange.min();
+
+                if ( property.is( PropertyType.INTEGER ) || property.is( PropertyType.TEXT ) || property.is( PropertyType.COLLECTION ) )
                 {
-                    property.setMax( propertyRange.max() );
+                    if ( max > Integer.MAX_VALUE )
+                    {
+                        max = Integer.MAX_VALUE;
+                    }
                 }
 
-                if ( property.getMin() == null || (propertyRange.min() >= property.getMin() && propertyRange.min() <= property.getMax()) )
+                if ( property.is( PropertyType.COLLECTION ) )
                 {
-                    property.setMin( propertyRange.min() > property.getMax() ? property.getMax() : propertyRange.min() );
+                    min = 0d;
                 }
+
+                property.setMax( max );
+                property.setMin( min );
             }
 
             if ( property.getMin() == null )
             {
-                property.setMin( 0 );
+                property.setMin( 0d );
             }
 
             if ( property.getMax() == null )
             {
-                property.setMax( Integer.MAX_VALUE );
+                if ( property.is( PropertyType.INTEGER ) || property.is( PropertyType.TEXT ) )
+                {
+                    property.setMax( (double) Integer.MAX_VALUE );
+                }
+                else
+                {
+                    property.setMax( Double.MAX_VALUE );
+                }
             }
 
             if ( PROPS_IGNORE_MINMAX.contains( property.getPropertyType() ) )

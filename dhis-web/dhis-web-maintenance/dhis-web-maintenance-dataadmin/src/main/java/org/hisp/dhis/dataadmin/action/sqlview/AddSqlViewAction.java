@@ -28,12 +28,15 @@ package org.hisp.dhis.dataadmin.action.sqlview;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.opensymphony.xwork2.Action;
+import org.hisp.dhis.attribute.AttributeService;
 import org.hisp.dhis.common.cache.CacheStrategy;
 import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.sqlview.SqlViewService;
 import org.hisp.dhis.sqlview.SqlViewType;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.Action;
+import java.util.List;
 
 /**
  * @author Dang Duy Hieu
@@ -51,6 +54,9 @@ public class AddSqlViewAction
     {
         this.sqlViewService = sqlViewService;
     }
+
+    @Autowired
+    private AttributeService attributeService;
 
     // -------------------------------------------------------------------------
     // Input
@@ -91,12 +97,19 @@ public class AddSqlViewAction
         this.cacheStrategy = cacheStrategy;
     }
 
+    private List<String> jsonAttributeValues;
+
+    public void setJsonAttributeValues( List<String> jsonAttributeValues )
+    {
+        this.jsonAttributeValues = jsonAttributeValues;
+    }
+
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public String execute()
+    public String execute() throws Exception
     {
         SqlView sqlView = new SqlView();
 
@@ -112,6 +125,11 @@ public class AddSqlViewAction
         else
         {
             sqlView.setCacheStrategy( SqlView.DEFAULT_CACHE_STRATEGY );
+        }
+
+        if ( jsonAttributeValues != null )
+        {
+            attributeService.updateAttributeValues( sqlView, jsonAttributeValues );
         }
 
         sqlViewService.saveSqlView( sqlView );

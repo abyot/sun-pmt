@@ -85,6 +85,7 @@ import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramStageInstance;
 import org.hisp.dhis.program.ProgramStageSection;
 import org.hisp.dhis.program.ProgramValidation;
+import org.hisp.dhis.program.message.ProgramMessage;
 import org.hisp.dhis.programrule.ProgramRule;
 import org.hisp.dhis.programrule.ProgramRuleAction;
 import org.hisp.dhis.programrule.ProgramRuleVariable;
@@ -102,6 +103,7 @@ import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValue;
 import org.hisp.dhis.trackedentitydatavalue.TrackedEntityDataValue;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserAuthorityGroup;
+import org.hisp.dhis.user.UserCredentials;
 import org.hisp.dhis.user.UserGroup;
 import org.hisp.dhis.user.UserSetting;
 import org.hisp.dhis.validation.ValidationCriteria;
@@ -235,6 +237,15 @@ public abstract class DeletionHandler
 
     public void deleteDataElementCategoryOptionCombo( DataElementCategoryOptionCombo categoryOptionCombo )
     {
+    }
+
+    public void deleteProgramMessage( ProgramMessage programMessage )
+    {
+    }
+
+    public String allowDeleteProgramMessage( ProgramMessage programMessage )
+    {
+        return null;
     }
 
     public String allowDeleteDataElementCategoryOptionCombo( DataElementCategoryOptionCombo categoryOptionCombo )
@@ -440,6 +451,15 @@ public abstract class DeletionHandler
         return null;
     }
 
+    public void deleteUserCredentials( UserCredentials userCredentials )
+    {
+    }
+
+    public String allowDeleteUserCredentials( UserCredentials userCredentials )
+    {
+        return null;
+    }
+
     public void deleteUserAuthorityGroup( UserAuthorityGroup authorityGroup )
     {
     }
@@ -511,11 +531,11 @@ public abstract class DeletionHandler
     {
         return null;
     }
-    
+
     public void deleteInterpretation( Interpretation interpretation )
     {
     }
-    
+
     public String allowDeleteIntepretation( Interpretation interpretation )
     {
         return null;
@@ -827,21 +847,30 @@ public abstract class DeletionHandler
         return null;
     }
 
-    public String allowDeleteProgramDataElement( ProgramDataElement programDataElement ) { return null; }
+    public String allowDeleteProgramDataElement( ProgramDataElement programDataElement )
+    {
+        return null;
+    }
 
     public void deleteProgramDataElement( ProgramDataElement programDataElement )
     {
     }
 
-    public String allowDeleteColorSet ( ColorSet colorSet ) { return null; }
+    public String allowDeleteColorSet( ColorSet colorSet )
+    {
+        return null;
+    }
 
-    public void deleteColorSet( ColorSet colorSet  )
+    public void deleteColorSet( ColorSet colorSet )
     {
     }
 
-    public String allowDeleteColor ( Color color ) { return null; }
+    public String allowDeleteColor( Color color )
+    {
+        return null;
+    }
 
-    public void deleteColor( Color color  )
+    public void deleteColor( Color color )
     {
     }
 }

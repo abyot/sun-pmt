@@ -104,6 +104,7 @@
   cursor: pointer;
   box-shadow: #ddd 0 1px 2px 0;
   overflow: auto;
+  position: relative;
 }
 
 .item:hover
@@ -174,7 +175,7 @@
 .itemList li
 {
   float: none;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-bottom: 1px solid #ddd;
 }
 
@@ -188,6 +189,16 @@
 {
   float: right;
   display: inline-block;
+}
+
+#message-dashboard-pager
+{
+  position: absolute;
+  bottom: 0px;
+  width:  404px;
+  height: 45px;
+  line-height: 45px;
+  text-align: right;
 }
 
 #searchDiv
@@ -487,6 +498,9 @@ a.alert, .alert
   text-decoration: none !important;
 }
 
+.internalMessageButtonLink:hover {
+  background-color: #f9d8ad;
+}
 .replyDiv
 {
   margin-top: 15px;
@@ -541,9 +555,33 @@ div#selectionTree
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: .25em;
-  background: antiquewhite;
+  background: rgba(255, 152, 0, 0.58);
   width: 100px;
   display: block;
+  margin: 0 10px;
+  border: solid 1px #eee;
+}
+
+.message-select
+{
+  width: 150px;
+  display: inline-block;
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
+  vertical-align: middle;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  height: 29px;
+  line-height: 29px;
+  position: relative;
+  bottom: 6px;
+  margin-right: 4px;
+  background-color: #eee;
+  border: solid 1px #aaa;
+
 }
 
 /*----------------------------------------------------------------------------*/
@@ -779,5 +817,4 @@ div#selectionTree
   top: 0;
   width: 960px;
 }
-
 }

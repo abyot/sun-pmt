@@ -117,7 +117,7 @@ public class AnalyticsUtils
      * @param dataDimensionOptions the data dimension options.
      * @return list of nameable objects.
      */
-    public static List<DimensionalItemObject> getByDataDimensionType( DataDimensionItemType itemType, List<DimensionalItemObject> dataDimensionOptions )
+    public static List<DimensionalItemObject> getByDataDimensionItemType( DataDimensionItemType itemType, List<DimensionalItemObject> dataDimensionOptions )
     {
         List<DimensionalItemObject> list = new ArrayList<>();
         

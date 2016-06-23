@@ -42,6 +42,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
@@ -66,15 +67,13 @@ public class ProgramMessage
 
     private ProgramMessageStatus messageStatus;
 
-    private ProgramMessageCategory messageCategory;
-
     private String text;
 
     private String subject;
 
     private Date processedDate;
-    
-    private boolean storeCopy = true;
+
+    private transient boolean storeCopy;
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -94,8 +93,7 @@ public class ProgramMessage
 
     public ProgramMessage( ProgramInstance programInstance, ProgramStageInstance programStageInstance,
         ProgramMessageRecipients recipients, Set<DeliveryChannel> deliveryChannels, ProgramMessageStatus messageStatus,
-        ProgramMessageCategory messageCategory, String text, String subject, boolean storeCopy, Date processedAt,
-        Date processedDate )
+        String text, String subject, boolean storeCopy, Date processedAt, Date processedDate )
     {
         super();
         this.programInstance = programInstance;
@@ -103,7 +101,6 @@ public class ProgramMessage
         this.recipients = recipients;
         this.deliveryChannels = deliveryChannels;
         this.messageStatus = messageStatus;
-        this.messageCategory = messageCategory;
         this.text = text;
         this.subject = subject;
         this.storeCopy = storeCopy;
@@ -129,6 +126,7 @@ public class ProgramMessage
     // -------------------------------------------------------------------------
 
     @JsonProperty( value = "programInstance" )
+    @JsonSerialize( as = BaseIdentifiableObject.class )
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( localName = "programInstance" )
     public ProgramInstance getProgramInstance()
@@ -142,6 +140,7 @@ public class ProgramMessage
     }
 
     @JsonProperty( value = "programStageInstance" )
+    @JsonSerialize( as = BaseIdentifiableObject.class )
     @JsonView( { DetailedView.class, ExportView.class } )
     @JacksonXmlProperty( localName = "programStageInstance" )
     public ProgramStageInstance getProgramStageInstance()
@@ -230,19 +229,6 @@ public class ProgramMessage
     public void setSubject( String messageSubject )
     {
         this.subject = messageSubject;
-    }
-
-    @JsonProperty( value = "messageCatagory" )
-    @JsonView( { DetailedView.class, ExportView.class } )
-    @JacksonXmlProperty( localName = "messageCatagory" )
-    public ProgramMessageCategory getMessageCategory()
-    {
-        return messageCategory;
-    }
-
-    public void setMessageCategory( ProgramMessageCategory messageCategory )
-    {
-        this.messageCategory = messageCategory;
     }
 
     @JsonProperty( value = "processedDate" )

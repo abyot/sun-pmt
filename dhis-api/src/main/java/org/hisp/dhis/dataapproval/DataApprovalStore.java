@@ -109,6 +109,11 @@ public interface DataApprovalStore
      * combos the user is allowed to see. If the list is constrained to a given
      * attribute category combination, then only a single value is returned.
      *
+     * Note that a user may not see approvals above their level, so for example
+     * a user whose highest approval level access is level 3 will see approvals
+     * no higher than level 3. If data is approved at levels 1 or 2, it will
+     * look to a level 3 user only as if it was approved at level 3.
+     *
      * @param workflow Data approval workflow to check
      * @param period Period to look within
      * @param orgUnit Organisation unit to look for (null means all)

@@ -54,6 +54,7 @@ public interface QueryService
      * @param transformer ResultTransformer to use for mutating the result
      * @return Matching objects
      */
+    @SuppressWarnings( "rawtypes" )
     List<? extends IdentifiableObject> query( Query query, ResultTransformer transformer );
 
     /**

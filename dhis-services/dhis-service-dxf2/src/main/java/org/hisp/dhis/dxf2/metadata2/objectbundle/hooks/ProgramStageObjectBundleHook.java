@@ -52,7 +52,7 @@ public class ProgramStageObjectBundleHook extends AbstractObjectBundleHook
     }
 
     @Override
-    public <T extends IdentifiableObject> void preUpdate( T object, ObjectBundle bundle )
+    public <T extends IdentifiableObject> void preUpdate( T object, T persistedObject, ObjectBundle bundle )
     {
         if ( !ProgramStage.class.isInstance( object ) ) return;
         ProgramStage programStage = (ProgramStage) object;

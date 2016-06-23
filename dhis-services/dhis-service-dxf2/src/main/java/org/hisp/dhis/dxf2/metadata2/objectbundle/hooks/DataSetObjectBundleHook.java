@@ -32,7 +32,6 @@ import org.hibernate.Session;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dataelement.DataElementOperand;
 import org.hisp.dhis.dataset.DataSet;
-import org.hisp.dhis.dataset.Section;
 import org.hisp.dhis.dxf2.metadata2.objectbundle.ObjectBundle;
 import org.hisp.dhis.period.PeriodType;
 
@@ -66,28 +65,33 @@ public class DataSetObjectBundleHook extends AbstractObjectBundleHook
     }
 
     @Override
-    public void preUpdate( IdentifiableObject object, ObjectBundle bundle )
+    public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
         if ( !DataSet.class.isInstance( object ) ) return;
         DataSet dataSet = (DataSet) object;
+        DataSet persistedDataSet = (DataSet) persistedObject;
+
         dataSet.getCompulsoryDataElementOperands().clear();
+        persistedDataSet.getCompulsoryDataElementOperands().clear();
 
         if ( dataSet.getPeriodType() != null )
         {
             PeriodType periodType = bundle.getPreheat().getPeriodTypeMap().get( dataSet.getPeriodType().getName() );
             dataSet.setPeriodType( periodType );
         }
+
+        sessionFactory.getCurrentSession().flush();
     }
 
     @Override
     @SuppressWarnings( "unchecked" )
-    public void postUpdate( IdentifiableObject object, ObjectBundle bundle )
+    public void postUpdate( IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        if ( !DataSet.class.isInstance( object ) ) return;
-        if ( !bundle.getObjectReferences().containsKey( Section.class ) ) return;
-        DataSet dataSet = (DataSet) object;
+        if ( !DataSet.class.isInstance( persistedObject ) ) return;
+        if ( !bundle.getObjectReferences().containsKey( DataSet.class ) ) return;
+        DataSet dataSet = (DataSet) persistedObject;
 
-        Map<String, Object> references = bundle.getObjectReferences( Section.class ).get( dataSet.getUid() );
+        Map<String, Object> references = bundle.getObjectReferences( DataSet.class ).get( dataSet.getUid() );
         if ( references == null ) return;
 
         Set<DataElementOperand> dataElementOperands = (Set<DataElementOperand>) references.get( "compulsoryDataElementOperands" );

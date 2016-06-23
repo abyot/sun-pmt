@@ -29,6 +29,9 @@ package org.hisp.dhis.analytics;
  */
 
 import org.hisp.dhis.DhisConvenienceTest;
+import org.hisp.dhis.common.BaseDimensionalObject;
+import org.hisp.dhis.common.DimensionType;
+import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryCombo;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
@@ -131,5 +134,26 @@ public class DataQueryGroupsTest
         assertTrue( queryGroups.isOptimal( 3 ) );
         assertTrue( queryGroups.isOptimal( 2 ) );
         assertFalse( queryGroups.isOptimal( 4 ) );
+    }
+    
+    @Test
+    public void getQueryA()
+    {
+        DimensionalObject dimA = new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, getList( deA, deB ) );
+        DimensionalObject dimB = new BaseDimensionalObject( DimensionalObject.ORGUNIT_DIM_ID, DimensionType.ORGANISATION_UNIT, getList( ouA, ouB, ouC ) );
+        DimensionalObject dimC = new BaseDimensionalObject( DimensionalObject.PERIOD_DIM_ID, DimensionType.PERIOD, getList( createPeriod( "2000Q1" ) ) );
+        
+        DataQueryParams paramsA = DataQueryParams.newBuilder()
+            .addDimension( dimA )
+            .addDimension( dimB )
+            .addFilter( dimC ).build();
+        
+        assertNotNull( paramsA.getDimension( DimensionalObject.DATA_X_DIM_ID ) );
+        assertNotNull( paramsA.getDimension( DimensionalObject.ORGUNIT_DIM_ID ) );
+        assertNotNull( paramsA.getFilter( DimensionalObject.PERIOD_DIM_ID ) );
+        
+        assertEquals( 2, paramsA.getDimension( DimensionalObject.DATA_X_DIM_ID ).getItems().size() );
+        assertEquals( 3, paramsA.getDimension( DimensionalObject.ORGUNIT_DIM_ID ).getItems().size() );
+        assertEquals( 1, paramsA.getFilter( DimensionalObject.PERIOD_DIM_ID ).getItems().size() );
     }
 }

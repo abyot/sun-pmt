@@ -64,7 +64,11 @@ public abstract class AbstractStatementBuilder
     @Override
     public String columnQuote( String column )
     {
-        return column != null ? ( getColumnQuote() + column + getColumnQuote() ) : null;
+        String qte = getColumnQuote();
+        
+        column = column.replaceAll( qte, ( qte + qte ) );
+        
+        return column != null ? ( qte + column + qte ) : null;
     }
 
     @Override
@@ -89,6 +93,12 @@ public abstract class AbstractStatementBuilder
     public String concatenate( String... s )
     {
         return "CONCAT(" + StringUtils.join( s, ", " ) + ")";
+    }
+
+    @Override
+    public String position( String substring, String string )
+    {
+        return ("POSITION(" + substring + " in " + string + ")");
     }
 
     @Override

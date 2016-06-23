@@ -35,16 +35,20 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.common.BaseDimensionalItemObject;
 import org.hisp.dhis.common.BaseIdentifiableObject;
+import org.hisp.dhis.common.DateRange;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.annotation.Scanned;
 import org.hisp.dhis.common.view.DetailedView;
 import org.hisp.dhis.common.view.ExportView;
+import org.hisp.dhis.organisationunit.OrganisationUnit;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -198,6 +202,77 @@ public class DataElementCategoryOptionCombo
     public boolean isDefault()
     {
         return categoryCombo != null && DEFAULT_NAME.equals( categoryCombo.getName() );
+    }
+
+    /**
+     * Gets a range of valid dates for this (attribute) cateogry option combo.
+     *
+     * The earliest valid date is the latest start date (if any) from all the
+     * category options associated with this option combo.
+     *
+     * The latest valid date is the earliest end date (if any) from all the
+     * category options associated with this option combo.
+     *
+     * @return valid date range for this (attribute) category option combo.
+     */
+    public DateRange getDateRange()
+    {
+        Date latestStartDate = null;
+        Date earliestEndDate = null;
+
+        for ( DataElementCategoryOption option : getCategoryOptions() )
+        {
+            if ( option.getStartDate() != null && ( latestStartDate == null || option.getStartDate().compareTo( latestStartDate ) > 0 ) )
+            {
+                latestStartDate = option.getStartDate();
+            }
+
+            if ( option.getEndDate() != null && ( earliestEndDate == null || option.getStartDate().compareTo( earliestEndDate ) < 0 ) )
+            {
+                earliestEndDate = option.getEndDate();
+            }
+        }
+
+        return new DateRange( latestStartDate, earliestEndDate );
+    }
+
+    /**
+     * Gets a set of valid organisation units (subtrees) for this (attribute)
+     * category option combo, if any.
+     *
+     * The set of valid organisation units (if any) is the intersection of the
+     * sets of valid organisation untis for all the category options associated
+     * with this option combo.
+     *
+     * Note: returns null if there are no organisation unit restrictions (no
+     * associated option combos have any organisation unit restrictions), but
+     * returns an empty set if associated option combos have organisation unit
+     * restrictions and their intersection is empty.
+     *
+     * @return valid organisation units for this (attribute) category option
+     * combo.
+     */
+    public Set<OrganisationUnit> getOrganisationUnits()
+    {
+        Set<OrganisationUnit> orgUnits = null;
+
+        for ( DataElementCategoryOption option : getCategoryOptions() )
+        {
+            if ( !CollectionUtils.isEmpty( option.getOrganisationUnits() ) )
+            {
+                if ( orgUnits == null )
+                {
+                    orgUnits = option.getOrganisationUnits();
+                }
+                else
+                {
+                    orgUnits = new HashSet<>( orgUnits );
+                    orgUnits.retainAll( option.getOrganisationUnits() );
+                }
+            }
+        }
+
+        return orgUnits;
     }
 
     // -------------------------------------------------------------------------

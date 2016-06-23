@@ -40,7 +40,6 @@ import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.IdentifiableObjects;
-import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.Pager;
 import org.hisp.dhis.common.PagerUtils;
 import org.hisp.dhis.common.UserContext;
@@ -56,6 +55,8 @@ import org.hisp.dhis.dxf2.metadata2.MetadataImportService;
 import org.hisp.dhis.dxf2.metadata2.feedback.ImportReport;
 import org.hisp.dhis.dxf2.webmessage.WebMessage;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
+import org.hisp.dhis.feedback.ObjectReport;
+import org.hisp.dhis.feedback.TypeReport;
 import org.hisp.dhis.fieldfilter.FieldFilterService;
 import org.hisp.dhis.hibernate.exception.CreateAccessDeniedException;
 import org.hisp.dhis.hibernate.exception.DeleteAccessDeniedException;
@@ -71,6 +72,7 @@ import org.hisp.dhis.node.types.CollectionNode;
 import org.hisp.dhis.node.types.ComplexNode;
 import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.node.types.SimpleNode;
+import org.hisp.dhis.preheat.PreheatService;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.query.QueryParserException;
@@ -175,6 +177,9 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
     @Autowired
     protected UserSettingService userSettingService;
 
+    @Autowired
+    protected PreheatService preheatService;
+
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
@@ -190,9 +195,7 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         List<Order> orders = orderParams.getOrders( getSchema() );
 
         User user = currentUserService.getCurrentUser();
-        Locale dbLocale = getLocaleWithDefault( translateParams );
-        UserContext.setUser( user );
-        UserContext.setUserSetting( UserSettingKey.DB_LOCALE, dbLocale );
+        setUserContext( user, translateParams );
 
         WebOptions options = new WebOptions( rpParameters );
         WebMetadata metadata = new WebMetadata();
@@ -208,7 +211,6 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         }
 
         List<T> entities = getEntityList( metadata, options, filters, orders, translateParams );
-        translate( entities, translateParams );
         Pager pager = metadata.getPager();
 
         if ( options.hasPaging() && pager == null )
@@ -245,15 +247,12 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         User user = currentUserService.getCurrentUser();
+        setUserContext( user, translateParams );
 
         if ( !aclService.canRead( user, getEntityClass() ) )
         {
             throw new ReadAccessDeniedException( "You don't have the proper permissions to read objects of this type." );
         }
-
-        Locale dbLocale = getLocaleWithDefault( translateParams );
-        UserContext.setUser( user );
-        UserContext.setUserSetting( UserSettingKey.DB_LOCALE, dbLocale );
 
         List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
         List<String> filters = Lists.newArrayList( contextService.getParameterValues( "filter" ) );
@@ -274,15 +273,12 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
         User user = currentUserService.getCurrentUser();
+        setUserContext( user, translateParams );
 
         if ( !aclService.canRead( user, getEntityClass() ) )
         {
             throw new ReadAccessDeniedException( "You don't have the proper permissions to read objects of this type." );
         }
-
-        Locale dbLocale = getLocaleWithDefault( translateParams );
-        UserContext.setUser( user );
-        UserContext.setUserSetting( UserSettingKey.DB_LOCALE, dbLocale );
 
         List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
 
@@ -311,7 +307,9 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
 
         T persistedObject = entities.get( 0 );
 
-        if ( !aclService.canUpdate( currentUserService.getCurrentUser(), persistedObject ) )
+        User user = currentUserService.getCurrentUser();
+
+        if ( !aclService.canUpdate( user, persistedObject ) )
         {
             throw new UpdateAccessDeniedException( "You don't have the proper permissions to update this object." );
         }
@@ -349,13 +347,8 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
             property.getSetterMethod().invoke( persistedObject, value );
         }
 
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setStrategy( ImportStrategy.UPDATE );
-        importOptions.setMergeMode( MergeMode.MERGE );
-
-        ImportTypeSummary importTypeSummary = importService.importObject( currentUserService.getCurrentUser().getUid(), persistedObject, importOptions );
-
-        webMessageService.send( WebMessageUtils.importTypeSummary( importTypeSummary ), response, request );
+        preheatService.refresh( persistedObject );
+        manager.update( persistedObject );
     }
 
     private List<String> getJsonProperties( String payload ) throws IOException
@@ -424,33 +417,8 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
 
         property.getSetterMethod().invoke( persistedObject, value );
 
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setStrategy( ImportStrategy.UPDATE );
-        importOptions.setMergeMode( MergeMode.MERGE );
-        ImportTypeSummary importTypeSummary = importService.importObject( currentUserService.getCurrentUser().getUid(), persistedObject, importOptions );
-
-        webMessageService.send( WebMessageUtils.importTypeSummary( importTypeSummary ), response, request );
-    }
-
-    protected Locale getLocaleWithDefault( TranslateParams translateParams )
-    {
-        return translateParams.isTranslate() ?
-            translateParams.getLocaleWithDefault( (Locale) userSettingService.getUserSetting( UserSettingKey.DB_LOCALE ) ) : null;
-    }
-
-    protected void translate( List<?> entities, TranslateParams translateParams )
-    {
-        if ( translateParams.isTranslate() )
-        {
-            if ( translateParams.defaultLocale() )
-            {
-                i18nService.internationalise( entities );
-            }
-            else
-            {
-                i18nService.internationalise( entities, translateParams.getLocale() );
-            }
-        }
+        preheatService.refresh( persistedObject );
+        manager.update( persistedObject );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -459,11 +427,6 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
     {
         WebOptions options = new WebOptions( parameters );
         List<T> entities = getEntity( uid, options );
-
-        if ( translateParams != null )
-        {
-            translate( entities, translateParams );
-        }
 
         if ( entities.isEmpty() )
         {
@@ -566,11 +529,17 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         params.addObject( parsed );
 
         ImportReport importReport = metadataImportService.importMetadata( params );
-        WebMessage webMessage = WebMessageUtils.objectReport( importReport );
+        ObjectReport objectReport = getObjectReport( importReport );
+        WebMessage webMessage = WebMessageUtils.objectReport( objectReport );
 
-        if ( webMessage.getStatus() == Status.OK )
+        if ( objectReport != null && webMessage.getStatus() == Status.OK )
         {
             webMessage.setHttpStatus( HttpStatus.CREATED );
+            response.setHeader( "Location", contextService.getApiPath() + getSchema().getRelativeApiEndpoint()
+                + "/" + objectReport.getUid() );
+
+            T entity = manager.get( objectReport.getUid() );
+            postCreateEntity( entity );
         }
 
         webMessageService.send( webMessage, response, request );
@@ -626,14 +595,34 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         params.addObject( parsed );
 
         ImportReport importReport = metadataImportService.importMetadata( params );
-        WebMessage webMessage = WebMessageUtils.objectReport( importReport );
+        ObjectReport objectReport = getObjectReport( importReport );
+        WebMessage webMessage = WebMessageUtils.objectReport( objectReport );
 
-        if ( webMessage.getStatus() == Status.OK )
+        if ( objectReport != null && webMessage.getStatus() == Status.OK )
         {
             webMessage.setHttpStatus( HttpStatus.CREATED );
+            response.setHeader( "Location", contextService.getApiPath() + getSchema().getRelativeApiEndpoint()
+                + "/" + objectReport.getUid() );
+            T entity = manager.get( objectReport.getUid() );
+            postCreateEntity( entity );
         }
 
         webMessageService.send( webMessage, response, request );
+    }
+
+    private ObjectReport getObjectReport( ImportReport importReport )
+    {
+        if ( !importReport.getTypeReports().isEmpty() )
+        {
+            TypeReport typeReport = importReport.getTypeReports().get( 0 );
+
+            if ( !typeReport.getObjectReports().isEmpty() )
+            {
+                return typeReport.getObjectReports().get( 0 );
+            }
+        }
+
+        return null;
     }
 
     //--------------------------------------------------------------------------
@@ -698,7 +687,15 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         params.addObject( parsed );
 
         ImportReport importReport = metadataImportService.importMetadata( params );
-        webMessageService.send( WebMessageUtils.objectReport( importReport ), response, request );
+        WebMessage objectReport = WebMessageUtils.objectReport( importReport );
+
+        if ( importReport.getStatus() == Status.OK )
+        {
+            T entity = manager.get( pvUid );
+            postUpdateEntity( entity );
+        }
+
+        webMessageService.send( objectReport, response, request );
     }
 
     @RequestMapping( value = "/{uid}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE )
@@ -759,6 +756,13 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         params.addObject( parsed );
 
         ImportReport importReport = metadataImportService.importMetadata( params );
+
+        if ( importReport.getStatus() == Status.OK )
+        {
+            T entity = manager.get( pvUid );
+            postUpdateEntity( entity );
+        }
+
         webMessageService.send( WebMessageUtils.objectReport( importReport ), response, request );
     }
 
@@ -801,12 +805,15 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
         TranslateParams translateParams,
         HttpServletRequest request, HttpServletResponse response ) throws Exception
     {
-        if ( !aclService.canRead( currentUserService.getCurrentUser(), getEntityClass() ) )
+        User user = currentUserService.getCurrentUser();
+        setUserContext( user, translateParams );
+
+        if ( !aclService.canRead( user, getEntityClass() ) )
         {
             throw new ReadAccessDeniedException( "You don't have the proper permissions to read objects of this type." );
         }
 
-        RootNode rootNode = getObjectInternal( pvUid, parameters, Lists.<String>newArrayList(), Lists.newArrayList( pvProperty + "[:all]" ), translateParams );
+        RootNode rootNode = getObjectInternal( pvUid, parameters, Lists.newArrayList(), Lists.newArrayList( pvProperty + "[:all]" ), translateParams );
 
         // TODO optimize this using field filter (collection filtering)
         if ( !rootNode.getChildren().isEmpty() && rootNode.getChildren().get( 0 ).isCollection() )
@@ -1081,6 +1088,24 @@ public abstract class AbstractCrudController<T extends IdentifiableObject>
     //--------------------------------------------------------------------------
     // Helpers
     //--------------------------------------------------------------------------
+
+    protected void setUserContext( TranslateParams translateParams )
+    {
+        setUserContext( currentUserService.getCurrentUser(), translateParams );
+    }
+
+    protected void setUserContext( User user, TranslateParams translateParams )
+    {
+        Locale dbLocale = getLocaleWithDefault( translateParams );
+        UserContext.setUser( user );
+        UserContext.setUserSetting( UserSettingKey.DB_LOCALE, dbLocale );
+    }
+
+    protected Locale getLocaleWithDefault( TranslateParams translateParams )
+    {
+        return translateParams.isTranslate() ?
+            translateParams.getLocaleWithDefault( (Locale) userSettingService.getUserSetting( UserSettingKey.DB_LOCALE ) ) : null;
+    }
 
     @SuppressWarnings( "unchecked" )
     protected List<T> getEntityList( WebMetadata metadata, WebOptions options, List<String> filters,

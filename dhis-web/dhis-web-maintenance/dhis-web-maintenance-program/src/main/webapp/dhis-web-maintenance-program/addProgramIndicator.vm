@@ -3,6 +3,7 @@ jQuery( document ).ready( function()
 {
 	validation2( 'programIndicatorForm', function( form )
 	{
+		 #tblDynamicAttributesJavascript()
 		form.submit();
 	},{
 		'beforeValidateHandler' : function()
@@ -25,10 +26,10 @@ jQuery( document ).ready( function()
 <form id="programIndicatorForm" action="addProgramIndicator.action" method="post" class="inputForm">
 <input type='hidden' id='programId' name='programId' value='$program.id'>
 
-<table>	 
+<table>
 	<thead>
       <tr>
-        <th colspan="2">$i18n.getString( "program_indicator_details" )</th>
+        <th colspan="2">$i18n.getString( "program_indicator_details" )sadasd</th>
       </tr>
     </thead>
 	<tbody>
@@ -94,6 +95,11 @@ jQuery( document ).ready( function()
 			<td><input type="checkbox" id="displayInForm" name="displayInForm" value="true"></td>
 		</tr>
 </table>
+
+<br>
+
+#tblDynamicAttributes( { "attributes": $attributes, "attributeValues": $attributeValues } )
+
 <br>
 
 #parse( "/dhis-web-maintenance-program/programIndicatorForm.vm" )

@@ -28,6 +28,10 @@ package org.hisp.dhis.sms.command;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.util.Set;
+
+import org.hisp.dhis.common.DxfNamespaces;
+
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramStage;
@@ -35,29 +39,26 @@ import org.hisp.dhis.sms.command.code.SMSCode;
 import org.hisp.dhis.sms.parse.ParserType;
 import org.hisp.dhis.user.UserGroup;
 
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
+@JacksonXmlRootElement( localName = "smscommand", namespace = DxfNamespaces.DXF_2_0 )
 public class SMSCommand
 {
     // Default message
 
     public static final String WRONG_FORMAT_MESSAGE = "Wrong format for command";
-
     public static final String MORE_THAN_ONE_ORGUNIT_MESSAGE = "Found more than one org unit for this number. Please specify one organisation unit";
-
     public static final String NO_USER_MESSAGE = "No user associated with this phone number. Please contact your supervisor.";
-
-    public static final String ALERT_FEEDBACK = "Your alert message sent";
-    
+    public static final String ALERT_FEEDBACK = "Your alert message sent";    
     public static final String PARAMETER_MISSING = "Mandatory parameter is missing";
-        
-
+    
     // Completeness method code
 
     public static final int RECEIVE_ALL_DATAVALUE = 1;
-
     public static final int RECEIVE_AT_LEAST_ONE_DATAVALUE = 2;
-
     public static final int DO_NOT_MARK_COMPLETE = 3;
 
     private int id;
@@ -204,6 +205,8 @@ public class SMSCommand
 
     }
 
+    @JsonProperty( value = "commandName" )
+    @JacksonXmlProperty( localName = "commandName" )
     public String getName()
     {
         return name;
@@ -244,6 +247,9 @@ public class SMSCommand
         this.dataset = dataset;
     }
 
+    @JsonProperty( value = "smsCode" )
+    @JacksonXmlElementWrapper( localName = "smsCode", namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "smsCode", namespace = DxfNamespaces.DXF_2_0 )
     public Set<SMSCode> getCodes()
     {
         return codes;
@@ -254,6 +260,8 @@ public class SMSCommand
         this.codes = codes;
     }
 
+    @JsonProperty( value = "separator" )
+    @JacksonXmlProperty( localName = "separator" )
     public String getSeparator()
     {
         return separator;
@@ -284,12 +292,15 @@ public class SMSCommand
         this.defaultMessage = defaultMessage;
     }
 
+    @JsonProperty( value = "parserType" )
+    @JacksonXmlProperty( localName = "parserType" )
     public ParserType getParserType()
     {
         if ( parserType == null )
         {
             return ParserType.KEY_VALUE_PARSER;
         }
+        
         return parserType;
     }
 

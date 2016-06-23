@@ -33,19 +33,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.hisp.dhis.common.BaseIdentifiableObject;
+import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.IllegalQueryException;
+import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.message.MessageSender;
+import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
+import org.hisp.dhis.program.Program;
+import org.hisp.dhis.program.ProgramInstance;
 import org.hisp.dhis.program.ProgramInstanceService;
+import org.hisp.dhis.program.ProgramService;
+import org.hisp.dhis.program.ProgramStageInstance;
 import org.hisp.dhis.program.ProgramStageInstanceService;
 import org.hisp.dhis.sms.outbound.GatewayResponse;
 import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.trackedentity.TrackedEntityInstanceService;
-
+import org.hisp.dhis.trackedentityattributevalue.TrackedEntityAttributeValue;
+import org.hisp.dhis.user.CurrentUserService;
+import org.hisp.dhis.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +74,9 @@ public class DefaultProgramMessageService
     // -------------------------------------------------------------------------
 
     @Autowired
+    protected IdentifiableObjectManager manager;
+
+    @Autowired
     private ProgramMessageStore programMessageStore;
 
     @Autowired
@@ -76,56 +89,55 @@ public class DefaultProgramMessageService
     private ProgramInstanceService programInstanceService;
 
     @Autowired
+    private ProgramService programService;
+
+    @Autowired
     private ProgramStageInstanceService programStageInstanceService;
 
     @Autowired
     private List<MessageSender> messageSenders;
+
+    @Autowired
+    private CurrentUserService currentUserService;
 
     // -------------------------------------------------------------------------
     // Implementation methods
     // -------------------------------------------------------------------------
 
     @Override
-    public ProgramMessageQueryParams getFromUrl( Set<String> ou, String trackedEntityInstance, String emailAddress,
-        String programInstance, String programStageInstance, ProgramMessageStatus messageStatus,
-        Set<DeliveryChannel> deliveryChannels, ProgramMessageCategory category, Integer page, Integer pageSize,
-        Date fromDate, Date toDate, Date afterDate, Date beforeDate )
+    public ProgramMessageQueryParams getFromUrl( Set<String> ou, String piUid, String psiUid,
+        ProgramMessageStatus messageStatus, Integer page, Integer pageSize, Date afterDate, Date beforeDate )
     {
         ProgramMessageQueryParams params = new ProgramMessageQueryParams();
 
-        if ( ou != null )
+        if ( piUid != null )
         {
-            for ( String uid : ou )
+            if ( manager.exists( ProgramInstance.class, piUid ) )
             {
-                params.getOrganisationUnit().add( organisationUnitService.getOrganisationUnit( uid ) );
+                params.setProgramInstance( manager.get( ProgramInstance.class, piUid ) );
+            }
+            else
+            {
+                throw new IllegalQueryException( "ProgramInstance does not exist." );
             }
         }
 
-        if ( trackedEntityInstance != null )
+        if ( psiUid != null )
         {
-            params.setTrackedEntityInstance(
-                trackedEntityInstanceService.getTrackedEntityInstance( trackedEntityInstance ) );
+            if ( manager.exists( ProgramStageInstance.class, psiUid ) )
+            {
+                params.setProgramStageInstance( manager.get( ProgramStageInstance.class, psiUid ) );
+            }
+            else
+            {
+                throw new IllegalQueryException( "ProgramStageInstance does not exist." );
+            }
         }
 
-        if ( programInstance != null )
-        {
-            params.setProgramInstance( programInstanceService.getProgramInstance( programInstance ) );
-        }
-
-        if ( programStageInstance != null )
-        {
-            params
-                .setProgramStageInstance( programStageInstanceService.getProgramStageInstance( programStageInstance ) );
-        }
-
-        params.setCategory( category );
-        params.setDeliveryChannels( deliveryChannels );
+        params.setOrganisationUnit( ou );
         params.setMessageStatus( messageStatus );
-        params.setEmailAddress( emailAddress );
         params.setPage( page );
         params.setPageSize( pageSize );
-        params.setFromDate( fromDate );
-        params.setToDate( toDate );
         params.setAfterDate( afterDate );
         params.setBeforeDate( beforeDate );
 
@@ -159,8 +171,8 @@ public class DefaultProgramMessageService
     @Override
     public List<ProgramMessage> getProgramMessages( ProgramMessageQueryParams params )
     {
-        hasAccess( params );
-        validateParams( params );
+        hasAccess( params, currentUserService.getCurrentUser() );
+        validateQueryParameters( params );
 
         return programMessageStore.getProgramMessages( params );
     }
@@ -205,6 +217,8 @@ public class DefaultProgramMessageService
                 }
                 else
                 {
+                    log.error( "No gateway configuration found." );
+
                     return GatewayResponse.RESULT_CODE_503.getResponseMessage();
                 }
             }
@@ -212,8 +226,10 @@ public class DefaultProgramMessageService
 
         if ( programMessage.getStoreCopy() )
         {
+            programMessage.setProgramInstance( (ProgramInstance) getEntity( programMessage, ProgramInstance.class ) );
+            programMessage.setProgramStageInstance(
+                (ProgramStageInstance) getEntity( programMessage, ProgramStageInstance.class ) );
             programMessage.setProcessedDate( new Date() );
-            programMessage.setMessageCategory( ProgramMessageCategory.OUTGOING );
             programMessage.setMessageStatus(
                 result.equals( "success" ) ? ProgramMessageStatus.SENT : ProgramMessageStatus.FAILED );
 
@@ -224,51 +240,50 @@ public class DefaultProgramMessageService
     }
 
     @Override
-    public void hasAccess( ProgramMessageQueryParams params )
+    public void hasAccess( ProgramMessageQueryParams params, User user )
     {
+        ProgramInstance programInstance = null;
 
+        Set<Program> programs = new HashSet<>();
+
+        if ( params.hasProgramInstance() )
+        {
+            programInstance = params.getProgramInstrance();
+        }
+
+        if ( params.hasProgramStageInstance() )
+        {
+            programInstance = params.getProgramStageInstance().getProgramInstance();
+        }
+
+        programs = programService.getUserPrograms( user );
+
+        if ( user != null && !programs.contains( programInstance.getProgram() ) )
+        {
+            throw new IllegalQueryException( "User does not have access to the required program." );
+        }
     }
 
     @Override
-    public void validateParams( ProgramMessageQueryParams params )
+    public void validateQueryParameters( ProgramMessageQueryParams params )
     {
         String violation = null;
 
-        if ( params.hasOrignisationUnit() && params.hasPhoneNumbers() )
+        if ( !params.hasProgramInstance() && !params.hasProgramStageInstance() )
         {
-            violation = "OrganisationUnit and PhoneNumber cannot co-exist";
-        }
-
-        if ( params.hasTrackedEntityInstance() && params.hasPhoneNumbers() )
-        {
-            violation = "TrackedEntityInstance and PhoneNumber cannot co-exist";
-        }
-
-        if ( params.hasProgramStageInstance() && !params.hasProgramInstance() )
-        {
-            violation = "ProgramInstance should be there with ProgramStageInstance";
-        }
-
-        if ( params.hasFromDate() && !params.hasToDate() )
-        {
-            violation = "fromDate should be accompanied with toDate";
-        }
-
-        if ( !params.hasFromDate() && params.hasToDate() )
-        {
-            violation = "fromDate should be accompanied with toDate";
+            violation = "ProgramInstance or ProgramStageInstance must be provided.";
         }
 
         if ( violation != null )
         {
-            log.warn( "Param Validation failed: " + violation );
+            log.warn( "Parameter validation failed: " + violation );
 
             throw new IllegalQueryException( violation );
         }
     }
 
     @Override
-    public void validateProgramMessagePayload( ProgramMessage message )
+    public void validatePayload( ProgramMessage message )
     {
         String violation = null;
 
@@ -282,6 +297,11 @@ public class DefaultProgramMessageService
         if ( message.getDeliveryChannels().isEmpty() )
         {
             violation = "Delivery Channel must be provided";
+        }
+
+        if ( message.getProgramInstance() == null && message.getProgramStageInstance() == null )
+        {
+            violation = "ProgramInstance or ProgramStageInstance must be provided";
         }
 
         if ( message.getDeliveryChannels().contains( DeliveryChannel.SMS ) )
@@ -302,15 +322,23 @@ public class DefaultProgramMessageService
             }
         }
 
+        if ( recipients.getTrackedEntityInstance() != null && trackedEntityInstanceService
+            .getTrackedEntityInstance( recipients.getTrackedEntityInstance().getUid() ) == null )
+        {
+            violation = "TrackedEntity does not exist";
+        }
+
+        if ( recipients.getOrganisationUnit() != null
+            && organisationUnitService.getOrganisationUnit( recipients.getOrganisationUnit().getUid() ) == null )
+        {
+            violation = "OrganisationUnit does not exist";
+        }
+
         if ( violation != null )
         {
-            log.info( "Message Validation Failed: " + violation );
+            log.info( "Message validation failed: " + violation );
 
             throw new IllegalQueryException( violation );
-        }
-        else
-        {
-            log.info( "Message Validation Successful" );
         }
     }
 
@@ -318,39 +346,75 @@ public class DefaultProgramMessageService
     // Supportive Methods
     // ---------------------------------------------------------------------
 
+    private Object getEntity( ProgramMessage programMessage, Class<? extends BaseIdentifiableObject> klass )
+    {
+        if ( programMessage.getProgramInstance() != null
+            && programMessage.getProgramInstance().getClass().equals( klass ) )
+        {
+            return programInstanceService.getProgramInstance( programMessage.getProgramInstance().getUid() );
+        }
+
+        if ( programMessage.getProgramStageInstance() != null
+            && programMessage.getProgramStageInstance().getClass().equals( klass ) )
+        {
+            return programStageInstanceService
+                .getProgramStageInstance( programMessage.getProgramStageInstance().getUid() );
+        }
+
+        return null;
+    }
+
     private ProgramMessage fillAttributes( ProgramMessage message )
     {
-        String ou = message.getRecipients().getOrganisationUnitUid();
+        OrganisationUnit orgUnit = null;
 
-        String tei = message.getRecipients().getTrackedEntityInstanceUid();
+        TrackedEntityInstance tei = null;
+
+        if ( message.getRecipients().getOrganisationUnit() != null )
+        {
+            String ou = message.getRecipients().getOrganisationUnit().getUid();
+
+            orgUnit = organisationUnitService.getOrganisationUnit( ou );
+
+            message.getRecipients().setOrganisationUnit( orgUnit );
+        }
+
+        if ( message.getRecipients().getTrackedEntityInstance() != null )
+        {
+            String teiUid = message.getRecipients().getTrackedEntityInstance().getUid();
+
+            tei = trackedEntityInstanceService.getTrackedEntityInstance( teiUid );
+
+            message.getRecipients().setTrackedEntityInstance( tei );
+        }
 
         if ( message.getDeliveryChannels().contains( DeliveryChannel.EMAIL ) )
         {
-            if ( ou != null )
+            if ( orgUnit != null )
             {
                 message.getRecipients().getEmailAddresses()
-                    .add( organisationUnitService.getOrganisationUnit( ou ).getEmail() );
+                    .add( getOrgnisationUnitRecipient( orgUnit, DeliveryChannel.EMAIL ) );
             }
 
             if ( tei != null )
             {
-                message.getRecipients().getEmailAddresses().add(
-                    getTrackedEntityInstanceParameter( trackedEntityInstanceService.getTrackedEntityInstance( tei ) ) );
+                message.getRecipients().getEmailAddresses()
+                    .add( getTrackedEntityInstanceRecipient( tei, ValueType.EMAIL ) );
             }
         }
 
         if ( message.getDeliveryChannels().contains( DeliveryChannel.SMS ) )
         {
-            if ( ou != null )
+            if ( orgUnit != null )
             {
                 message.getRecipients().getPhoneNumbers()
-                    .add( organisationUnitService.getOrganisationUnit( ou ).getPhoneNumber() );
+                    .add( getOrgnisationUnitRecipient( orgUnit, DeliveryChannel.SMS ) );
             }
 
             if ( tei != null )
             {
-                message.getRecipients().getPhoneNumbers().add(
-                    getTrackedEntityInstanceParameter( trackedEntityInstanceService.getTrackedEntityInstance( tei ) ) );
+                message.getRecipients().getPhoneNumbers()
+                    .add( getTrackedEntityInstanceRecipient( tei, ValueType.PHONE_NUMBER ) );
             }
         }
 
@@ -363,13 +427,49 @@ public class DefaultProgramMessageService
 
         mapper.put( DeliveryChannel.EMAIL, tmp.getRecipients().getEmailAddresses() );
         mapper.put( DeliveryChannel.SMS, tmp.getRecipients().getPhoneNumbers() );
-
         return mapper;
     }
 
-    private String getTrackedEntityInstanceParameter( TrackedEntityInstance tei )
+    private String getOrgnisationUnitRecipient( OrganisationUnit orgUnit, DeliveryChannel channel )
     {
-        // fetch phonenumber for trackentity instance
-        return null;
+        String to = null;
+
+        if ( channel.equals( DeliveryChannel.EMAIL ) )
+        {
+            to = orgUnit.getEmail();
+        }
+
+        if ( channel.equals( DeliveryChannel.SMS ) )
+        {
+            to = orgUnit.getPhoneNumber();
+        }
+
+        if ( to != null )
+        {
+            return to;
+        }
+        else
+        {
+            log.error( "OrganisationUnit does not have required parameter" );
+
+            throw new IllegalQueryException( "OrganisationUnit does not have required parameter" );
+        }
+    }
+
+    private String getTrackedEntityInstanceRecipient( TrackedEntityInstance tei, ValueType type )
+    {
+        Set<TrackedEntityAttributeValue> attributeValues = tei.getTrackedEntityAttributeValues();
+
+        for ( TrackedEntityAttributeValue value : attributeValues )
+        {
+            if ( value.getAttribute().getValueType().equals( type ) )
+            {
+                return value.getPlainValue();
+            }
+        }
+
+        log.error( "TrackedEntity does not have " + type.toString() );
+
+        throw new IllegalQueryException( "TrackedEntity does not have " + type.toString() );
     }
 }

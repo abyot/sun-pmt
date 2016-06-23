@@ -29,6 +29,7 @@ package org.hisp.dhis.trackedentity.action.trackedentityattribute;
  */
 
 import com.opensymphony.xwork2.Action;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.analytics.AggregationType;
 import org.hisp.dhis.attribute.AttributeService;
@@ -126,6 +127,20 @@ public class UpdateAttributeAction
     {
         this.valueType = valueType;
     }
+    
+    private Boolean generated;
+
+    public void setGenerated( Boolean generated )
+    {
+        this.generated = generated;
+    }
+
+    private String pattern;
+
+    public void setPattern( String pattern )
+    {
+        this.pattern = pattern;
+    }
 
     private String aggregationType;
 
@@ -216,6 +231,8 @@ public class UpdateAttributeAction
         trackedEntityAttribute.setCode( StringUtils.trimToNull( code ) );
         trackedEntityAttribute.setDescription( StringUtils.trimToNull( description ) );
         trackedEntityAttribute.setValueType( valueType );
+        trackedEntityAttribute.setGenerated( generated );
+        trackedEntityAttribute.setPattern( pattern );
         trackedEntityAttribute.setAggregationType( AggregationType.fromValue( aggregationType ) );
         trackedEntityAttribute.setExpression( expression );
         trackedEntityAttribute.setDisplayOnVisitSchedule( false );
@@ -249,6 +266,16 @@ public class UpdateAttributeAction
         else if ( ValueType.TRACKER_ASSOCIATE == valueType )
         {
             trackedEntityAttribute.setTrackedEntity( trackedEntityService.getTrackedEntity( trackedEntityId ) );
+        }
+        
+        if( !unique ) 
+        {
+            trackedEntityAttribute.setGenerated( false );
+            trackedEntityAttribute.setPattern( "" );
+        }
+        else if( !generated ) 
+        {
+            trackedEntityAttribute.setPattern( "" );
         }
 
         if ( legendSetId != null )

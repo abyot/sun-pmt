@@ -69,6 +69,7 @@ import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.period.MonthlyPeriodType;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
+import org.hisp.dhis.predictor.Predictor;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
@@ -204,6 +205,18 @@ public abstract class DhisConvenienceTest
     public static Date getDate( int year, int month, int day )
     {
         DateTime dateTime = new DateTime( year, month, day, 0, 0 );
+        return dateTime.toDate();
+    }
+
+    /**
+     * Creates a date.
+     *
+     * @param s a string representation of a date
+     * @return a date.
+     */
+    public static Date getDate( String s )
+    {
+        DateTime dateTime = new DateTime( s );
         return dateTime.toDate();
     }
 
@@ -831,6 +844,22 @@ public abstract class DhisConvenienceTest
      * @param startDate The start date.
      * @param endDate   The end date.
      */
+    public static Period createPeriod( PeriodType type, Date startDate )
+    {
+        Period period = new Period();
+        period.setAutoFields();
+
+        period.setPeriodType( type );
+        period.setStartDate( startDate );
+
+        return period;
+    }
+
+    /**
+     * @param type      The PeriodType.
+     * @param startDate The start date.
+     * @param endDate   The end date.
+     */
     public static Period createPeriod( PeriodType type, Date startDate, Date endDate )
     {
         Period period = new Period();
@@ -1081,6 +1110,43 @@ public abstract class DhisConvenienceTest
         expression.setDataElementsInExpression( dataElementsInExpression );
 
         return expression;
+    }
+
+    /**
+     * Creates a Predictor
+     *
+     * @param uniqueCharacter       A unique character to identify the object.
+     * @param expr                  The right side expression.
+     * @param skipTest              The skiptest expression
+     * @param periodType            The period-type.
+     * @param organisationUnitLevel The unit level of organisations to be
+     *                              evaluated by this rule.
+     * @param sequentialSampleCount How many sequential past periods to sample.
+     * @param annualSampleCount     How many years of past periods to sample.
+     * @param sequentialSkipCount   How many periods in the current year to skip
+     */
+    public static Predictor createPredictor( DataElement writes,
+        String uniqueCharacter, Expression expr, Expression skipTest,
+        PeriodType periodType, Integer organisationUnitLevel,
+        int sequentialSampleCount, int sequentialSkipCount, int annualSampleCount )
+    {
+        Predictor predictor = new Predictor();
+        Set<Integer> orglevels=new HashSet<Integer>();
+        orglevels.add(organisationUnitLevel);
+        predictor.setAutoFields();
+
+        predictor.setOutput( writes );
+        predictor.setName( "Predictor" + uniqueCharacter );
+        predictor.setDescription( "Description" + uniqueCharacter );
+        predictor.setGenerator( expr );
+        predictor.setSampleSkipTest( skipTest );
+        predictor.setPeriodType( periodType );
+        predictor.setOrganisationUnitLevels( orglevels );
+        predictor.setSequentialSampleCount( sequentialSampleCount );
+        predictor.setAnnualSampleCount( annualSampleCount );
+        predictor.setSequentialSkipCount( sequentialSkipCount );
+
+        return predictor;
     }
 
     public static Legend createLegend( char uniqueCharacter, Double startValue, Double endValue )
@@ -1505,7 +1571,7 @@ public abstract class DhisConvenienceTest
     }
 
     /**
-     * @param uniqueChar A unique character to identify the object.
+     * @param uniqueCharacter A unique character to identify the object.
      * @return TrackedEntityInstanceReminder
      */
     public static TrackedEntityInstanceReminder createTrackedEntityInstanceReminder( char uniqueCharacter, 

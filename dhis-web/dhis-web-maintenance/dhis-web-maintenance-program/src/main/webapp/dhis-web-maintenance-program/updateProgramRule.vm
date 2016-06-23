@@ -24,6 +24,7 @@
 		removeDuplicateOptions();
 	});
 	
+        var i18n_none = '$encoder.jsEscape( $i18n.getString( "none" ) , "'" )';
 	var i18n_add_source_field = '$encoder.jsEscape( $i18n.getString( "add_source_field" ) , "'" )';
 	var i18n_hide_field = '$encoder.jsEscape( $i18n.getString( "hide_field" ) , "'" )';
 	var i18n_show_warning = '$encoder.jsEscape( $i18n.getString( "show_warning" ) , "'" )';
@@ -35,6 +36,8 @@
 	var i18n_please_enter_warning_message = '$encoder.jsEscape( $i18n.getString( "please_enter_warning_message" ) , "'")';
 	var i18n_please_enter_alert_message_when_hiding_a_field = '$encoder.jsEscape( $i18n.getString( "please_enter_alert_message_when_hiding_a_field_that_contains_value" ) , "'")';
 	var i18n_please_enter_alert_message_when_hiding_a_section = '$encoder.jsEscape( $i18n.getString( "please_enter_alert_message_when_hiding_a_section_that_contains_values" ) , "'")';
+	var i18n_show_error_on_complete = '$encoder.jsEscape( $i18n.getString( "show_error_on_complete" ) , "'" )';
+        var i18n_show_warning_on_complete = '$encoder.jsEscape( $i18n.getString( "show_warning_on_complete" ) , "'" )';
 	var i18n_hide_section = '$encoder.jsEscape( $i18n.getString( "hide_section" ) , "'" )';
         var i18n_data_element_label = '$encoder.jsEscape( $i18n.getString( "data_element" ) , "'" )';
         var i18n_program_attribute_label = '$encoder.jsEscape( $i18n.getString( "program_attribute" ) , "'" )';        
@@ -186,9 +189,11 @@
 								 <tr $clazz id="$action.uid">                                                            
 									 <td>
 										 <select class='actionList' style='width:100%' onchange="actionListToggle(this)">
-												 <option value='HIDEFIELD' #if($action.programRuleActionType=='HIDEFIELD') selected #end errorMessage="$i18n.getString('please_enter_error_message')">$i18n.getString("hide_field")</option>
+												 <option value='HIDEFIELD' #if($action.programRuleActionType=='HIDEFIELD') selected #end errorMessage="$i18n.getString('please_enter_alert_message_when_hiding_a_field_that_contains_value')">$i18n.getString("hide_field")</option>
 												 <option value='SHOWWARNING' #if($action.programRuleActionType=='SHOWWARNING') selected #end  errorMessage="$i18n.getString('please_enter_warning_message')">$i18n.getString("show_warning")</option>
-												 <option value='SHOWERROR' #if($action.programRuleActionType=='SHOWERROR') selected #end  errorMessage="$i18n.getString('please_enter_alert_message_when_hiding_a_field_that_contains_value')">$i18n.getString("show_error")</option>
+												 <option value='SHOWERROR' #if($action.programRuleActionType=='SHOWERROR') selected #end  errorMessage="$i18n.getString('please_enter_error_message')">$i18n.getString("show_error")</option>
+												 <option value='WARNINGONCOMPLETE' #if($action.programRuleActionType=='WARNINGONCOMPLETE') selected #end  errorMessage="$i18n.getString('please_enter_warning_message')">$i18n.getString("show_warning_on_complete")</option>
+												 <option value='ERRORONCOMPLETE' #if($action.programRuleActionType=='ERRORONCOMPLETE') selected #end  errorMessage="$i18n.getString('please_enter_error_message')">$i18n.getString("show_error_on_complete")</option>
 												 <option value='HIDESECTION' #if($action.programRuleActionType=='HIDESECTION') selected #end  errorMessage="$i18n.getString('please_enter_alert_message_when_hiding_a_section_that_contains_values')">$i18n.getString("hide_section")</option>
 										 </select>
 									 </td>
@@ -196,10 +201,12 @@
 									 <td>                                                                                
 										<span class="deCell" #if($action.programRuleActionType=='HIDESECTION') style='display:none;' #end>
 											<select style='width:100%;'>                                                                                                
-                                                                                            #if( $action.dataElement && $action.dataElement.displayName != 'undefined')
+                                                                                            #if( $action.dataElement )
                                                                                                 <option class='actionDEs' value="$action.dataElement.uid">$!encoder.htmlEncode( $action.dataElement.displayName )</option>
-                                                                                            #else
+                                                                                            #elseif( $action.trackedEntityAttribute )
                                                                                                 <option class='actionDEs' value="$action.attribute.id">$!encoder.htmlEncode( $action.attribute.name )</option>
+                                                                                            #else
+                                                                                                <option class='actionDEs' value="">$i18n.getString('none')</option>
                                                                                             #end
 											</select>
 										</span>
@@ -293,6 +300,13 @@
 					#end
 				</select>
 				<span style="color:red;display:none;" id="attributeIdError" ></span>
+			</td>
+		</td>
+		
+		<tr name="optionSetCodeSelection">
+			<td>$i18n.getString('use_optionset_code')</td>
+			<td>
+				<input type="checkbox" id="useOptionSetCode" name="useOptionSetCode" value="true">
 			</td>
 		</td>
 		
