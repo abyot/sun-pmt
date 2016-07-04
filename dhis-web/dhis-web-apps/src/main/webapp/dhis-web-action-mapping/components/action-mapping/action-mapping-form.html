@@ -1,0 +1,46 @@
+<div class="row col-sm-6 vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady" class="vertical-spacing">
+
+    <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
+        <div class="vertical-spacing" ng-repeat="dataElement in model.selectedDataSet.dataElements">
+            <table class="table table-bordered table-condensed">
+                <tr>
+                    <th class="active pull-center" colspan="{{dataElement.categoryCombo.categories[0].categoryOptions.length + 1}}">
+                        {{dataElement.name}}
+                    </th>
+                </tr>
+                <tr>
+                    <th class="active">
+                        {{'org_unit'| translate}}
+                    </th>
+                    <th class="active" ng-repeat="categoryOption in dataElement.categoryCombo.categories[0].categoryOptions">
+                        {{categoryOption.name}}
+                    </th>
+                </tr>
+                <tr ng-repeat="ou in model.childrenOu">
+                    <td>
+                        {{ou.name}}
+                    </td>
+                    <td ng-repeat="categoryOption in dataElement.categoryCombo.categories[0].categoryOptions">
+                        <input type="text">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
+        <table class="table table-bordered table-condensed"> 
+            <tbody>
+                <tr ng-repeat="dataElement in model.selectedDataSet.dataElements">
+                    <td>
+                        {{dataElement.name}}
+                    </td>
+                    <td ng-repeat="categoryOption in dataElement.categoryCombo.categories[0].categoryOptions">
+                        <input type="text">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>

@@ -62,7 +62,7 @@ public class DefaultDataElementCategoryService
     // -------------------------------------------------------------------------
     // Dependencies
     // -------------------------------------------------------------------------
-
+    
     private CategoryStore categoryStore;
 
     public void setCategoryStore( CategoryStore categoryStore )
@@ -675,8 +675,8 @@ public class DefaultDataElementCategoryService
 
     @Override
     public void generateOptionCombos( DataElementCategoryCombo categoryCombo )
-    {
-        categoryCombo.generateOptionCombos();
+    {   
+    	categoryCombo.generateOptionCombos();
 
         for ( DataElementCategoryOptionCombo optionCombo : categoryCombo.getOptionCombos() )
         {

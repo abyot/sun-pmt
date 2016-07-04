@@ -35,8 +35,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.CombinationGenerator;
 import org.hisp.dhis.common.DataDimensionType;
@@ -60,8 +58,6 @@ public class DataElementCategoryCombo
     extends BaseIdentifiableObject
 {
     public static final String DEFAULT_CATEGORY_COMBO_NAME = "default";
-    
-    private static final Log log = LogFactory.getLog( DataElementCategoryCombo.class );
 
     /**
      * A set with categories.
@@ -180,7 +176,7 @@ public class DataElementCategoryCombo
 
     public List<DataElementCategoryOptionCombo> generateOptionCombosList()
     {
-    	List<DataElementCategoryOptionCombo> list = new ArrayList<>();
+    	/*List<DataElementCategoryOptionCombo> list = new ArrayList<>();
 
     	List<Set<DataElementCategoryOption>> sets = new ArrayList<Set<DataElementCategoryOption>>();
     	
@@ -199,11 +195,9 @@ public class DataElementCategoryCombo
             list.add( optionCombo );
     	}
     	
-    	log.info( "The size is:  " + list.size() );
+        return list;*/
     	
-        return list;
-    	
-    	/*List<DataElementCategoryOptionCombo> list = new ArrayList<>();
+    	List<DataElementCategoryOptionCombo> list = new ArrayList<>();
 
         CombinationGenerator<DataElementCategoryOption> generator =
             new CombinationGenerator<>( getCategoryOptionsAsArray() );
@@ -216,7 +210,7 @@ public class DataElementCategoryCombo
             list.add( optionCombo );
         }
 
-        return list;*/
+        return list;
     }
 
     public List<DataElementCategoryOptionCombo> getSortedOptionCombos()
