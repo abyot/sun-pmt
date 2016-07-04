@@ -1,46 +1,76 @@
-<div class="row col-sm-6 vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady" class="vertical-spacing">
+<div class="row">
+    <div class="col-sm-6 vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
 
-    <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
-        <div class="vertical-spacing" ng-repeat="dataElement in model.selectedDataSet.dataElements">
-            <table class="table table-bordered table-condensed">
-                <tr>
-                    <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 1}}">
-                        {{dataElement.displayName}}
-                    </th>
-                </tr>
-                <tr>
-                    <th class="active">
-                        {{'org_unit'| translate}}
-                    </th>
-                    <th class="active" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                        {{oco.displayName}}
-                    </th>
-                </tr>
-                <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
-                    <td>
-                        {{model.selectedDataSet.organisationUnits[ou]}}
-                    </td>
-                    <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                        <input type="text">
-                    </td>
-                </tr>
+        <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
+            <div ng-repeat="dataElement in model.selectedDataSet.dataElements">
+
+                <div ng-if="dataElement.code && model.programs[dataElement.code]" class="selectionArea">
+                    <div class="col-sm-12">
+                        <span class="bold">{{'role_info_1'| translate}}</span>
+                        <a href ng-click="showInfo(header)"><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></a>
+                        <span class="bold">{{'role_info_2'| translate}}</span>
+                        <table class="table table-bordered table-condensed small-vertical-spacing">
+                            <tr>
+                                <td ng-repeat="header in model.roleHeders">
+                                    <a href ng-click="showInfo(header)">                                        
+                                        <span><i class="fa fa-question-circle superscript" title="{{'more_info' | translate}}"></i></span>
+                                    </a>
+                                    {{header.name}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td ng-repeat="header in model.roleHeders">
+                                    <!--<div class="row col-sm-12" ng-repeat=""></div>-->
+                                    <div class="row col-sm-12">
+                                        
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <table class="table table-bordered table-condensed vertical-spacing">
+                    <tr>
+                        <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 1}}">
+                            {{dataElement.displayName}}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="active">
+                            {{'org_unit'| translate}}
+                        </th>
+                        <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
+                            {{oco.displayName}}
+                        </th>
+                    </tr>
+                    <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
+                        <td>
+                            {{model.selectedDataSet.organisationUnits[ou]}}
+                        </td>
+                        <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
+                            <input type="text" class="form-control pull-center" ng-model="model.dataValues[ou][oco.id].value">
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+
+        <div ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
+            <table class="table table-bordered table-condensed"> 
+                <tbody>
+                    <tr ng-repeat="dataElement in model.selectedDataSet.dataElements">
+                        <td>
+                            {{dataElement.displayName}}
+                        </td>
+                        <td ng-repeat="categoryOption in dataElement.categoryCombo.categories[0].categoryOptions">
+                            <input type="text">
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
-    </div>
 
-    <div ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
-        <table class="table table-bordered table-condensed"> 
-            <tbody>
-                <tr ng-repeat="dataElement in model.selectedDataSet.dataElements">
-                    <td>
-                        {{dataElement.displayName}}
-                    </td>
-                    <td ng-repeat="categoryOption in dataElement.categoryCombo.categories[0].categoryOptions">
-                        <input type="text">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
+    </div>    
 </div>

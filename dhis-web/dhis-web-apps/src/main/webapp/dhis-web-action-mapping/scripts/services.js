@@ -239,7 +239,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.factory('ResultsFrameworkFactory', function($http, DialogService, $translate) {   
+.factory('DataValueService', function($http, DialogService, $translate) {   
     
     var errorNotifier = function(response){
         if( response && response.data && response.data.status === 'ERROR'){
@@ -261,8 +261,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });            
             return promise;
         },
-        getAll: function(){            
-            var promise = $http.get('../api/resultsFrameworks.json?fields=id,name,code,description,active,impacts[id,name],outcomes[id,name],outputs[id,name],programms[id,name,code,description,outcomes[id,name],outputs[id,name],subProgramms[id,name,code,description,outputs[id,name]]]&paging=false').then(function(response){               
+        getDataValueSets: function( params ){            
+            var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
             }, function(response){
                 errorNotifier(response);
@@ -356,7 +356,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
-.service('ActionMappingUtils', function(){
+.service('ActionMappingUtils', function($translate){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -370,6 +370,33 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 return 0;
             }        
             return parseFloat((op1 / op2)*100).toFixed(2) + '%';
+        },
+        getRoleHeaders: function(){
+            var headers = [];            
+            headers.push({id: 'catalyst', name: $translate.instant('catalyst')});
+            headers.push({id: 'funder', name: $translate.instant('funder')});
+            headers.push({id: 'responsibleMinistry', name: $translate.instant('responsible_ministry')});
+            
+            return headers;
+        },
+        getOptionComboIdFromOptionNames: function(optionComboMap, options){
+            
+            var optionNames = [];
+            angular.forEach(options, function(op){
+                optionNames.push(op.displayName);
+            });
+            
+            var selectedAttributeOcboName = optionNames.toString();
+            selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
+            var selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
+            
+            if( !selectedAttributeOcobo || angular.isUndefined( selectedAttributeOcobo ) ){
+                selectedAttributeOcboName = optionNames.reverse().toString();
+                selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
+                selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
+            }
+            
+            return selectedAttributeOcobo;
         }
     };
 })

@@ -402,6 +402,14 @@ div#orgUnitTree {
     border-radius: 3px;
 }
 
+.rolesArea {
+    border: 1px solid #81CBE0;
+    background-color: #A1D6E5;
+    padding-top: 10px;
+    padding-bottom: 10px;    
+    border-radius: 3px;
+}
+
 .div-bottom {
     position: absolute;
     bottom: 0;
@@ -698,4 +706,12 @@ div#orgUnitTree {
 
 .ui-select-dropdown, .select2-drop {
     z-index: 100;
+}
+
+.superscript {
+    position: relative; 
+    top: 0; 
+    font-size: 150%;
+    margin-top:0;
+    padding-top:0;
 }
