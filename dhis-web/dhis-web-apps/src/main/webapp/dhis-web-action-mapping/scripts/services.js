@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2sunpmt",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'dataElementGroups', 'dataElementGroupSets', 'indicatorGroups', 'indicatorGroupSets', 'categoryCombos', 'constants', 'attributes']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
     });
     return{
         currentStore: store
@@ -73,7 +73,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getCode: function(options, key){
             if(options){
                 for(var i=0; i<options.length; i++){
-                    if( key === options[i].name){
+                    if( key === options[i].displayName){
                         return options[i].code;
                     }
                 }
@@ -84,7 +84,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             if(options){
                 for(var i=0; i<options.length; i++){                    
                     if( key === options[i].code){
-                        return options[i].name;
+                        return options[i].displayName;
                     }
                 }
             }            
@@ -94,29 +94,55 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* Factory to fetch programs */
-.factory('DataSetFactory', function($q, $rootScope, $filter, SessionStorageService, PMTStorageService, orderByFilter, CommonUtils) { 
+.factory('DataSetFactory', function($q, $rootScope, $filter, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
   
     return {        
-        getAll: function(){            
+        getAll: function( ou ){            
+            var systemSetting = storage.get('SYSTEM_SETTING');
+            var allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
+    
             var roles = SessionStorageService.get('USER_ROLES');
             var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
             var def = $q.defer();
             
             PMTStorageService.currentStore.open().done(function(){
                 PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+                    var multiDs = angular.copy(dss);
                     var dataSets = [];
-                    angular.forEach(dss, function(ds){                            
-                        if( CommonUtils.userHasValidRole(ds,'dataSets',userRoles )){
+                    var pushedDss = [];
+                    
+                    angular.forEach(dss, function(ds){
+                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
+                            ds.entryMode = 'Single Entry';
                             dataSets.push(ds);
                         }
                     });
+                    
+                    if( allowMultiOrgUnitEntry && ou.c && ou.c.length > 0 ){
+                        
+                        angular.forEach(multiDs, function(ds){  
+                            
+                            if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
+
+                                angular.forEach(ou.c, function(c){                                    
+                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1){
+                                        ds.entryMode = 'Multiple Entry';                                            
+                                        dataSets.push(ds);
+                                        pushedDss.push( ds.id );                                            
+                                    }
+                                });
+                                
+                            }
+                        });
+                    }
+                                        
                     $rootScope.$apply(function(){
                         def.resolve(dataSets);
                     });
                 });
             });            
             return def.promise;            
-        },
+        },        
         get: function(uid){
             
             var def = $q.defer();

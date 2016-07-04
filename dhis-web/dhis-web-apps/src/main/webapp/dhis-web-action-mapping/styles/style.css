@@ -695,3 +695,7 @@ div#orgUnitTree {
     top: 50%;
     transform: translateY(-50%);
 }
+
+.ui-select-dropdown, .select2-drop {
+    z-index: 100;
+}

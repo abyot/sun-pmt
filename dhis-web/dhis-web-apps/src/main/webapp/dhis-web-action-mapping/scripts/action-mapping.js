@@ -28,7 +28,7 @@ if( dhis2.rf.memoryOnly ) {
 dhis2.rf.store = new dhis2.storage.Store({
     name: 'dhis2sunpmt',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'dataElementGroups', 'dataElementGroupSets', 'indicatorGroups', 'indicatorGroupSets', 'categoryCombos', 'constants', 'attributes']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
 });
 
 (function($) {
@@ -133,8 +133,13 @@ function downloadMetaData()
     promise = promise.then( getSystemSetting );
     promise = promise.then( getCalendarSetting );
     
+    //fetch category combos
+    promise = promise.then( getMetaCategoryCombos );
+    promise = promise.then( filterMissingCategoryCombos );
+    promise = promise.then( getCategoryCombos );
+    
     //fetch met attributes
-    promise = promise.then( getMetaAttributes );
+    /*promise = promise.then( getMetaAttributes );
     promise = promise.then( filterMissingAttributes );
     promise = promise.then( getAttributes );
     
@@ -142,11 +147,6 @@ function downloadMetaData()
     promise = promise.then( getMetaConstants );
     promise = promise.then( filterMissingConstants );
     promise = promise.then( getConstants );
-    
-    //fetch category combos
-    promise = promise.then( getMetaCategoryCombos );
-    promise = promise.then( filterMissingCategoryCombos );
-    promise = promise.then( getCategoryCombos );
     
     //fetch data element group sets
     promise = promise.then( getMetaDataElementGroupSets );
@@ -166,12 +166,17 @@ function downloadMetaData()
     //fetch indicator groups
     promise = promise.then( getMetaIndicatorGroups );
     promise = promise.then( filterMissingIndicatorGroups );
-    promise = promise.then( getIndicatorGroups );     
+    promise = promise.then( getIndicatorGroups ); */    
     
     //fetch data sets
     promise = promise.then( getMetaDataSets );
     promise = promise.then( filterMissingDataSets );
     promise = promise.then( getDataSets );
+    
+    //fetch programs
+    promise = promise.then( getMetaPrograms );
+    promise = promise.then( filterMissingPrograms );
+    promise = promise.then( getPrograms );
     
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
@@ -206,98 +211,38 @@ function getCalendarSetting(){
     return dhis2.metadata.getMetaObject(null, 'CALENDAR_SETTING', '../api/systemSettings', 'key=keyCalendar&key=keyDateFormat', 'localStorage', dhis2.rf.store);
 }
 
-function getMetaAttributes(){
-    return dhis2.metadata.getMetaObjectIds('attributes', '../api/attributes.json', 'paging=false&fields=id');
-}
-
-function filterMissingAttributes( ids ){
-    return dhis2.metadata.filterMissingObjs('attributes', dhis2.rf.store, ids);
-}
-
-function getAttributes( ids ){
-    return dhis2.metadata.getBatches( ids, batchSize, 'attributes', 'attributes', '../api/attributes.json', 'paging=false&fields=:all,optionSet[id,displayName,options[id,displayName,code]]', 'idb', dhis2.rf.store);
-}
-
-function getMetaConstants(){
-    return dhis2.metadata.getMetaObjectIds('constants', '../api/constants.json', 'paging=false&fields=id');
-}
-
-function filterMissingConstants( ids ){
-    return dhis2.metadata.filterMissingObjs('constants', dhis2.rf.store, ids);
-}
-
-function getConstants( ids ){
-    return dhis2.metadata.getBatches( ids, batchSize, 'constants', 'constants', '../api/constants.json', 'paging=false&fields=id,name,displayName,value', 'idb', dhis2.rf.store);
-}
-
 function getMetaCategoryCombos(){
-    return dhis2.metadata.getMetaObjectIds('categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id');
+    return dhis2.metadata.getMetaObjectIds('categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,version');
 }
 
-function filterMissingCategoryCombos( ids ){
-    return dhis2.metadata.filterMissingObjs('categoryCombos', dhis2.rf.store, ids);
+function filterMissingCategoryCombos( objs ){
+    return dhis2.metadata.filterMissingObjIds('categoryCombos', dhis2.rf.store, objs);
 }
 
 function getCategoryCombos( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,name,code,skipTotal,isDefault,categories[id,name,categoryOptions[id,name,code]]', 'idb', dhis2.rf.store);
-}
-
-function getMetaDataElementGroupSets(){
-    return dhis2.metadata.getMetaObjectIds('dataElementGroupSets', '../api/dataElementGroupSets.json', 'paging=false&fields=id');
-}
-
-function filterMissingDataElementGroupSets( ids ){
-    return dhis2.metadata.filterMissingObjs('dataElementGroupSets', dhis2.rf.store, ids);
-}
-
-function getDataElementGroupSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'dataElementGroupSets', 'dataElementGroupSets', '../api/dataElementGroupSets.json', 'paging=false&fields=id,name,code', 'idb', dhis2.rf.store);
-}
-
-function getMetaDataElementGroups(){
-    return dhis2.metadata.getMetaObjectIds('dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id');
-}
-
-function filterMissingDataElementGroups( ids ){
-    return dhis2.metadata.filterMissingObjs('dataElementGroups', dhis2.rf.store, ids);
-}
-
-function getDataElementGroups( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'dataElementGroups', 'dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id,name,code', 'idb', dhis2.rf.store);
-}
-
-function getMetaIndicatorGroupSets(){
-    return dhis2.metadata.getMetaObjectIds('indicatorGroupSets', '../api/indicatorGroupSets.json', 'paging=false&fields=id');
-}
-
-function filterMissingIndicatorGroupSets( ids ){
-    return dhis2.metadata.filterMissingObjs('indicatorGroupSets', dhis2.rf.store, ids);
-}
-
-function getIndicatorGroupSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'indicatorGroupSets', 'indicatorGroupSets', '../api/dataElementGroupSets.json', 'paging=false&fields=id,name,indicatorGroups[id,name,code,indicators[id,name,code]]', 'idb', dhis2.rf.store);
-}
-
-function getMetaIndicatorGroups(){
-    return dhis2.metadata.getMetaObjectIds('indicatorGroups', '../api/indicatorGroups.json', 'paging=false&fields=id');
-}
-
-function filterMissingIndicatorGroups( ids ){
-    return dhis2.metadata.filterMissingObjs('indicatorGroups', dhis2.rf.store, ids);
-}
-
-function getIndicatorGroups( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'indicatorGroups', 'indicatorGroups', '../api/indicatorGroups.json', 'paging=false&fields=id,name,description,version,attributeValues[value,attribute[id,name,code]]', 'idb', dhis2.rf.store);
+    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName],categories[id,displayName,categoryOptions[id,displayName,code]]', 'idb', dhis2.rf.store);
 }
 
 function getMetaDataSets(){
-    return dhis2.metadata.getMetaObjectIds('dataSets', '../api/dataSets.json', 'paging=false&fields=id');
+    return dhis2.metadata.getMetaObjectIds('dataSets', '../api/dataSets.json', 'paging=false&fields=id,version');
 }
 
-function filterMissingDataSets( ids ){
-    return dhis2.metadata.filterMissingObjs('dataSets', dhis2.rf.store, ids);
+function filterMissingDataSets( objs ){
+    return dhis2.metadata.filterMissingObjIds('dataSets', dhis2.rf.store, objs);
 }
 
 function getDataSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,name,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,code]],indicators[id,indicatorGrop[id]],organisationUnits[id,name],dataElements[id,code,name,description,formName,valueType,optionSetValue,optionSet[id],dataElementGroups[id,dataElementGroupSet[id]],categoryCombo[id,isDefault,categories[id,name,dimension,categoryOptions[id,name,attributeValues[value,attribute[id,name,code]]]]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
+    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,code]],organisationUnits[id,name],dataElements[id,code,displayName,description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id,isDefault,categories[id]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
+}
+
+function getMetaPrograms(){
+    return dhis2.metadata.getMetaObjectIds('programs', '../api/programs.json', 'filter=programType:eq:WITHOUT_REGISTRATION&paging=false&fields=id,version');
+}
+
+function filterMissingPrograms( objs ){
+    return dhis2.metadata.filterMissingObjIds('programs', dhis2.rf.store, objs);
+}
+
+function getPrograms( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'programs', 'programs', '../api/programs.json', 'paging=false&fields=*,attributeValues[value,attribute[id,name,code]],categoryCombo[id,isDefault],organisationUnits[id,displayName],programStages[*,dataEntryForm[*],programStageDataElements[*,dataElement[*,optionSet[id]]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
 }

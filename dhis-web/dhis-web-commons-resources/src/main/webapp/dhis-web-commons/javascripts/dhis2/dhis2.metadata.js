@@ -65,16 +65,16 @@ dhis2.metadata.processMetaDataAttribute = function( obj )
 dhis2.metadata.getMetaObjectIds = function( objNames, url, filter )
 {
     var def = $.Deferred();
-    var ids = [];
+    var objs = [];
     $.ajax({
         url: url,
         type: 'GET',
         data:filter
     }).done( function(response) {
         _.each( _.values( response[objNames] ), function ( obj ) {        
-            ids.push( obj.id );
+        	objs.push( obj );
         });
-        def.resolve( ids );
+        def.resolve( objs );
         
     }).fail(function(){
         def.resolve( null );
@@ -83,9 +83,9 @@ dhis2.metadata.getMetaObjectIds = function( objNames, url, filter )
     return def.promise();    
 };
 
-dhis2.metadata.filterMissingObjs  = function( store, db, ids )
+dhis2.metadata.filterMissingObjIds  = function( store, db, objs )
 {   
-    if( !ids || !ids.length || ids.length < 1){
+    if( !objs || !objs.length || objs.length < 1){
         return;
     }
     
@@ -98,14 +98,19 @@ dhis2.metadata.filterMissingObjs  = function( store, db, ids )
     var builder = $.Deferred();
     var build = builder.promise();
 
-    var missingIds = [];
-    _.each( _.values( ids ), function ( id) {
+    var missingObjIds = [];
+    _.each( _.values( objs ), function ( obj ) {
         build = build.then(function() {
             var d = $.Deferred();
             var p = d.promise();
-            db.get(store, id).done(function(o) {
-                if(!o) {                    
-                    missingIds.push( id );
+            db.get(store, obj.id).done(function(o) {
+                if( !o ) {                    
+                	missingObjIds.push( obj.id );
+                }
+                else{
+                	if( obj.version && o.version != obj.version ){
+                		missingObjIds.push( obj.id );
+                	}
                 }
                 d.resolve();
             });
@@ -117,7 +122,7 @@ dhis2.metadata.filterMissingObjs  = function( store, db, ids )
     build.done(function() {
         def.resolve();
         promise = promise.done( function () {            
-            mainDef.resolve( missingIds );
+            mainDef.resolve( missingObjIds );
         } );
     }).fail(function(){
         mainDef.resolve( null );
