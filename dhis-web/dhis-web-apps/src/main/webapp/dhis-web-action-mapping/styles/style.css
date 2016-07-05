@@ -367,6 +367,7 @@ select {
 
 .vertical-center {
     vertical-align: middle !important;
+    display: table-cell;
 }
 
 div#orgUnitTree {
@@ -695,6 +696,10 @@ div#orgUnitTree {
     margin: 0 15px !important;
 }
 
+.add-default-right-padding {
+    margin-right: 15px !important;
+}
+
 .vertical-center-parent {
     position: relative;
 }
@@ -714,4 +719,18 @@ div#orgUnitTree {
     font-size: 150%;
     margin-top:0;
     padding-top:0;
+}
+
+.ui-select-choices-row-inner, .ui-select-choices-group {
+    word-wrap: break-word;
+}
+
+.table-bordered-selection-area, 
+.table-bordered-selection-area > thead > tr > th, 
+.table-bordered-selection-area > tbody > tr > th, 
+.table-bordered-selection-area > tfoot > tr > th, 
+.table-bordered-selection-area > thead > tr > td, 
+.table-bordered-selection-area > tbody > tr > td, 
+.table-bordered-selection-area > tfoot > tr > td {
+    border: 1px solid #276696 !important;
 }

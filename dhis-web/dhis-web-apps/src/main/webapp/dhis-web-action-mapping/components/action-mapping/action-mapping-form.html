@@ -1,63 +1,71 @@
-<div class="row">
-    <div class="col-sm-6 vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+<div class="vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
 
-        <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
-            <div ng-repeat="dataElement in model.selectedDataSet.dataElements">
+    <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
 
-                <div ng-if="dataElement.code && model.programs[dataElement.code]" class="selectionArea">
-                    <div class="col-sm-12">
-                        <span class="bold">{{'role_info_1'| translate}}</span>
-                        <a href ng-click="showInfo(header)"><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></a>
-                        <span class="bold">{{'role_info_2'| translate}}</span>
-                        <table class="table table-bordered table-condensed small-vertical-spacing">
-                            <tr>
-                                <td ng-repeat="header in model.roleHeders">
-                                    <a href ng-click="showInfo(header)">                                        
-                                        <span><i class="fa fa-question-circle superscript" title="{{'more_info' | translate}}"></i></span>
-                                    </a>
-                                    {{header.name}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td ng-repeat="header in model.roleHeders">
-                                    <!--<div class="row col-sm-12" ng-repeat=""></div>-->
-                                    <div class="row col-sm-12">
-                                        
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <table class="table table-bordered table-condensed vertical-spacing">
+        <div class="add-default-right-padding">
+            <div class="col-sm-12 selectionArea" ng-if="model.roleDataElements.length > 0">
+                <span class="bold">{{'role_info_1'| translate}}</span>
+                <a href ng-click="showInfo(header)"><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></a>
+                <span class="bold">{{'role_info_2'| translate}}</span>
+                <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
+                    <thead>
+                        <tr>
+                            <td ng-repeat="de in model.roleDataElements">
+                                <a href ng-click="showInfo(de.description)">                                        
+                                    <span><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></span>
+                                </a>
+                                {{de.displayName}}
+                            </td>
+                        </tr>
+                    </thead>                            
                     <tr>
-                        <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 1}}">
-                            {{dataElement.displayName}}
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="active">
-                            {{'org_unit'| translate}}
-                        </th>
-                        <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                            {{oco.displayName}}
-                        </th>
-                    </tr>
-                    <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
-                        <td>
-                            {{model.selectedDataSet.organisationUnits[ou]}}
-                        </td>
-                        <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                            <input type="text" class="form-control pull-center" ng-model="model.dataValues[ou][oco.id].value">
+                        <td ng-repeat="de in model.roleDataElements" ng-init="optionId = de.code === 'Responsible Ministry' ? de.code : 'Funder'">                            
+                            <ui-select multiple ng-model="model.stakeholderRoles[de.id]" theme="bootstrap">
+                                <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item.displayName}}</ui-select-match>
+                                <ui-select-choices repeat="item in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
+                                    <div ng-bind-html="item.displayName | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>                             
                         </td>
                     </tr>
                 </table>
-
             </div>
         </div>
 
-        <div ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
+        <div class="row">
+            <div class="col-sm-6 ">
+                <div ng-repeat="dataElement in model.selectedDataSet.dataElements" ng-if="dataElement.code !== 'Catalyst' && dataElement.code !== 'Funder' && dataElement.code !== 'Responsible Ministry'">
+                    <table class="table table-bordered table-condensed vertical-spacing">
+                        <tr>
+                            <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 1}}">
+                                {{dataElement.displayName}}
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="active">
+                                {{'org_unit'| translate}}
+                            </th>
+                            <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
+                                {{oco.displayName}}
+                            </th>
+                        </tr>
+                        <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
+                            <td>
+                                {{model.selectedDataSet.organisationUnits[ou]}}
+                            </td>
+                            <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
+                                <input type="text" class="form-control pull-center" ng-model="model.dataValues[ou][dataElement.id][oco.id].value">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row" ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
+        <div class="col-sm-6 ">
             <table class="table table-bordered table-condensed"> 
                 <tbody>
                     <tr ng-repeat="dataElement in model.selectedDataSet.dataElements">
@@ -71,6 +79,6 @@
                 </tbody>
             </table>
         </div>
+    </div>
 
-    </div>    
 </div>

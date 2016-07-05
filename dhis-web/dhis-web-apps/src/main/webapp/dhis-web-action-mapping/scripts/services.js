@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2sunpmt",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos']
     });
     return{
         currentStore: store
@@ -397,6 +397,19 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             }
             
             return selectedAttributeOcobo;
+        },
+        splitRoles: function( roles ){
+            return roles.split(","); 
+        },
+        pushRoles: function(existingRoles, roles){            
+            var newRoles = roles.split(",");
+            angular.forEach(newRoles, function(r){
+                if( existingRoles.indexOf(r) === -1 ){
+                    existingRoles.push(r);
+                }
+            });
+            
+            return existingRoles;
         }
     };
 })

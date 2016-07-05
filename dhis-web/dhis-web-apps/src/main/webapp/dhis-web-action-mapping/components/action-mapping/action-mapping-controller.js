@@ -24,16 +24,15 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                     standardDataSets: [],
                     multiDataSets: [],
                     dataSets: [],
+                    optionSets: null,
                     categoryOptionsReady: false,
+                    allowMultiOrgUnitEntry: false,
                     selectedOptions: [],
-                    programs: null,
                     roleHeders: ActionMappingUtils.getRoleHeaders(),
                     stakeholderRoles: {},
                     dataValues: {},
+                    roleValues: {},
                     selectedAttributeOptionCombos: {}};
-                
-    var systemSetting = storage.get('SYSTEM_SETTING');
-    $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -47,7 +46,9 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.dataValues = {};
         $scope.model.categoryOptionsReady = false;
         if( angular.isObject($scope.selectedOrgUnit)){            
-            SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit);            
+            SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
+            var systemSetting = storage.get('SYSTEM_SETTING');
+            $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
             $scope.loadDataSets($scope.selectedOrgUnit);
         }
     });   
@@ -63,14 +64,29 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.dataValues = {};
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
-                $scope.model.dataSets = dataSets;
-                
-                if(!$scope.model.programs){
-                    $scope.model.programs = [];
-                    MetaDataFactory.getAll('programs').then(function(programs){
-                        angular.forEach(programs, function(pr){
-                            if( pr.actionCode ){
-                                $scope.model.programs[pr.actionCode] = pr;
+                $scope.model.dataSets = dataSets;                
+                if(!$scope.model.optionSets){
+                    $scope.model.optionSets = [];
+                    MetaDataFactory.getAll('optionSets').then(function(optionSets){
+                        angular.forEach(optionSets, function(optionSet){
+                            if( optionSet.StakeholderRole === 'Funder' ){
+                                /*var o = angular.copy( optionSet );
+                                angular.forEach(o.options, function(_o){
+                                   _o = o.displayName; 
+                                });
+                                $scope.model.optionSets['Funder'] = o;*/
+                                $scope.model.optionSets['Funder'] = optionSet;
+                            }
+                            else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
+                                /*var o = angular.copy( optionSet );
+                                angular.forEach(o.options, function(_o){
+                                   _o = o.displayName; 
+                                });
+                                $scope.model.optionSets['Funder'] = o;*/
+                                $scope.model.optionSets['Responsible Ministry'] = optionSet;
+                            }
+                            else{
+                                $scope.model.optionSets[optionSet.id] = optionSet;
                             }
                         });
                     });
@@ -100,13 +116,14 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
     $scope.loadDataEntryForm = function(){
         $scope.model.stakeholderRoles = {};
         $scope.model.dataValues = {};
+        $scope.model.roleValues = {};
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
                 $scope.model.categoryOptionsReady ){
             
             var dataValueSetUrl = 'dataSet=' + $scope.model.selectedDataSet.id + '&period=' + $scope.model.selectedPeriod.id;
-            
+
             if( $scope.model.allowMultiOrgUnitEntry ){
                 angular.forEach($scope.selectedOrgUnit.c, function(c){
                     dataValueSetUrl += '&orgUnit=' + c;
@@ -117,24 +134,37 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
             }
             
             var selectedAttributeOcobo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
-            console.log('the attributeOcobo:  ', selectedAttributeOcobo);
-            
+                        
             //fetch data values...            
-            DataValueService.getDataValueSets( dataValueSetUrl ).then(function(response){
-                
-                console.log(response);
-                
+            DataValueService.getDataValueSets( dataValueSetUrl ).then(function(response){                
                 angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: selectedAttributeOcobo}), function(dv){
-                    if(!$scope.model.dataValues[dv.orgUnit]){
-                        $scope.model.dataValues[dv.orgUnit] = {};
-                        $scope.model.dataValues[dv.orgUnit][dv.categoryOptionCombo] = dv;
+                    var code = $scope.model.dataElements[dv.dataElement];
+                    if( code && code === 'Catalyst' ||  code === 'Funder' || code === 'Responsible Ministry'){
+                        if( !$scope.model.roleValues[dv.dataElement] ){
+                            $scope.model.roleValues[dv.dataElement] = [];
+                            $scope.model.roleValues[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.roleValues[dv.dataElement], dv.value );
+                        }
+                        else{
+                            $scope.model.roleValues[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.roleValues[dv.dataElement], dv.value );
+                        }
                     }
                     else{
-                        $scope.model.dataValues[dv.orgUnit][dv.categoryOptionCombo] = dv;
-                    }
+                        if(!$scope.model.dataValues[dv.orgUnit]){
+                            $scope.model.dataValues[dv.orgUnit] = {};
+                            $scope.model.dataValues[dv.orgUnit][dv.dataElement] = {};
+                            $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
+                        }
+                        else{
+                            if(!$scope.model.dataValues[dv.orgUnit][dv.dataElement]){
+                                $scope.model.dataValues[dv.orgUnit][dv.dataElement] = {};
+                            }
+                            $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
+                        }
+                    }                    
                 });
                 
                 console.log('mapped values:  ', $scope.model.dataValues);
+                console.log('mapped roles:  ', $scope.model.roleValues);
             });
         }
     };
@@ -160,11 +190,18 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                 });
             });
             
-            $scope.model.selectedCategoryCombos = [];            
+            $scope.model.selectedCategoryCombos = {};
+            $scope.model.roleDataElements = [];
+            $scope.model.dataElements = [];
             angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
+                $scope.model.dataElements[de.id] = de.code;
+                if( de.code === 'Catalyst' || de.code === 'Funder' || de.code === 'Responsible Ministry' ){
+                    $scope.model.roleDataElements.push( de );
+                }
+                
                 MetaDataFactory.get('categoryCombos', de.categoryCombo.id).then(function(coc){
                     $scope.model.selectedCategoryCombos[de.categoryCombo.id] = coc;
-                });
+                });                
             });
         }
     };

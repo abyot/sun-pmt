@@ -28,7 +28,7 @@ if( dhis2.rf.memoryOnly ) {
 dhis2.rf.store = new dhis2.storage.Store({
     name: 'dhis2sunpmt',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos']
 });
 
 (function($) {
@@ -138,45 +138,15 @@ function downloadMetaData()
     promise = promise.then( filterMissingCategoryCombos );
     promise = promise.then( getCategoryCombos );
     
-    //fetch met attributes
-    /*promise = promise.then( getMetaAttributes );
-    promise = promise.then( filterMissingAttributes );
-    promise = promise.then( getAttributes );
-    
-    //fetch constants
-    promise = promise.then( getMetaConstants );
-    promise = promise.then( filterMissingConstants );
-    promise = promise.then( getConstants );
-    
-    //fetch data element group sets
-    promise = promise.then( getMetaDataElementGroupSets );
-    promise = promise.then( filterMissingDataElementGroupSets );
-    promise = promise.then( getDataElementGroupSets );
-    
-    //fetch data element groups
-    promise = promise.then( getMetaDataElementGroups );
-    promise = promise.then( filterMissingDataElementGroups );
-    promise = promise.then( getDataElementGroups );
-    
-    //fetch indicator group sets
-    promise = promise.then( getMetaIndicatorGroupSets );
-    promise = promise.then( filterMissingIndicatorGroupSets );
-    promise = promise.then( getIndicatorGroupSets );
-    
-    //fetch indicator groups
-    promise = promise.then( getMetaIndicatorGroups );
-    promise = promise.then( filterMissingIndicatorGroups );
-    promise = promise.then( getIndicatorGroups ); */    
+    //fetch option sets
+    promise = promise.then( getMetaOptionSets );
+    promise = promise.then( filterMissingOptionSets );
+    promise = promise.then( getOptionSets );
     
     //fetch data sets
     promise = promise.then( getMetaDataSets );
     promise = promise.then( filterMissingDataSets );
     promise = promise.then( getDataSets );
-    
-    //fetch programs
-    promise = promise.then( getMetaPrograms );
-    promise = promise.then( filterMissingPrograms );
-    promise = promise.then( getPrograms );
     
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
@@ -235,14 +205,14 @@ function getDataSets( ids ){
     return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,code]],organisationUnits[id,name],dataElements[id,code,displayName,description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id,isDefault,categories[id]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
 }
 
-function getMetaPrograms(){
-    return dhis2.metadata.getMetaObjectIds('programs', '../api/programs.json', 'filter=programType:eq:WITHOUT_REGISTRATION&paging=false&fields=id,version');
+function getMetaOptionSets(){
+    return dhis2.metadata.getMetaObjectIds('optionSets', '../api/optionSets.json', 'paging=false&fields=id,version');
 }
 
-function filterMissingPrograms( objs ){
-    return dhis2.metadata.filterMissingObjIds('programs', dhis2.rf.store, objs);
+function filterMissingOptionSets( objs ){
+    return dhis2.metadata.filterMissingObjIds('optionSets', dhis2.rf.store, objs);
 }
 
-function getPrograms( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'programs', 'programs', '../api/programs.json', 'paging=false&fields=*,attributeValues[value,attribute[id,name,code]],categoryCombo[id,isDefault],organisationUnits[id,displayName],programStages[*,dataEntryForm[*],programStageDataElements[*,dataElement[*,optionSet[id]]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
+function getOptionSets( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,displayName,code]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
 }
