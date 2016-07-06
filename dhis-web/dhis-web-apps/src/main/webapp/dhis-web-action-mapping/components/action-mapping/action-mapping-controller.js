@@ -292,7 +292,6 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                 
         DataValueService.saveDataValueSet( dataValues ).then(function(){        
         });
-        
     };
     
     $scope.saveDataValue = function( ouId, deId, ocId ){
@@ -305,9 +304,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                     cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
                     value: $scope.model.dataValues[ouId][deId][ocId].value
                 };
-        
-        
-        console.log('I am going to save:  ', dataValue);
+                
         DataValueService.saveDataValue( dataValue ).then(function(response){        
             console.log('response:  ', response);
         });
