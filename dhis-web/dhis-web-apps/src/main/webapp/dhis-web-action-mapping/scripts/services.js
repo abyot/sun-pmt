@@ -251,40 +251,27 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         }
     };
     
-    return {
-        
-        get: function(uid){            
-            var promise = $http.get('../api/resultsFrameworks/' + uid + '.json?fields=id,name,code,description,active,impacts[id,name,indicators[name]],outcomes[id,name,indicators[name]],outputs[id,name,indicators[name]],programms[id,name,code,description,outcomes[id,name,indicators[name]],outputs[id,name,indicators[name]],subProgramms[id,name,code,description,outputs[id,name,indicators[name]]]]').then(function(response){               
-                return response.data;
-            }, function(response){
-                errorNotifier(response);
-            });            
+    return {        
+        saveDataValue: function( dv ){
+            var promise = $http.post('../api/dataValues.json?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&cc='+dv.cc + '&cp='+dv.cp + '&value='+dv.value);
             return promise;
         },
-        getDataValueSets: function( params ){            
+        getDataValue: function( dv ){
+            var promise = $http.get('../api/dataValues.json?de='+dv.de+'&ou='+dv.ou+'&pe='+dv.pe);
+            return promise;
+        },
+        saveDataValueSet: function(dvs){
+            var promise = $http.post('../api/dataValueSets.json', dvs).then(function(response){
+                return response.data;
+            });
+            return promise;
+        },
+        getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
             }, function(response){
                 errorNotifier(response);
             });            
-            return promise;
-        },
-        create: function(resultsFramework){    
-            var promise = $http.post('../api/resultsFrameworks.json', resultsFramework).then(function(response){
-                return response.data;           
-            });
-            return promise;            
-        },
-        delete: function(resultsFramework){
-            var promise = $http.delete('../api/resultsFrameworks/' + resultsFramework.id).then(function(response){
-                return response.data;               
-            });
-            return promise;           
-        },
-        update: function(resultsFramework){   
-            var promise = $http.put('../api/resultsFrameworks/' + resultsFramework.id, resultsFramework).then(function(response){
-                return response.data;         
-            });
             return promise;
         }
     };    
@@ -407,9 +394,16 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 if( existingRoles.indexOf(r) === -1 ){
                     existingRoles.push(r);
                 }
-            });
-            
+            });            
             return existingRoles;
+        },
+        getOptionIds: function(options){            
+            var optionNames = '';
+            angular.forEach(options, function(o){
+                optionNames += o.id + ';';
+            });            
+            
+            return optionNames.slice(0,-1);
         }
     };
 })

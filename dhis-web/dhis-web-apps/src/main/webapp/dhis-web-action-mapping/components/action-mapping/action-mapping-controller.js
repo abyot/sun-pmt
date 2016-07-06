@@ -33,7 +33,8 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                     dataValues: {},
                     roleValues: {},
                     orgUnitsWithValues: [],
-                    selectedAttributeOptionCombos: {}};
+                    selectedAttributeOptionCombos: {},
+                    selectedAttributeOptionCombo: null};
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -43,6 +44,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.selectedPeriod = null;
         $scope.model.selectedAttributeCategoryCombo = null;
         $scope.model.selectedAttributeOptionCombos = {};
+        $scope.model.selectedAttributeOptionCombo = null;
         $scope.model.stakeholderRoles = {};
         $scope.model.dataValues = {};
         $scope.model.orgUnitsWithValues = [];
@@ -61,6 +63,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.dataSets = [];
         $scope.model.selectedAttributeCategoryCombo = null;
         $scope.model.selectedAttributeOptionCombos = {};
+        $scope.model.selectedAttributeOptionCombo = null;
         $scope.model.selectedPeriod = null;  
         $scope.model.stakeholderRoles = {};
         $scope.model.orgUnitsWithValues = [];
@@ -142,24 +145,19 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                 dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
             }
             
-            var selectedAttributeOcobo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
+            $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
                         
             //fetch data values...            
-            DataValueService.getDataValueSets( dataValueSetUrl ).then(function(response){                
-                angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: selectedAttributeOcobo}), function(dv){
+            DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){                
+                angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}), function(dv){
                     var code = $scope.model.dataElements[dv.dataElement];
-                    
-                    if( $scope.model.orgUnitsWithValues.indexOf( dv.orgUnit ) === -1 ){
-                        $scope.model.orgUnitsWithValues.push( dv.orgUnit );
-                    }
-                    
-                    if( code && code === 'Catalyst' ||  code === 'Funder' || code === 'Responsible Ministry'){
-                        if( !$scope.model.roleValues[dv.dataElement] ){
-                            $scope.model.roleValues[dv.dataElement] = [];
-                            $scope.model.roleValues[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.roleValues[dv.dataElement], dv.value );
+                    if( code && code === 'Catalyst' ||  code === 'Funder' || code === 'Responsible Ministry'){                        
+                        if( !$scope.model.stakeholderRoles[dv.dataElement] ){
+                            $scope.model.stakeholderRoles[dv.dataElement] = [];
+                            $scope.model.stakeholderRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[dv.dataElement], dv.value );
                         }
                         else{
-                            $scope.model.roleValues[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.roleValues[dv.dataElement], dv.value );
+                            $scope.model.stakeholderRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[dv.dataElement], dv.value );
                         }
                     }
                     else{
@@ -211,6 +209,9 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                 }
                 
                 MetaDataFactory.get('categoryCombos', de.categoryCombo.id).then(function(coc){
+                    if( coc.isDefault ){
+                        $scope.model.defaultCategoryCombo = coc;
+                    }
                     $scope.model.selectedCategoryCombos[de.categoryCombo.id] = coc;
                 });                
             });
@@ -260,13 +261,55 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
     
     $scope.saveRole = function( dataElementId ){
         
-        console.log('orgunits with values:  ', $scope.model.orgUnitsWithValues);
+        var dataValues = {dataValues: []};
         
+        var dataValue = $scope.model.stakeholderRoles[dataElementId].join();
         
-        console.log('Roles:  ', $scope.model.stakeholderRoles);
+        if( $scope.model.allowMultiOrgUnitEntry ){
+            
+            angular.forEach($scope.selectedOrgUnit.c, function(c){
+                
+                dataValues.dataValues.push({
+                    dataElement: dataElementId,
+                    period: $scope.model.selectedPeriod.id,
+                    orgUnit: c,
+                    categoryOptionCombo: $scope.model.defaultCategoryCombo.categoryOptionCombos[0].id,                
+                    attributeOptionCombo: $scope.model.selectedAttributeOptionCombo,
+                    value: dataValue
+                });
+            });
+        }
+        else{
+            dataValues.dataValues.push({
+                dataElement: dataElementId,
+                period: $scope.model.selectedPeriod.id,
+                orgUnit: $scope.selectedOrgUnit.id,
+                categoryOptionCombo: $scope.model.defaultCategoryCombo.categoryOptionCombos[0].id,                
+                attributeOptionCombo: $scope.model.selectedAttributeOptionCombo,
+                value: dataValue
+            });
+        }
+                
+        DataValueService.saveDataValueSet( dataValues ).then(function(){        
+        });
+        
     };
     
-    $scope.saveValue = function( orgUnitId, dataElementId, optionComboId ){
+    $scope.saveDataValue = function( ouId, deId, ocId ){
         
+        var dataValue = {ou: ouId,
+                    pe: $scope.model.selectedPeriod.id,
+                    de: deId,
+                    co: ocId,
+                    cc: $scope.model.selectedAttributeCategoryCombo.id,
+                    cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
+                    value: $scope.model.dataValues[ouId][deId][ocId].value
+                };
+        
+        
+        console.log('I am going to save:  ', dataValue);
+        DataValueService.saveDataValue( dataValue ).then(function(response){        
+            console.log('response:  ', response);
+        });
     };
 });
