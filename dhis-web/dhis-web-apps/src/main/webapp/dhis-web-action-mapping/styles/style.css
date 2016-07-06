@@ -732,5 +732,20 @@ div#orgUnitTree {
 .table-bordered-selection-area > thead > tr > td, 
 .table-bordered-selection-area > tbody > tr > td, 
 .table-bordered-selection-area > tfoot > tr > td {
-    border: 1px solid #276696 !important;
+    border: 1px solid #A4C9E4 !important;
+}
+
+.tooltip.custom-tooltip-class .tooltip-inner {
+    text-align: left;
+    max-width: 400px; 
+    font-weight: bold;
+    font-size: 10pt;
+    color: #fff;
+    background-color: #3276b1;
+    border-color: #285e8e;
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.tooltip.custom-tooltip-class .tooltip-arrow {
+    display: none;
 }

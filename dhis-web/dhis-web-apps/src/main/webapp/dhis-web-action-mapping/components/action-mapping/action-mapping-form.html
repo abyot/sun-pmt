@@ -5,25 +5,27 @@
         <div class="add-default-right-padding">
             <div class="col-sm-12 selectionArea" ng-if="model.roleDataElements.length > 0">
                 <span class="bold">{{'role_info_1'| translate}}</span>
-                <a href ng-click="showInfo(header)"><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></a>
+                <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
                 <span class="bold">{{'role_info_2'| translate}}</span>
                 <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
                     <thead>
                         <tr>
-                            <td ng-repeat="de in model.roleDataElements">
-                                <a href ng-click="showInfo(de.description)">                                        
-                                    <span><i class="fa fa-question-circle superscript" title="{{'more_info'| translate}}"></i></span>
-                                </a>
+                            <td ng-repeat="de in model.roleDataElements | orderBy: 'displayName'">
+                                <i class="fa fa-question-circle superscript" tooltip="{{de.description}}" tooltip-class="custom-tooltip-class"></i>
                                 {{de.displayName}}
                             </td>
                         </tr>
                     </thead>                            
                     <tr>
                         <td ng-repeat="de in model.roleDataElements" ng-init="optionId = de.code === 'Responsible Ministry' ? de.code : 'Funder'">                            
-                            <ui-select multiple ng-model="model.stakeholderRoles[de.id]" theme="bootstrap">
-                                <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item.displayName}}</ui-select-match>
+                            <ui-select multiple 
+                                       ng-model="model.stakeholderRoles[de.id]" 
+                                       on-select="saveRole(de.id)"
+                                       on-remove="saveRole(de.id)"
+                                       theme="bootstrap">
+                                <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item}}</ui-select-match>
                                 <ui-select-choices repeat="item in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
-                                    <div ng-bind-html="item.displayName | highlight: $select.search"></div>
+                                    <div ng-bind-html="item | highlight: $select.search"></div>
                                 </ui-select-choices>
                             </ui-select>                             
                         </td>
@@ -54,7 +56,10 @@
                                 {{model.selectedDataSet.organisationUnits[ou]}}
                             </td>
                             <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                                <input type="text" class="form-control pull-center" ng-model="model.dataValues[ou][dataElement.id][oco.id].value">
+                                <input type="text" 
+                                       class="form-control pull-center" 
+                                       ng-model="model.dataValues[ou][dataElement.id][oco.id].value"
+                                       ng-blur="saveDataValue(ou, dataElement.id, oco.id)">
                             </td>
                         </tr>
                     </table>

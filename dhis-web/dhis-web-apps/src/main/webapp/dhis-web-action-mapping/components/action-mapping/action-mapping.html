@@ -88,10 +88,8 @@
                 </div>
                 <div ng-repeat="category in model.selectedAttributeCategoryCombo.categories" ng-if="model.selectedDataSet && model.selectedPeriod && !model.selectedAttributeCategoryCombo.isDefault && !model.invalidDimensions">                
                     <div class="row small-vertical-spacing">
-                        <div class="col-sm-4">
-                            <a href ng-click="showInfo(category)">
-                                <span><i class="fa fa-question-circle superscript" title="{{'more_info' | translate}}"></i></span>
-                            </a>
+                        <div class="col-sm-4">                            
+                            <i class="fa fa-question-circle superscript" tooltip="{{category.description}}" tooltip-class="custom-tooltip-class"></i>
                             {{category.displayName}}
                         </div>
                         <div class="col-sm-8">
