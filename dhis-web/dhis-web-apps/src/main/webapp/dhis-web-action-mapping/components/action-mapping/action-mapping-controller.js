@@ -25,6 +25,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                     multiDataSets: [],
                     dataSets: [],
                     optionSets: null,
+                    programs: null,
                     categoryOptionsReady: false,
                     allowMultiOrgUnitEntry: false,
                     selectedOptions: [],
@@ -33,6 +34,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                     dataValues: {},
                     roleValues: {},
                     orgUnitsWithValues: [],
+                    selectedProgram: null,
                     selectedAttributeOptionCombos: {},
                     selectedAttributeOptionCombo: null};
     
@@ -45,6 +47,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.selectedAttributeCategoryCombo = null;
         $scope.model.selectedAttributeOptionCombos = {};
         $scope.model.selectedAttributeOptionCombo = null;
+        $scope.model.selectedProgram = null;
         $scope.model.stakeholderRoles = {};
         $scope.model.dataValues = {};
         $scope.model.orgUnitsWithValues = [];
@@ -64,6 +67,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.selectedAttributeCategoryCombo = null;
         $scope.model.selectedAttributeOptionCombos = {};
         $scope.model.selectedAttributeOptionCombo = null;
+        $scope.model.selectedProgram = null;
         $scope.model.selectedPeriod = null;  
         $scope.model.stakeholderRoles = {};
         $scope.model.orgUnitsWithValues = [];
@@ -101,6 +105,15 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
                         });
                     });
                 }
+                
+                if(!$scope.model.programs){
+                    $scope.model.programs = [];
+                    MetaDataFactory.getAll('programs').then(function(programs){
+                        angular.forEach(programs, function(program){
+                            $scope.model.programs[program.actionCode] = program;
+                        });                        
+                    });
+                }                
             });
         }        
     }; 
@@ -112,6 +125,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         $scope.model.categoryOptionsReady = false;
         $scope.model.stakeholderRoles = {};
         $scope.model.dataValues = {};
+        $scope.model.selectedProgram = null;
         $scope.model.orgUnitsWithValues = [];
         if( angular.isObject($scope.model.selectedDataSet) && $scope.model.selectedDataSet.id){
             $scope.loadDataSetDetails();
@@ -146,7 +160,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
             }
             
             $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
-                        
+
             //fetch data values...            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){                
                 angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}), function(dv){
@@ -203,6 +217,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
             $scope.model.roleDataElements = [];
             $scope.model.dataElements = [];
             angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
+                $scope.model.selectedProgram = $scope.model.programs[de.code];
                 $scope.model.dataElements[de.id] = de.code;
                 if( de.code === 'Catalyst' || de.code === 'Funder' || de.code === 'Responsible Ministry' ){
                     $scope.model.roleDataElements.push( de );
@@ -260,8 +275,8 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
     };
     
     $scope.saveRole = function( dataElementId ){
-        
-        var dataValues = {dataValues: []};
+
+        /*var dataValues = {dataValues: []};
         
         var dataValue = $scope.model.stakeholderRoles[dataElementId].join();
         
@@ -291,7 +306,7 @@ var actionMappingControllers = angular.module('actionMappingControllers', [])
         }
                 
         DataValueService.saveDataValueSet( dataValues ).then(function(){        
-        });
+        });*/
     };
     
     $scope.saveDataValue = function( ouId, deId, ocId ){

@@ -3,7 +3,36 @@
     <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
 
         <div class="add-default-right-padding">
-            <div class="col-sm-12 selectionArea" ng-if="model.roleDataElements.length > 0">
+            <div class="col-sm-12 selectionArea" ng-if="model.selectedProgram">
+                <span class="bold">{{'role_info_1'| translate}}</span>
+                <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
+                <span class="bold">{{'role_info_2'| translate}}</span>
+                <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
+                    <thead>
+                        <tr>
+                            <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements | orderBy: 'sortOrder'">
+                                <i class="fa fa-question-circle superscript" tooltip="{{de.description}}" tooltip-class="custom-tooltip-class"></i>
+                                {{prStDe.dataElement.displayName}}
+                            </td>
+                        </tr>
+                    </thead>                            
+                    <tr>
+                        <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements | orderBy: 'sortOrder'" ng-init="optionId = prStDe.dataElement.code === 'Responsible Ministry' ? prStDe.dataElement.code : 'Funder'">                            
+                            <ui-select multiple 
+                                       ng-model="model.stakeholderRoles[prStDe.dataElement.id]" 
+                                       on-select="saveRole(prStDe.dataElement.id)"
+                                       on-remove="saveRole(prStDe.dataElement.id)"
+                                       theme="bootstrap">
+                                <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item}}</ui-select-match>
+                                <ui-select-choices repeat="item in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
+                                    <div ng-bind-html="item | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <!--<div class="col-sm-12 selectionArea" ng-if="model.roleDataElements.length > 0">
                 <span class="bold">{{'role_info_1'| translate}}</span>
                 <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
                 <span class="bold">{{'role_info_2'| translate}}</span>
@@ -31,7 +60,7 @@
                         </td>
                     </tr>
                 </table>
-            </div>
+            </div>-->
         </div>
 
         <div class="row">

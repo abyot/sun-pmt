@@ -28,7 +28,7 @@ if( dhis2.rf.memoryOnly ) {
 dhis2.rf.store = new dhis2.storage.Store({
     name: 'dhis2sunpmt',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
 });
 
 (function($) {
@@ -137,16 +137,21 @@ function downloadMetaData()
     promise = promise.then( getMetaCategoryCombos );
     promise = promise.then( filterMissingCategoryCombos );
     promise = promise.then( getCategoryCombos );
+        
+    //fetch data sets
+    promise = promise.then( getMetaDataSets );
+    promise = promise.then( filterMissingDataSets );
+    promise = promise.then( getDataSets );
     
     //fetch option sets
     promise = promise.then( getMetaOptionSets );
     promise = promise.then( filterMissingOptionSets );
     promise = promise.then( getOptionSets );
     
-    //fetch data sets
-    promise = promise.then( getMetaDataSets );
-    promise = promise.then( filterMissingDataSets );
-    promise = promise.then( getDataSets );
+    //fetch programs
+    promise = promise.then( getMetaPrograms );
+    promise = promise.then( filterMissingPrograms );
+    promise = promise.then( getPrograms );
     
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
@@ -215,4 +220,16 @@ function filterMissingOptionSets( objs ){
 
 function getOptionSets( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,displayName,code]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
+}
+
+function getMetaPrograms(){
+    return dhis2.metadata.getMetaObjectIds('programs', '../api/programs.json', 'filter=programType:eq:WITHOUT_REGISTRATION&paging=false&fields=id,version');
+}
+
+function filterMissingPrograms( objs ){
+    return dhis2.metadata.filterMissingObjIds('programs', dhis2.rf.store, objs);
+}
+
+function getPrograms( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'programs', 'programs', '../api/programs.json', 'paging=false&fields=id,displayName,attributeValues[value,attribute[id,name,code]],categoryCombo[id],organisationUnits[id,displayName],programStages[id,displayName,programStageDataElements[*,dataElement[*,optionSet[id]]]]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
 }
