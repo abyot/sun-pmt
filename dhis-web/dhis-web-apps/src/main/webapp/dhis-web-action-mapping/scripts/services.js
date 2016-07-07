@@ -239,25 +239,19 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.factory('DataValueService', function($http, DialogService, $translate) {   
-    
-    var errorNotifier = function(response){
-        if( response && response.data && response.data.status === 'ERROR'){
-            var dialogOptions = {
-                headerText: response.data.status,
-                bodyText: response.data.message ? response.data.message : $translate.instant('unable_to_fetch_data_from_server')
-            };		
-            DialogService.showDialog({}, dialogOptions);
-        }
-    };
+.factory('DataValueService', function($http, DialogService, $translate, ActionMappingUtils) {   
     
     return {        
         saveDataValue: function( dv ){
-            var promise = $http.post('../api/dataValues.json?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&cc='+dv.cc + '&cp='+dv.cp + '&value='+dv.value);
+            var promise = $http.post('../api/dataValues.json?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&cc='+dv.cc + '&cp='+dv.cp + '&value='+dv.value).then(function(response){
+                return response.data;
+            });
             return promise;
         },
         getDataValue: function( dv ){
-            var promise = $http.get('../api/dataValues.json?de='+dv.de+'&ou='+dv.ou+'&pe='+dv.pe);
+            var promise = $http.get('../api/dataValues.json?de='+dv.de+'&ou='+dv.ou+'&pe='+dv.pe).then(function(response){
+                return response.data;
+            });
             return promise;
         },
         saveDataValueSet: function(dvs){
@@ -270,24 +264,14 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
             }, function(response){
-                errorNotifier(response);
+                ActionMappingUtils.errorNotifier(response);
             });            
             return promise;
         }
     };    
 })
 
-.service('AnalyticsService', function($http, DialogService, $translate) {   
-    
-    var errorNotifier = function(response){
-        if( response && response.data && response.data.status === 'ERROR'){
-            var dialogOptions = {
-                headerText: response.data.status,
-                bodyText: response.data.message ? response.data.message : $translate.instant('unable_to_fetch_data_from_server')
-            };		
-            DialogService.showDialog({}, dialogOptions);
-        }
-    };
+.service('AnalyticsService', function($http, DialogService, $translate, ActionMappingUtils) {
     
     return {
         
@@ -336,14 +320,14 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 return response.data;
                 
             }, function(response){
-                errorNotifier(response);
+                ActionMappingUtils.errorNotifier(response);
             });            
             return promise;
         }
     };    
 })
 
-.service('ActionMappingUtils', function($translate){
+.service('ActionMappingUtils', function($translate, DialogService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -404,6 +388,15 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });            
             
             return optionNames.slice(0,-1);
+        },
+        errorNotifier: function(response){
+            if( response && response.data && response.data.status === 'ERROR'){
+                var dialogOptions = {
+                    headerText: response.data.status,
+                    bodyText: response.data.message ? response.data.message : $translate.instant('unable_to_fetch_data_from_server')
+                };		
+                DialogService.showDialog({}, dialogOptions);
+            }
         }
     };
 })
@@ -454,4 +447,54 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         open: open,
         get: get
     };
+})
+
+/* service for handling events */
+.service('EventService', function($http, DHIS2URL, ActionMappingUtils) {   
+    
+    var skipPaging = "&skipPaging=true";
+    return {     
+        getByOrgUnitAndProgram: function(orgUnit, ouMode, program, attributeCategoryUrl, startDate, endDate){
+            var url = DHIS2URL + '/events.json?' + 'orgUnit=' + orgUnit + '&ouMode='+ ouMode + '&program=' + program + skipPaging;
+            
+            if( startDate && endDate ){
+                url += '&startDate=' + startDate + '&endDate=' + endDate + skipPaging;
+            }
+            
+            if( attributeCategoryUrl && !attributeCategoryUrl.default ){
+                url += '&attributeCc=' + attributeCategoryUrl.cc + '&attributeCos=' + attributeCategoryUrl.cp;
+            }
+            
+            var promise = $http.get( url ).then(function(response){
+                return response.data.events;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });            
+            return promise;
+        },
+        get: function(eventUid){            
+            var promise = $http.get(DHIS2URL + '/events/' + eventUid + '.json').then(function(response){               
+                return response.data;
+            });            
+            return promise;
+        },        
+        create: function(dhis2Event){    
+            var promise = $http.post(DHIS2URL + '/events.json', dhis2Event).then(function(response){
+                return response.data;           
+            });
+            return promise;            
+        },
+        delete: function(dhis2Event){
+            var promise = $http.delete(DHIS2URL + '/events/' + dhis2Event.event).then(function(response){
+                return response.data;               
+            });
+            return promise;           
+        },
+        update: function(dhis2Event){   
+            var promise = $http.put(DHIS2URL + '/events/' + dhis2Event.event, dhis2Event).then(function(response){
+                return response.data;         
+            });
+            return promise;
+        }
+    };    
 });
