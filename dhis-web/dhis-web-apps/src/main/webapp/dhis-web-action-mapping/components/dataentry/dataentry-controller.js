@@ -6,7 +6,7 @@
 var actionMappingControllers = angular.module('actionMappingControllers', [])
 
 //Controller for settings page
-.controller('actionMappingController',
+.controller('dataEntryController',
         function($scope,
                 $filter,
                 SessionStorageService,

@@ -30,8 +30,8 @@ var sunPMT = angular.module('sunPMT',
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
     
     $routeProvider.when('/', {
-        templateUrl:'components/action-mapping/action-mapping.html',
-        controller: 'actionMappingController'
+        templateUrl:'components/dataentry/dataentry.html',
+        controller: 'dataEntryController'
     }).otherwise({
         redirectTo : '/'
     });  
