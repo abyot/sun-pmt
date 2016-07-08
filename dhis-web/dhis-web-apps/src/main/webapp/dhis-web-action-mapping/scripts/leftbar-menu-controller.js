@@ -5,11 +5,11 @@ sunPMT.controller('LeftBarMenuController',
         function($scope, $location) {
     $scope.showDataEntry = function(){
         selection.load();
-        $location.path('/').search();
+        $location.path('/dataentry').search();
     };
     
     $scope.showReports = function(){
         selection.load();
-        $location.path('/').search();
+        $location.path('/reports').search();
     };
 });

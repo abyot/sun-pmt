@@ -2,12 +2,10 @@
 
 'use strict';
 
-'use strict';
-
 var sunPMT = angular.module('sunPMT');
 
-//Controller for settings page
-sunPMT.controller('dataEntryController',
+//Controller for reports page
+sunPMT.controller('reportsController',
         function($scope,
                 $filter,
                 SessionStorageService,

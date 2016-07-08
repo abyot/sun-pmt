@@ -10,8 +10,7 @@ var sunPMT = angular.module('sunPMT',
          'ngMessages',
          'actionMappingServices',
          'actionMappingFilters',
-         'actionMappingDirectives', 
-         'actionMappingControllers',
+         'actionMappingDirectives',
          'd2Directives',
          'd2Filters',
          'd2Services',
@@ -29,11 +28,14 @@ var sunPMT = angular.module('sunPMT',
     $httpProvider.defaults.useXDomain = true;
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
     
-    $routeProvider.when('/', {
+    $routeProvider.when('/dataentry', {
         templateUrl:'components/dataentry/dataentry.html',
         controller: 'dataEntryController'
+    }).when('/reports', {
+        templateUrl:'components/reports/reports.html',
+        controller: 'reportsController'
     }).otherwise({
-        redirectTo : '/'
+        redirectTo : '/dataentry'
     });  
     
     $translateProvider.preferredLanguage('en');
