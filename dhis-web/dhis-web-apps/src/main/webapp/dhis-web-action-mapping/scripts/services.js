@@ -94,7 +94,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* Factory to fetch programs */
-.factory('DataSetFactory', function($q, $rootScope, $filter, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
+.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
   
     return {        
         getAll: function( ou ){            
@@ -239,7 +239,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.factory('DataValueService', function($http, DialogService, $translate, ActionMappingUtils) {   
+.factory('DataValueService', function($http, ActionMappingUtils) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -271,7 +271,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
-.service('AnalyticsService', function($http, DialogService, $translate, ActionMappingUtils) {
+.service('AnalyticsService', function($http, ActionMappingUtils) {
     
     return {
         
@@ -372,7 +372,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         splitRoles: function( roles ){
             return roles.split(","); 
         },
-        pushRoles: function(existingRoles, roles){            
+        pushRoles: function(existingRoles, roles){
             var newRoles = roles.split(",");
             angular.forEach(newRoles, function(r){
                 if( existingRoles.indexOf(r) === -1 ){

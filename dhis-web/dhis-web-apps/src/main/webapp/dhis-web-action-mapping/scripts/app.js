@@ -22,7 +22,7 @@ var sunPMT = angular.module('sunPMT',
          'd2HeaderBar',
          'pascalprecht.translate'])
               
-.value('DHIS2URL', '..')
+.value('DHIS2URL', '../api')
 
 .config(function($httpProvider, $routeProvider, $translateProvider) {    
             
