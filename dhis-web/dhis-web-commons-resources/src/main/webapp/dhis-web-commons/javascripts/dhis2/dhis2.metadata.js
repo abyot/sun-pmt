@@ -57,7 +57,7 @@ dhis2.metadata.processMetaDataAttribute = function( obj )
         }
     }
     
-    delete obj.attributeValues;
+    //delete obj.attributeValues;
    
     return obj;    
 };

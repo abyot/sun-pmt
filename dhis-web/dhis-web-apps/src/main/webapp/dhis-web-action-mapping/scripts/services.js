@@ -57,8 +57,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             
             return def.promise;            
         },
-        get: function(uid){
-            
+        get: function(uid){            
             var def = $q.defer();
             
             PMTStorageService.currentStore.open().done(function(){
@@ -69,7 +68,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             });                        
             return def.promise;            
-        },        
+        },
         getCode: function(options, key){
             if(options){
                 for(var i=0; i<options.length; i++){
@@ -211,14 +210,23 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 .factory('MetaDataFactory', function($q, $rootScope, PMTStorageService, orderByFilter) {  
     
     return {        
-        get: function(store, uid){
-            
-            var def = $q.defer();
-            
+        get: function(store, uid){            
+            var def = $q.defer();            
             PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get(store, uid).done(function(pv){                    
+                PMTStorageService.currentStore.get(store, uid).done(function(obj){                    
                     $rootScope.$apply(function(){
-                        def.resolve(pv);
+                        def.resolve(obj);
+                    });
+                });
+            });                        
+            return def.promise;
+        },
+        set: function(store, obj){            
+            var def = $q.defer();            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.set(store, obj).done(function(obj){                    
+                    $rootScope.$apply(function(){
+                        def.resolve(obj);
                     });
                 });
             });                        
@@ -266,6 +274,60 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             }, function(response){
                 ActionMappingUtils.errorNotifier(response);
             });            
+            return promise;
+        }
+    };    
+})
+
+.factory('StakeholderService', function($http, ActionMappingUtils) {   
+    
+    return {        
+        addCategoryOption: function( categoryOption ){
+            var promise = $http.post('../api/categoryOptions.json' , categoryOption ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        updateCategory: function( category ){
+            var promise = $http.put('../api/categories/' + category.id + '.json&mergeMode=MERGE', category ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        getCategoryCombo: function(uid){
+            var promise = $http.get('../api/categoryCombos/' + uid + '.json?fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName],categories[id,name,displayName,shortName,dimension,dataDimensionType,categoryOptions[id,name,displayName,code]]').then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        addOption: function( opt ){
+            var promise = $http.post('../api/options.json' , opt ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        updateOptionSet: function( optionSet ){
+            var promise = $http.put('../api/optionSets/' + optionSet.id + '.json&mergeMode=MERGE', optionSet ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        getOptionSet: function( uid ){
+            var promise = $http.get('../api/optionSets/' + uid + '.json?paging=false&fields=id,name,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,name,displayName,code]').then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
             return promise;
         }
     };    

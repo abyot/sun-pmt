@@ -1,0 +1,64 @@
+<div class="modal-header page">
+    <h2>{{'new_stakeholder'| translate}}</h2>
+</div>
+<div class="modal-body">
+
+    <form name="stakeholderForm" novalidate>
+        <div class="row">
+            <div class="col-sm-12">
+                <table class="dhis2-list-table-striped dhis2-table-hover">
+                    <tr>
+                        <td>
+                            {{'name'| translate}}
+                            <span class="required">*</span>
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="form-control"
+                                   ng-required="true"
+                                   ng-disabled="stakeholderAddStarted"
+                                   name="name"
+                                   ng-model="model.newStakeholder.name">
+                            <div ng-messages="stakeholderForm.name.$error" ng-if="interacted(stakeholderForm.name)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'short_name'| translate}}
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="form-control"
+                                   ng-disabled="stakeholderAddStarted"
+                                   ng-model="model.newStakeholder.shortName">                        
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'code'| translate}}
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="form-control"
+                                   ng-disabled="stakeholderAddStarted"
+                                   ng-model="model.newStakeholder.code">                        
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </form>
+    
+    <div class="alert alert-info" ng-if="stakeholderAddStarted && !stakeholderAdded">
+        <div class="horizontal-spacing remove-left-padding">
+            {{'updating_stakeholder_list' | translate}}
+            <i class="fa fa-spinner fa-spin fa-2x"></i>
+        </div>
+    </div>
+    
+</div>
+<div class="modal-footer">        
+    <button class="btn btn-primary trim" ng-disabled="stakeholderAddStarted" ng-click="addStakeholder()">{{'save'| translate}}</button>
+    <button class="btn btn-default" ng-disabled="stakeholderAddStarted" ng-click="close()">{{'cancel'| translate}}</button>    
+</div> 

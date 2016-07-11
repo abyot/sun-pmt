@@ -43,6 +43,7 @@ import org.hisp.dhis.common.view.ExportView;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.dataelement.CategoryOptionGroup;
 import org.hisp.dhis.dataelement.DataElement;
+import org.hisp.dhis.dataelement.DataElementCategory;
 import org.hisp.dhis.dataelement.DataElementCategoryOption;
 import org.hisp.dhis.dataelement.DataElementGroup;
 import org.hisp.dhis.dataset.DataSet;
@@ -80,6 +81,8 @@ public class Attribute
     private boolean dataElementAttribute;
 
     private boolean dataElementGroupAttribute;
+    
+    private boolean dataElementCategoryAttribute;
 
     private boolean indicatorAttribute;
 
@@ -145,7 +148,7 @@ public class Attribute
     @Override
     public int hashCode()
     {
-        return 31 * super.hashCode() + Objects.hash( valueType, dataElementAttribute, dataElementGroupAttribute, indicatorAttribute, indicatorGroupAttribute,
+        return 31 * super.hashCode() + Objects.hash( valueType, dataElementAttribute, dataElementGroupAttribute, dataElementCategoryAttribute, indicatorAttribute, indicatorGroupAttribute,
             dataSetAttribute, organisationUnitAttribute, organisationUnitGroupAttribute, organisationUnitGroupSetAttribute, userAttribute, userGroupAttribute,
             programAttribute, programStageAttribute, trackedEntityAttribute, trackedEntityAttributeAttribute, categoryOptionAttribute, categoryOptionGroupAttribute,
             mandatory, unique, optionSet, optionAttribute, constantAttribute, legendSetAttribute, programIndicatorAttribute, sqlViewAttribute);
@@ -172,6 +175,7 @@ public class Attribute
         return Objects.equals( this.valueType, other.valueType )
             && Objects.equals( this.dataElementAttribute, other.dataElementAttribute )
             && Objects.equals( this.dataElementGroupAttribute, other.dataElementGroupAttribute )
+            && Objects.equals( this.dataElementCategoryAttribute, other.dataElementCategoryAttribute )
             && Objects.equals( this.indicatorAttribute, other.indicatorAttribute )
             && Objects.equals( this.indicatorGroupAttribute, other.indicatorGroupAttribute )
             && Objects.equals( this.dataSetAttribute, other.dataSetAttribute )
@@ -260,6 +264,19 @@ public class Attribute
     public void setDataElementGroupAttribute( Boolean dataElementGroupAttribute )
     {
         this.dataElementGroupAttribute = dataElementGroupAttribute;
+    }
+    
+    @JsonProperty
+    @JsonView( { DetailedView.class, ExportView.class } )
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isDataElementCategoryAttribute()
+    {
+        return dataElementCategoryAttribute;
+    }
+
+    public void setDataElementCategoryAttribute( Boolean dataElementCategoryAttribute )
+    {
+        this.dataElementCategoryAttribute = dataElementCategoryAttribute;
     }
 
     @JsonProperty
@@ -555,6 +572,7 @@ public class Attribute
 
         if ( dataElementAttribute ) klasses.add( DataElement.class );
         if ( dataElementGroupAttribute ) klasses.add( DataElementGroup.class );
+        if ( dataElementCategoryAttribute ) klasses.add( DataElementCategory.class );
         if ( categoryOptionAttribute ) klasses.add( DataElementCategoryOption.class );
         if ( categoryOptionGroupAttribute ) klasses.add( CategoryOptionGroup.class );
         if ( indicatorAttribute ) klasses.add( Indicator.class );
@@ -591,6 +609,7 @@ public class Attribute
 
             dataElementAttribute = attribute.isDataElementAttribute();
             dataElementGroupAttribute = attribute.isDataElementGroupAttribute();
+            dataElementCategoryAttribute = attribute.isDataElementCategoryAttribute();
             indicatorAttribute = attribute.isIndicatorAttribute();
             indicatorGroupAttribute = attribute.isIndicatorGroupAttribute();
             dataSetAttribute = attribute.isDataSetAttribute();
@@ -636,6 +655,7 @@ public class Attribute
             .add( "valueType", valueType )
             .add( "dataElementAttribute", dataElementAttribute )
             .add( "dataElementGroupAttribute", dataElementGroupAttribute )
+            .add( "dataElementCategoryAttribute", dataElementCategoryAttribute )
             .add( "indicatorAttribute", indicatorAttribute )
             .add( "indicatorGroupAttribute", indicatorGroupAttribute )
             .add( "dataSetAttribute", dataSetAttribute )

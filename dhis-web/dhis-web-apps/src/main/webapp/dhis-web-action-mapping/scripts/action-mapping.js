@@ -195,7 +195,7 @@ function filterMissingCategoryCombos( objs ){
 }
 
 function getCategoryCombos( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName],categories[id,displayName,categoryOptions[id,displayName,code]]', 'idb', dhis2.rf.store);
+    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName],categories[id,name,displayName,shortName,dimension,dataDimensionType,categoryOptions[id,name,displayName,code]]', 'idb', dhis2.rf.store);
 }
 
 function getMetaDataSets(){
@@ -219,7 +219,7 @@ function filterMissingOptionSets( objs ){
 }
 
 function getOptionSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,displayName,code]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
+    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,name,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,name,displayName,code]', 'idb', dhis2.rf.store, dhis2.metadata.processObject);
 }
 
 function getMetaPrograms(){

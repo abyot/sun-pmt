@@ -700,6 +700,10 @@ div#orgUnitTree {
     margin-right: 15px !important;
 }
 
+.remove-left-padding {
+    margin-left: -15px !important;
+}
+
 .vertical-center-parent {
     position: relative;
 }

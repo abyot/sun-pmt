@@ -32,6 +32,8 @@
     <property name="dataElementAttribute" not-null="true" />
 
     <property name="dataElementGroupAttribute" not-null="false" />
+    
+    <property name="dataElementCategoryAttribute" not-null="false" />
 
     <property name="indicatorAttribute" not-null="true" />
 

@@ -692,22 +692,25 @@ public class DefaultDataElementCategoryService
     {
         for ( DataElementCategoryCombo categoryCombo : getAllDataElementCategoryCombos() )
         {
-            if ( categoryCombo.getCategories().contains( category ) )
-            {
-                updateOptionCombos( categoryCombo );
-            }
+        	for( DataElementCategory cat : categoryCombo.getCategories() )
+        	{
+        		if( cat.getUid().equals( category.getUid() ) )
+        		{
+        			updateOptionCombos( categoryCombo );
+        		}
+        	}
         }
     }
 
     @Override
     public void updateOptionCombos( DataElementCategoryCombo categoryCombo )
     {
-        if ( categoryCombo == null || !categoryCombo.isValid() )
+    	if ( categoryCombo == null || !categoryCombo.isValid() )
         {
             log.warn( "Category combo is null or invalid, could not update option combos: " + categoryCombo );
             return;
         }
-
+        
         List<DataElementCategoryOptionCombo> generatedOptionCombos = categoryCombo.generateOptionCombosList();
         Set<DataElementCategoryOptionCombo> persistedOptionCombos = categoryCombo.getOptionCombos();
 
@@ -719,7 +722,7 @@ public class DefaultDataElementCategoryService
             {
                 categoryCombo.getOptionCombos().add( optionCombo );
                 addDataElementCategoryOptionCombo( optionCombo );
-
+                
                 log.info( "Added missing category option combo: " + optionCombo + " for category combo: "
                     + categoryCombo.getName() );
                 modified = true;

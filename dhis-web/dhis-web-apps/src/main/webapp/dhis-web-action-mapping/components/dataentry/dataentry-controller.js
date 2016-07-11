@@ -2,14 +2,15 @@
 
 'use strict';
 
-'use strict';
-
 var sunPMT = angular.module('sunPMT');
 
 //Controller for settings page
 sunPMT.controller('dataEntryController',
         function($scope,
                 $filter,
+                $translate,
+                $modal,
+                $window,
                 SessionStorageService,
                 storage,
                 DialogService,
@@ -20,6 +21,7 @@ sunPMT.controller('dataEntryController',
                 DataValueService,
                 EventService) {
     $scope.periodOffset = 0;
+    var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: $translate.instant('add_new_option')};
     $scope.model = {invalidDimensions: false, 
                     childrenOu: [],
                     selectedAttributeCategoryCombo: null,
@@ -57,13 +59,70 @@ sunPMT.controller('dataEntryController',
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
+        $scope.stakeholderList = null;
         if( angular.isObject($scope.selectedOrgUnit)){            
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
             var systemSetting = storage.get('SYSTEM_SETTING');
             $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
+            loadOptionSets();
             $scope.loadDataSets($scope.selectedOrgUnit);
         }
-    });   
+    });
+        
+    function loadOptionSets() {        
+        if(!$scope.model.optionSets){
+            $scope.model.optionSets = [];
+            MetaDataFactory.getAll('optionSets').then(function(optionSets){
+                angular.forEach(optionSets, function(optionSet){
+                    if( optionSet.StakeholderRole === 'Funder' ){
+                        $scope.stakeholderList = optionSet;
+                        //$scope.model.optionSets['Funder'] = optionSet;
+                        var o = angular.copy( optionSet );
+                        var options = [];
+                        angular.forEach(o.options, function(_o){
+                           options.push( _o.displayName ); 
+                        });
+                        o.options = options;
+                        $scope.model.optionSets['Funder'] = o;
+                    }
+                    else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
+                        //$scope.model.optionSets['Responsible Ministry'] = optionSet;
+                        var o = angular.copy( optionSet );
+                        var options = [];
+                        angular.forEach(o.options, function(_o){
+                           options.push( _o.displayName ); 
+                        });
+                        o.options = options;
+                        $scope.model.optionSets['Responsible Ministry'] = o;                                
+                    }
+                    else{
+                        $scope.model.optionSets[optionSet.id] = optionSet;
+                    }
+                });
+            });
+        }
+    }
+    
+    function loadOptionCombos(){
+        $scope.model.selectedAttributeCategoryCombo = null;     
+        if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.categoryCombo && $scope.model.selectedDataSet.categoryCombo.id ){
+            MetaDataFactory.get('categoryCombos', $scope.model.selectedDataSet.categoryCombo.id).then(function(coc){
+                $scope.model.selectedAttributeCategoryCombo = coc;
+                if( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.isDefault ){
+                    $scope.model.categoryOptionsReady = true;
+                }                
+                angular.forEach($scope.model.selectedAttributeCategoryCombo.categoryOptionCombos, function(oco){
+                    $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
+                });
+
+                angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(cat){
+                    if( cat.displayName === 'Field Implementer' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
+                        cat.categoryOptions.push(addNewOption);
+                    }
+                });
+            });
+        }
+    }    
     
     //load datasets associated with the selected org unit.
     $scope.loadDataSets = function(orgUnit) {
@@ -80,38 +139,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
-                $scope.model.dataSets = dataSets;                
-                if(!$scope.model.optionSets){
-                    $scope.model.optionSets = [];
-                    MetaDataFactory.getAll('optionSets').then(function(optionSets){
-                        angular.forEach(optionSets, function(optionSet){
-                            if( optionSet.StakeholderRole === 'Funder' ){
-                                //$scope.model.optionSets['Funder'] = optionSet;
-                                var o = angular.copy( optionSet );
-                                var options = [];
-                                angular.forEach(o.options, function(_o){
-                                   options.push( _o.displayName ); 
-                                });
-                                o.options = options;
-                                $scope.model.optionSets['Funder'] = o;
-                            }
-                            else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
-                                //$scope.model.optionSets['Responsible Ministry'] = optionSet;
-                                var o = angular.copy( optionSet );
-                                var options = [];
-                                angular.forEach(o.options, function(_o){
-                                   options.push( _o.displayName ); 
-                                });
-                                o.options = options;
-                                $scope.model.optionSets['Responsible Ministry'] = o;                                
-                            }
-                            else{
-                                $scope.model.optionSets[optionSet.id] = optionSet;
-                            }
-                        });
-                    });
-                }
-                
+                $scope.model.dataSets = dataSets; 
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
                     MetaDataFactory.getAll('programs').then(function(programs){
@@ -143,7 +171,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         $scope.loadDataEntryForm();
     });    
-    
+        
     $scope.loadDataSetDetails = function(){
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){ 
             
@@ -154,16 +182,7 @@ sunPMT.controller('dataEntryController',
                 return;
             }            
             
-            $scope.model.selectedAttributeCategoryCombo = null;            
-            MetaDataFactory.get('categoryCombos', $scope.model.selectedDataSet.categoryCombo.id).then(function(coc){
-                $scope.model.selectedAttributeCategoryCombo = coc;
-                if( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.isDefault ){
-                    $scope.model.categoryOptionsReady = true;
-                }                
-                angular.forEach($scope.model.selectedAttributeCategoryCombo.categoryOptionCombos, function(oco){
-                    $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
-                });
-            });
+            loadOptionCombos();            
             
             $scope.model.selectedCategoryCombos = {};
             $scope.model.roleDataElements = [];
@@ -275,9 +294,7 @@ sunPMT.controller('dataEntryController',
         DialogService.showDialog({}, dialogOptions);
     };
     
-    $scope.getCategoryOptions = function(){
-        $scope.model.categoryOptionsReady = false;
-        $scope.model.selectedOptions = [];        
+    function checkOptions(){               
         for(var i=0; i<$scope.model.selectedAttributeCategoryCombo.categories.length; i++){
             if($scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption && $scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption.id){
                 $scope.model.categoryOptionsReady = true;
@@ -291,6 +308,44 @@ sunPMT.controller('dataEntryController',
         if($scope.model.categoryOptionsReady){
             $scope.loadDataEntryForm();
         }
+    };
+    
+    function showAddStakeholder( category ) {
+        var modalInstance = $modal.open({
+            templateUrl: 'components/stakeholder/stakeholder.html',
+            controller: 'StakeholderController',
+            resolve: {
+                categoryCombo: function(){
+                    return $scope.model.selectedAttributeCategoryCombo;
+                },
+                category: function () {
+                    return category;
+                },
+                optionSet: function(){
+                    return $scope.stakeholderList;
+                }
+            }
+        });
+
+        modalInstance.result.then(function ( status ) {
+            if( status ){
+                //loadOptionSets();
+                //loadOptionCombos();
+                $window.location.reload();
+            }
+        });
+    };    
+    
+    $scope.getCategoryOptions = function(category){
+        $scope.model.categoryOptionsReady = false;
+        $scope.model.selectedOptions = [];
+        
+        if( category.selectedOption.id === 'ADD_NEW_OPTION' ){
+            showAddStakeholder( category );
+        }        
+        else{
+            checkOptions();
+        }        
     };
     
     $scope.getPeriods = function(mode){
