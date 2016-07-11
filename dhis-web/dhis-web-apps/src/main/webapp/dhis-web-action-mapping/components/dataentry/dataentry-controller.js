@@ -21,6 +21,7 @@ sunPMT.controller('dataEntryController',
                 DataValueService,
                 EventService) {
     $scope.periodOffset = 0;
+    $scope.saveStatus = {};
     var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: $translate.instant('add_new_option')};
     $scope.model = {invalidDimensions: false, 
                     childrenOu: [],
@@ -447,6 +448,8 @@ sunPMT.controller('dataEntryController',
     
     $scope.saveDataValue = function( ouId, deId, ocId ){
         
+        $scope.saveStatus[ouId + '-' + deId + '-' + ocId] = {saved: false, pending: true, error: false};
+        
         var dataValue = {ou: ouId,
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
@@ -457,7 +460,35 @@ sunPMT.controller('dataEntryController',
                 };
                 
         DataValueService.saveDataValue( dataValue ).then(function(response){
+           $scope.saveStatus[ouId + '-' + deId + '-' + ocId].saved = true;
+           $scope.saveStatus[ouId + '-' + deId + '-' + ocId].pending = false;
+           $scope.saveStatus[ouId + '-' + deId + '-' + ocId].error = false;
+        }, function(){
+            $scope.saveStatus[ouId + '-' + deId + '-' + ocId].saved = false;
+            $scope.saveStatus[ouId + '-' + deId + '-' + ocId].pending = false;
+            $scope.saveStatus[ouId + '-' + deId + '-' + ocId].error = true;
         });
+    };
+    
+    
+    $scope.getInputNotifcationClass = function(ouId, deId, ocId){
+
+        var currentElement = $scope.saveStatus[ouId + '-' + deId + '-' + ocId];        
+        
+        if( currentElement ){
+            if(currentElement.pending){
+                return 'form-control input-pending';
+            }
+
+            if(currentElement.saved){
+                return 'form-control input-success';
+            }            
+            else{
+                return 'form-control input-error';
+            }
+        }    
+        
+        return 'form-control';
     };
     
     $scope.editStakeholderRoles = function( ouId){

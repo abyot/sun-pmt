@@ -59,6 +59,7 @@
                             <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
                                 <input type="text" 
                                        class="form-control pull-center" 
+                                       ng-class="getInputNotifcationClass(ou, dataElement.id, oco.id)"
                                        ng-model="model.dataValues[ou][dataElement.id][oco.id].value"
                                        d2-blur="saveDataValue(ou, dataElement.id, oco.id)">
                             </td>

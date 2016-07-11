@@ -753,3 +753,15 @@ div#orgUnitTree {
 .tooltip.custom-tooltip-class .tooltip-arrow {
     display: none;
 }
+
+.input-pending {
+    background-color: #fffe8c !important;
+}
+
+.input-error {
+    background-color: #ff8a8a !important;
+}
+
+.input-success {
+    background-color: #b9ffb9 !important;
+}
