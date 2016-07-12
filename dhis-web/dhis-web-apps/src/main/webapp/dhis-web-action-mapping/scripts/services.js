@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2sunpmt",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels']
     });
     return{
         currentStore: store
@@ -129,12 +129,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            
                                     }
-                                });
-                                
+                                });                               
                             }
                         });
                     }
-                                        
+                    
                     $rootScope.$apply(function(){
                         def.resolve(dataSets);
                     });

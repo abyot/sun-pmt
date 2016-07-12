@@ -411,6 +411,10 @@ div#orgUnitTree {
     border-radius: 3px;
 }
 
+.selectionArea-no-radius {
+    background-color: #d0eBd0;
+}
+
 .div-bottom {
     position: absolute;
     bottom: 0;
@@ -704,6 +708,10 @@ div#orgUnitTree {
     margin-left: -15px !important;
 }
 
+.remove-bottom-margin {
+    margin-bottom: 0 !important;
+}
+
 .vertical-center-parent {
     position: relative;
 }
@@ -764,4 +772,39 @@ div#orgUnitTree {
 
 .input-success {
     background-color: #b9ffb9 !important;
+}
+
+#multiSelectAvailable option,
+#multiSelectSelected option{    
+    padding: 5px;
+    line-height: 1.428571429;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #555;
+    vertical-align: middle;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+#multiSelectAvailable, #multiSelectSelected {
+    width: 100%;
+    height: 250px;
+    overflow: auto;
+}
+
+.control-label {
+    text-align: left !important;
+}
+
+.sun-pmt-color {
+    border-color: #467e4a;
+}
+.sun-pmt-color > .panel-heading {
+    color: #fff;
+    background-color: #467e4a;
+    border-color: #335235;
+}
+
+.white-color {
+    color: #fff;
 }

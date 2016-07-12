@@ -27,91 +27,111 @@
         {{'loading_metadata'| translate}}
     </div>
 
+    <input type="hidden" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName">
+
     <div ng-show="selectedOrgUnit">
         <h2>
             {{'reports'| translate}}
         </h2>
 
-        <!-- selection begins-->
-        <div class="selectionGroup">
-            <div class="col-sm-6 selectionArea">
-                <div class="row">
-                    <div class="col-sm-4">
-                        {{'org_unit'| translate}}
-                    </div>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName"
-                               value="{{selectedOrgUnit.displayName|| pleaseSelectLabel}}" disabled="">
-                    </div>
-                </div>                
-                <div class="row small-vertical-spacing">
-                    <div class="col-sm-4">
-                        {{'action'| translate}}
-                    </div>
-                    <div class="col-sm-8">
-                        <ui-select ng-model="model.selectedDataSet" 
-                                   theme="select2"                                 
-                                   style="width:100%;">
-                            <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.dataSets && model.dataSets.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.displayName|| $select.selected}}</ui-select-match>
-                            <ui-select-choices group-by="'entryMode'" repeat="dataSet in model.dataSets | filter: $select.search | limitTo:maxOptionSize">
-                                <span ng-bind-html="dataSet.displayName | highlight: $select.search"></span>
-                            </ui-select-choices>
-                        </ui-select>
-                    </div>
-                </div>                
-                <div class="row small-vertical-spacing" ng-if="model.selectedDataSet && !model.invalidDimensions">
-                    <div class="col-sm-4">
-                        {{'mapping_year'| translate}}                        
-                    </div>
-                    <div class="col-sm-8">
-                        <div class="row">
-                            <div class="col-sm-7">
-                                <ui-select ng-model="model.selectedPeriod" 
-                                           theme="select2"                                 
-                                           style="width:100%;">
-                                    <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.periods && model.periods.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
-                                    <ui-select-choices  repeat="period in model.periods | filter: $select.search | limitTo:maxOptionSize">
-                                        <span ng-bind-html="period.name | highlight: $select.search"></span>
-                                    </ui-select-choices>
-                                </ui-select>
-                            </div>
-                            <div class="col-sm-5">
-                                <span class="pull-left">
-                                    <button type="button" class="btn btn-default" ng-click="getPeriods('PRV')" title="{{'previous_periods'| translate}}"><!--<i class="fa fa-caret-left"></i>-->{{'prev' | translate}}</button>
-                                </span>
-                                <span class="pull-right">
-                                    <button type="button" class="btn btn-default" ng-disabled="periodOffset > -1" ng-click="getPeriods('NXT')" title="{{'next_periods'| translate}}"><!--<i class="fa fa-caret-right"></i>-->{{'next'| translate}}</button>
-                                </span>
-                            </div>
-                        </div>
+        <form class="form-horizontal row col-sm-6" role="form" name="reportForm" novalidate>
+            <div class="panel sun-pmt-color">
+                <div class="panel-heading">
+                    {{'report_filters'| translate}}
+                    <div class="pull-right">
+                        <a class="small-horizontal-spacing" href ng-click="showReportFilters = !showReportFilters">
+                            <span ng-show="showReportFilters" class="white-color"><i class="fa fa-chevron-up vertical-center" title="{{'collapse'| translate}}"></i></span>
+                            <span ng-show="!showReportFilters" class="white-color"><i class="fa fa-chevron-down vertical-center" title="{{'expand'| translate}}"></i></span>
+                        </a>
                     </div>
                 </div>
-                <div ng-repeat="category in model.selectedAttributeCategoryCombo.categories" ng-if="model.selectedDataSet && model.selectedPeriod && !model.selectedAttributeCategoryCombo.isDefault && !model.invalidDimensions">                
-                    <div class="row small-vertical-spacing">
-                        <div class="col-sm-4">                            
-                            <i class="fa fa-question-circle superscript" tooltip="{{category.displayName === 'Field Implementer' ? 'field_implementer_info' : 'delivery_mechanism_info' | translate}}" tooltip-class="custom-tooltip-class"></i>
-                            {{category.displayName}}
+                <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">
+                            {{'ou_scope'| translate}}
+                            <span class="required">*</span>
+                        </label>
+                        <div class="col-sm-9">
+                            <select ng-model="model.selectedOuMode" 
+                                    class="form-control"
+                                    ng-options="ouMode as ouMode.name for ouMode in model.ouModes" >
+                            </select>
                         </div>
-                        <div class="col-sm-8">
-                            <ui-select ng-model="category.selectedOption" 
-                                       theme="select2"  
-                                       on-select="getCategoryOptions()"
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">
+                            {{'stakeholder_role'| translate}}<span class="required">*</span>
+                        </label>                        
+                        <div class="col-sm-9">
+                            <select ng-model="model.selectedStakeholderRole" 
+                                    class="form-control"
+                                    ng-options="stakeholderRole as stakeholderRole.name for stakeholderRole in model.stakeholderRoles" >
+                            </select>
+                            <!--<ui-select ng-model="model.selectedStakeholderRole" 
+                                       ng-required="true"
+                                       theme="select2"   
+                                       name="selectedStakeholderRole"
                                        style="width:100%;">
-                                <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{category.categoryOptions && category.categoryOptions.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.displayName|| $select.selected}}</ui-select-match>
-                                <ui-select-choices  repeat="option in category.categoryOptions | filter: $select.search | limitTo:maxOptionSize">
-                                    <span ng-bind-html="option.displayName | highlight: $select.search"></span>
+                                <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.stakeholderRoles && model.stakeholderRoles.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
+                                <ui-select-choices  repeat="stakeholderRole in model.stakeholderRoles | filter: $select.search | limitTo:maxOptionSize">
+                                    <span ng-bind-html="stakeholderRole.name | highlight: $select.search"></span>
                                 </ui-select-choices>
-                            </ui-select>
+                            </ui-select>-->
+                            <div ng-messages="reportForm.selectedStakeholderRole.$error" ng-if="interacted(reportForm.selectedStakeholderRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                            </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">
+                            {{'mapping_year'| translate}}
+                            <span class="required">*</span>
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="row">
+                                <div class="col-sm-7">
+                                    <ui-select ng-model="model.selectedPeriod" 
+                                               ng-required="true"
+                                               theme="select2" 
+                                               name="selectedPeriod"
+                                               style="width:100%;">
+                                        <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.periods && model.periods.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
+                                        <ui-select-choices  repeat="period in model.periods | filter: $select.search | limitTo:maxOptionSize">
+                                            <span ng-bind-html="period.name | highlight: $select.search"></span>
+                                        </ui-select-choices>
+                                    </ui-select>
+                                    <div ng-messages="reportForm.selectedPeriod.$error" ng-if="interacted(reportForm.selectedPeriod)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <span class="pull-left">
+                                        <button type="button" class="btn btn-default" ng-click="getPeriods('PRV')" title="{{'previous_periods'| translate}}">{{'prev'| translate}}</button>
+                                    </span>
+                                    <span class="pull-right">
+                                        <button type="button" class="btn btn-default" ng-disabled="periodOffset > -1" ng-click="getPeriods('NXT')" title="{{'next_periods'| translate}}">{{'next'| translate}}</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <d2-multi-select 
+                                ng-model="model.selectedDataSets" 
+                                available="model.dataSets" 
+                                available-label="{{'available'| translate}}" 
+                                selected-label="{{'selected'| translate}}"                     
+                                display-attr="displayName">
+                            </d2-multi-select>
+                        </div>
+                    </div>                    
+                    <button type="button" 
+                            class="btn btn-default" 
+                            ng-click="getReport()">
+                        {{'submit'| translate}}
+                    </button>
                 </div>
             </div>
-            <div class="col-sm-6 selectionArea add-default-padding vertical-center-parent">
-                <div class="vertical-center-child">                    
-                </div>
-            </div>
-        </div>        
-        <!-- selection ends -->        
+        </form>
 
         <div class="alert alert-danger vertical-spacing" ng-if="model.invalidDimensions && model.selectedDataSet">
             {{'data_set_have_invalid_dimension'| translate}}

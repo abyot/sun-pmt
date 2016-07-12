@@ -140,7 +140,8 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
-                $scope.model.dataSets = dataSets; 
+                //$scope.model.dataSets = dataSets;
+                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'});
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
                     MetaDataFactory.getAll('programs').then(function(programs){
