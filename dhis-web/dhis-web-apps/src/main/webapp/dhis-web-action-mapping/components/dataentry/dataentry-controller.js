@@ -341,7 +341,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.categoryOptionsReady = false;
         $scope.model.selectedOptions = [];
         
-        if( category.selectedOption.id === 'ADD_NEW_OPTION' ){
+        if( category && category.selectedOption && category.selectedOption.id === 'ADD_NEW_OPTION' ){
             showAddStakeholder( category );
         }        
         else{
