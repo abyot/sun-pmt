@@ -48,7 +48,7 @@
                                 {{'org_unit'| translate}}
                             </th>
                             <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
-                                {{oco.displayName}}
+                                {{oco.displayName !== 'default' ? oco.displayName : 'value' | translate }}
                             </th>
                         </tr>
                         <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
