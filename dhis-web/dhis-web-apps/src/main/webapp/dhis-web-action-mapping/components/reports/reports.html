@@ -53,9 +53,14 @@
                         </label>
                         <div class="col-sm-9">
                             <select ng-model="model.selectedOuMode" 
+                                    ng-required="true"
+                                    name="selectedOuMode"
                                     class="form-control"
                                     ng-options="ouMode as ouMode.name for ouMode in model.ouModes" >
+                                <option value="">{{'please_select' | translate}}</option>
                             </select>
+                            <div ng-messages="reportForm.selectedOuMode.$error" ng-if="interacted(reportForm.selectedOuMode)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -64,19 +69,12 @@
                         </label>                        
                         <div class="col-sm-9">
                             <select ng-model="model.selectedStakeholderRole" 
+                                    ng-required="true"
+                                    name="selectedStakeholderRole"
                                     class="form-control"
                                     ng-options="stakeholderRole as stakeholderRole.name for stakeholderRole in model.stakeholderRoles" >
+                                <option value="">{{'please_select' | translate}}</option>
                             </select>
-                            <!--<ui-select ng-model="model.selectedStakeholderRole" 
-                                       ng-required="true"
-                                       theme="select2"   
-                                       name="selectedStakeholderRole"
-                                       style="width:100%;">
-                                <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.stakeholderRoles && model.stakeholderRoles.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
-                                <ui-select-choices  repeat="stakeholderRole in model.stakeholderRoles | filter: $select.search | limitTo:maxOptionSize">
-                                    <span ng-bind-html="stakeholderRole.name | highlight: $select.search"></span>
-                                </ui-select-choices>
-                            </ui-select>-->
                             <div ng-messages="reportForm.selectedStakeholderRole.$error" ng-if="interacted(reportForm.selectedStakeholderRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
                             </div>
                         </div>
@@ -89,16 +87,13 @@
                         <div class="col-sm-9">
                             <div class="row">
                                 <div class="col-sm-7">
-                                    <ui-select ng-model="model.selectedPeriod" 
-                                               ng-required="true"
-                                               theme="select2" 
-                                               name="selectedPeriod"
-                                               style="width:100%;">
-                                        <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.periods && model.periods.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
-                                        <ui-select-choices  repeat="period in model.periods | filter: $select.search | limitTo:maxOptionSize">
-                                            <span ng-bind-html="period.name | highlight: $select.search"></span>
-                                        </ui-select-choices>
-                                    </ui-select>
+                                    <select ng-model="model.selectedPeriod" 
+                                            ng-required="true"
+                                            name="selectedPeriod"
+                                            class="form-control"
+                                            ng-options="period as period.name for period in model.periods">
+                                        <option value="">{{'please_select' | translate}}</option>
+                                    </select>
                                     <div ng-messages="reportForm.selectedPeriod.$error" ng-if="interacted(reportForm.selectedPeriod)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
                                     </div>
                                 </div>
@@ -112,7 +107,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>                    
+                    </div>
                     <div class="form-group">
                         <div class="col-sm-12">
                             <d2-multi-select 

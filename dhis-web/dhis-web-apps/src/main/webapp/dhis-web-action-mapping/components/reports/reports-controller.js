@@ -22,8 +22,6 @@ sunPMT.controller('reportsController',
     $scope.showReportFilters = true;
     $scope.orgUnitLevels = null;
     $scope.model = {stakeholderRoles: [{id: 'CA_ID', name: $translate.instant('catalyst')},{id: 'FU_ID', name: $translate.instant('funder')},{id: 'RM_ID', name: $translate.instant('responsible_ministry')}],
-        //ouModes: [{name: $translate.instant('selected') , value: 'SELECTED'},{name: $translate.instant('children') , value: 'CHILDREN'},{name: $translate.instant('descendants') , value: 'DESCENDANTS'}],
-        //ouModes: [{name: $translate.instant('selected') , value: 'SELECTED'}],
         ouModes: [],
         periods: [],
         dataSets: null,
@@ -36,7 +34,7 @@ sunPMT.controller('reportsController',
     
     function populateOuLevels(){
         $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED'}];            
-        $scope.model.selectedOuMode = $scope.model.ouModes[0].value;
+        $scope.model.selectedOuMode = $scope.model.ouModes[0];
         for( var i=$scope.selectedOrgUnit.l+1; i<=3; i++ ){
             var md = $scope.model.ouLevels[i];
             $scope.model.ouModes.push({value: md, name: md + ' ' + $translate.instant('level')});
@@ -46,36 +44,28 @@ sunPMT.controller('reportsController',
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
         if( angular.isObject($scope.selectedOrgUnit)){            
-            if(!$scope.model.programs){
-                $scope.model.programs = [];
-                MetaDataFactory.getAll('programs').then(function(programs){
-                    $scope.model.programs = programs;
-                    angular.forEach(programs, function(program){
-                        $scope.model.programsByCode[program.actionCode] = program;
-                    });                        
-                });
-            }
             
-            if( !$scope.model.dataSets ){
-                $scope.model.dataSets = [];
-                MetaDataFactory.getAll('dataSets').then(function(dataSets){
-                    $scope.model.dataSets = dataSets;
-                });
-            }
-            
-            if( !$scope.orgUnitLevels ){
-                $scope.orgUnitLevels = [];
-                MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
-                    angular.forEach(ouLevels, function(ol){
-                        $scope.model.ouLevels[ol.level] = ol.displayName;
-                    });                    
-                    populateOuLevels();
-                });
-            }
-            else{
+            $scope.model.programs = [];
+            MetaDataFactory.getAll('programs').then(function(programs){
+                $scope.model.programs = programs;
+                angular.forEach(programs, function(program){
+                    $scope.model.programsByCode[program.actionCode] = program;
+                });                        
+            });
+
+            $scope.model.dataSets = [];
+            MetaDataFactory.getAll('dataSets').then(function(dataSets){
+                $scope.model.dataSets = dataSets;
+            });
+
+            $scope.orgUnitLevels = [];
+            MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
+                angular.forEach(ouLevels, function(ol){
+                    $scope.model.ouLevels[ol.level] = ol.displayName;
+                });                    
                 populateOuLevels();
-            }
-            
+            });
+                
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit);
             $scope.model.periods = PeriodService.getPeriods('Yearly', $scope.model.periodOffset);
         }
@@ -108,14 +98,10 @@ sunPMT.controller('reportsController',
         //check for form validity
         $scope.reportForm.submitted = true;        
         if( $scope.reportForm.$invalid ){
-            console.log('form is invalid');
             return false;
         }
         
-        console.log('orgUnit:  ', $scope.selectedOrgUnit);
-        console.log('scope:  ', $scope.model.selectedOuMode);
-        console.log('period:  ', $scope.model.selectedPeriod);
-        console.log('data sets:  ', $scope.model.selectedDataSets);
+        //form is valid
         
     };
 });
