@@ -124,7 +124,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
 
                                 angular.forEach(ou.c, function(c){                                    
-                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1){
+                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.isAction){
                                         ds.entryMode = 'Multiple Entry';                                            
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            
