@@ -13,7 +13,6 @@ sunPMT.controller('dataEntryController',
                 $window,
                 SessionStorageService,
                 storage,
-                DialogService,
                 DataSetFactory,
                 PeriodService,
                 MetaDataFactory,
@@ -43,6 +42,7 @@ sunPMT.controller('dataEntryController',
                     selectedAttributeOptionCombos: {},
                     selectedAttributeOptionCombo: null,
                     selectedEvent: {},
+                    stakeholderCategory: null,
                     attributeCategoryUrl: null};
     
     //watch for selection of org unit from tree
@@ -83,6 +83,8 @@ sunPMT.controller('dataEntryController',
                         angular.forEach(o.options, function(_o){
                            options.push( _o.displayName ); 
                         });
+                        options.push('[Add New Stakeholder]');
+                        
                         o.options = options;
                         $scope.model.optionSets['Funder'] = o;
                     }
@@ -94,7 +96,7 @@ sunPMT.controller('dataEntryController',
                            options.push( _o.displayName ); 
                         });
                         o.options = options;
-                        $scope.model.optionSets['Responsible Ministry'] = o;                                
+                        $scope.model.optionSets['Responsible Ministry'] = o;
                     }
                     else{
                         $scope.model.optionSets[optionSet.id] = optionSet;
@@ -117,8 +119,11 @@ sunPMT.controller('dataEntryController',
                 });
 
                 angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(cat){
-                    if( cat.displayName === 'Field Implementer' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
-                        cat.categoryOptions.push(addNewOption);
+                    if( cat.displayName === 'Field Implementer' ){                        
+                        $scope.model.stakeholderCategory = cat;
+                        if( cat.displayName === 'Field Implementer' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
+                            cat.categoryOptions.push(addNewOption);
+                        }
                     }
                 });
             });
@@ -205,8 +210,7 @@ sunPMT.controller('dataEntryController',
             });
         }
     };
-    
-    
+        
     $scope.loadDataEntryForm = function(){
         $scope.model.dataValues = {};
         $scope.model.roleValues = {};
@@ -287,15 +291,6 @@ sunPMT.controller('dataEntryController',
         }
     };
     
-    $scope.invalidCategoryDimensionConfiguration = function( headerText, bodyText){
-        $scope.model.invalidDimensions = true;
-        var dialogOptions = {
-            headerText: headerText,
-            bodyText: bodyText
-        };
-        DialogService.showDialog({}, dialogOptions);
-    };
-    
     function checkOptions(){               
         for(var i=0; i<$scope.model.selectedAttributeCategoryCombo.categories.length; i++){
             if($scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption && $scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption.id){
@@ -331,8 +326,6 @@ sunPMT.controller('dataEntryController',
 
         modalInstance.result.then(function ( status ) {
             if( status ){
-                //loadOptionSets();
-                //loadOptionCombos();
                 $window.location.reload();
             }
         });
@@ -343,6 +336,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.selectedOptions = [];
         
         if( category && category.selectedOption && category.selectedOption.id === 'ADD_NEW_OPTION' ){
+            category.selectedOption = null;
             showAddStakeholder( category );
         }        
         else{
@@ -365,7 +359,13 @@ sunPMT.controller('dataEntryController',
     };
     
     $scope.saveRole = function( dataElementId ){
-
+        
+        if( $scope.model.stakeholderRoles[$scope.model.commonOrgUnit][dataElementId].indexOf( "[Add New Stakeholder]") !== -1 ){
+            $scope.model.stakeholderRoles[$scope.model.commonOrgUnit][dataElementId] = $scope.model.stakeholderRoles[$scope.model.commonOrgUnit][dataElementId].slice(0,-1);
+            showAddStakeholder( $scope.model.stakeholderCategory );
+            return;
+        }
+        
         var events = {events: []};
         if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === "Multiple Entry" ){            
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
