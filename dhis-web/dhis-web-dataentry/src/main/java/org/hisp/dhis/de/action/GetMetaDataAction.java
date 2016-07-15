@@ -64,6 +64,7 @@ import com.google.common.collect.Sets;
 import com.opensymphony.xwork2.Action;
 import org.hisp.dhis.attribute.Attribute;
 import org.hisp.dhis.attribute.AttributeService;
+import org.hisp.dhis.attribute.AttributeValue;
 
 /**
  * @author Lars Helge Overland
@@ -115,9 +116,6 @@ public class GetMetaDataAction
 
     @Autowired
     private IdentifiableObjectManager identifiableObjectManager;
-    
-    @Autowired
-    private AttributeService attributeService;
     
     // -------------------------------------------------------------------------
     // Output
@@ -193,14 +191,6 @@ public class GetMetaDataAction
         return categoryOptionMap;
     }
 
-    private List<Attribute> attributes;
-    
-    public List<Attribute> getAttributes()
-    {
-        return attributes; 
-    }
-    
-
     // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
@@ -248,7 +238,8 @@ public class GetMetaDataAction
 
         expressionService.substituteExpressions( indicators, null );
 
-        dataSets = dataSetService.getCurrentUserDataSets();
+        //dataSets = dataSetService.getCurrentUserDataSets();
+        dataSets = getNonActionDataSets();
         
         Set<DataElementCategoryCombo> categoryComboSet = new HashSet<>();
         Set<DataElementCategory> categorySet = new HashSet<>();
@@ -285,8 +276,35 @@ public class GetMetaDataAction
 
         defaultCategoryCombo = categoryService.getDefaultDataElementCategoryCombo();
 
-        attributes = attributeService.getAttributes( DataElementCategoryOption.class );
-
         return SUCCESS;
+    }
+    
+    // -------------------------------------------------------------------------
+    // Supportive methods
+    // -------------------------------------------------------------------------
+    
+    private List<DataSet> getNonActionDataSets( )
+    {
+        List<DataSet> nonActionDataSets = new ArrayList<>();
+        
+        for ( DataSet dataSet : dataSetService.getCurrentUserDataSets() )
+        {
+            boolean dataSetIsAction = false;
+            
+            for( AttributeValue av : dataSet.getAttributeValues() )
+            {                
+                if( av.getAttribute().getCode().equalsIgnoreCase( "isAction" ) && av.getValue().equalsIgnoreCase( "true" ) )
+                {
+                    dataSetIsAction = true;
+                }
+            }
+
+            if( !dataSetIsAction )
+            {
+            	nonActionDataSets.add( dataSet );
+            }
+        }
+        
+        return nonActionDataSets;
     }
 }

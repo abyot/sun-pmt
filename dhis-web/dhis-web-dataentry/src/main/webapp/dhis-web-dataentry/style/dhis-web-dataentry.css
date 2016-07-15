@@ -99,9 +99,6 @@
   background-color: #f3f3f3;
   border: 1px solid #dadada;
   color: #444;
-  max-width: 140px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
 }
 
 .sectionTable
@@ -430,12 +427,4 @@ textarea:read-only
 
 .select2-chosen {
     padding-top: 6px;
-}
-
-#categoryOptionAddDialog {
-    display: none;
-}
-
-.category-option-field {
-    width: 250px;
 }

@@ -21,7 +21,7 @@ sunPMT.controller('dataEntryController',
                 EventService) {
     $scope.periodOffset = 0;
     $scope.saveStatus = {};
-    var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: $translate.instant('add_new_option')};
+    var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: '[Add New Stakeholder]'};
     $scope.model = {invalidDimensions: false, 
                     childrenOu: [],
                     selectedAttributeCategoryCombo: null,
