@@ -8,7 +8,6 @@ var sunPMT = angular.module('sunPMT');
 sunPMT.controller('dataEntryController',
         function($scope,
                 $filter,
-                $translate,
                 $modal,
                 $window,
                 SessionStorageService,
@@ -43,7 +42,8 @@ sunPMT.controller('dataEntryController',
                     selectedAttributeOptionCombo: null,
                     selectedEvent: {},
                     stakeholderCategory: null,
-                    attributeCategoryUrl: null};
+                    attributeCategoryUrl: null,
+                    valueExists: false};
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -60,6 +60,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
+        $scope.model.valueExists = false;
         $scope.stakeholderList = null;
         if( angular.isObject($scope.selectedOrgUnit)){            
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
@@ -143,10 +144,10 @@ sunPMT.controller('dataEntryController',
         $scope.model.orgUnitsWithValues = [];
         $scope.model.selectedEvent = {};
         $scope.model.dataValues = {};
+        $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
-                //$scope.model.dataSets = dataSets;
-                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'});
+                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'}); //dataSets;
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
                     MetaDataFactory.getAll('programs').then(function(programs){
@@ -169,6 +170,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.selectedProgram = null;
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
+        $scope.model.valueExists = false;
         if( angular.isObject($scope.model.selectedDataSet) && $scope.model.selectedDataSet.id){
             $scope.loadDataSetDetails();
         }
@@ -176,6 +178,7 @@ sunPMT.controller('dataEntryController',
     
     $scope.$watch('model.selectedPeriod', function(){        
         $scope.model.dataValues = {};
+        $scope.model.valueExists = false;
         $scope.loadDataEntryForm();
     });    
         
@@ -216,6 +219,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.roleValues = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.selectedEvent = {};
+        $scope.model.valueExists = false;
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
@@ -253,33 +257,40 @@ sunPMT.controller('dataEntryController',
             $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
 
             //fetch data values...            
-            DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){                
-                angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}), function(dv){
-                    if(!$scope.model.dataValues[dv.orgUnit]){
-                        $scope.model.dataValues[dv.orgUnit] = {};
-                        $scope.model.dataValues[dv.orgUnit][dv.dataElement] = {};
-                        $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
-                    }
-                    else{
-                        if(!$scope.model.dataValues[dv.orgUnit][dv.dataElement]){
+            DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){
+                if( response && response.dataValues && response.dataValues.length > 0 ){
+                    $scope.model.valueExists = true;
+                    angular.forEach($filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}), function(dv){
+                        if(!$scope.model.dataValues[dv.orgUnit]){
+                            $scope.model.dataValues[dv.orgUnit] = {};
                             $scope.model.dataValues[dv.orgUnit][dv.dataElement] = {};
+                            $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
                         }
-                        $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
-                    }                 
-                });
+                        else{
+                            if(!$scope.model.dataValues[dv.orgUnit][dv.dataElement]){
+                                $scope.model.dataValues[dv.orgUnit][dv.dataElement] = {};
+                            }
+                            $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
+                        }                 
+                    });
+                }                
             });
             
-            //fetch events - for stakholder-role mapping
+            //fetch events containing stakholder-role mapping
             $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
             $scope.model.commonOrgUnit = null;
             
-            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){                
+            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
+                var roleValues = [];
                 angular.forEach(events, function(ev){
                     if( ev.event ){
                         $scope.model.selectedEvent[ev.orgUnit] = ev;
                         $scope.model.commonOrgUnit = ev.orgUnit;
                         angular.forEach(ev.dataValues, function(dv){
-                            $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement], dv.value );                            
+                            console.log('dv.value:  ', dv.value);
+                            var val = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement], dv.value );
+                            $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement] = val;
+                            roleValues.push( val );
                         });
                     }
                 });
@@ -287,6 +298,9 @@ sunPMT.controller('dataEntryController',
                 if( !$scope.model.commonOrgUnit ){
                     $scope.model.commonOrgUnit = 'DEFAULT';
                 }
+                
+                //console.log('$scope.model.stakeholderRoles:  ', $scope.model.stakeholderRoles);
+                //console.log('roleValues:  ', roleValues);
             });
         }
     };
@@ -469,8 +483,7 @@ sunPMT.controller('dataEntryController',
             $scope.saveStatus[ouId + '-' + deId + '-' + ocId].pending = false;
             $scope.saveStatus[ouId + '-' + deId + '-' + ocId].error = true;
         });
-    };
-    
+    };    
     
     $scope.getInputNotifcationClass = function(ouId, deId, ocId){
 
@@ -492,7 +505,41 @@ sunPMT.controller('dataEntryController',
         return 'form-control';
     };
     
-    $scope.editStakeholderRoles = function( ouId){
-        console.log('ouId:  ', ouId);
+    $scope.showEditStakeholderRoles = function( ouId, ouName ){
+        
+        var modalInstance = $modal.open({
+            templateUrl: 'components/stakeholder/stakeholder-role.html',
+            controller: 'StakeholderRoleController',
+            windowClass: 'modal-full-window',
+            resolve: {
+                period: function(){
+                    return $scope.model.selectedPeriod;
+                },
+                program: function () {
+                    return $scope.model.selectedProgram;
+                },
+                currentOrgUnitId: function(){
+                    return  ouId;
+                },
+                currentOrgUnitName: function(){
+                    return  ouName;
+                },
+                currentEvent: function(){
+                    return $scope.model.selectedEvent[ouId];
+                },
+                attributeCategoryOptions: function(){
+                    return ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
+                },
+                stakeholderRoles: function(){
+                    return $scope.model.stakeholderRoles[ouId];
+                },
+                optionSets: function(){
+                    return $scope.model.optionSets;
+                }
+            }
+        });
+
+        modalInstance.result.then(function () {
+        });        
     };
 });

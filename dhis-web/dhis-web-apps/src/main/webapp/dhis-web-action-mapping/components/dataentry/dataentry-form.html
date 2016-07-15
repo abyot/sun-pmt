@@ -1,6 +1,6 @@
 <div class="vertical-spacing" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
 
-    <div class="add-default-right-padding">
+    <div class="add-default-right-padding">        
         <div class="col-sm-12 selectionArea" ng-if="model.selectedProgram">
             <span class="bold">{{'role_info_1'| translate}}</span>
             <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
@@ -53,7 +53,7 @@
                         </tr>
                         <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
                             <td>
-                                <a href title="{{'edit_stakeholder_roles'| translate}}" ng-click="editStakeholderRoles(ou)"><i class="fa fa-file-text superscript"></i></a>
+                                <a href title="{{'edit_stakeholder_roles'| translate}}" ng-click="showEditStakeholderRoles(ou, model.selectedDataSet.organisationUnits[ou])"><i class="fa fa-file-text superscript"></i></a>
                                 {{model.selectedDataSet.organisationUnits[ou]}}
                             </td>
                             <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">

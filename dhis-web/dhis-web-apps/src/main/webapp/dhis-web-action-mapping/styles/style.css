@@ -272,9 +272,8 @@ div#leftBar {
     float: left; 
 }
 
-.modal-full-window {
-    width: 99%;
-    height: 99%;
+.modal-full-window .modal-dialog {
+    width: 90%;
 }
 
 .modal-dialog {
