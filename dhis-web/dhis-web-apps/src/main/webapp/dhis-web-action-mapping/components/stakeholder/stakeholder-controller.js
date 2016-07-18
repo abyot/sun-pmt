@@ -75,7 +75,10 @@ sunPMT.controller('StakeholderController',
                                     if( jsn && jsn.response && jsn.response.lastImported ){
                                         //update option set
                                         var os = angular.copy($scope.optionSet);
-                                        delete os.organisationUnits;
+                                        
+                                        if( os && os.organisationUnits ){
+                                            delete os.organisationUnits;
+                                        }                                        
                                         os.options.push( {id: jsn.response.lastImported, name: $scope.model.newStakeholder.name} );
                                         StakeholderService.updateOptionSet( os ).then(function(){                                            
                                             StakeholderService.getOptionSet( os.id ).then(function( response ){

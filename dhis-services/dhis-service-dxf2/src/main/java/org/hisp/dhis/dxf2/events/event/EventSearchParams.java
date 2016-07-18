@@ -75,7 +75,7 @@ public class EventSearchParams
 
     private Date lastUpdated;
 
-    private DataElementCategoryOptionCombo categoryOptionCombo;
+    private DataElementCategoryOptionCombo attributeOptionCombo;
 
     private IdSchemes idSchemes;
 
@@ -319,14 +319,14 @@ public class EventSearchParams
         this.orders = orders;
     }
 
-    public DataElementCategoryOptionCombo getCategoryOptionCombo()
+    public DataElementCategoryOptionCombo getAttributeOptionCombo()
     {
-        return categoryOptionCombo;
+        return attributeOptionCombo;
     }
 
-    public void setCategoryOptionCombo( DataElementCategoryOptionCombo categoryOptionCombo )
+    public void setAttributeOptionCombo( DataElementCategoryOptionCombo attributeOptionCombo )
     {
-        this.categoryOptionCombo = categoryOptionCombo;
+        this.attributeOptionCombo = attributeOptionCombo;
     }
 
     public void setEvents( Set<String> events )

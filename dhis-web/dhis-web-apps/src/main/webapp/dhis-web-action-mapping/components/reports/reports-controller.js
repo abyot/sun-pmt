@@ -30,14 +30,12 @@ sunPMT.controller('reportsController',
         programs: null,
         programsByCode: []};
     
-    
-    
     function populateOuLevels(){
-        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED'}];            
+        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];            
         $scope.model.selectedOuMode = $scope.model.ouModes[0];
         for( var i=$scope.selectedOrgUnit.l+1; i<=3; i++ ){
-            var md = $scope.model.ouLevels[i];
-            $scope.model.ouModes.push({value: md, name: md + ' ' + $translate.instant('level')});
+            var lvl = $scope.model.ouLevels[i];
+            $scope.model.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
         }
     }
     
@@ -100,8 +98,30 @@ sunPMT.controller('reportsController',
         if( $scope.reportForm.$invalid ){
             return false;
         }
+
+        var dataValueSetUrl = 'period=' + $scope.model.selectedPeriod.id;
+        angular.forEach($scope.model.selectedDataSets, function(ds){
+            dataValueSetUrl += '&dataSet=' + ds.id;
+        });
         
-        //form is valid
+        if( $scope.selectedOrgUnit.l === 3 ){
+            dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
+        }        
+        else{            
+            if( $scope.selectedOrgUnit.l+1 < 3 ){
+                angular.forEach($scope.selectedOrgUnit.c, function(c){
+                    dataValueSetUrl += '&orgUnit=' + c;
+                });
+            }
+            else {
+                dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
+            }
+            
+            dataValueSetUrl += '&children=true';
+        }
         
+        DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){
+            console.log('the data:  ', response);
+        });
     };
 });

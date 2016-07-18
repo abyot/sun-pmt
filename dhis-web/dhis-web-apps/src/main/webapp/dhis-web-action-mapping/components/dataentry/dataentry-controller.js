@@ -256,6 +256,29 @@ sunPMT.controller('dataEntryController',
             
             $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
 
+            //fetch events containing stakholder-role mapping
+            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
+            $scope.model.commonOrgUnit = null;
+            
+            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
+                var roleValues = [];
+                angular.forEach(events, function(ev){
+                    if( ev.event ){
+                        $scope.model.selectedEvent[ev.orgUnit] = {event: ev.event, dataValues: ev.dataValues};
+                        $scope.model.commonOrgUnit = ev.orgUnit;
+                        angular.forEach(ev.dataValues, function(dv){
+                            var val = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement], dv.value );
+                            $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement] = val;
+                            roleValues.push( val );
+                        });
+                    }
+                });
+                
+                if( !$scope.model.commonOrgUnit ){
+                    $scope.model.commonOrgUnit = 'DEFAULT';
+                }
+            });
+            
             //fetch data values...            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){
                 if( response && response.dataValues && response.dataValues.length > 0 ){
@@ -274,33 +297,6 @@ sunPMT.controller('dataEntryController',
                         }                 
                     });
                 }                
-            });
-            
-            //fetch events containing stakholder-role mapping
-            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
-            $scope.model.commonOrgUnit = null;
-            
-            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
-                var roleValues = [];
-                angular.forEach(events, function(ev){
-                    if( ev.event ){
-                        $scope.model.selectedEvent[ev.orgUnit] = ev;
-                        $scope.model.commonOrgUnit = ev.orgUnit;
-                        angular.forEach(ev.dataValues, function(dv){
-                            console.log('dv.value:  ', dv.value);
-                            var val = ActionMappingUtils.pushRoles( $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement], dv.value );
-                            $scope.model.stakeholderRoles[ev.orgUnit][dv.dataElement] = val;
-                            roleValues.push( val );
-                        });
-                    }
-                });
-                
-                if( !$scope.model.commonOrgUnit ){
-                    $scope.model.commonOrgUnit = 'DEFAULT';
-                }
-                
-                //console.log('$scope.model.stakeholderRoles:  ', $scope.model.stakeholderRoles);
-                //console.log('roleValues:  ', roleValues);
             });
         }
     };
@@ -380,6 +376,7 @@ sunPMT.controller('dataEntryController',
             return;
         }
         
+        var newEvents = {};
         var events = {events: []};
         if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === "Multiple Entry" ){            
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
@@ -400,25 +397,36 @@ sunPMT.controller('dataEntryController',
                     }
                     
                     //update event
-                    EventService.update( $scope.model.selectedEvent[ou] ).then(function(response){                        
+                    EventService.update( $scope.model.selectedEvent[ou] ).then(function(){                        
                     });
                     
                 }
-                else{
-                    var event = {
-                        program: $scope.model.selectedProgram.id,
-                        programStage: $scope.model.selectedProgram.programStages[0].id,
-                        status: 'ACTIVE',
-                        orgUnit: ou,
-                        eventDate: $scope.model.selectedPeriod.endDate,
-                        dataValues: [dataValue],
-                        attributeCategoryOptions: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)
-                    };
-                    events.events.push( event );
+                else{                    
+                    if( newEvents[ou] ){
+                        event = newEvents[ou].dataValues.push( dataValue );
+                    }
+                    else{
+                        var event = {
+                            program: $scope.model.selectedProgram.id,
+                            programStage: $scope.model.selectedProgram.programStages[0].id,
+                            status: 'ACTIVE',
+                            orgUnit: ou,
+                            eventDate: $scope.model.selectedPeriod.endDate,
+                            dataValues: [dataValue],
+                            attributeCategoryOptions: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)
+                        };                        
+                        newEvents[ou] = event;
+                    }                    
                 }
             });            
+            
+            angular.forEach($scope.selectedOrgUnit.c, function(ou){
+                if( newEvents[ou] ){
+                    events.events.push( newEvents[ou] );
+                }                
+            });
         }
-        else{
+        /*else{
             
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id][dataElementId].join()};
             if( $scope.model.selectedEvent[$scope.selectedOrgUnit.id] && $scope.model.selectedEvent[$scope.selectedOrgUnit.id].event ){                
@@ -451,12 +459,21 @@ sunPMT.controller('dataEntryController',
                 
                 events.events.push( event );
             }
-        }
+        }*/
         
         if( events.events.length > 0 ){
-            //add event
-            EventService.create(events).then(function (response) {
-                console.log('adding events:  ', response);
+            //add event            
+            EventService.create(events).then(function ( json ) {
+                if( json && json.response && json.response.importSummaries && json.response.importSummaries.length ){                            
+                    for( var i=0; i<json.response.importSummaries.length; i++){
+                        if( json.response.importSummaries[i] && 
+                                json.response.importSummaries[i].status === 'SUCCESS' && 
+                                json.response.importSummaries[i].reference ){                            
+                            var ev = events.events[i];
+                            $scope.model.selectedEvent[ev.orgUnit] = {event: json.response.importSummaries[i].reference, dataValues: ev.dataValues};
+                        }
+                    }
+                }
             });
         }
     };

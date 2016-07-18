@@ -71,8 +71,10 @@ import org.hisp.dhis.node.NodeUtils;
 import org.hisp.dhis.node.Preset;
 import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.program.Program;
+import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.program.ProgramStageInstanceService;
 import org.hisp.dhis.program.ProgramStatus;
+import org.hisp.dhis.program.ProgramType;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.scheduling.TaskCategory;
@@ -172,6 +174,9 @@ public class EventController
     
     @Autowired
     protected TrackedEntityInstanceService entityInstanceService;
+    
+    @Autowired
+    protected ProgramService programService;
 
     private Schema schema;
 
@@ -225,6 +230,18 @@ public class EventController
         }
 
         boolean allowNoAttrOptionCombo = trackedEntityInstance != null && entityInstanceService.getTrackedEntityInstance( trackedEntityInstance ) != null;
+        
+        if( !allowNoAttrOptionCombo && program != null )
+        {
+        	Program pr = programService.getProgram( program );
+        	
+        	if( pr == null )
+        	{
+        		throw new WebMessageException( WebMessageUtils.conflict( "Illegal program identifier: " + program ) );
+        	}
+        	
+        	allowNoAttrOptionCombo =  pr.getProgramType() == ProgramType.WITHOUT_REGISTRATION;        	
+        }
         
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, allowNoAttrOptionCombo );
 

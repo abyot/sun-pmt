@@ -74,6 +74,7 @@ public class JdbcEventStore
 
     private static final Map<String, String> QUERY_PARAM_COL_MAP = ImmutableMap.<String, String>builder().
         put( "event", "psi_uid" ).
+        put( "attributeOptionCombo", "aoco_uid" ).
         put( "program", "p_uid" ).
         put( "programStage", "ps_uid" ).
         put( "enrollment", "pi_uid" ).
@@ -131,6 +132,7 @@ public class JdbcEventStore
                 event = new Event();
 
                 event.setEvent( rowSet.getString( "psi_uid" ) );
+                event.setAttributeOptionCombo( rowSet.getString( "aoco_uid" ) );
                 event.setTrackedEntityInstance( rowSet.getString( "tei_uid" ) );
                 event.setStatus( EventStatus.valueOf( rowSet.getString( "psi_status" ) ) );
 
@@ -364,7 +366,7 @@ public class JdbcEventStore
         sql += ") as cm on event.psi_id=cm.psic_id ";
 
         sql += getOrderQuery( params.getOrders() );
-
+        
         return sql;
     }
 
@@ -376,7 +378,7 @@ public class JdbcEventStore
 
         String sql =
             "select psi.programstageinstanceid as psi_id, psi.uid as psi_uid, psi.status as psi_status, psi.executiondate as psi_executiondate, psi.duedate as psi_duedate, psi.completedby as psi_completedby, " +
-                "psi.storedby as psi_storedby, psi.longitude as psi_longitude, psi.latitude as psi_latitude, psi.created as psi_created, psi.lastupdated as psi_lastupdated, psi.completeddate as psi_completeddate, " +
+                "aoco.uid as aoco_uid, psi.storedby as psi_storedby, psi.longitude as psi_longitude, psi.latitude as psi_latitude, psi.created as psi_created, psi.lastupdated as psi_lastupdated, psi.completeddate as psi_completeddate, " +
                 "pi.uid as pi_uid, pi.status as pi_status, pi.followup as pi_followup, p.uid as p_uid, p.code as p_code, " +
                 "p.type as p_type, ps.uid as ps_uid, ps.code as ps_code, ps.capturecoordinates as ps_capturecoordinates, " +
                 "ou.uid as ou_uid, ou.code as ou_code, ou.name as ou_name, " +
@@ -385,8 +387,9 @@ public class JdbcEventStore
                 "inner join programinstance pi on pi.programinstanceid=psi.programinstanceid " +
                 "inner join program p on p.programid=pi.programid " +
                 "inner join programstage ps on ps.programstageid=psi.programstageid " +
+                "inner join categoryoptioncombo aoco on (aoco.categoryoptioncomboid=psi.attributeoptioncomboid) " +
                 "left join trackedentityinstance tei on tei.trackedentityinstanceid=pi.trackedentityinstanceid " +
-                "left join organisationunit ou on (psi.organisationunitid=ou.organisationunitid) " +
+                "left join organisationunit ou on (psi.organisationunitid=ou.organisationunitid) " +                
                 "left join organisationunit teiou on (tei.organisationunitid=teiou.organisationunitid) ";
 
         if ( params.getTrackedEntityInstance() != null )
@@ -419,9 +422,9 @@ public class JdbcEventStore
             sql += hlp.whereAnd() + " psi.lastupdated > '" + DateUtils.getLongDateString( params.getLastUpdated() ) + "' ";
         }
 
-        if ( params.getCategoryOptionCombo() != null )
+        if ( params.getAttributeOptionCombo() != null )
         {
-            sql += hlp.whereAnd() + " psi.attributeoptioncomboid = " + params.getCategoryOptionCombo().getId() + " ";
+            sql += hlp.whereAnd() + " psi.attributeoptioncomboid = " + params.getAttributeOptionCombo().getId() + " ";
         }
 
         if ( orgUnitIds != null && !orgUnitIds.isEmpty() )
@@ -523,7 +526,7 @@ public class JdbcEventStore
             }
         }
 
-        return "order by psi_lastupdated desc ";
+        return "order by psi_lastupdated desc, psi_uid ";
     }
 
     private String getAttributeValueQuery()

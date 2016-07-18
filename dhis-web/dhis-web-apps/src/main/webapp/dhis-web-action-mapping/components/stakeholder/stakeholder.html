@@ -16,6 +16,7 @@
                             <input type="text" 
                                    class="form-control"
                                    ng-required="true"
+                                   ng-minlength="2"
                                    ng-disabled="stakeholderAddStarted"
                                    name="name"
                                    ng-model="model.newStakeholder.name">
@@ -25,24 +26,36 @@
                     </tr>
                     <tr>
                         <td>
-                            {{'short_name'| translate}}
+                            {{'abbreviation'| translate}}
+                            <span class="required">*</span>
                         </td>
                         <td>
                             <input type="text" 
                                    class="form-control"
+                                   ng-required="true"
+                                   ng-minlength="2"
                                    ng-disabled="stakeholderAddStarted"
-                                   ng-model="model.newStakeholder.shortName">                        
+                                   name="abbreviation"
+                                   ng-model="model.newStakeholder.shortName">
+                            <div ng-messages="stakeholderForm.abbreviation.$error" ng-if="interacted(stakeholderForm.abbreviation)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                            </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
                             {{'code'| translate}}
+                            <span class="required">*</span>
                         </td>
                         <td>
                             <input type="text" 
                                    class="form-control"
+                                   ng-required="true"
+                                   ng-minlength="2"
                                    ng-disabled="stakeholderAddStarted"
-                                   ng-model="model.newStakeholder.code">                        
+                                   name="code"
+                                   ng-model="model.newStakeholder.code">
+                            <div ng-messages="stakeholderForm.code.$error" ng-if="interacted(stakeholderForm.code)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                            </div>
                         </td>
                     </tr>
                 </table>

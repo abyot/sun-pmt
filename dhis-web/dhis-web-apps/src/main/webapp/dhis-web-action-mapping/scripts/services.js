@@ -367,13 +367,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     
                         response.data.report[row[0]][row[2]].annualTarget += parseInt( row[3] );
                         
-                        /*if( row[2] === progressDimension.id ){
-                            response.data.report[row[0]].annualTarget += row[3];
-                        }
-                        if( row[2] === targetDimension.id ){
-                            response.data.report[row[0]].annualTarget += row[3];
-                        }*/
-                        
                         response.data.report[row[0]][row[1]][row[2]] = row[3];
                     }                    
                 });
