@@ -28,7 +28,9 @@ sunPMT.controller('reportsController',
         selectedDataSets: [],
         ouLevels: [],
         programs: null,
-        programsByCode: []};
+        programsByCode: [],
+        dataElementsByCode: [],
+        selectedPrograms: null};
     
     function populateOuLevels(){
         $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];            
@@ -53,7 +55,12 @@ sunPMT.controller('reportsController',
 
             $scope.model.dataSets = [];
             MetaDataFactory.getAll('dataSets').then(function(dataSets){
-                $scope.model.dataSets = dataSets;
+                $scope.model.dataSets = dataSets;                
+                angular.forEach($scope.model.dataSets, function(ds){
+                    if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
+                        $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
+                    }
+                });
             });
 
             $scope.orgUnitLevels = [];
@@ -99,6 +106,16 @@ sunPMT.controller('reportsController',
             return false;
         }
 
+        if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){
+            
+            var dialogOptions = {
+                headerText: $translate.instant('error'),
+                bodyText: $translate.instant('please_select_actions')
+            };		
+            DialogService.showDialog({}, dialogOptions);
+            return;
+        }
+        
         var dataValueSetUrl = 'period=' + $scope.model.selectedPeriod.id;
         angular.forEach($scope.model.selectedDataSets, function(ds){
             dataValueSetUrl += '&dataSet=' + ds.id;
@@ -118,10 +135,21 @@ sunPMT.controller('reportsController',
             }
             
             dataValueSetUrl += '&children=true';
-        }
+        }        
         
-        DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){
-            console.log('the data:  ', response);
+        $scope.model.selectedPrograms = [];
+        angular.forEach($scope.model.selectedDataSets, function(ds){
+            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
+                var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
+                $scope.model.selectedPrograms.push( pr );
+            }
+        });
+        
+        EventService.getForMultiplePrograms($scope.selectedOrgUnit.id, 'DESCENDANTS', $scope.model.selectedPrograms, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
+            console.log('the events:  ', events);
+            DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){
+                console.log('the data:  ', response);            
+            });
         });
     };
 });

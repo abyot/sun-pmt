@@ -317,6 +317,18 @@ public class EventController
         boolean allowNoAttrOptionCombo = trackedEntityInstance != null && entityInstanceService.getTrackedEntityInstance( trackedEntityInstance ) != null;
         
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, allowNoAttrOptionCombo );
+        
+        if( !allowNoAttrOptionCombo && program != null )
+        {
+        	Program pr = programService.getProgram( program );
+        	
+        	if( pr == null )
+        	{
+        		throw new WebMessageException( WebMessageUtils.conflict( "Illegal program identifier: " + program ) );
+        	}
+        	
+        	allowNoAttrOptionCombo =  pr.getProgramType() == ProgramType.WITHOUT_REGISTRATION;        	
+        }
 
         if ( attributeOptionCombo == null && !allowNoAttrOptionCombo )
         {

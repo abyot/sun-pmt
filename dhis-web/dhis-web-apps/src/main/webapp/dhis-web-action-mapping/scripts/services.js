@@ -504,51 +504,77 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* service for handling events */
-.service('EventService', function($http, DHIS2URL, ActionMappingUtils) {   
+.service('EventService', function($http, $q, DHIS2URL, ActionMappingUtils) {   
     
     var skipPaging = "&skipPaging=true";
-    return {     
-        getByOrgUnitAndProgram: function(orgUnit, ouMode, program, attributeCategoryUrl, startDate, endDate){
-            var url = DHIS2URL + '/events.json?' + 'orgUnit=' + orgUnit + '&ouMode='+ ouMode + '&program=' + program + skipPaging;
-            
-            if( startDate && endDate ){
-                url += '&startDate=' + startDate + '&endDate=' + endDate + skipPaging;
-            }
-            
-            if( attributeCategoryUrl && !attributeCategoryUrl.default ){
-                url += '&attributeCc=' + attributeCategoryUrl.cc + '&attributeCos=' + attributeCategoryUrl.cp;
-            }
-            
-            var promise = $http.get( url ).then(function(response){
-                return response.data.events;
-            }, function(response){
-                ActionMappingUtils.errorNotifier(response);
-            });            
-            return promise;
-        },
-        get: function(eventUid){            
-            var promise = $http.get(DHIS2URL + '/events/' + eventUid + '.json').then(function(response){               
-                return response.data;
-            });            
-            return promise;
-        },        
-        create: function(dhis2Event){    
-            var promise = $http.post(DHIS2URL + '/events.json', dhis2Event).then(function(response){
-                return response.data;           
+    
+    var getByOrgUnitAndProgram = function(orgUnit, ouMode, program, attributeCategoryUrl, startDate, endDate){
+        var url = DHIS2URL + '/events.json?' + 'orgUnit=' + orgUnit + '&ouMode='+ ouMode + '&program=' + program + skipPaging;
+
+        if( startDate && endDate ){
+            url += '&startDate=' + startDate + '&endDate=' + endDate + skipPaging;
+        }
+
+        if( attributeCategoryUrl && !attributeCategoryUrl.default ){
+            url += '&attributeCc=' + attributeCategoryUrl.cc + '&attributeCos=' + attributeCategoryUrl.cp;
+        }
+
+        var promise = $http.get( url ).then(function(response){
+            return response.data.events;
+        }, function(response){
+            ActionMappingUtils.errorNotifier(response);
+        });            
+        return promise;
+    };
+    
+    var get = function(eventUid){            
+        var promise = $http.get(DHIS2URL + '/events/' + eventUid + '.json').then(function(response){               
+            return response.data;
+        });            
+        return promise;
+    };
+    
+    var create = function(dhis2Event){    
+        var promise = $http.post(DHIS2URL + '/events.json', dhis2Event).then(function(response){
+            return response.data;           
+        });
+        return promise;            
+    };
+    
+    var deleteEvent = function(dhis2Event){
+        var promise = $http.delete(DHIS2URL + '/events/' + dhis2Event.event).then(function(response){
+            return response.data;               
+        });
+        return promise;           
+    };
+    
+    var update = function(dhis2Event){   
+        var promise = $http.put(DHIS2URL + '/events/' + dhis2Event.event, dhis2Event).then(function(response){
+            return response.data;         
+        });
+        return promise;
+    };
+    return {        
+        get: get,        
+        create: create,
+        deleteEvent: deleteEvent,
+        update: update,
+        getByOrgUnitAndProgram: getByOrgUnitAndProgram,
+        getForMultiplePrograms: function( orgUnit, mode, programs, attributeCategoryUrl, startDate, endDate ){            
+            var def = $q.defer();            
+            var promises = [], events = [];            
+            angular.forEach(programs, function(pr){
+                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr.id, attributeCategoryUrl, startDate, endDate) );                
             });
-            return promise;            
-        },
-        delete: function(dhis2Event){
-            var promise = $http.delete(DHIS2URL + '/events/' + dhis2Event.event).then(function(response){
-                return response.data;               
+            
+            $q.all(promises).then(function( _events ){
+                angular.forEach(_events, function(evs){
+                    events = events.concat( evs );
+                });
+                
+                def.resolve(events);
             });
-            return promise;           
-        },
-        update: function(dhis2Event){   
-            var promise = $http.put(DHIS2URL + '/events/' + dhis2Event.event, dhis2Event).then(function(response){
-                return response.data;         
-            });
-            return promise;
+            return def.promise;
         }
     };    
 });
