@@ -1,0 +1,38 @@
+<tabset justified="true">
+    <tab heading="{{'who_does_what'| translate}}" class="bold">               
+        <div class="vertical-spacing col-sm-12">
+            <table class="table table-bordered table-condensed">
+                <thead>
+                    <tr>
+                        <th>
+                            {{'action' | translate}}
+                        </th>
+                        <th ng-repeat="col in model.whoDoesWhatCols">
+                            {{col.name}}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="de in model.reportDataElements">
+                        <td>
+                            {{de.displayName}}                         
+                        </td>
+                        <td ng-repeat="col in model.whoDoesWhatCols">
+                            {{getStakeholders(col, de.id)}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
+    <tab heading="{{'geo_coverage_per_sh'| translate}}" class="bold">                
+        <div class="vertical-spacing col-sm-12">
+            Report geographic coverage per stakeholder is under construction.
+        </div>
+    </tab>
+    <tab heading="{{'pop_coverage_per_sh'| translate}}" class="bold">                
+        <div class="vertical-spacing col-sm-12">
+            Report population coverage per stakeholder is under construction.
+        </div>
+    </tab>    
+</tabset>

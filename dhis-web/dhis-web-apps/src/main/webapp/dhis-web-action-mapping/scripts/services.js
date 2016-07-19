@@ -92,6 +92,50 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
+/* Service to fetch option combos */
+.factory('OptionComboService', function($q, $rootScope, PMTStorageService) { 
+    return {
+        getAll: function(){            
+            var def = $q.defer();            
+            var optionCombos = [];
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('categoryCombos').done(function(categoryCombos){
+                    angular.forEach(categoryCombos, function(cc){
+                        optionCombos = optionCombos.concat( cc.categoryOptionCombos );
+                    });
+                    $rootScope.$apply(function(){
+                        def.resolve(optionCombos);
+                    });                    
+                });
+            });            
+            
+            return def.promise;            
+        },
+        getMappedOptionCombos: function(uid){            
+            var def = $q.defer();            
+            var optionCombos = [];
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('categoryCombos').done(function(categoryCombos){
+                    angular.forEach(categoryCombos, function(cc){
+                        angular.forEach(cc.categoryOptionCombos, function(oco){
+                            oco.categories = [];
+                            angular.forEach(cc.categories, function(c){
+                                oco.categories.push({id: c.id, name: c.name});
+                            });
+                            optionCombos[oco.id] = oco;
+                        });
+                    });
+                    $rootScope.$apply(function(){
+                        def.resolve(optionCombos);
+                    });                    
+                });
+            });            
+            
+            return def.promise;            
+        }
+    };
+})
+
 /* Factory to fetch programs */
 .factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
   
