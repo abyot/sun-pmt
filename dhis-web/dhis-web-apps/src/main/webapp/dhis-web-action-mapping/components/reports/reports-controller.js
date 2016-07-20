@@ -35,7 +35,7 @@ sunPMT.controller('reportsController',
         dataElementsByCode: [],
         selectedPrograms: null,
         mappedOptionCombos: null,
-        roleDataElements: null,
+        roleDataElementsById: null,
         reportDataElements: null,
         whoDoesWhatCols: null,
         mappedValues: null};
@@ -54,19 +54,26 @@ sunPMT.controller('reportsController',
         if( angular.isObject($scope.selectedOrgUnit)){            
             
             $scope.model.programs = [];
+            $scope.model.roleDataElementsById = [];
             $scope.model.roleDataElements = [];
             MetaDataFactory.getAll('programs').then(function(programs){
                 $scope.model.programs = programs;
                 angular.forEach(programs, function(program){
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
-                            if( prStDe.dataElement && prStDe.dataElement.id ){
-                                $scope.model.roleDataElements[prStDe.dataElement.id] = prStDe.dataElement.name;
+                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.name;
                             }                            
                         });
                     }                    
                     $scope.model.programsByCode[program.actionCode] = program;
-                });                        
+                });
+                
+                for( var k in $scope.model.roleDataElementsById ){
+                    if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
+                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k]} );
+                    }
+                }
             });
             
             $scope.model.mappedOptionCombos = [];
@@ -128,6 +135,7 @@ sunPMT.controller('reportsController',
         }
         
         $scope.showReportFilters = false;
+        $scope.reportStarted = true;
         $scope.reportReady = false;
         $scope.noDataExists = false;
         $scope.model.reportDataElements = [];
@@ -173,8 +181,8 @@ sunPMT.controller('reportsController',
         });
         
         $scope.model.mappedRoles = {};
-        EventService.getForMultiplePrograms($scope.selectedOrgUnit.id, 'DESCENDANTS', $scope.model.selectedPrograms, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
-            
+        $scope.model.availableRoles = {};
+        EventService.getForMultiplePrograms($scope.selectedOrgUnit.id, 'DESCENDANTS', $scope.model.selectedPrograms, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){            
             angular.forEach(events, function(ev){
                 var _ev = {event: ev.event, orgUnit: ev.orgUnit};
                 if( !$scope.model.mappedRoles[ev.orgUnit] ){
@@ -183,44 +191,39 @@ sunPMT.controller('reportsController',
                 
                 if( ev.dataValues ){
                     angular.forEach(ev.dataValues, function(dv){                        
-                        if( dv.dataElement && $scope.model.roleDataElements[dv.dataElement] ){
-                            _ev[dv.dataElement] = dv.value;
-                            _ev[$scope.model.roleDataElements[dv.dataElement]] = dv.value;
-                            
+                        if( dv.dataElement && $scope.model.roleDataElementsById[dv.dataElement] ){
+                            _ev[dv.dataElement] = dv.value.split(",");
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: $scope.model.roleDataElements[dv.dataElement]});
+                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: $scope.model.roleDataElementsById[dv.dataElement]});
                                 pushedHeaders.push( dv.dataElement );
+                                $scope.model.availableRoles[dv.dataElement] = [];
                             }                            
+                            $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
                         }
                     });                    
                     $scope.model.mappedRoles[ev.orgUnit][ev.attributeOptionCombo] = _ev;
                 }
             });
             
-            $scope.model.mappedValues = [];
+            $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                
                 if( response && response.dataValues ){
                     angular.forEach(response.dataValues, function(dv){
                         var oco = $scope.model.mappedOptionCombos[dv.attributeOptionCombo];
                         oco.optionNames = oco.displayName.split(", ");
-
                         for(var i=0; i<oco.categories.length; i++){                        
-                            dv[oco.categories[i].id] = oco.optionNames[i];
-                            dv[oco.categories[i].name] = oco.optionNames[i];
+                            dv[oco.categories[i].id] = [oco.optionNames[i]];
                             if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
                                 $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name});
                                 pushedHeaders.push( oco.categories[i].id );
-                            }
-                            
+                            }                            
                         }
                         var r = $scope.model.mappedRoles[dv.orgUnit][dv.attributeOptionCombo];
                         if( r && angular.isObject( r ) ){
                             angular.extend(dv, r);
-                        }
-                    });
-                    
+                        }                        
+                    });                    
                     $scope.model.mappedValues = response;
-                    console.log('Report data:  ', $scope.model.mappedValues);
                 }
                 else{                    
                     $scope.showReportFilters = false;
@@ -228,32 +231,36 @@ sunPMT.controller('reportsController',
                 }
                 
                 $scope.reportReady = true;
+                $scope.reportStarted = false;
             });
         });
     };
     
-    $scope.getStakeholders = function( col, deId ){
-        //console.log('param:  ', col);
-        
-        //dss = $filter('filter')(dss, {baseline: true});
-        
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
-        
-        var role = [];
-        
+    $scope.getStakeholders = function( col, deId ){        
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});        
+        var role = [];        
         angular.forEach(filteredValues, function(val){
             if( val[col.id] ){
-                var vs = val[col.id].split(",");
-                angular.forEach(vs, function(v){
+                angular.forEach(val[col.id], function(v){
                     if( role.indexOf(v) === -1){
                         role.push( v );
                     }
                 });                
             }            
         });
-        
-        //console.log('filteredValues:  ', filteredValues);
-        
         return role.join(", ");
+    };
+    
+    $scope.valuePerRole = function( col, deId ){        
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
+        var value = 0;            
+        angular.forEach(filteredValues, function(val){
+            if( val[$scope.model.selectedRole.id] && 
+                    val[$scope.model.selectedRole.id].length 
+                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){
+                value += dhis2.validation.isNumber( val.value ) ? parseInt( val.value) : 0;
+            }            
+        });
+        return value;
     };
 });

@@ -195,14 +195,10 @@ sunPMT.controller('dataEntryController',
             loadOptionCombos();            
             
             $scope.model.selectedCategoryCombos = {};
-            $scope.model.roleDataElements = [];
             $scope.model.dataElements = [];
             angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
                 $scope.model.selectedProgram = $scope.model.programs[de.code];
                 $scope.model.dataElements[de.id] = de.code;
-                if( de.code === 'Catalyst' || de.code === 'Funder' || de.code === 'Responsible Ministry' ){
-                    $scope.model.roleDataElements.push( de );
-                }
                 
                 MetaDataFactory.get('categoryCombos', de.categoryCombo.id).then(function(coc){
                     if( coc.isDefault ){
