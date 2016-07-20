@@ -251,7 +251,7 @@ sunPMT.controller('reportsController',
         return role.join(", ");
     };
     
-    $scope.valuePerRole = function( col, deId ){        
+    $scope.getValuePerRole = function( col, deId ){        
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
         var value = 0;            
         angular.forEach(filteredValues, function(val){

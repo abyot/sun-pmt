@@ -62,7 +62,7 @@
                             {{de.displayName}}                         
                         </td>
                         <td ng-repeat="col in model.availableRoles[model.selectedRole.id]">
-                            {{valuePerRole(col, de.id)}}
+                            {{getValuePerRole(col, de.id)}}
                         </td>
                     </tr>
                 </tbody>
