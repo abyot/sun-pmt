@@ -10,6 +10,7 @@ sunPMT.controller('dataEntryController',
                 $filter,
                 $modal,
                 $window,
+                orderByFilter,
                 SessionStorageService,
                 storage,
                 DataSetFactory,
@@ -148,6 +149,7 @@ sunPMT.controller('dataEntryController',
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
                 $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'}); //dataSets;
+                $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
                     MetaDataFactory.getAll('programs').then(function(programs){

@@ -31,7 +31,7 @@ var d2Directives = angular.module('d2Directives', [])
                 }
             });
 
-            //listen to user selection, and inform angular         
+            //listen to user selection, and inform angular
             selection.setListenerFunction(setSelectedOu, true);
             function setSelectedOu(ids, names) {
                 
