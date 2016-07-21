@@ -10,9 +10,7 @@ sunPMT.controller('reportsController',
                 $filter,
                 $translate,
                 SessionStorageService,
-                storage,
                 DialogService,
-                DataSetFactory,
                 PeriodService,
                 MetaDataFactory,
                 ActionMappingUtils,
@@ -38,7 +36,8 @@ sunPMT.controller('reportsController',
         roleDataElementsById: null,
         reportDataElements: null,
         whoDoesWhatCols: null,
-        mappedValues: null};
+        mappedValues: null,
+        childrenIds: []};
     
     function populateOuLevels(){
         $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];            
@@ -52,6 +51,25 @@ sunPMT.controller('reportsController',
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
         if( angular.isObject($scope.selectedOrgUnit)){            
+            
+            if( $scope.selectedOrgUnit.l === 1 ){                
+                subtree.getChildren($scope.selectedOrgUnit.id).then(function( json ){                            
+                    var children = [];
+                    for( var k in json ){
+                        if( json.hasOwnProperty( k ) ){
+                            children.push(json[k]);
+                        }
+                    }
+                    children = $filter('filter')(children, {l: 3});
+                    $scope.model.childrenIds = [];
+                    angular.forEach(children, function(c){
+                        $scope.model.childrenIds.push(c.id);
+                    });
+                });
+            }
+            if( $scope.selectedOrgUnit.l === 2 ){
+                $scope.model.childrenIds = $scope.selectedOrgUnit.c;
+            }
             
             $scope.model.programs = [];
             $scope.model.roleDataElementsById = [];
@@ -228,7 +246,7 @@ sunPMT.controller('reportsController',
                 else{                    
                     $scope.showReportFilters = false;
                     $scope.noDataExists = true;
-                }
+                }  
                 
                 $scope.reportReady = true;
                 $scope.reportStarted = false;
@@ -251,16 +269,24 @@ sunPMT.controller('reportsController',
         return role.join(", ");
     };
     
-    $scope.getValuePerRole = function( col, deId ){        
+    $scope.getValuePerRole = function( col, deId ){
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
+        var checkedOus = [];        
         var value = 0;            
         angular.forEach(filteredValues, function(val){
             if( val[$scope.model.selectedRole.id] && 
                     val[$scope.model.selectedRole.id].length 
-                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){
-                value += dhis2.validation.isNumber( val.value ) ? parseInt( val.value) : 0;
+                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){                
+                if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
+                    console.log('missing orgunit:  ', val.orgUnit);
+                }
+                if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus.indexOf( val.orgUnit ) === -1){
+                    value++;
+                    checkedOus.push( val.orgUnit );
+                }
             }            
         });
-        return value;
+        
+        return value === 0 ? 0 : value + " (" + ((value / $scope.model.childrenIds.length) * 100)+ "%)";
     };
 });

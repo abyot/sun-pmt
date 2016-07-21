@@ -180,9 +180,8 @@ function getOrgUnitLevels()
             return;
         }        
         return dhis2.metadata.getMetaObjects('ouLevels', 'organisationUnitLevels', '../api/organisationUnitLevels.json', 'fields=id,displayName,level&paging=false', 'idb', dhis2.sunpmt.store);
-    }); 
+    });
 }
-
 
 function getSystemSetting(){   
     if(localStorage['SYSTEM_SETTING']){
