@@ -5,7 +5,7 @@
 var sunPMT = angular.module('sunPMT');
 
 //Controller for reports page
-sunPMT.controller('reportsController',
+sunPMT.controller('GeoCoverageController',
         function($scope,
                 $filter,
                 $translate,
@@ -34,6 +34,7 @@ sunPMT.controller('reportsController',
         dataElementsByCode: [],
         dataElementCodesById: [],
         selectedPrograms: null,
+        selectedRole: null,
         mappedOptionCombos: null,
         roleDataElementsById: null,
         reportDataElements: null,
@@ -50,10 +51,20 @@ sunPMT.controller('reportsController',
         }
     }
     
+    function resetParams(){
+        $scope.showReportFilters = true;
+        $scope.reportStarted = false;
+        $scope.reportReady = false;
+        $scope.noDataExists = false;
+        $scope.model.reportDataElements = [];
+        $scope.model.whoDoesWhatCols = [];
+    }
+    
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
         if( angular.isObject($scope.selectedOrgUnit)){            
             
+            resetParams();
             if( $scope.selectedOrgUnit.l === 1 ){                
                 subtree.getChildren($scope.selectedOrgUnit.id).then(function( json ){                            
                     var children = [];
@@ -104,7 +115,7 @@ sunPMT.controller('reportsController',
 
             $scope.model.dataSets = [];
             MetaDataFactory.getAll('dataSets').then(function(dataSets){
-                $scope.model.dataSets = dataSets;                
+                $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
                 angular.forEach($scope.model.dataSets, function(ds){
                     if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
                         $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
@@ -142,7 +153,7 @@ sunPMT.controller('reportsController',
     $scope.interacted = function(field) {        
         var status = false;
         if(field){            
-            status = $scope.reportForm.submitted || field.$dirty;
+            status = $scope.geoCoverageForm.submitted || field.$dirty;
         }
         return status;        
     };
@@ -150,17 +161,15 @@ sunPMT.controller('reportsController',
     $scope.getReport = function(){
         
         //check for form validity
-        $scope.reportForm.submitted = true;        
-        if( $scope.reportForm.$invalid ){
+        $scope.geoCoverageForm.submitted = true;        
+        if( $scope.geoCoverageForm.$invalid ){
             return false;
         }
         
-        $scope.showReportFilters = false;
+        resetParams();
         $scope.reportStarted = true;
-        $scope.reportReady = false;
-        $scope.noDataExists = false;
-        $scope.model.reportDataElements = [];
-        $scope.model.whoDoesWhatCols = [];
+        $scope.showReportFilters = false;
+        
         var pushedHeaders = [];
         if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){            
             var dialogOptions = {
@@ -296,6 +305,6 @@ sunPMT.controller('reportsController',
             }            
         });
         
-        return value === 0 ? 0 : value + " (" + ((value / $scope.model.childrenIds.length) * 100)+ "%)";
+        return value === 0 ? 0 : value + " (" + ActionMappingUtils.getPercent( value, $scope.model.childrenIds.length) + ")";
     };
 });

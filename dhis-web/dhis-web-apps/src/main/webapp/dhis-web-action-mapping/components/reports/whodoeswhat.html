@@ -38,13 +38,13 @@
 
     <div ng-show="selectedOrgUnit">
         <h2>
-            {{'reports'| translate}}
+            {{'who_does_what'| translate}}
         </h2>
 
         <div class="row">
             <form class="form-horizontal col-sm-6" role="form" name="reportForm" novalidate>
                 <div class="panel sun-pmt-color">
-                    <div class="panel-heading">
+                    <div class="panel-heading mouse-pointer" ng-click="showReportFilters = !showReportFilters">
                         {{'report_filters'| translate}}
                         <div class="pull-right">
                             <a class="small-horizontal-spacing" href ng-click="showReportFilters = !showReportFilters">
@@ -53,40 +53,7 @@
                             </a>
                         </div>
                     </div>
-                    <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">
-                        <!--<div class="form-group">
-                            <label class="control-label col-sm-3">
-                                {{'ou_scope'| translate}}
-                                <span class="required">*</span>
-                            </label>
-                            <div class="col-sm-9">
-                                <select ng-model="model.selectedOuMode" 
-                                        ng-required="true"
-                                        name="selectedOuMode"
-                                        class="form-control"
-                                        ng-options="ouMode as ouMode.name for ouMode in model.ouModes" >
-                                    <option value="">{{'please_select' | translate}}</option>
-                                </select>
-                                <div ng-messages="reportForm.selectedOuMode.$error" ng-if="interacted(reportForm.selectedOuMode)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-3">
-                                {{'stakeholder_role'| translate}}<span class="required">*</span>
-                            </label>                        
-                            <div class="col-sm-9">
-                                <select ng-model="model.selectedStakeholderRole" 
-                                        ng-required="true"
-                                        name="selectedStakeholderRole"
-                                        class="form-control"
-                                        ng-options="stakeholderRole as stakeholderRole.name for stakeholderRole in model.stakeholderRoles" >
-                                    <option value="">{{'please_select' | translate}}</option>
-                                </select>
-                                <div ng-messages="reportForm.selectedStakeholderRole.$error" ng-if="interacted(reportForm.selectedStakeholderRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
-                                </div>
-                            </div>
-                        </div>-->
+                    <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">                        
                         <div class="form-group">
                             <label class="control-label col-sm-3">
                                 {{'mapping_year'| translate}}
@@ -157,7 +124,30 @@
         <!-- report template begins -->
         <div class="row">
             <div class="col-sm-12">
-                <div ng-if="reportReady && !noDataExists" ng-include="'components/reports/report-templates.html'"></div>
+                <div ng-if="reportReady && !noDataExists">
+                    <table class="table table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <th>
+                                    {{'action' | translate}}
+                                </th>
+                                <th ng-repeat="col in model.whoDoesWhatCols">
+                                    {{col.name}}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="de in model.reportDataElements">
+                                <td>
+                                    {{de.displayName}}                         
+                                </td>
+                                <td ng-repeat="col in model.whoDoesWhatCols">
+                                    {{getStakeholders(col, de.id)}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>        
         <!-- report template ends -->

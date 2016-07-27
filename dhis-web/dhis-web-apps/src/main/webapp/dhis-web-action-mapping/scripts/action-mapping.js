@@ -28,7 +28,7 @@ if( dhis2.sunpmt.memoryOnly ) {
 dhis2.sunpmt.store = new dhis2.storage.Store({
     name: 'dhis2sunpmt',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorGroups']
 });
 
 (function($) {
@@ -154,6 +154,11 @@ function downloadMetaData()
     promise = promise.then( filterMissingPrograms );
     promise = promise.then( getPrograms );
     
+    //fetch indicator groups
+    promise = promise.then( getMetaIndicatorGroups );
+    promise = promise.then( filterMissingIndicatorGroups );
+    promise = promise.then( getIndicatorGroups );
+    
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
         $( "#orgUnitTree" ).removeClass( "disable-clicks" );
@@ -243,4 +248,16 @@ function filterMissingPrograms( objs ){
 
 function getPrograms( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'programs', 'programs', '../api/programs.json', 'paging=false&fields=id,displayName,attributeValues[value,attribute[id,name,code]],categoryCombo[id],organisationUnits[id,displayName],programStages[id,displayName,programStageDataElements[*,dataElement[*,optionSet[id]]]]', 'idb', dhis2.sunpmt.store, dhis2.metadata.processObject);
+}
+
+function getMetaIndicatorGroups(){
+    return dhis2.metadata.getMetaObjectIds('indicatorGroups', '../api/indicatorGroups.json', 'paging=false&fields=id,version');
+}
+
+function filterMissingIndicatorGroups( objs ){
+    return dhis2.metadata.filterMissingObjIds('indicatorGroups', dhis2.sunpmt.store, objs);
+}
+
+function getIndicatorGroups( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'indicatorGroups', 'indicatorGroups', '../api/indicatorGroups.json', 'paging=false&fields=id,displayName,attributeValues[value,attribute[id,name,code]],indicators[id,displayName,denominatorDescription,numeratorDescription,dimensionItem,numerator,denominator,annualized,dimensionType,indicatorType[id,displayName,factor,number]]', 'idb', dhis2.sunpmt.store, dhis2.metadata.processObject);
 }

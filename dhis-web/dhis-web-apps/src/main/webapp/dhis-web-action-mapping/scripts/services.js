@@ -1,4 +1,4 @@
-/* global angular, moment, dhis2 */
+/* global angular, moment, dhis2, parseFloat */
 
 'use strict';
 
@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2sunpmt",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorGroups']
     });
     return{
         currentStore: store
@@ -140,7 +140,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 .factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
   
     return {        
-        getAll: function( ou ){            
+        getActionDataSets: function( ou ){            
             var systemSetting = storage.get('SYSTEM_SETTING');
             var allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
     
@@ -168,7 +168,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
 
                                 angular.forEach(ou.c, function(c){                                    
-                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.isAction){
+                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.dataSetType === "action"){
                                         ds.entryMode = 'Multiple Entry';                                            
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            
@@ -184,7 +184,51 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             });            
             return def.promise;            
-        },        
+        },
+        getTargetDataSets: function(){
+            
+            var roles = SessionStorageService.get('USER_ROLES');
+            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+                    var dataSets = [];                    
+                    angular.forEach(dss, function(ds){
+                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ds.dataSetType === 'targetGroup'){                        
+                            dataSets.push(ds);
+                        }
+                    });
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve(dataSets);
+                    });
+                });
+            });
+            return def.promise;
+        },
+        getActionAndTargetDataSets: function(){
+            
+            var roles = SessionStorageService.get('USER_ROLES');
+            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+                    var dataSets = [];                    
+                    angular.forEach(dss, function(ds){
+                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ( ds.dataSetType === 'targetGroup' || ds.dataSetType === 'action') ){                        
+                            dataSets.push(ds);
+                        }
+                    });
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve(dataSets);
+                    });
+                });
+            });
+            return def.promise;
+        },
         get: function(uid){
             
             var def = $q.defer();
@@ -435,7 +479,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getPercent: function(op1, op2){        
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
             op2 = dhis2.validation.isNumber(op2) ? parseInt(op2) : 0;        
-            if( op2 === 0 ){
+            if( op2 === 0 || op1 === 0){
                 return 0;
             }        
             return parseFloat((op1 / op2)*100).toFixed(2) + '%';
@@ -495,6 +539,13 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 };		
                 DialogService.showDialog({}, dialogOptions);
             }
+        },
+        getNumeratorAndDenominatorIds: function( ind ){            
+            var num = ind.numerator.substring(2,ind.numerator.length-1);
+            num = num.split('.');            
+            var den = ind.denominator.substring(2,ind.numerator.length-1);
+            den = den.split('.');            
+            return {numerator: num[0], denominator: den[0]};
         }
     };
 })

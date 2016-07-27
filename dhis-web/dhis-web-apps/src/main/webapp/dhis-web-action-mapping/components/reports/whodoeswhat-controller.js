@@ -5,7 +5,7 @@
 var sunPMT = angular.module('sunPMT');
 
 //Controller for reports page
-sunPMT.controller('reportsController',
+sunPMT.controller('WhoDoesWhatController',
         function($scope,
                 $filter,
                 $translate,
@@ -104,7 +104,7 @@ sunPMT.controller('reportsController',
 
             $scope.model.dataSets = [];
             MetaDataFactory.getAll('dataSets').then(function(dataSets){
-                $scope.model.dataSets = dataSets;                
+                $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
                 angular.forEach($scope.model.dataSets, function(ds){
                     if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
                         $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];

@@ -58,6 +58,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.selectedProgram = null;
         $scope.model.stakeholderRoles = {};
         $scope.model.dataValues = {};
+        $scope.model.basicAuditInfo = {};
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
@@ -147,7 +148,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
-            DataSetFactory.getAll( $scope.selectedOrgUnit ).then(function(dataSets){ 
+            DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){ 
                 $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'}); //dataSets;
                 $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
@@ -211,13 +212,21 @@ sunPMT.controller('dataEntryController',
             });
         }
     };
-        
-    $scope.loadDataEntryForm = function(){
+    
+    var resetParams = function(){
         $scope.model.dataValues = {};
         $scope.model.roleValues = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.selectedEvent = {};
         $scope.model.valueExists = false;
+        $scope.model.stakeholderRoles = {};
+        $scope.model.basicAuditInfo = {};
+        $scope.model.basicAuditInfo.exists = false;
+    };
+    
+    $scope.loadDataEntryForm = function(){
+        
+        resetParams();
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
@@ -277,7 +286,7 @@ sunPMT.controller('dataEntryController',
                 }
             });
             
-            //fetch data values...            
+            //fetch data values...
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){
                 if( response && response.dataValues && response.dataValues.length > 0 ){
                     $scope.model.valueExists = true;
@@ -293,13 +302,18 @@ sunPMT.controller('dataEntryController',
                             }
                             $scope.model.dataValues[dv.orgUnit][dv.dataElement][dv.categoryOptionCombo] = dv;
                         }                 
-                    });
+                    });                    
+                    response.dataValues = orderByFilter(response.dataValues, '-created').reverse();                    
+                    $scope.model.basicAuditInfo.created = response.dataValues[0].created;
+                    $scope.model.basicAuditInfo.storedBy = response.dataValues[0].storedBy;
+                    $scope.model.basicAuditInfo.exists = true;
                 }                
             });
         }
     };
     
-    function checkOptions(){               
+    function checkOptions(){
+        resetParams();
         for(var i=0; i<$scope.model.selectedAttributeCategoryCombo.categories.length; i++){
             if($scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption && $scope.model.selectedAttributeCategoryCombo.categories[i].selectedOption.id){
                 $scope.model.categoryOptionsReady = true;

@@ -142,7 +142,7 @@ div.paging a.active
     margin-bottom: 20px;
 }
 
-.nav, .pagination, .carousel, .panel-title a { 
+.nav, .pagination, .carousel, .panel-title a, .mouse-pointer{ 
     cursor: pointer; 
 }
 
@@ -806,4 +806,13 @@ div#orgUnitTree {
 
 .white-color {
     color: #fff;
+}
+
+.report-type-container{
+    padding: 20px;
+}
+
+.report-type-container:hover, .report-type-container:focus{
+    background-color: #ebebeb;
+    cursor: pointer;
 }

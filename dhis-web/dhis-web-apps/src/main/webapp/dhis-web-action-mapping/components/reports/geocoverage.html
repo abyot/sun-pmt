@@ -7,10 +7,10 @@
     <d2-left-bar></d2-left-bar>
 
     <div style="margin-top:20px">
-        <img id="searchIcon" src="../images/search.png" style="cursor: pointer" title="{{'locate_organisation_unit_by_name' | translate}}">
+        <img id="searchIcon" src="../images/search.png" style="cursor: pointer" title="{{'locate_organisation_unit_by_name'| translate}}">
         <span id="searchSpan" style="width:100%;display:none;">
             <input type="text" id="searchField" name="key"/>
-            <input type="button" value="{{'find' | translate}}" onclick="selection.findByName()"/>
+            <input type="button" value="{{'find'| translate}}" onclick="selection.findByName()"/>
         </span>
     </div>
 
@@ -38,13 +38,13 @@
 
     <div ng-show="selectedOrgUnit">
         <h2>
-            {{'reports'| translate}}
+            {{'geo_coverage_per_sh'| translate}}
         </h2>
 
         <div class="row">
-            <form class="form-horizontal col-sm-6" role="form" name="reportForm" novalidate>
+            <form class="form-horizontal col-sm-6" role="form" name="geoCoverageForm" novalidate>
                 <div class="panel sun-pmt-color">
-                    <div class="panel-heading">
+                    <div class="panel-heading mouse-pointer" ng-click="showReportFilters = !showReportFilters">
                         {{'report_filters'| translate}}
                         <div class="pull-right">
                             <a class="small-horizontal-spacing" href ng-click="showReportFilters = !showReportFilters">
@@ -53,40 +53,7 @@
                             </a>
                         </div>
                     </div>
-                    <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">
-                        <!--<div class="form-group">
-                            <label class="control-label col-sm-3">
-                                {{'ou_scope'| translate}}
-                                <span class="required">*</span>
-                            </label>
-                            <div class="col-sm-9">
-                                <select ng-model="model.selectedOuMode" 
-                                        ng-required="true"
-                                        name="selectedOuMode"
-                                        class="form-control"
-                                        ng-options="ouMode as ouMode.name for ouMode in model.ouModes" >
-                                    <option value="">{{'please_select' | translate}}</option>
-                                </select>
-                                <div ng-messages="reportForm.selectedOuMode.$error" ng-if="interacted(reportForm.selectedOuMode)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-3">
-                                {{'stakeholder_role'| translate}}<span class="required">*</span>
-                            </label>                        
-                            <div class="col-sm-9">
-                                <select ng-model="model.selectedStakeholderRole" 
-                                        ng-required="true"
-                                        name="selectedStakeholderRole"
-                                        class="form-control"
-                                        ng-options="stakeholderRole as stakeholderRole.name for stakeholderRole in model.stakeholderRoles" >
-                                    <option value="">{{'please_select' | translate}}</option>
-                                </select>
-                                <div ng-messages="reportForm.selectedStakeholderRole.$error" ng-if="interacted(reportForm.selectedStakeholderRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
-                                </div>
-                            </div>
-                        </div>-->
+                    <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">                        
                         <div class="form-group">
                             <label class="control-label col-sm-3">
                                 {{'mapping_year'| translate}}
@@ -100,9 +67,9 @@
                                                 name="selectedPeriod"
                                                 class="form-control"
                                                 ng-options="period as period.name for period in model.periods">
-                                            <option value="">{{'please_select' | translate}}</option>
+                                            <option value="">{{'please_select'| translate}}</option>
                                         </select>
-                                        <div ng-messages="reportForm.selectedPeriod.$error" ng-if="interacted(reportForm.selectedPeriod)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                                        <div ng-messages="geoCoverageForm.selectedPeriod.$error" ng-if="interacted(geoCoverageForm.selectedPeriod)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
                                         </div>
                                     </div>
                                     <div class="col-sm-5">
@@ -113,6 +80,22 @@
                                             <button type="button" class="btn btn-default" ng-disabled="periodOffset > -1" ng-click="getPeriods('NXT')" title="{{'next_periods'| translate}}">{{'next'| translate}}</button>
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">
+                                {{'stakeholder_role'| translate}}<span class="required">*</span>
+                            </label>                        
+                            <div class="col-sm-9">
+                                <select ng-model="model.selectedRole" 
+                                        ng-required="true"
+                                        name="selectedRole"
+                                        class="form-control"
+                                        ng-options="role as role.name for role in model.roleDataElements" >
+                                    <option value="">{{'please_select' | translate}}</option>
+                                </select>                                
+                                <div ng-messages="geoCoverageForm.selectedRole.$error" ng-if="interacted(geoCoverageForm.selectedRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
                                 </div>
                             </div>
                         </div>
@@ -136,32 +119,52 @@
                 </div>
             </form>
         </div>
-        
-        <div class="row">
-            <div class="col-sm-6">
-                <div class="alert alert-warning" ng-if="noDataExists">{{'no_data_exists' | translate}}</div>
-            </div>                
-        </div>
-        
-        <!-- report progress indicator begins -->
+
+        <!-- report notification begins -->
         <div class="row">
             <div class="col-sm-6">
                 <div class="alert alert-info" ng-if="reportStarted && !reportReady">
-                    {{'generating_report' | translate}}
+                    {{'generating_report'| translate}}
                     <span class="small-horizontal-spacing"><i class="fa fa-spinner fa-spin fa-2x"></i></span>
+                </div>                
+                <div class="alert alert-warning" ng-if="model.selectedRole && model.selectedRole.id && selectedOrgUnit.l >= 3">
+                    {{'please_select_higher_level'| translate}}
+                </div>
+                <div class="alert alert-warning" ng-if="noDataExists">
+                    {{'no_data_exists'| translate}}
                 </div>
             </div>                
         </div>
-        <!-- report progress indicator ends -->
-        
+        <!-- report notification ends -->
+
         <!-- report template begins -->
         <div class="row">
-            <div class="col-sm-12">
-                <div ng-if="reportReady && !noDataExists" ng-include="'components/reports/report-templates.html'"></div>
+            <div class="col-sm-12 vertical-spacing" ng-if="reportReady && !noDataExists">
+                <table class="table table-bordered table-condensed" ng-if="model.selectedRole && model.selectedRole.id && selectedOrgUnit.l < 3">
+                    <thead>
+                        <tr>
+                            <th>
+                                {{'action'| translate}}
+                            </th>
+                            <th ng-repeat="col in model.availableRoles[model.selectedRole.id]">
+                                {{col}}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="de in model.reportDataElements">
+                            <td>
+                                {{de.displayName}}                         
+                            </td>
+                            <td ng-repeat="col in model.availableRoles[model.selectedRole.id]">
+                                {{getValuePerRole(col, de.id)}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>        
         <!-- report template ends -->
-
     </div>
 
 </div>
