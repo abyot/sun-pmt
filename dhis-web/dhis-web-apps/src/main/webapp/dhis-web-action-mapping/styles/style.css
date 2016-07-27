@@ -119,6 +119,10 @@ div.paging a.active
     font-weight: bold;
 }
 
+.italic {
+    font-style: italic;
+}
+
 .white {
     color: white;
 }
@@ -815,4 +819,8 @@ div#orgUnitTree {
 .report-type-container:hover, .report-type-container:focus{
     background-color: #ebebeb;
     cursor: pointer;
+}
+
+.basic-audit-info {
+    font-size: 12pt;
 }

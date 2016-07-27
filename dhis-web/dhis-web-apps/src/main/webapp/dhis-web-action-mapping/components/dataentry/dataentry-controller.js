@@ -304,7 +304,7 @@ sunPMT.controller('dataEntryController',
                         }                 
                     });                    
                     response.dataValues = orderByFilter(response.dataValues, '-created').reverse();                    
-                    $scope.model.basicAuditInfo.created = response.dataValues[0].created;
+                    $scope.model.basicAuditInfo.created = $filter('date')(response.dataValues[0].created, 'dd MMM yyyy');
                     $scope.model.basicAuditInfo.storedBy = response.dataValues[0].storedBy;
                     $scope.model.basicAuditInfo.exists = true;
                 }                
