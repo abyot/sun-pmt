@@ -16,15 +16,7 @@ sunPMT.controller('DataEntryHistoryController',
                 attributeOptionCombo,
                 optionCombo,
                 DataValueAuditService) {    
-    $scope.dataElement = dataElement;
-    /*$scope.program = program;
-    $scope.period = period; 
-    $scope.orgUnitId = orgUnitId;
-    $scope.attributeCategoryCombo = attributeCategoryCombo;
-    $scope.attributeCategoryOptions = attributeCategoryOptions;
-    $scope.attributeOptionCombo = attributeOptionCombo;
-    $scope.optionCombo = optionCombo;*/
-    
+    $scope.dataElement = dataElement;    
     $scope.historyUrl = "../api/charts/history/data.png?";
     $scope.historyUrl += 'de=' + dataElement.id;
     $scope.historyUrl += '&co=' + optionCombo.id;
