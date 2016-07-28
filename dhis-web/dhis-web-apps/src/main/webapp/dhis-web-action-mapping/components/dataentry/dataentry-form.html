@@ -18,6 +18,7 @@
                     <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements| orderBy: 'sortOrder'" ng-init="optionId = prStDe.dataElement.code === 'Responsible Ministry' ? prStDe.dataElement.code : 'Funder'">                            
                         <ui-select multiple 
                                    ng-model="model.stakeholderRoles[model.commonOrgUnit][prStDe.dataElement.id]" 
+                                   ng-disabled="model.rolesAreDifferent && !model.overrideRoles"
                                    on-select="saveRole(prStDe.dataElement.id)"
                                    on-remove="saveRole(prStDe.dataElement.id)"
                                    theme="bootstrap">
@@ -25,10 +26,26 @@
                             <ui-select-choices repeat="item in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
                                 <div ng-bind-html="item | highlight: $select.search"></div>
                             </ui-select-choices>
-                        </ui-select>
+                        </ui-select>                        
                     </td>
                 </tr>
             </table>
+            <div class="row" ng-if="model.rolesAreDifferent">
+                <div class="col-sm-12">
+                    {{'role_override_info'|translate}}
+                </div>
+                <div class="col-sm-12">
+                    <form>                    
+                        <input type="checkbox"
+                            ng-model="model.overrideRoles"
+                            name="roleOverride"
+                            ng-change="saveDatavalue()" />
+                        <label for="roleOverride" class="horizontal-spacing">
+                            {{'override_roles' | translate}}
+                        </label>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -61,6 +78,7 @@
                                        class="form-control pull-center" 
                                        ng-class="getInputNotifcationClass(ou, dataElement.id, oco.id)"
                                        ng-model="model.dataValues[ou][dataElement.id][oco.id].value"
+                                       ng-dblclick="getAuditInfo(dataElement, ou, oco)"
                                        d2-blur="saveDataValue(ou, dataElement.id, oco.id)">
                             </td>
                         </tr>

@@ -22,8 +22,7 @@ sunPMT.controller('dataEntryController',
     $scope.periodOffset = 0;
     $scope.saveStatus = {};
     var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: '[Add New Stakeholder]'};
-    $scope.model = {invalidDimensions: false, 
-                    childrenOu: [],
+    $scope.model = {invalidDimensions: false,
                     selectedAttributeCategoryCombo: null,
                     standardDataSets: [],
                     multiDataSets: [],
@@ -44,7 +43,9 @@ sunPMT.controller('dataEntryController',
                     selectedEvent: {},
                     stakeholderCategory: null,
                     attributeCategoryUrl: null,
-                    valueExists: false};
+                    valueExists: false,
+                    rolesAreDifferent: false,
+                    overrideRoles: false};
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -222,6 +223,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.stakeholderRoles = {};
         $scope.model.basicAuditInfo = {};
         $scope.model.basicAuditInfo.exists = false;
+        $scope.model.rolesAreDifferent = false;
     };
     
     $scope.loadDataEntryForm = function(){
@@ -280,6 +282,18 @@ sunPMT.controller('dataEntryController',
                         });
                     }
                 });
+                
+                var sampleRole = null;
+                for(var i=0; i<$scope.selectedOrgUnit.c.length; i++){
+                    if( !sampleRole ){
+                        sampleRole = $scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]];
+                    }
+                    
+                    if( !angular.equals($scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]], sampleRole) ){
+                        $scope.model.rolesAreDifferent = true;
+                        break;
+                    }
+                }
                 
                 if( !$scope.model.commonOrgUnit ){
                     $scope.model.commonOrgUnit = 'DEFAULT';
@@ -474,7 +488,7 @@ sunPMT.controller('dataEntryController',
         }*/
         
         if( events.events.length > 0 ){
-            //add event            
+            //add event
             EventService.create(events).then(function ( json ) {
                 if( json && json.response && json.response.importSummaries && json.response.importSummaries.length ){                            
                     for( var i=0; i<json.response.importSummaries.length; i++){
@@ -564,11 +578,54 @@ sunPMT.controller('dataEntryController',
                 },
                 optionSets: function(){
                     return $scope.model.optionSets;
+                },
+                stakeholderCategory: function(){
+                    return $scope.model.stakeholderCategory;
                 }
             }
         });
 
         modalInstance.result.then(function () {
         });        
+    };
+    
+    $scope.getAuditInfo = function(de, ouId, oco){        
+        var modalInstance = $modal.open({
+            templateUrl: 'components/dataentry/history.html',
+            controller: 'DataEntryHistoryController',
+            windowClass: 'modal-window-history',
+            resolve: {
+                period: function(){
+                    return $scope.model.selectedPeriod;
+                },
+                dataElement: function(){
+                    return de;
+                },
+                program: function () {
+                    return $scope.model.selectedProgram;
+                },
+                orgUnitId: function(){
+                    return  ouId;
+                },
+                attributeCategoryCombo: function(){
+                    return $scope.model.selectedAttributeCategoryCombo;
+                },
+                attributeCategoryOptions: function(){
+                    return ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
+                },
+                attributeOptionCombo: function(){
+                    return $scope.model.selectedAttributeOptionCombo;
+                },
+                optionCombo: function(){
+                    return oco;
+                },
+                currentEvent: function(){
+                    return $scope.model.selectedEvent[ouId];
+                }
+            }
+        });
+        
+        modalInstance.result.then(function () {
+        }); 
     };
 });

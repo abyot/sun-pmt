@@ -366,6 +366,20 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
+.factory('DataValueAuditService', function($http, ActionMappingUtils) {   
+    
+    return {        
+        getDataValueAudit: function( dv ){
+            var promise = $http.get('../api/audits/dataValue.json?de='+dv.de+'&ou='+dv.ou+'&pe='+dv.pe+'&co='+dv.co+'&cc='+dv.cc).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        }
+    };
+})
+
 .factory('StakeholderService', function($http, ActionMappingUtils) {   
     
     return {        

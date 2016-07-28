@@ -280,6 +280,10 @@ div#leftBar {
     width: 90%;
 }
 
+.modal-window-history .modal-dialog {
+    width: 75%;
+}
+
 .modal-dialog {
     margin-top: 50px;
 }

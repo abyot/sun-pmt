@@ -8,6 +8,7 @@ var sunPMT = angular.module('sunPMT');
 sunPMT.controller('StakeholderRoleController',
         function($scope,
                 $modalInstance,
+                $translate,
                 period,
                 program,
                 currentEvent,
@@ -16,7 +17,9 @@ sunPMT.controller('StakeholderRoleController',
                 attributeCategoryOptions,
                 stakeholderRoles,
                 optionSets,
-                EventService) {            
+                stakeholderCategory,
+                EventService,
+                DialogService) {            
     
     $scope.period = period;
     $scope.program = program;
@@ -26,6 +29,7 @@ sunPMT.controller('StakeholderRoleController',
     $scope.currentOrgUnitName = currentOrgUnitName;
     $scope.stakeholderRoles = stakeholderRoles;
     $scope.optionSets = optionSets;
+    $scope.stakeholderCategory = stakeholderCategory;
                 
     $scope.saveRole = function( dataElementId ){
         
@@ -33,26 +37,30 @@ sunPMT.controller('StakeholderRoleController',
         
         if( $scope.stakeholderRoles[dataElementId].indexOf( "[Add New Stakeholder]") !== -1 ){
             $scope.stakeholderRoles[dataElementId] = $scope.stakeholderRoles[dataElementId].slice(0,-1);
-            //showAddStakeholder( $scope.model.stakeholderCategory );
+            var dialogOptions = {
+                headerText: $translate.instant('info'),
+                bodyText: $translate.instant('please_do_this_from_main_screen')
+            };		
+            DialogService.showDialog({}, dialogOptions);
             return;
         }
         
         var dataValue = {dataElement: dataElementId, value: $scope.stakeholderRoles[dataElementId].join()};
-        if( $scope.currentEvent[$scope.currentOrgunitId] && $scope.currentEvent[$scope.currentOrgunitId].event ){                
+        if( $scope.currentEvent && $scope.currentEvent.event ){                
             var updated = false;
-            for( var i=0; i<$scope.currentEvent[$scope.currentOrgunitId].dataValues.length; i++ ){
-                if( $scope.currentEvent[$scope.currentOrgunitId].dataValues[i].dataElement === dataElementId ){
-                    $scope.currentEvent[$scope.currentOrgunitId].dataValues[i] = dataValue;
+            for( var i=0; i<$scope.currentEvent.dataValues.length; i++ ){
+                if( $scope.currentEvent.dataValues[i].dataElement === dataElementId ){
+                    $scope.currentEvent.dataValues[i] = dataValue;
                     updated = true;
                     break;
                 }
             }
             if( !updated ){
-                $scope.currentEvent[$scope.currentOrgunitId].dataValues.push( dataValue );
+                $scope.currentEvent.dataValues.push( dataValue );
             }
 
-            //update event
-            EventService.update( $scope.currentEvent[$scope.currentOrgunitId] ).then(function(response){
+            //update event            
+            EventService.update( $scope.currentEvent ).then(function(response){
             });
         }
         else{
@@ -71,8 +79,7 @@ sunPMT.controller('StakeholderRoleController',
         
         if( events.events.length > 0 ){
             //add event
-            EventService.create(events).then(function (response) {
-                console.log('adding events:  ', response);
+            EventService.create(events).then(function (response) {                
             });
         }
     };
