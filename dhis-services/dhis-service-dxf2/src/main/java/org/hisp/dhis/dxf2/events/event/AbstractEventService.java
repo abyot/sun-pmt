@@ -759,10 +759,12 @@ public abstract class AbstractEventService
                     fileResourceService.deleteFileResource( dataValue.getValue() );
                 }
 
-                dataValue.setValue( value.getValue() );
-                dataValue.setProvidedElsewhere( value.getProvidedElsewhere() );
-                dataValueService.updateTrackedEntityDataValue( dataValue );
-
+                if( !value.getValue().equalsIgnoreCase( dataValue.getValue()) ){
+                	dataValue.setValue( value.getValue() );
+                    dataValue.setProvidedElsewhere( value.getProvidedElsewhere() );
+                    dataValueService.updateTrackedEntityDataValue( dataValue );
+                }
+                
                 dataValues.remove( dataValue );
             }
             else

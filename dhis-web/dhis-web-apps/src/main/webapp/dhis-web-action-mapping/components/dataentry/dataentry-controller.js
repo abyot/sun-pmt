@@ -32,7 +32,6 @@ sunPMT.controller('dataEntryController',
                     categoryOptionsReady: false,
                     allowMultiOrgUnitEntry: false,
                     selectedOptions: [],
-                    roleHeders: ActionMappingUtils.getRoleHeaders(),
                     stakeholderRoles: {},
                     dataValues: {},
                     roleValues: {},
@@ -81,7 +80,6 @@ sunPMT.controller('dataEntryController',
                 angular.forEach(optionSets, function(optionSet){
                     if( optionSet.StakeholderRole === 'Funder' ){
                         $scope.stakeholderList = optionSet;
-                        //$scope.model.optionSets['Funder'] = optionSet;
                         var o = angular.copy( optionSet );
                         var options = [];
                         angular.forEach(o.options, function(_o){
@@ -93,7 +91,6 @@ sunPMT.controller('dataEntryController',
                         $scope.model.optionSets['Funder'] = o;
                     }
                     else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
-                        //$scope.model.optionSets['Responsible Ministry'] = optionSet;
                         var o = angular.copy( optionSet );
                         var options = [];
                         angular.forEach(o.options, function(_o){
