@@ -3,7 +3,8 @@
 </div>
 <div class="modal-body">
 
-    <div class="col-sm-12 selectionArea" ng-if="program">
+    <div class="col-sm-12 selectionArea vertical-spacing" ng-if="program" ng-repeat="oco in optionCombos">
+        <div class="alert alert-info">{{oco.displayName}}</div>
         <span class="bold">{{'role_info_1'| translate}}</span>
         <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
         <span class="bold">{{'role_info_2'| translate}}</span>
@@ -19,9 +20,9 @@
             <tr>
                 <td ng-repeat="prStDe in program.programStages[0].programStageDataElements| orderBy: 'sortOrder'" ng-init="optionId = prStDe.dataElement.code === 'Responsible Ministry' ? prStDe.dataElement.code : 'Funder'">
                     <ui-select multiple 
-                               ng-model="stakeholderRoles[prStDe.dataElement.id]" 
-                               on-select="saveRole(prStDe.dataElement.id)"
-                               on-remove="saveRole(prStDe.dataElement.id)"
+                               ng-model="stakeholderRoles[oco.id][prStDe.dataElement.id]" 
+                               on-select="saveRole(oco.id, prStDe.dataElement.id)"
+                               on-remove="saveRole(oco.id, prStDe.dataElement.id)"
                                theme="bootstrap">
                         <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item}}</ui-select-match>
                         <ui-select-choices repeat="item in optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">

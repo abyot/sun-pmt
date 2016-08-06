@@ -262,11 +262,6 @@ public class EventController
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
         }
         
-        if( categoryOptionCombo == null )
-        {
-        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
-        }
-        
         Set<String> eventIds = TextUtils.splitToArray( event, TextUtils.SEMICOLON );
 
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
@@ -359,11 +354,6 @@ public class EventController
         {
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
         }
-        
-        if( categoryOptionCombo == null )
-        {
-        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
-        }
         	
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
             orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo, categoryOptionCombo,
@@ -418,11 +408,6 @@ public class EventController
         if( coc != null )
         {
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
-        }
-        
-        if( categoryOptionCombo == null )
-        {
-        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
         }
         
         EventSearchParams params = eventService.getFromUrl( program, null, programStatus, null,

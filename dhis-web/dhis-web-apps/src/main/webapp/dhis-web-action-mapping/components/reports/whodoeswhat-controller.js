@@ -9,6 +9,7 @@ sunPMT.controller('WhoDoesWhatController',
         function($scope,
                 $filter,
                 $translate,
+                orderByFilter,
                 SessionStorageService,
                 DialogService,
                 PeriodService,
@@ -81,8 +82,8 @@ sunPMT.controller('WhoDoesWhatController',
                 angular.forEach(programs, function(program){
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
-                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.name;
+                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {name:  prStDe.dataElement.name, sortOrder: prStDe.sortOrder};
                             }                            
                         });
                     }                    
@@ -92,7 +93,7 @@ sunPMT.controller('WhoDoesWhatController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k]} );
+                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder} );
                     }
                 }
             });
@@ -100,6 +101,13 @@ sunPMT.controller('WhoDoesWhatController',
             $scope.model.mappedOptionCombos = [];
             OptionComboService.getMappedOptionCombos().then(function(ocos){
                 $scope.model.mappedOptionCombos = ocos;
+            });
+            
+            $scope.model.categoryCombos = {};
+            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                angular.forEach(ccs, function(cc){
+                    $scope.model.categoryCombos[cc.id] = cc;
+                });
             });
 
             $scope.model.dataSets = [];
@@ -195,15 +203,17 @@ sunPMT.controller('WhoDoesWhatController',
         $scope.model.selectedPrograms = [];
         $scope.model.dataElementCodesById = [];
         $scope.model.mappedRoles = {};
+        $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
                 var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
-                $scope.model.selectedPrograms.push( pr );
-                $scope.model.mappedRoles[pr.actionCode] = {};
+                $scope.model.selectedPrograms.push( pr );                
                 $scope.model.reportDataElements.push( ds.dataElements[0] );
                 $scope.model.dataElementCodesById[ds.dataElements[0].id] = ds.dataElements[0].code;
+                $scope.optionCombos = $scope.optionCombos.concat($scope.model.categoryCombos[ds.dataElements[0].categoryCombo.id].categoryOptionCombos);                
+                $scope.model.mappedRoles[pr.actionCode] = {};
             }
-        });        
+        });
         
         $scope.model.availableRoles = {};
         EventService.getForMultiplePrograms($scope.selectedOrgUnit.id, 'DESCENDANTS', $scope.model.selectedPrograms, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){            
@@ -211,6 +221,12 @@ sunPMT.controller('WhoDoesWhatController',
                 var _ev = {event: ev.event, orgUnit: ev.orgUnit};
                 if( !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] ){
                     $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] = {};
+                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                }
+                else{
+                    if( $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] && !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
+                        $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                    }
                 }
                 
                 if( ev.dataValues ){
@@ -218,17 +234,19 @@ sunPMT.controller('WhoDoesWhatController',
                         if( dv.dataElement && $scope.model.roleDataElementsById[dv.dataElement] ){
                             _ev[dv.dataElement] = dv.value.split(",");
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: $scope.model.roleDataElementsById[dv.dataElement]});
+                                var rde = $scope.model.roleDataElementsById[dv.dataElement];
+                                console.log()
+                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
                                 pushedHeaders.push( dv.dataElement );
                                 $scope.model.availableRoles[dv.dataElement] = [];
                             }                            
                             $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
                         }
                     });                    
-                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.attributeOptionCombo] = _ev;
+                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
                 }
             });
-
+            
             $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                
                 if( response && response.dataValues ){
@@ -238,11 +256,11 @@ sunPMT.controller('WhoDoesWhatController',
                         for(var i=0; i<oco.categories.length; i++){                        
                             dv[oco.categories[i].id] = [oco.optionNames[i]];
                             if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name});
+                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
                                 pushedHeaders.push( oco.categories[i].id );
                             }
                         }
-                        var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.attributeOptionCombo];
+                        var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
                         if( r && angular.isObject( r ) ){
                             angular.extend(dv, r);
                         }                        
@@ -253,15 +271,18 @@ sunPMT.controller('WhoDoesWhatController',
                     $scope.showReportFilters = false;
                     $scope.noDataExists = true;
                 }  
-                
+
+                var cols = orderByFilter($filter('filter')($scope.model.whoDoesWhatCols, {domain: 'CA'}), '-sortOrder').reverse();                
+                cols = cols.concat(orderByFilter($filter('filter')($scope.model.whoDoesWhatCols, {domain: 'DE'}), '-sortOrder').reverse());
+                $scope.model.whoDoesWhatCols = cols;                
                 $scope.reportReady = true;
                 $scope.reportStarted = false;
             });
         });
     };
     
-    $scope.getStakeholders = function( col, deId ){        
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
+    $scope.getStakeholders = function( col, deId, ocId ){        
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var role = [];        
         angular.forEach(filteredValues, function(val){
             if( val[col.id] ){
@@ -272,30 +293,7 @@ sunPMT.controller('WhoDoesWhatController',
                 });                
             }            
         });
-        return role.join(", ");
-    };
-    
-    $scope.getValuePerRole = function( col, deId ){
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
-        var checkedOus = {};        
-        var value = 0;            
-        angular.forEach(filteredValues, function(val){
-            if( val[$scope.model.selectedRole.id] && 
-                    val[$scope.model.selectedRole.id].length 
-                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){                
-                if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
-                    console.log('missing orgunit:  ', val.orgUnit);
-                }
-                if( !checkedOus[col] ){
-                    checkedOus[col] = [];
-                }
-                if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus[col].indexOf( val.orgUnit ) === -1){
-                    value++;
-                    checkedOus[col].push( val.orgUnit );
-                }
-            }            
-        });
-        
-        return value === 0 ? 0 : value + " (" + ((value / $scope.model.childrenIds.length) * 100)+ "%)";
+        var r = role.join(", ");
+        return r;
     };
 });

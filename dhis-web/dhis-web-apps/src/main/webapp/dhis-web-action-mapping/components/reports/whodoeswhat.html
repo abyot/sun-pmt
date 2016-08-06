@@ -131,18 +131,24 @@
                                 <th>
                                     {{'action' | translate}}
                                 </th>
+                                <th>
+                                    {{'target_group' | translate}}
+                                </th>
                                 <th ng-repeat="col in model.whoDoesWhatCols">
                                     {{col.name}}
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr ng-repeat="de in model.reportDataElements">
-                                <td>
+                        <tbody ng-repeat="de in model.reportDataElements">
+                            <tr ng-repeat="oc in model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+                                <td rowspan="{{model.categoryCombos[de.categoryCombo.id].categoryOptionCombos.length}}" ng-if="$index === 0">
                                     {{de.displayName}}                         
                                 </td>
+                                <td>
+                                    {{oc.displayName}}
+                                </td>
                                 <td ng-repeat="col in model.whoDoesWhatCols">
-                                    {{getStakeholders(col, de.id)}}
+                                    {{getStakeholders(col, de.id, oc.id)}}
                                 </td>
                             </tr>
                         </tbody>

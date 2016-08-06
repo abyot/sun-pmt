@@ -687,11 +687,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         deleteEvent: deleteEvent,
         update: update,
         getByOrgUnitAndProgram: getByOrgUnitAndProgram,
-        getForMultipleOptionCombos: function( orgUnit, mode, pr, attributeCategoryUrl, categoryCombo, startDate, endDate ){
+        getForMultipleOptionCombos: function( orgUnit, mode, pr, attributeCategoryUrl, optionCombos, startDate, endDate ){
             var def = $q.defer();            
             var promises = [], events = [];            
-            angular.forEach(categoryCombo.categoryOptionCombos, function(oco){
-                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr, attributeCategoryUrl, oco.id, startDate, endDate) );                
+            angular.forEach(optionCombos, function(oco){
+                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr, attributeCategoryUrl, oco.id, startDate, endDate) );
             });
             
             $q.all(promises).then(function( _events ){
@@ -707,7 +707,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var def = $q.defer();            
             var promises = [], events = [];            
             angular.forEach(programs, function(pr){
-                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr.id, attributeCategoryUrl, startDate, endDate) );                
+                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr.id, attributeCategoryUrl, null, startDate, endDate) );                
             });
             
             $q.all(promises).then(function( _events ){

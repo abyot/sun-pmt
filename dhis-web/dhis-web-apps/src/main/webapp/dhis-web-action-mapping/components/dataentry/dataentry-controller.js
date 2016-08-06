@@ -64,7 +64,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.categoryOptionsReady = false;
         $scope.model.valueExists = false;
         $scope.stakeholderList = null;
-        if( angular.isObject($scope.selectedOrgUnit)){            
+        if( angular.isObject($scope.selectedOrgUnit)){
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
             var systemSetting = storage.get('SYSTEM_SETTING');
             $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
@@ -269,7 +269,7 @@ sunPMT.controller('dataEntryController',
             $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};            
             $scope.commonOrgUnit = null;
             $scope.commonOptionCombo = null;
-            EventService.getForMultipleOptionCombos($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, $scope.model.selectedCategoryCombos[$scope.model.selectedDataSet.dataElements[0].categoryCombo.id], $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){                
+            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){                
                 angular.forEach(events, function(ev){
                     if( ev.event ){
                         if( !$scope.commonOrgUnit ){
@@ -588,6 +588,10 @@ sunPMT.controller('dataEntryController',
                 },
                 currentEvent: function(){
                     return $scope.model.selectedEvent[ouId];
+                },
+                optionCombos: function(){
+                    var dataElement = $scope.model.selectedDataSet.dataElements[0];
+                    return $scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos;
                 },
                 attributeCategoryOptions: function(){
                     return ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
