@@ -58,6 +58,8 @@ public class ProgramStageInstance
 
     private OrganisationUnit organisationUnit;
 
+    private DataElementCategoryOptionCombo categoryOptionCombo;
+    
     private DataElementCategoryOptionCombo attributeOptionCombo;
 
     @Deprecated
@@ -171,6 +173,16 @@ public class ProgramStageInstance
         this.organisationUnit = organisationUnit;
     }
 
+    public DataElementCategoryOptionCombo getCategoryOptionCombo()
+    {
+        return categoryOptionCombo;
+    }
+
+    public void setCategoryOptionCombo( DataElementCategoryOptionCombo categoryOptionCombo )
+    {
+        this.categoryOptionCombo = categoryOptionCombo;
+    }
+    
     public DataElementCategoryOptionCombo getAttributeOptionCombo()
     {
         return attributeOptionCombo;

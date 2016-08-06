@@ -17,7 +17,7 @@
                 <tr>
                     <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements| orderBy: 'sortOrder'" ng-init="optionId = prStDe.dataElement.code === 'Responsible Ministry' ? prStDe.dataElement.code : 'Funder'">                            
                         <ui-select multiple 
-                                   ng-model="model.stakeholderRoles[model.commonOrgUnit][prStDe.dataElement.id]" 
+                                   ng-model="model.stakeholderRoles[commonOrgUnit][commonOptionCombo][prStDe.dataElement.id]" 
                                    ng-disabled="model.rolesAreDifferent && !model.overrideRoles"
                                    on-select="saveRole(prStDe.dataElement.id)"
                                    on-remove="saveRole(prStDe.dataElement.id)"

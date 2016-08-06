@@ -631,15 +631,19 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     
     var skipPaging = "&skipPaging=true";
     
-    var getByOrgUnitAndProgram = function(orgUnit, ouMode, program, attributeCategoryUrl, startDate, endDate){
+    var getByOrgUnitAndProgram = function(orgUnit, ouMode, program, attributeCategoryUrl, categoryOptionCombo, startDate, endDate){
         var url = DHIS2URL + '/events.json?' + 'orgUnit=' + orgUnit + '&ouMode='+ ouMode + '&program=' + program + skipPaging;
 
         if( startDate && endDate ){
-            url += '&startDate=' + startDate + '&endDate=' + endDate + skipPaging;
+            url += '&startDate=' + startDate + '&endDate=' + endDate;
         }
 
         if( attributeCategoryUrl && !attributeCategoryUrl.default ){
             url += '&attributeCc=' + attributeCategoryUrl.cc + '&attributeCos=' + attributeCategoryUrl.cp;
+        }
+        
+        if( categoryOptionCombo ){
+            url += '&coc=' + categoryOptionCombo;
         }
 
         var promise = $http.get( url ).then(function(response){
@@ -683,7 +687,23 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         deleteEvent: deleteEvent,
         update: update,
         getByOrgUnitAndProgram: getByOrgUnitAndProgram,
-        getForMultiplePrograms: function( orgUnit, mode, programs, attributeCategoryUrl, startDate, endDate ){            
+        getForMultipleOptionCombos: function( orgUnit, mode, pr, attributeCategoryUrl, categoryCombo, startDate, endDate ){
+            var def = $q.defer();            
+            var promises = [], events = [];            
+            angular.forEach(categoryCombo.categoryOptionCombos, function(oco){
+                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr, attributeCategoryUrl, oco.id, startDate, endDate) );                
+            });
+            
+            $q.all(promises).then(function( _events ){
+                angular.forEach(_events, function(evs){
+                    events = events.concat( evs );
+                });
+                
+                def.resolve(events);
+            });
+            return def.promise;
+        },
+        getForMultiplePrograms: function( orgUnit, mode, programs, attributeCategoryUrl, startDate, endDate ){
             var def = $q.defer();            
             var promises = [], events = [];            
             angular.forEach(programs, function(pr){

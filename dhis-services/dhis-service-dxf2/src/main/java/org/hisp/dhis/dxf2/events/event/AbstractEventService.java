@@ -525,7 +525,7 @@ public abstract class AbstractEventService
     @Override
     public EventSearchParams getFromUrl( String program, String programStage, ProgramStatus programStatus, Boolean followUp, String orgUnit,
         OrganisationUnitSelectionMode orgUnitSelectionMode, String trackedEntityInstance, Date startDate, Date endDate,
-        EventStatus status, Date lastUpdated, DataElementCategoryOptionCombo attributeCoc, IdSchemes idSchemes, Integer page, Integer pageSize, boolean totalPages, boolean skipPaging,
+        EventStatus status, Date lastUpdated, DataElementCategoryOptionCombo attributeCoc, DataElementCategoryOptionCombo coc, IdSchemes idSchemes, Integer page, Integer pageSize, boolean totalPages, boolean skipPaging,
         List<Order> orders, boolean includeAttributes, Set<String> events )
     {
         UserCredentials userCredentials = currentUserService.getCurrentUser().getUserCredentials();
@@ -590,6 +590,7 @@ public abstract class AbstractEventService
         params.setEventStatus( status );
         params.setLastUpdated( lastUpdated );
         params.setAttributeOptionCombo( attributeCoc );
+        params.setCategoryOptionCombo( coc );
         params.setIdSchemes( idSchemes );
         params.setPage( page );
         params.setPageSize( pageSize );
@@ -1064,7 +1065,7 @@ public abstract class AbstractEventService
         String storedBy = getStoredBy( event, importSummary, user );
         String completedBy = getCompletedBy( event, importSummary, user );
 
-        DataElementCategoryOptionCombo coc = null;
+        DataElementCategoryOptionCombo attributeCoc = null;
 
         if ( event.getAttributeCategoryOptions() != null && program.getCategoryCombo() != null )
         {
@@ -1072,7 +1073,7 @@ public abstract class AbstractEventService
 
             try
             {
-                coc = inputUtils.getAttributeOptionCombo( program.getCategoryCombo(), event.getAttributeCategoryOptions(), idScheme );
+            	attributeCoc = inputUtils.getAttributeOptionCombo( program.getCategoryCombo(), event.getAttributeCategoryOptions(), idScheme );
             }
             catch ( IllegalQueryException ex )
             {
@@ -1081,7 +1082,19 @@ public abstract class AbstractEventService
         }
         else
         {
-            coc = categoryService.getDefaultDataElementCategoryOptionCombo();
+        	attributeCoc = categoryService.getDefaultDataElementCategoryOptionCombo();
+        }
+        
+        DataElementCategoryOptionCombo coc = null;
+        
+        if ( event.getCategoryOptionCombo() != null ) 
+        {
+        	coc = categoryService.getDataElementCategoryOptionCombo( event.getCategoryOptionCombo() );
+        }
+        
+        if( coc == null )
+        {
+        	coc = categoryService.getDefaultDataElementCategoryOptionCombo();
         }
 
         if ( !dryRun )
@@ -1089,12 +1102,12 @@ public abstract class AbstractEventService
             if ( programStageInstance == null )
             {
                 programStageInstance = createProgramStageInstance( programStage, programInstance, organisationUnit,
-                    dueDate, executionDate, event.getStatus().getValue(), event.getCoordinate(), completedBy, event.getEvent(), coc, importOptions );
+                    dueDate, executionDate, event.getStatus().getValue(), event.getCoordinate(), completedBy, event.getEvent(), attributeCoc, coc, importOptions );
             }
             else
             {
                 updateProgramStageInstance( programStage, programInstance, organisationUnit, dueDate, executionDate, event
-                    .getStatus().getValue(), event.getCoordinate(), completedBy, programStageInstance, coc, importOptions );
+                    .getStatus().getValue(), event.getCoordinate(), completedBy, programStageInstance, attributeCoc, coc, importOptions );
             }
 
             saveTrackedEntityComment( programStageInstance, event, storedBy );
@@ -1199,27 +1212,28 @@ public abstract class AbstractEventService
 
     private ProgramStageInstance createProgramStageInstance( ProgramStage programStage, ProgramInstance programInstance,
         OrganisationUnit organisationUnit, Date dueDate, Date executionDate, int status,
-        Coordinate coordinate, String completedBy, String programStageInstanceUid, DataElementCategoryOptionCombo coc, ImportOptions importOptions )
+        Coordinate coordinate, String completedBy, String programStageInstanceUid, DataElementCategoryOptionCombo attributeCoc, DataElementCategoryOptionCombo coc, ImportOptions importOptions )
     {
         ProgramStageInstance programStageInstance = new ProgramStageInstance();
         programStageInstance.setUid( CodeGenerator.isValidCode( programStageInstanceUid ) ? programStageInstanceUid : CodeGenerator.generateCode() );
 
         updateProgramStageInstance( programStage, programInstance, organisationUnit, dueDate, executionDate, status,
-            coordinate, completedBy, programStageInstance, coc, importOptions );
+            coordinate, completedBy, programStageInstance, attributeCoc, coc, importOptions );
 
         return programStageInstance;
     }
 
     private void updateProgramStageInstance( ProgramStage programStage, ProgramInstance programInstance,
         OrganisationUnit organisationUnit, Date dueDate, Date executionDate, int status, Coordinate coordinate,
-        String completedBy, ProgramStageInstance programStageInstance, DataElementCategoryOptionCombo coc, ImportOptions importOptions )
+        String completedBy, ProgramStageInstance programStageInstance, DataElementCategoryOptionCombo attributeCoc, DataElementCategoryOptionCombo coc, ImportOptions importOptions )
     {
         programStageInstance.setProgramInstance( programInstance );
         programStageInstance.setProgramStage( programStage );
         programStageInstance.setDueDate( dueDate );
         programStageInstance.setExecutionDate( executionDate );
         programStageInstance.setOrganisationUnit( organisationUnit );
-        programStageInstance.setAttributeOptionCombo( coc );
+        programStageInstance.setAttributeOptionCombo( attributeCoc );
+        programStageInstance.setCategoryOptionCombo( coc );
 
         if ( programStage.getCaptureCoordinates() )
         {

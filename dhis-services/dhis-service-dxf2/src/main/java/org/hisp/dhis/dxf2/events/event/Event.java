@@ -86,6 +86,8 @@ public class Event
     private String attributeCategoryOptions;
     
     private String attributeOptionCombo;
+    
+    private String categoryOptionCombo;
 
     private String completedBy;
 
@@ -334,6 +336,16 @@ public class Event
 	public void setAttributeOptionCombo(String attributeOptionCombo) {
 		this.attributeOptionCombo = attributeOptionCombo;
 	}
+	
+	@JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getCategoryOptionCombo() {
+		return categoryOptionCombo;
+	}
+
+	public void setCategoryOptionCombo(String categoryOptionCombo) {
+		this.categoryOptionCombo = categoryOptionCombo;
+	}
 
 	@JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
@@ -395,6 +407,7 @@ public class Event
             ", dataValues=" + dataValues +
             ", attributeCategoryOptions=" + attributeCategoryOptions +
             ", attributeOptionCombo=" + attributeOptionCombo +
+            ", categoryOptionCombo=" + categoryOptionCombo +
             ", completedBy=" + completedBy +
             ", completedDate=" + completedDate +
             '}';

@@ -41,9 +41,9 @@ sunPMT.controller('DataEntryHistoryController',
         $scope.dataValueAudits = $filter('filter')($scope.dataValueAudits, {period: {id: period.id}});
     });
     
-    if( currentEvent && currentEvent.event ){
+    if( currentEvent && currentEvent[optionCombo.id] && currentEvent[[optionCombo.id]].event ){
         $scope.eventValueAudits = [];
-        EventValueAuditService.getEventValueAudit( currentEvent.event ).then(function( response ){
+        EventValueAuditService.getEventValueAudit( currentEvent[optionCombo.id].event ).then(function( response ){
             $scope.eventValueAudits = response && response.trackedEntityDataValueAudits ? response.trackedEntityDataValueAudits : [];
         });
     }    

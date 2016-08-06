@@ -39,6 +39,7 @@ import org.hisp.dhis.commons.util.StreamUtils;
 import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
+import org.hisp.dhis.dataelement.DataElementCategoryService;
 import org.hisp.dhis.dataelement.DataElementService;
 import org.hisp.dhis.dxf2.common.ImportOptions;
 import org.hisp.dhis.dxf2.common.OrderParams;
@@ -177,6 +178,9 @@ public class EventController
     
     @Autowired
     protected ProgramService programService;
+    
+    @Autowired
+    protected DataElementCategoryService categoryService;
 
     private Schema schema;
 
@@ -210,6 +214,7 @@ public class EventController
         @RequestParam( required = false ) Date lastUpdated,
         @RequestParam( required = false ) String attributeCc,
         @RequestParam( required = false ) String attributeCos,
+        @RequestParam( required = false ) String coc,
         @RequestParam( required = false ) boolean skipMeta,
         @RequestParam( required = false ) Integer page,
         @RequestParam( required = false ) Integer pageSize,
@@ -249,11 +254,23 @@ public class EventController
         {
             throw new WebMessageException( WebMessageUtils.conflict( "Illegal attribute option combo identifier: " + attributeCc + " " + attributeCos ) );
         }
-
+        
+        DataElementCategoryOptionCombo categoryOptionCombo = null;
+        
+        if( coc != null )
+        {
+        	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
+        }
+        
+        if( categoryOptionCombo == null )
+        {
+        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
+        }
+        
         Set<String> eventIds = TextUtils.splitToArray( event, TextUtils.SEMICOLON );
 
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
-            orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo,
+            orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo, categoryOptionCombo,
             idSchemes, page, pageSize, totalPages, skipPaging, getOrderParams( order ), false, eventIds );
 
         Events events = eventService.getEvents( params );
@@ -304,6 +321,7 @@ public class EventController
         @RequestParam( required = false ) Date lastUpdated,
         @RequestParam( required = false ) String attributeCc,
         @RequestParam( required = false ) String attributeCos,
+        @RequestParam( required = false ) String coc,
         @RequestParam( required = false ) Integer page,
         @RequestParam( required = false ) Integer pageSize,
         @RequestParam( required = false ) boolean totalPages,
@@ -335,8 +353,20 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.conflict( "Illegal attribute option combo identifier: " + attributeCc + " " + attributeCos ) );
         }
 
+        DataElementCategoryOptionCombo categoryOptionCombo = null;
+        
+        if( coc != null )
+        {
+        	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
+        }
+        
+        if( categoryOptionCombo == null )
+        {
+        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
+        }
+        	
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
-            orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo,
+            orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo, categoryOptionCombo,
             idSchemes, page, pageSize, totalPages, skipPaging, getOrderParams( order ), false, null );
 
         Events events = eventService.getEvents( params );
@@ -371,6 +401,7 @@ public class EventController
         @RequestParam( required = false ) Date endDate,
         @RequestParam( required = false ) String attributeCc,
         @RequestParam( required = false ) String attributeCos,
+        @RequestParam( required = false ) String coc,
         @RequestParam( required = false ) boolean totalPages,
         @RequestParam( required = false ) boolean skipPaging,
         @RequestParam( required = false ) String order,
@@ -382,8 +413,20 @@ public class EventController
 
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, true );
 
+        DataElementCategoryOptionCombo categoryOptionCombo = null;
+        
+        if( coc != null )
+        {
+        	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
+        }
+        
+        if( categoryOptionCombo == null )
+        {
+        	categoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
+        }
+        
         EventSearchParams params = eventService.getFromUrl( program, null, programStatus, null,
-            orgUnit, ouMode, null, startDate, endDate, eventStatus, null, attributeOptionCombo,
+            orgUnit, ouMode, null, startDate, endDate, eventStatus, null, attributeOptionCombo, categoryOptionCombo,
             null, null, null, totalPages, skipPaging, getOrderParams( order ), true, null );
 
         EventRows eventRows = eventRowService.getEventRows( params );
