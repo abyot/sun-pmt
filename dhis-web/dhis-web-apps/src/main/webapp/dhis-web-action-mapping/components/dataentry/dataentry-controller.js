@@ -221,6 +221,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.basicAuditInfo = {};
         $scope.model.basicAuditInfo.exists = false;
         $scope.model.rolesAreDifferent = false;
+        $scope.saveStatus = {};
     };
     
     $scope.loadDataEntryForm = function(){
@@ -507,7 +508,6 @@ sunPMT.controller('dataEntryController',
         
         if( events.events.length > 0 ){
             //add event
-            console.log('the events:  ', events);
             EventService.create(events).then(function ( json ) {
                 if( json && json.response && json.response.importSummaries && json.response.importSummaries.length ){                            
                     for( var i=0; i<json.response.importSummaries.length; i++){
@@ -612,7 +612,7 @@ sunPMT.controller('dataEntryController',
         });        
     };
     
-    $scope.getAuditInfo = function(de, ouId, oco){        
+    $scope.getAuditInfo = function(de, ouId, oco, value, comment){        
         var modalInstance = $modal.open({
             templateUrl: 'components/dataentry/history.html',
             controller: 'DataEntryHistoryController',
@@ -623,6 +623,12 @@ sunPMT.controller('dataEntryController',
                 },
                 dataElement: function(){
                     return de;
+                },
+                value: function(){
+                    return value;
+                },
+                comment: function(){
+                    return comment;
                 },
                 program: function () {
                     return $scope.model.selectedProgram;

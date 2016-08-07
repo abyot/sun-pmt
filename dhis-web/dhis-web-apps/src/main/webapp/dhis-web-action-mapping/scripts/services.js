@@ -338,7 +338,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     
     return {        
         saveDataValue: function( dv ){
-            var promise = $http.post('../api/dataValues.json?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&cc='+dv.cc + '&cp='+dv.cp + '&value='+dv.value).then(function(response){
+            var url = '?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&cc='+dv.cc + '&cp='+dv.cp + '&value='+dv.value;            
+            if( dv.comment ){
+                url += '&comment=' + dv.comment; 
+            }            
+            var promise = $http.post('../api/dataValues.json' + url).then(function(response){
                 return response.data;
             });
             return promise;
