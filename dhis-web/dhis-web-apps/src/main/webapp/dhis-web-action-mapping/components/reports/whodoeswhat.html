@@ -40,13 +40,15 @@
         
         <div class="hideInPrint">
         
+            <!-- report heading begins -->
             <h2>
                 {{'who_does_what'| translate}}
             </h2>
-
+            <!-- report heading ends -->
+            
             <!-- report params begin -->
-            <div class="row">
-                <form class="form-horizontal col-sm-6" role="form" name="reportForm" novalidate>
+            <div class="col-sm-6 remove-left-padding">
+                <form class="form-horizontal" role="form" name="reportForm" novalidate>
                     <div class="panel sun-pmt-color">
                         <div class="panel-heading mouse-pointer" ng-click="showReportFilters = !showReportFilters">
                             {{'report_filters'| translate}}
@@ -110,7 +112,7 @@
             <!-- report params end -->
 
             <!-- no data exists indicator begins -->
-            <div class="row">
+            <div class="clear remove-left-padding">
                 <div class="col-sm-6">
                     <div class="alert alert-warning" ng-if="noDataExists">{{'no_data_exists'| translate}}</div>
                 </div>                
@@ -118,7 +120,7 @@
             <!-- no data exists indicator ends -->
 
             <!-- report progress indicator begins -->
-            <div class="row">
+            <div class="clear remove-left-padding">
                 <div class="col-sm-6">
                     <div class="alert alert-info" ng-if="reportStarted && !reportReady">
                         {{'generating_report'| translate}}
@@ -131,9 +133,9 @@
         </div>
 
         <!-- report template begins -->
-        <div class="row">            
+        <div class="remove-left-padding">            
             <div ng-if="reportReady && !noDataExists">                
-                <div class="col-sm-12 hideInPrint">
+                <div class="col-sm-12 hideInPrint pull-left">
                     <button type="button" 
                             class="btn btn-default"
                             title="{{'export_excel' | translate}}"
@@ -147,7 +149,7 @@
                         <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="col-sm-12 small-vertical-spacing" id="exportTable">
+                <div class="col-sm-12" id="exportTable">
                     <table class="table table-bordered table-condensed">
                         <thead>
                             <tr>

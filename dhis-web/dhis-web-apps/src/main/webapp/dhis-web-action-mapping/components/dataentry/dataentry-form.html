@@ -30,7 +30,7 @@
                     </td>
                 </tr>
             </table>
-            <div class="row" ng-if="model.rolesAreDifferent">
+            <div ng-if="model.rolesAreDifferent">
                 <div class="col-sm-12">
                     {{'role_override_info'|translate}}
                 </div>
@@ -51,7 +51,7 @@
 
     <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
         
-        <div class="row">
+        <div class="remove-left-padding">
             <div class="col-sm-6 ">
                 <div ng-repeat="dataElement in model.selectedDataSet.dataElements" ng-if="dataElement.code !== 'Catalyst' && dataElement.code !== 'Funder' && dataElement.code !== 'Responsible Ministry'">
                     <table class="table table-bordered table-condensed vertical-spacing">
@@ -87,7 +87,7 @@
             </div>
         </div>
         
-        <div class="">
+        <div class="clear">
             <div class="col-sm-6 selectionArea">
                 <button type="button" 
                         class="btn btn-primary" 
