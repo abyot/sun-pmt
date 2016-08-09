@@ -235,7 +235,6 @@ sunPMT.controller('WhoDoesWhatController',
                             _ev[dv.dataElement] = dv.value.split(",");
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
                                 var rde = $scope.model.roleDataElementsById[dv.dataElement];
-                                console.log()
                                 $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
                                 pushedHeaders.push( dv.dataElement );
                                 $scope.model.availableRoles[dv.dataElement] = [];
@@ -246,6 +245,9 @@ sunPMT.controller('WhoDoesWhatController',
                     $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
                 }
             });
+            
+            console.log('availableRoles:  ', $scope.model.availableRoles);
+            console.log('mappedRoles:  ', $scope.model.mappedRoles);
             
             $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                

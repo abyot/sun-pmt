@@ -61,11 +61,14 @@ sunPMT.controller('StakeholderRoleController',
                 $scope.currentEvent[ocoId].dataValues.push( dataValue );
             }
 
-            //update event            
+            //update event
             EventService.update( $scope.currentEvent[ocoId] ).then(function(response){
             });
         }
         else{
+            if( !$scope.currentEvent[ocoId] ){
+                $scope.currentEvent[ocoId]  = {}; 
+            }
             var event = {
                 program: $scope.program.id,
                 programStage: $scope.program.programStages[0].id,
@@ -82,12 +85,22 @@ sunPMT.controller('StakeholderRoleController',
         
         if( events.events.length > 0 ){
             //add event
-            EventService.create(events).then(function (response) {                
+            EventService.create(events).then(function (json) {
+                if( json && json.response && json.response.importSummaries && json.response.importSummaries.length ){                            
+                    for( var i=0; i<json.response.importSummaries.length; i++){
+                        if( json.response.importSummaries[i] && 
+                                json.response.importSummaries[i].status === 'SUCCESS' && 
+                                json.response.importSummaries[i].reference ){                            
+                            var ev = events.events[i];
+                            $scope.currentEvent[ev.categoryOptionCombo] = {event: json.response.importSummaries[i].reference, dataValues: ev.dataValues};
+                        }
+                    }
+                }
             });
         }
     };
     
-    $scope.close = function(status) {        
-        $modalInstance.close( status );
+    $scope.close = function() {        
+        $modalInstance.close( $scope.currentEvent, $scope.stakeholderRoles );
     };
 });

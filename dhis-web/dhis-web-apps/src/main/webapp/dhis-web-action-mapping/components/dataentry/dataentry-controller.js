@@ -587,7 +587,7 @@ sunPMT.controller('dataEntryController',
                     return  ouName;
                 },
                 currentEvent: function(){
-                    return $scope.model.selectedEvent[ouId];
+                    return $scope.model.selectedEvent[ouId] ? $scope.model.selectedEvent[ouId] : {};
                 },
                 optionCombos: function(){
                     var dataElement = $scope.model.selectedDataSet.dataElements[0];
@@ -608,7 +608,9 @@ sunPMT.controller('dataEntryController',
             }
         });
 
-        modalInstance.result.then(function () {
+        modalInstance.result.then(function (currentEvent, stakeholderRoles) {
+            $scope.model.selectedEvent[ouId] = currentEvent;
+            $scope.model.stakeholderRoles[ouId] = stakeholderRoles;
         });        
     };
     
@@ -656,5 +658,11 @@ sunPMT.controller('dataEntryController',
         
         modalInstance.result.then(function () {
         }); 
+    };
+    
+    $scope.overrideRole = function(){        
+        angular.forEach($scope.model.selectedProgram.programStages[0].programStageDataElements, function(prStDe){
+            $scope.saveRole( prStDe.dataElement.id );
+        });        
     };
 });

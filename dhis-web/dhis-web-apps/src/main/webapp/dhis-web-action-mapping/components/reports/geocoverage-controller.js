@@ -9,6 +9,7 @@ sunPMT.controller('GeoCoverageController',
         function($scope,
                 $filter,
                 $translate,
+                orderByFilter,
                 SessionStorageService,
                 DialogService,
                 PeriodService,
@@ -87,13 +88,14 @@ sunPMT.controller('GeoCoverageController',
             $scope.model.programs = [];
             $scope.model.roleDataElementsById = [];
             $scope.model.roleDataElements = [];
+            
             MetaDataFactory.getAll('programs').then(function(programs){
                 $scope.model.programs = programs;
                 angular.forEach(programs, function(program){
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
-                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.name;
+                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {name:  prStDe.dataElement.name, sortOrder: prStDe.sortOrder};
                             }                            
                         });
                     }                    
@@ -103,7 +105,7 @@ sunPMT.controller('GeoCoverageController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k]} );
+                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder} );
                     }
                 }
             });
@@ -111,6 +113,13 @@ sunPMT.controller('GeoCoverageController',
             $scope.model.mappedOptionCombos = [];
             OptionComboService.getMappedOptionCombos().then(function(ocos){
                 $scope.model.mappedOptionCombos = ocos;
+            });
+            
+            $scope.model.categoryCombos = {};
+            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                angular.forEach(ccs, function(cc){
+                    $scope.model.categoryCombos[cc.id] = cc;
+                });
             });
 
             $scope.model.dataSets = [];
@@ -204,13 +213,15 @@ sunPMT.controller('GeoCoverageController',
         $scope.model.selectedPrograms = [];
         $scope.model.dataElementCodesById = [];
         $scope.model.mappedRoles = {};
+        $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
-            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
+            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){
                 var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
-                $scope.model.selectedPrograms.push( pr );
-                $scope.model.mappedRoles[pr.actionCode] = {};
+                $scope.model.selectedPrograms.push( pr );                
                 $scope.model.reportDataElements.push( ds.dataElements[0] );
                 $scope.model.dataElementCodesById[ds.dataElements[0].id] = ds.dataElements[0].code;
+                $scope.optionCombos = $scope.optionCombos.concat($scope.model.categoryCombos[ds.dataElements[0].categoryCombo.id].categoryOptionCombos);                
+                $scope.model.mappedRoles[pr.actionCode] = {};
             }
         });        
         
@@ -220,24 +231,37 @@ sunPMT.controller('GeoCoverageController',
                 var _ev = {event: ev.event, orgUnit: ev.orgUnit};
                 if( !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] ){
                     $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] = {};
+                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                }
+                else{
+                    if( $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] && !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
+                        $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                    }
                 }
                 
                 if( ev.dataValues ){
-                    angular.forEach(ev.dataValues, function(dv){                        
+                    angular.forEach(ev.dataValues, function(dv){
                         if( dv.dataElement && $scope.model.roleDataElementsById[dv.dataElement] ){
                             _ev[dv.dataElement] = dv.value.split(",");
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: $scope.model.roleDataElementsById[dv.dataElement]});
+                                var rde = $scope.model.roleDataElementsById[dv.dataElement];
+                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
                                 pushedHeaders.push( dv.dataElement );
                                 $scope.model.availableRoles[dv.dataElement] = [];
                             }                            
                             $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
+                            //_ev[dv.dataElement] = $scope.model.availableRoles[dv.dataElement];
                         }
-                    });                    
-                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.attributeOptionCombo] = _ev;
+                    });
+                    //console.log('_ev:  ', $scope.model.programCodesById[ev.program], ev.orgUnit, ev.categoryOptionCombo, ev.attributeOptionCombo, _ev);
+                    //console.log('_ev.val:  ', _ev);
+                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
                 }
             });
-
+            
+            console.log('availableRoles:  ', $scope.model.availableRoles);
+            console.log('mappedRoles:  ', $scope.model.mappedRoles);
+            
             $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                
                 if( response && response.dataValues ){
@@ -247,11 +271,11 @@ sunPMT.controller('GeoCoverageController',
                         for(var i=0; i<oco.categories.length; i++){                        
                             dv[oco.categories[i].id] = [oco.optionNames[i]];
                             if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name});
+                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
                                 pushedHeaders.push( oco.categories[i].id );
                             }
                         }
-                        var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.attributeOptionCombo];
+                        var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
                         if( r && angular.isObject( r ) ){
                             angular.extend(dv, r);
                         }                        
@@ -262,36 +286,29 @@ sunPMT.controller('GeoCoverageController',
                     $scope.showReportFilters = false;
                     $scope.noDataExists = true;
                 }  
-                
+
+                var cols = orderByFilter($filter('filter')($scope.model.whoDoesWhatCols, {domain: 'CA'}), '-name').reverse();                
+                cols = cols.concat(orderByFilter($filter('filter')($scope.model.whoDoesWhatCols, {domain: 'DE'}), '-name').reverse());
+                $scope.model.whoDoesWhatCols = cols;                
                 $scope.reportReady = true;
                 $scope.reportStarted = false;
+                
+                console.log('mapped values:  ', $scope.model.mappedValues);
             });
         });
-    };
+    };    
     
-    $scope.getStakeholders = function( col, deId ){        
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
-        var role = [];        
-        angular.forEach(filteredValues, function(val){
-            if( val[col.id] ){
-                angular.forEach(val[col.id], function(v){
-                    if( role.indexOf(v) === -1){
-                        role.push( v );
-                    }
-                });                
-            }            
-        });
-        return role.join(", ");
-    };
-    
-    $scope.getValuePerRole = function( col, deId ){
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
+    $scope.getValuePerRole = function( col, deId, ocId ){        
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var checkedOus = {};        
         var value = 0;            
         angular.forEach(filteredValues, function(val){
+            //console.log('val:  ', val, ' - ', col, ' - ', $scope.model.selectedRole.id);
             if( val[$scope.model.selectedRole.id] && 
                     val[$scope.model.selectedRole.id].length 
-                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){                
+                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){
+                
+                //console.log('val-1:  ', val, ' - ', col);
                 if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
                     console.log('missing orgunit:  ', val.orgUnit);
                 }
@@ -306,5 +323,12 @@ sunPMT.controller('GeoCoverageController',
         });
         
         return value === 0 ? 0 : value + " (" + ActionMappingUtils.getPercent( value, $scope.model.childrenIds.length) + ")";
+    };
+    
+    $scope.exportData = function () {
+        var blob = new Blob([document.getElementById('exportTable').innerHTML], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+        });
+        saveAs(blob, "Report.xls");
     };
 });
