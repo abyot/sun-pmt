@@ -51,8 +51,20 @@ sunPMT.controller('WhoDoesWhatController',
         }
     }
     
+    function resetParams(){
+        $scope.showReportFilters = true;
+        $scope.reportStarted = false;
+        $scope.reportReady = false;
+        $scope.noDataExists = false;
+        $scope.model.reportDataElements = [];
+        $scope.model.whoDoesWhatCols = [];
+        $scope.model.selectedDataSets = [];
+        $scope.model.selectedPeriod = null;
+    }
+    
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
+        resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){            
             
             if( $scope.selectedOrgUnit.l === 1 ){                
@@ -160,16 +172,9 @@ sunPMT.controller('WhoDoesWhatController',
         //check for form validity
         $scope.reportForm.submitted = true;        
         if( $scope.reportForm.$invalid ){
-            return false;
+            return;
         }
-        
-        $scope.showReportFilters = false;
-        $scope.reportStarted = true;
-        $scope.reportReady = false;
-        $scope.noDataExists = false;
-        $scope.model.reportDataElements = [];
-        $scope.model.whoDoesWhatCols = [];
-        var pushedHeaders = [];
+                
         if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){            
             var dialogOptions = {
                 headerText: $translate.instant('error'),
@@ -179,6 +184,13 @@ sunPMT.controller('WhoDoesWhatController',
             return;
         }
         
+        $scope.showReportFilters = false;
+        $scope.reportStarted = true;
+        $scope.reportReady = false;
+        $scope.noDataExists = false;
+        $scope.model.reportDataElements = [];
+        $scope.model.whoDoesWhatCols = [];
+        var pushedHeaders = [];        
         var dataValueSetUrl = 'period=' + $scope.model.selectedPeriod.id;
         angular.forEach($scope.model.selectedDataSets, function(ds){
             dataValueSetUrl += '&dataSet=' + ds.id;

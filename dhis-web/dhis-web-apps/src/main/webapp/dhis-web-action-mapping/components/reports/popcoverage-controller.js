@@ -67,10 +67,12 @@ sunPMT.controller('PopCoverageController',
     }
     
     //watch for selection of org unit from tree
-    $scope.$watch('selectedOrgUnit', function() {
+    $scope.$watch('selectedOrgUnit', function() {        
+        $scope.model.selectedDataSets = [];
+        $scope.model.selectedPeriod = null;
+        $scope.model.selectedRole = null;
+        resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){            
-            
-            resetParams();
             if( $scope.selectedOrgUnit.l === 1 ){                
                 subtree.getChildren($scope.selectedOrgUnit.id).then(function( json ){                            
                     var children = [];
@@ -189,11 +191,6 @@ sunPMT.controller('PopCoverageController',
             return false;
         }
         
-        resetParams();
-        $scope.reportStarted = true;
-        $scope.showReportFilters = false;
-        
-        var pushedHeaders = [];
         if( !$scope.model.selectedIndicators.length || $scope.model.selectedIndicators.length < 1 ){            
             var dialogOptions = {
                 headerText: $translate.instant('error'),
@@ -202,6 +199,13 @@ sunPMT.controller('PopCoverageController',
             DialogService.showDialog({}, dialogOptions);
             return;
         }
+        
+        resetParams();
+        $scope.reportStarted = true;
+        $scope.showReportFilters = false;        
+        var pushedHeaders = [];
+        
+        
         
         $scope.model.selectedDataSets = [];
         $scope.model.selectedDataSets = $scope.model.selectedDataSets.concat( $scope.model.targetDataSets );

@@ -63,6 +63,10 @@ sunPMT.controller('GeoCoverageController',
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
+        resetParams();
+        $scope.model.selectedDataSets = [];
+        $scope.model.selectedPeriod = null;        
+        $scope.model.selectedRole = null;
         if( angular.isObject($scope.selectedOrgUnit)){            
             
             resetParams();
@@ -172,14 +176,9 @@ sunPMT.controller('GeoCoverageController',
         //check for form validity
         $scope.geoCoverageForm.submitted = true;        
         if( $scope.geoCoverageForm.$invalid ){
-            return false;
+            return;
         }
         
-        resetParams();
-        $scope.reportStarted = true;
-        $scope.showReportFilters = false;
-        
-        var pushedHeaders = [];
         if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){            
             var dialogOptions = {
                 headerText: $translate.instant('error'),
@@ -189,6 +188,10 @@ sunPMT.controller('GeoCoverageController',
             return;
         }
         
+        resetParams();
+        $scope.reportStarted = true;
+        $scope.showReportFilters = false;        
+        var pushedHeaders = [];        
         var dataValueSetUrl = 'period=' + $scope.model.selectedPeriod.id;
         angular.forEach($scope.model.selectedDataSets, function(ds){
             dataValueSetUrl += '&dataSet=' + ds.id;
