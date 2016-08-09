@@ -237,30 +237,32 @@ sunPMT.controller('GeoCoverageController',
                     if( $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] && !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
                         $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
                     }
-                }
+                }                
                 
                 if( ev.dataValues ){
-                    angular.forEach(ev.dataValues, function(dv){
+                    angular.forEach(ev.dataValues, function(dv){                        
                         if( dv.dataElement && $scope.model.roleDataElementsById[dv.dataElement] ){
                             _ev[dv.dataElement] = dv.value.split(",");
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
                                 var rde = $scope.model.roleDataElementsById[dv.dataElement];
                                 $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
-                                pushedHeaders.push( dv.dataElement );
-                                $scope.model.availableRoles[dv.dataElement] = [];
-                            }                            
-                            $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
-                            //_ev[dv.dataElement] = $scope.model.availableRoles[dv.dataElement];
+                                pushedHeaders.push( dv.dataElement );                                
+                            }
+                            
+                            if( !$scope.model.availableRoles[dv.dataElement] ){
+                                $scope.model.availableRoles[dv.dataElement] = {};
+                                $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                            }
+                            if( !$scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] ){
+                                $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                            }   
+                            
+                            $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo], dv.value );
                         }
-                    });
-                    //console.log('_ev:  ', $scope.model.programCodesById[ev.program], ev.orgUnit, ev.categoryOptionCombo, ev.attributeOptionCombo, _ev);
-                    //console.log('_ev.val:  ', _ev);
+                    });                    
                     $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
                 }
             });
-            
-            console.log('availableRoles:  ', $scope.model.availableRoles);
-            console.log('mappedRoles:  ', $scope.model.mappedRoles);
             
             $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                
@@ -293,22 +295,34 @@ sunPMT.controller('GeoCoverageController',
                 $scope.reportReady = true;
                 $scope.reportStarted = false;
                 
-                console.log('mapped values:  ', $scope.model.mappedValues);
             });
         });
-    };    
+    };
+    
+    $scope.getRequiredCols = function(){        
+        var cols = [];
+        for (var k in $scope.model.availableRoles[$scope.model.selectedRole.id]){
+            if ( $scope.model.availableRoles[$scope.model.selectedRole.id].hasOwnProperty(k) ) {
+                angular.forEach($scope.model.availableRoles[$scope.model.selectedRole.id][k], function(c){
+                    if( cols.indexOf( c ) === -1 ){
+                        cols.push( c );
+                    }
+                });                
+            }
+        }
+        
+        return cols.sort();
+    };
     
     $scope.getValuePerRole = function( col, deId, ocId ){        
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var checkedOus = {};        
         var value = 0;            
         angular.forEach(filteredValues, function(val){
-            //console.log('val:  ', val, ' - ', col, ' - ', $scope.model.selectedRole.id);
             if( val[$scope.model.selectedRole.id] && 
                     val[$scope.model.selectedRole.id].length 
                     && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){
                 
-                //console.log('val-1:  ', val, ' - ', col);
                 if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
                     console.log('missing orgunit:  ', val.orgUnit);
                 }

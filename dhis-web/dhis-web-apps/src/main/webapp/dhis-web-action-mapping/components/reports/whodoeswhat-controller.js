@@ -236,19 +236,24 @@ sunPMT.controller('WhoDoesWhatController',
                             if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
                                 var rde = $scope.model.roleDataElementsById[dv.dataElement];
                                 $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
-                                pushedHeaders.push( dv.dataElement );
-                                $scope.model.availableRoles[dv.dataElement] = [];
-                            }                            
-                            $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
+                                pushedHeaders.push( dv.dataElement );                                
+                            }
+                            
+                            if( !$scope.model.availableRoles[dv.dataElement] ){
+                                $scope.model.availableRoles[dv.dataElement] = {};
+                                $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                            }
+                            if( !$scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] ){
+                                $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                            }   
+                            
+                            $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement][ev.categoryOptionCombo], dv.value );
                         }
                     });                    
                     $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
                 }
             });
-            
-            console.log('availableRoles:  ', $scope.model.availableRoles);
-            console.log('mappedRoles:  ', $scope.model.mappedRoles);
-            
+                        
             $scope.model.mappedValues = [];            
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){                
                 if( response && response.dataValues ){
@@ -292,10 +297,10 @@ sunPMT.controller('WhoDoesWhatController',
                     if( role.indexOf(v) === -1){
                         role.push( v );
                     }
-                });                
+                });
             }            
         });
-        var r = role.join(", ");
+        var r = role.sort().join(", ");
         return r;
     };
     

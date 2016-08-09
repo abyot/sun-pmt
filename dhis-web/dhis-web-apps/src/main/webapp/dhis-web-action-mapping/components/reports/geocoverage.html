@@ -180,7 +180,7 @@
                                 <th>
                                     {{'target_group'| translate}}
                                 </th>
-                                <th ng-repeat="col in model.availableRoles[model.selectedRole.id]">
+                                <th ng-repeat="col in getRequiredCols()">
                                     {{col}}
                                 </th>
                             </tr>
@@ -193,7 +193,7 @@
                                 <td>
                                     {{oc.displayName}}
                                 </td>
-                                <td ng-repeat="col in model.availableRoles[model.selectedRole.id]">
+                                <td ng-repeat="col in getRequiredCols()">
                                     {{getValuePerRole(col, de.id, oc.id)}}
                                 </td>
                             </tr>

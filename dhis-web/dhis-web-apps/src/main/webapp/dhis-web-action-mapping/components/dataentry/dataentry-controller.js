@@ -515,7 +515,14 @@ sunPMT.controller('dataEntryController',
                                 json.response.importSummaries[i].status === 'SUCCESS' && 
                                 json.response.importSummaries[i].reference ){                            
                             var ev = events.events[i];
-                            $scope.model.selectedEvent[ev.orgUnit] = {event: json.response.importSummaries[i].reference, dataValues: ev.dataValues};
+                            if( !$scope.model.selectedEvent[ev.orgUnit] ){
+                                $scope.model.selectedEvent[ev.orgUnit] = {};
+                                $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {};
+                            }
+                            if( !$scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] ){
+                                $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {};
+                            }
+                            $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {event: json.response.importSummaries[i].reference, dataValues: ev.dataValues};
                         }
                     }
                 }
