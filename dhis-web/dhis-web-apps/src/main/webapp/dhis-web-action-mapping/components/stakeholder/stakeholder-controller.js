@@ -40,7 +40,8 @@ sunPMT.controller('StakeholderController',
         $scope.stakeholderAddStarted = true;
         
         //form is valid
-        //add category option        
+        //add category option
+        $scope.model.newStakeholder.code = $scope.model.newStakeholder.shortName;
         StakeholderService.addCategoryOption( $scope.model.newStakeholder ).then(function( json ){
             
             if( json && json.response && json.response.lastImported ){

@@ -63,7 +63,6 @@ sunPMT.controller('dataEntryController',
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
         $scope.model.valueExists = false;
-        $scope.stakeholderList = null;
         if( angular.isObject($scope.selectedOrgUnit)){
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
             var systemSetting = storage.get('SYSTEM_SETTING');
@@ -404,7 +403,7 @@ sunPMT.controller('dataEntryController',
         
         var dataElement = $scope.model.selectedDataSet.dataElements[0];
         if( $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].indexOf( "[Add New Stakeholder]") !== -1 ){
-            $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId] = $scope.model.stakeholderRoles['COMMON_ORG_UNIT'][dataElementId].slice(0,-1);
+            $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId] = $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].slice(0,-1);
             showAddStakeholder( $scope.model.stakeholderCategory );
             return;
         }
