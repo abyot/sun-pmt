@@ -280,10 +280,16 @@ sunPMT.controller('GeoCoverageController',
                                 pushedHeaders.push( oco.categories[i].id );
                             }
                         }
-                        var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
-                        if( r && angular.isObject( r ) ){
-                            angular.extend(dv, r);
-                        }                        
+                       
+                        if( $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]] &&
+                            $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
+                            $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
+                            var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
+                            if( r && angular.isObject( r ) ){
+                                angular.extend(dv, r);
+                            }
+                        }
+                        
                     });                    
                     $scope.model.mappedValues = response;
                 }
