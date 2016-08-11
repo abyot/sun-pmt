@@ -123,6 +123,10 @@ div.paging a.active
     font-style: italic;
 }
 
+.underline {
+    text-decoration: underline;
+}
+
 .white {
     color: white;
 }

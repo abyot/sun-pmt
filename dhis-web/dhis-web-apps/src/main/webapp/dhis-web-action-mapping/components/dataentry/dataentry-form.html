@@ -4,7 +4,7 @@
         <div class="col-sm-12 selectionArea" ng-if="model.selectedProgram">
             <span class="bold">{{'role_info_1'| translate}}</span>
             <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
-            <span class="bold">{{'role_info_2'| translate}}</span>
+            <span>{{'role_info_2'| translate}}</span>
             <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
                 <thead>
                     <tr>
@@ -30,6 +30,10 @@
                     </td>
                 </tr>
             </table>
+            
+            <span>{{'role_info_3'|translate}}</span>
+            <span class="anchor-color"><i class="fa fa-users fa-2x"></i></span>
+            <span>{{'role_info_4'|translate}}</span>
             <div ng-if="model.rolesAreDifferent">
                 <div class="col-sm-12">
                     {{'role_override_info'|translate}}
@@ -70,7 +74,7 @@
                         </tr>
                         <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
                             <td>
-                                <a href title="{{'edit_stakeholder_roles'| translate}}" ng-click="showEditStakeholderRoles(ou, model.selectedDataSet.organisationUnits[ou])"><i class="fa fa-file-text superscript"></i></a>
+                                <a href title="{{'edit_stakeholder_roles'| translate}}" ng-click="showEditStakeholderRoles(ou, model.selectedDataSet.organisationUnits[ou])"><i class="fa fa-users superscript"></i></a>
                                 {{model.selectedDataSet.organisationUnits[ou]}}
                             </td>
                             <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
