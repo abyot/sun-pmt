@@ -214,12 +214,14 @@ sunPMT.controller('WhoDoesWhatController',
         $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
-                var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
-                $scope.model.selectedPrograms.push( pr );                
-                $scope.model.reportDataElements.push( ds.dataElements[0] );
-                $scope.model.dataElementCodesById[ds.dataElements[0].id] = ds.dataElements[0].code;
-                $scope.optionCombos = $scope.optionCombos.concat($scope.model.categoryCombos[ds.dataElements[0].categoryCombo.id].categoryOptionCombos);                
-                $scope.model.mappedRoles[pr.actionCode] = {};
+                var pr = $scope.model.programsByCode[ds.dataElements[0].code];
+                if( pr && pr.actionCode ){
+                    $scope.model.selectedPrograms.push( pr );
+                    $scope.model.reportDataElements.push( ds.dataElements[0] );
+                    $scope.model.dataElementCodesById[ds.dataElements[0].id] = ds.dataElements[0].code;
+                    $scope.optionCombos = $scope.optionCombos.concat($scope.model.categoryCombos[ds.dataElements[0].categoryCombo.id].categoryOptionCombos);
+                    $scope.model.mappedRoles[pr.actionCode] = {};
+                }
             }
         });
         

@@ -15,9 +15,8 @@ sunPMT.controller('PopCoverageController',
                 MetaDataFactory,
                 DataSetFactory,
                 ActionMappingUtils,
-                DataValueService,
                 OptionComboService,
-                EventService) {
+                ReportService) {
     $scope.periodOffset = 0;
     $scope.showReportFilters = true;
     $scope.reportReady = false;
@@ -67,12 +66,13 @@ sunPMT.controller('PopCoverageController',
     }
     
     //watch for selection of org unit from tree
-    $scope.$watch('selectedOrgUnit', function() {        
+    $scope.$watch('selectedOrgUnit', function() { 
+        $scope.model.selectedIndicators = [];
         $scope.model.selectedDataSets = [];
         $scope.model.selectedPeriod = null;
         $scope.model.selectedRole = null;
         resetParams();
-        if( angular.isObject($scope.selectedOrgUnit)){            
+        if( angular.isObject($scope.selectedOrgUnit)){
             if( $scope.selectedOrgUnit.l === 1 ){                
                 subtree.getChildren($scope.selectedOrgUnit.id).then(function( json ){                            
                     var children = [];
@@ -90,6 +90,10 @@ sunPMT.controller('PopCoverageController',
             }
             if( $scope.selectedOrgUnit.l === 2 ){
                 $scope.model.childrenIds = $scope.selectedOrgUnit.c;
+            }
+            
+            if( $scope.selectedOrgUnit.l === 3 ){
+                $scope.model.childrenIds = [$scope.selectedOrgUnit.id];
             }
             
             $scope.model.programs = [];
@@ -119,6 +123,13 @@ sunPMT.controller('PopCoverageController',
             $scope.model.mappedOptionCombos = [];
             OptionComboService.getMappedOptionCombos().then(function(ocos){
                 $scope.model.mappedOptionCombos = ocos;
+            });
+            
+            $scope.model.categoryCombos = {};
+            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                angular.forEach(ccs, function(cc){
+                    $scope.model.categoryCombos[cc.id] = cc;
+                });
             });
 
             $scope.model.indicators = [];
@@ -202,11 +213,7 @@ sunPMT.controller('PopCoverageController',
         
         resetParams();
         $scope.reportStarted = true;
-        $scope.showReportFilters = false;        
-        var pushedHeaders = [];
-        
-        
-        
+        $scope.showReportFilters = false; 
         $scope.model.selectedDataSets = [];
         $scope.model.selectedDataSets = $scope.model.selectedDataSets.concat( $scope.model.targetDataSets );
         angular.forEach($scope.model.selectedIndicators, function(ind){
@@ -240,104 +247,66 @@ sunPMT.controller('PopCoverageController',
         $scope.model.selectedPrograms = [];
         $scope.model.dataElementCodesById = [];
         $scope.model.mappedRoles = {};
+        $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
-                var pr = $scope.model.programsByCode[ds.dataElements[0].code];                
-                if( pr ){
+                var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
+                if( pr && pr.actionCode ){
                     $scope.model.selectedPrograms.push( pr );
-                    $scope.model.mappedRoles[pr.actionCode] = {};
                     $scope.model.reportDataElements.push( ds.dataElements[0] );
                     $scope.model.dataElementCodesById[ds.dataElements[0].id] = ds.dataElements[0].code;
-                }
+                    $scope.optionCombos = $scope.optionCombos.concat($scope.model.categoryCombos[ds.dataElements[0].categoryCombo.id].categoryOptionCombos);
+                    $scope.model.mappedRoles[pr.actionCode] = {};
+                }                
             }
-        });        
+        });
         
         $scope.model.availableRoles = {};
-        EventService.getForMultiplePrograms($scope.selectedOrgUnit.id, 'DESCENDANTS', $scope.model.selectedPrograms, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){            
-            angular.forEach(events, function(ev){
-                var _ev = {event: ev.event, orgUnit: ev.orgUnit};
-                if( !$scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] ){
-                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit] = {};
-                }
-                
-                if( ev.dataValues ){
-                    angular.forEach(ev.dataValues, function(dv){                        
-                        if( dv.dataElement && $scope.model.roleDataElementsById[dv.dataElement] ){
-                            _ev[dv.dataElement] = dv.value.split(",");
-                            if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: dv.dataElement, name: $scope.model.roleDataElementsById[dv.dataElement]});
-                                pushedHeaders.push( dv.dataElement );
-                                $scope.model.availableRoles[dv.dataElement] = [];
-                            }                            
-                            $scope.model.availableRoles[dv.dataElement] = ActionMappingUtils.pushRoles( $scope.model.availableRoles[dv.dataElement], dv.value );
-                        }
-                    });                    
-                    $scope.model.mappedRoles[$scope.model.programCodesById[ev.program]][ev.orgUnit][ev.attributeOptionCombo] = _ev;
-                }
-            });
-
-            $scope.model.mappedValues = [];
-            $scope.model.mappedTargetValues = {};
-            DataValueService.getDataValueSet( dataValueSetUrl ).then(function( response ){
-                if( response && response.dataValues ){
-                    angular.forEach(response.dataValues, function(dv){
-                        var oco = $scope.model.mappedOptionCombos[dv.attributeOptionCombo];
-                        if( oco.displayName !== 'default' ){
-                            oco.optionNames = oco.displayName.split(", ");
-                            for(var i=0; i<oco.categories.length; i++){                        
-                                dv[oco.categories[i].id] = [oco.optionNames[i]];
-                                if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                    $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name});
-                                    pushedHeaders.push( oco.categories[i].id );
-                                }
-                            }
-                        }
-                        
-                        if( $scope.model.dataElementCodesById[dv.dataElement] ){
-                            var r = $scope.model.mappedRoles[$scope.model.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.attributeOptionCombo];
-                            if( r && angular.isObject( r ) ){
-                                angular.extend(dv, r);
-                            }
-                        }
-                        else{ // target values (denominators)
-                            if( !$scope.model.mappedTargetValues[dv.dataElement] ){
-                                $scope.model.mappedTargetValues[dv.dataElement] = {};
-                            }
-                            $scope.model.mappedTargetValues[dv.dataElement][dv.orgUnit] = dv.value;
-                        }
-                    });                    
-                    $scope.model.mappedValues = response;
-                }
-                else{                    
-                    $scope.showReportFilters = false;
-                    $scope.noDataExists = true;
-                }  
-                
-                $scope.reportReady = true;
-                $scope.reportStarted = false;
-            });
+        var reportParams = {orgUnit: $scope.selectedOrgUnit.id, 
+                        programs: $scope.model.selectedPrograms, 
+                        period: $scope.model.selectedPeriod, 
+                        dataValueSetUrl: dataValueSetUrl};
+        var reportData = {mappedRoles: $scope.model.mappedRoles,
+                        programCodesById: $scope.model.programCodesById,
+                        roleDataElementsById: $scope.model.roleDataElementsById,
+                        whoDoesWhatCols: $scope.model.whoDoesWhatCols,
+                        availableRoles: $scope.model.availableRoles,
+                        mappedOptionCombos: $scope.model.mappedOptionCombos,
+                        dataElementCodesById: $scope.model.dataElementCodesById
+                    };
+        
+        ReportService.getReportData( reportParams, reportData ).then(function(response){            
+            $scope.model.mappedRoles = response.mappedRoles;
+            $scope.model.whoDoesWhatCols = response.whoDoesWhatCols;
+            $scope.model.availableRoles = response.availableRoles;
+            $scope.model.mappedValues = response.mappedValues;
+            $scope.model.mappedTargetValues = response.mappedTargetValues;
+            $scope.reportReady = response.reportReady;
+            $scope.showReportFilters = response.showReportFilters;
+            $scope.noDataExists = response.noDataExists;
+            $scope.reportStarted = response.reportStarted;
         });
     };
     
-    $scope.getStakeholders = function( col, deId ){        
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId});
-        var role = [];        
-        angular.forEach(filteredValues, function(val){
-            if( val[col.id] ){
-                angular.forEach(val[col.id], function(v){
-                    if( role.indexOf(v) === -1){
-                        role.push( v );
+    $scope.getRequiredCols = function(){        
+        var cols = [];
+        for (var k in $scope.model.availableRoles[$scope.model.selectedRole.id]){
+            if ( $scope.model.availableRoles[$scope.model.selectedRole.id].hasOwnProperty(k) ) {
+                angular.forEach($scope.model.availableRoles[$scope.model.selectedRole.id][k], function(c){
+                    if( cols.indexOf( c ) === -1 ){
+                        cols.push( c );
                     }
                 });                
-            }            
-        });
-        return role.join(", ");
+            }
+        }
+        
+        return cols.sort();
     };
     
     $scope.getValuePerRole = function( col, ind ){        
-        ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );        
-        var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator});
-        var filteredDenominators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.denominator});
+        ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
+        var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
+        var filteredDenominators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.denominator, categoryOptionCombo: ind.denominatorOptionCombo});
         
         var checkedOus = {};        
         var numerator = 0;
@@ -359,12 +328,14 @@ sunPMT.controller('PopCoverageController',
                     }
                 }                
             }            
-        });
+        });        
+        numerator = numerator / filteredNumerators.length;
         
         var denominator = 0;
         angular.forEach(filteredDenominators, function(val){            
             denominator = ActionMappingUtils.getSum( denominator, val.value);
-        });
+        });        
+        denominator = denominator / filteredDenominators.length;
         
         return ActionMappingUtils.getPercent(numerator, denominator);
     };

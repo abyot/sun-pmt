@@ -577,7 +577,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             num = num.split('.');            
             var den = ind.denominator.substring(2,ind.numerator.length-1);
             den = den.split('.');            
-            return {numerator: num[0], denominator: den[0]};
+            return {numerator: num[0], numeratorOptionCombo: num[1], denominator: den[0], denominatorOptionCombo: den[1]};
         }
     };
 })
@@ -626,6 +626,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
 
                 reportData.mappedValues = [];
+                reportData.mappedTargetValues = {};
                 DataValueService.getDataValueSet( reportParams.dataValueSetUrl ).then(function( response ){                
                     if( response && response.dataValues ){
                         angular.forEach(response.dataValues, function(dv){
@@ -646,6 +647,16 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                                 if( r && angular.isObject( r ) ){
                                     angular.extend(dv, r);
                                 }
+                            }
+                            else{ // target values (denominators)
+                                if( !reportData.mappedTargetValues[dv.dataElement] ){
+                                    reportData.mappedTargetValues[dv.dataElement] = {};
+                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                }
+                                if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
+                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                }
+                                reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
                             }
 
                         });                    

@@ -119,6 +119,7 @@
                             </div>                    
                             <button type="button" 
                                     class="btn btn-default" 
+                                    ng-disabled="selectedOrgUnit.l > 3"
                                     ng-click="getReport()">
                                 {{'submit'| translate}}
                             </button>
@@ -136,16 +137,22 @@
             </div>
             <!-- no data exists indicator ends -->
 
-            <!-- report progress indicator begins -->
+            <!-- report notification begins -->
             <div class="clear remove-left-padding">
                 <div class="col-sm-6">
                     <div class="alert alert-info" ng-if="reportStarted && !reportReady">
                         {{'generating_report'| translate}}
                         <span class="small-horizontal-spacing"><i class="fa fa-spinner fa-spin fa-2x"></i></span>
+                    </div>                
+                    <div class="alert alert-warning" ng-if="selectedOrgUnit.l > 3">
+                        {{'please_select_higher_level'| translate}}
                     </div>
-                </div>                
+                    <div class="alert alert-warning" ng-if="noDataExists">
+                        {{'no_data_exists'| translate}}
+                    </div>
+                </div>
             </div>
-            <!-- report progress indicator ends -->
+            <!-- report notification ends -->
 
         </div>
 
