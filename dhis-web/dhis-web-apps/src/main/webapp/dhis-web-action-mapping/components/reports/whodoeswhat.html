@@ -37,15 +37,15 @@
     <input type="hidden" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName">
 
     <div ng-show="selectedOrgUnit">
-        
+
         <div class="hideInPrint">
-        
+
             <!-- report heading begins -->
             <h2>
                 {{'who_does_what'| translate}}
             </h2>
             <!-- report heading ends -->
-            
+
             <!-- report params begin -->
             <div class="col-sm-6 remove-left-padding">
                 <form class="form-horizontal" role="form" name="reportForm" novalidate>
@@ -90,6 +90,23 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label class="control-label col-sm-3">
+                                    {{'reporting_level'| translate}}
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <label class="radio-inline" ng-repeat="oumode in ouModes">
+                                                <input type="radio" name="reportingLevel" ng-model="selectedOuMode" value="{{oumode.value}}">{{oumode.name}}
+                                            </label>
+                                        </div>
+                                        <div ng-messages="reportForm.reportingLevel.$error" ng-if="interacted(reportForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <div class="col-sm-12">
                                     <d2-multi-select 
                                         ng-model="model.selectedDataSets" 
@@ -129,7 +146,7 @@
                 </div>                
             </div>
             <!-- report progress indicator ends -->
-        
+
         </div>
 
         <!-- report template begins -->
@@ -138,13 +155,13 @@
                 <div class="clear col-sm-12 hideInPrint pull-left">
                     <button type="button" 
                             class="btn btn-default"
-                            title="{{'export_excel' | translate}}"
+                            title="{{'export_excel'| translate}}"
                             ng-click="exportData()">
                         <i class="fa fa-file-excel-o" aria-hidden="true"></i>
                     </button>
                     <button type="button" 
                             class="btn btn-default horizontal-spacing" 
-                            title="{{'export_pdf' | translate}}"
+                            title="{{'export_pdf'| translate}}"
                             onclick="javascript:window.print()">
                         <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                     </button>
@@ -182,7 +199,7 @@
             </div>
         </div>
         <!-- report template ends -->
-        
+
     </div>    
 
 </div>
