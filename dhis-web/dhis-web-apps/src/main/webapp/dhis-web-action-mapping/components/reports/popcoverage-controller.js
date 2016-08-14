@@ -272,8 +272,7 @@ sunPMT.controller('PopCoverageController',
                         whoDoesWhatCols: $scope.model.whoDoesWhatCols,
                         availableRoles: $scope.model.availableRoles,
                         mappedOptionCombos: $scope.model.mappedOptionCombos,
-                        dataElementCodesById: $scope.model.dataElementCodesById
-                    };
+                        dataElementCodesById: $scope.model.dataElementCodesById};
         
         ReportService.getReportData( reportParams, reportData ).then(function(response){            
             $scope.model.mappedRoles = response.mappedRoles;
