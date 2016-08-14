@@ -501,7 +501,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
-.service('ActionMappingUtils', function($translate, DialogService){
+.service('ActionMappingUtils', function($q, $translate, $filter, DialogService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -614,6 +614,48 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 }
             }
             return cols.sort();
+        },
+        populateOuLevels: function( orgUnit, ouLevels ){
+            var ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: orgUnit.l}];
+            var limit = orgUnit.l === 1 ? 2 : 3;
+            for( var i=orgUnit.l+1; i<=limit; i++ ){
+                var lvl = ouLevels[i];
+                ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
+            }
+            var selectedOuMode = ouModes[0];            
+            return {ouModes: ouModes, selectedOuMode: selectedOuMode};
+        },
+        getChildrenIds: function( orgUnit ){
+            var def = $q.defer();
+            
+            var childrenIds = [];
+            if( orgUnit.l === 1 ){                
+                subtree.getChildren(orgUnit.id).then(function( json ){
+                    var children = [];
+                    for( var k in json ){
+                        if( json.hasOwnProperty( k ) ){
+                            children.push(json[k]);
+                        }
+                    }
+                    angular.forEach($filter('filter')(children, {l: 3}), function(c){
+                        childrenIds.push(c.id);
+                    });
+                    
+                    def.resolve( childrenIds );
+                });
+            }            
+            else if( orgUnit.l === 2 ){
+                childrenIds = orgUnit.c;                
+            }
+            else{
+                childrenIds = [orgUnit.id];
+            }
+            
+            setTimeout(function(){
+                def.resolve( childrenIds );
+            }, 100);           
+            
+            return def.promise;
         }
     };
 })

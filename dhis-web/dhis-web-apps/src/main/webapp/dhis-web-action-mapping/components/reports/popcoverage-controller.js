@@ -47,15 +47,6 @@ sunPMT.controller('PopCoverageController',
         mappedTargetValues: null,
         childrenIds: []};
     
-    function populateOuLevels(){
-        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];
-        for( var i=$scope.selectedOrgUnit.l+1; i<=3; i++ ){
-            var lvl = $scope.model.ouLevels[i];
-            $scope.model.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
-        }
-        $scope.model.selectedOuMode = $scope.model.ouModes[0];
-    }
-    
     function resetParams(){
         $scope.showReportFilters = true;
         $scope.reportStarted = false;
@@ -73,28 +64,11 @@ sunPMT.controller('PopCoverageController',
         $scope.model.selectedRole = null;
         resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){
-            if( $scope.selectedOrgUnit.l === 1 ){                
-                subtree.getChildren($scope.selectedOrgUnit.id).then(function( json ){                            
-                    var children = [];
-                    for( var k in json ){
-                        if( json.hasOwnProperty( k ) ){
-                            children.push(json[k]);
-                        }
-                    }
-                    children = $filter('filter')(children, {l: 3});
-                    $scope.model.childrenIds = [];
-                    angular.forEach(children, function(c){
-                        $scope.model.childrenIds.push(c.id);
-                    });
-                });
-            }
-            else if( $scope.selectedOrgUnit.l === 2 ){
-                $scope.model.childrenIds = $scope.selectedOrgUnit.c;
-            }
             
-            else if( $scope.selectedOrgUnit.l === 3 ){
-                $scope.model.childrenIds = [$scope.selectedOrgUnit.id];
-            }
+            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(ids){
+                $scope.model.childrenIds = ids;
+                console.log('the ids:  ', ids);
+            });
             
             $scope.model.programs = [];
             $scope.model.roleDataElementsById = [];
@@ -125,7 +99,9 @@ sunPMT.controller('PopCoverageController',
                 angular.forEach(ouLevels, function(ol){
                     $scope.model.ouLevels[ol.level] = ol.displayName;
                 });                    
-                populateOuLevels();
+                var res = ActionMappingUtils.populateOuLevels($scope.selectedOrgUnit, $scope.model.ouLevels);
+                $scope.model.ouModes = res.ouModes;
+                $scope.model.selectedOuMode = res.selectedOuMode;
                 
                 $scope.model.mappedOptionCombos = [];
                 OptionComboService.getMappedOptionCombos().then(function(ocos){
