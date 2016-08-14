@@ -40,12 +40,12 @@ sunPMT.controller('WhoDoesWhatController',
         childrenIds: []};
     
     function populateOuLevels(){
-        $scope.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];        
+        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];
         for( var i=$scope.selectedOrgUnit.l+1; i<=3; i++ ){
             var lvl = $scope.model.ouLevels[i];
-            $scope.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
+            $scope.model.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
         }
-        $scope.selectedOuMode = $scope.ouModes[0];
+        $scope.model.selectedOuMode = $scope.model.ouModes[0];
     }
     
     function resetParams(){

@@ -95,15 +95,15 @@
                                     <span class="required">*</span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <label class="radio-inline" ng-repeat="oumode in ouModes">
-                                                <input type="radio" name="reportingLevel" ng-model="selectedOuMode" value="{{oumode.value}}">{{oumode.name}}
-                                            </label>
-                                        </div>
-                                        <div ng-messages="reportForm.reportingLevel.$error" ng-if="interacted(reportForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
-                                        </div>
-                                    </div>                                    
+                                    <select ng-model="model.selectedOuMode" 
+                                            ng-required="true"
+                                            name="reportingLevel"
+                                            class="form-control"
+                                            ng-options="ouMode as ouMode.name for ouMode in model.ouModes">
+                                        <option value="">{{'please_select'| translate}}</option>
+                                    </select>
+                                    <div ng-messages="reportForm.reportingLevel.$error" ng-if="interacted(reportForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group">

@@ -91,6 +91,23 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
+                                    {{'reporting_level'| translate}}
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <select ng-model="model.selectedOuMode" 
+                                            ng-required="true"
+                                            name="reportingLevel"
+                                            class="form-control"
+                                            ng-options="ouMode as ouMode.name for ouMode in model.ouModes">
+                                        <option value="">{{'please_select'| translate}}</option>
+                                    </select>
+                                    <div ng-messages="geoCoverageForm.reportingLevel.$error" ng-if="interacted(geoCoverageForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">
                                     {{'stakeholder_role'| translate}}<span class="required">*</span>
                                 </label>                        
                                 <div class="col-sm-9">

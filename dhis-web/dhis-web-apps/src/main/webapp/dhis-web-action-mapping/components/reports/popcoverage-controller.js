@@ -48,12 +48,12 @@ sunPMT.controller('PopCoverageController',
         childrenIds: []};
     
     function populateOuLevels(){
-        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];            
-        $scope.model.selectedOuMode = $scope.model.ouModes[0];
+        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];
         for( var i=$scope.selectedOrgUnit.l+1; i<=3; i++ ){
             var lvl = $scope.model.ouLevels[i];
             $scope.model.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
         }
+        $scope.model.selectedOuMode = $scope.model.ouModes[0];
     }
     
     function resetParams(){
@@ -88,11 +88,11 @@ sunPMT.controller('PopCoverageController',
                     });
                 });
             }
-            if( $scope.selectedOrgUnit.l === 2 ){
+            else if( $scope.selectedOrgUnit.l === 2 ){
                 $scope.model.childrenIds = $scope.selectedOrgUnit.c;
             }
             
-            if( $scope.selectedOrgUnit.l === 3 ){
+            else if( $scope.selectedOrgUnit.l === 3 ){
                 $scope.model.childrenIds = [$scope.selectedOrgUnit.id];
             }
             
