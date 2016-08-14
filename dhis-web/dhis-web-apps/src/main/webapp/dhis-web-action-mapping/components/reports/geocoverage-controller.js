@@ -107,39 +107,54 @@ sunPMT.controller('GeoCoverageController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder} );
+                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder, domain: 'EV'} );
                     }
                 }
-            });
-            
-            $scope.model.mappedOptionCombos = [];
-            OptionComboService.getMappedOptionCombos().then(function(ocos){
-                $scope.model.mappedOptionCombos = ocos;
-            });
-            
-            $scope.model.categoryCombos = {};
-            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
-                angular.forEach(ccs, function(cc){
-                    $scope.model.categoryCombos[cc.id] = cc;
+                
+                $scope.orgUnitLevels = [];
+                MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
+                    angular.forEach(ouLevels, function(ol){
+                        $scope.model.ouLevels[ol.level] = ol.displayName;
+                    });                    
+                    populateOuLevels();
+                    
+                    $scope.model.mappedOptionCombos = [];
+                    OptionComboService.getMappedOptionCombos().then(function(ocos){
+                        $scope.model.mappedOptionCombos = ocos;
+                    });                    
                 });
-            });
+                
+                $scope.model.categoryCombos = {};
+                $scope.model.stakeholderCategories = [];
+                $scope.model.pushedCategoryIds = [];
+                MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                    angular.forEach(ccs, function(cc){
+                        $scope.model.categoryCombos[cc.id] = cc;
+                    });
 
-            $scope.model.dataSets = [];
-            MetaDataFactory.getAll('dataSets').then(function(dataSets){
-                $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
-                angular.forEach($scope.model.dataSets, function(ds){
-                    if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
-                        $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
-                    }
+                    $scope.model.dataSets = [];
+                    MetaDataFactory.getAll('dataSets').then(function(dataSets){
+                        $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
+                        angular.forEach($scope.model.dataSets, function(ds){
+                            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
+                                $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
+                                var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);
+                                $scope.model.stakeholderCategories = res.categories;
+                                $scope.model.pushedCategoryIds = res.categoryIds;
+                            }
+                        });
+                        
+                        var len = angular.copy( $scope.model.roleDataElements.length );
+                        var count = 1;
+                        angular.forEach($scope.model.stakeholderCategories, function(c){
+                            var ops = [];
+                            angular.forEach(c.categoryOptions, function(o){
+                                ops.push( o.displayName );
+                            });
+                            $scope.model.roleDataElements.push( {id: c.id, name: c.name, sortOrder: len + count, domain: 'CA', categoryOptions: ops});
+                        });
+                    });                
                 });
-            });
-
-            $scope.orgUnitLevels = [];
-            MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
-                angular.forEach(ouLevels, function(ol){
-                    $scope.model.ouLevels[ol.level] = ol.displayName;
-                });                    
-                populateOuLevels();
             });
                 
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit);
@@ -249,23 +264,12 @@ sunPMT.controller('GeoCoverageController',
             $scope.reportReady = response.reportReady;
             $scope.showReportFilters = response.showReportFilters;
             $scope.noDataExists = response.noDataExists;
-            $scope.reportStarted = response.reportStarted;     
+            $scope.reportStarted = response.reportStarted;
         });        
     };
     
-    $scope.getRequiredCols = function(){        
-        var cols = [];
-        for (var k in $scope.model.availableRoles[$scope.model.selectedRole.id]){
-            if ( $scope.model.availableRoles[$scope.model.selectedRole.id].hasOwnProperty(k) ) {
-                angular.forEach($scope.model.availableRoles[$scope.model.selectedRole.id][k], function(c){
-                    if( cols.indexOf( c ) === -1 ){
-                        cols.push( c );
-                    }
-                });                
-            }
-        }
-        
-        return cols.sort();
+    $scope.getRequiredCols = function(){
+        return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
     $scope.getValuePerRole = function( col, deId, ocId ){        

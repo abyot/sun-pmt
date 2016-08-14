@@ -120,53 +120,68 @@ sunPMT.controller('PopCoverageController',
                 }
             });
             
-            $scope.model.mappedOptionCombos = [];
-            OptionComboService.getMappedOptionCombos().then(function(ocos){
-                $scope.model.mappedOptionCombos = ocos;
-            });
-            
-            $scope.model.categoryCombos = {};
-            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
-                angular.forEach(ccs, function(cc){
-                    $scope.model.categoryCombos[cc.id] = cc;
-                });
-            });
-
-            $scope.model.indicators = [];
-            $scope.model.dataSets = [];
-            $scope.model.targetDataSets = [];
-            MetaDataFactory.getAll('indicatorGroups').then(function(idgs){                
-                idgs = $filter('filter')(idgs, {isAction: true});
-                angular.forEach(idgs, function(idg){                    
-                    if( idg.indicators && idg.indicators.length > 0 ){
-                        $scope.model.indicators = $scope.model.indicators.concat( idg.indicators );
-                    }
-                });
-                
-                DataSetFactory.getActionAndTargetDataSets().then(function(dataSets){
-                    $scope.model.dataSets = dataSets;                
-                    angular.forEach($scope.model.dataSets, function(ds){
-                        if( ds.dataSetType === 'action'){
-                            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
-                                $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
-                                $scope.model.dataSetsByDataElementId[ds.dataElements[0].id] = ds;
-                            }
-                        }
-                        else{
-                            $scope.model.targetDataSets.push( ds );
-                        }                        
-                    });
-                });
-            });
-            
             $scope.orgUnitLevels = [];
             MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
                 angular.forEach(ouLevels, function(ol){
                     $scope.model.ouLevels[ol.level] = ol.displayName;
                 });                    
                 populateOuLevels();
-            });
                 
+                $scope.model.mappedOptionCombos = [];
+                OptionComboService.getMappedOptionCombos().then(function(ocos){
+                    $scope.model.mappedOptionCombos = ocos;
+                });
+            });            
+            
+            $scope.model.categoryCombos = {};
+            $scope.model.stakeholderCategories = [];
+            $scope.model.pushedCategoryIds = [];
+            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                angular.forEach(ccs, function(cc){
+                    $scope.model.categoryCombos[cc.id] = cc;
+                });
+                
+                $scope.model.indicators = [];
+                $scope.model.dataSets = [];
+                $scope.model.targetDataSets = [];
+                MetaDataFactory.getAll('indicatorGroups').then(function(idgs){                
+                    idgs = $filter('filter')(idgs, {isAction: true});
+                    angular.forEach(idgs, function(idg){                    
+                        if( idg.indicators && idg.indicators.length > 0 ){
+                            $scope.model.indicators = $scope.model.indicators.concat( idg.indicators );
+                        }
+                    });
+
+                    DataSetFactory.getActionAndTargetDataSets().then(function(dataSets){
+                        $scope.model.dataSets = dataSets;                
+                        angular.forEach($scope.model.dataSets, function(ds){
+                            if( ds.dataSetType === 'action'){
+                                if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
+                                    $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
+                                    $scope.model.dataSetsByDataElementId[ds.dataElements[0].id] = ds;
+                                    var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);
+                                    $scope.model.stakeholderCategories = res.categories;
+                                    $scope.model.pushedCategoryIds = res.categoryIds;
+                                }
+                            }
+                            else{
+                                $scope.model.targetDataSets.push( ds );
+                            }                        
+                        });
+                        
+                        var len = angular.copy( $scope.model.roleDataElements.length );
+                        var count = 1;
+                        angular.forEach($scope.model.stakeholderCategories, function(c){
+                            var ops = [];
+                            angular.forEach(c.categoryOptions, function(o){
+                                ops.push( o.displayName );
+                            });
+                            $scope.model.roleDataElements.push( {id: c.id, name: c.name, sortOrder: len + count, domain: 'CA', categoryOptions: ops});
+                        });
+                    });
+                });
+            });
+
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit);
             $scope.model.periods = PeriodService.getPeriods('Yearly', $scope.model.periodOffset);
         }
@@ -287,19 +302,8 @@ sunPMT.controller('PopCoverageController',
         });
     };
     
-    $scope.getRequiredCols = function(){        
-        var cols = [];
-        for (var k in $scope.model.availableRoles[$scope.model.selectedRole.id]){
-            if ( $scope.model.availableRoles[$scope.model.selectedRole.id].hasOwnProperty(k) ) {
-                angular.forEach($scope.model.availableRoles[$scope.model.selectedRole.id][k], function(c){
-                    if( cols.indexOf( c ) === -1 ){
-                        cols.push( c );
-                    }
-                });                
-            }
-        }
-        
-        return cols.sort();
+    $scope.getRequiredCols = function(){
+        return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
     $scope.getValuePerRole = function( col, ind ){        

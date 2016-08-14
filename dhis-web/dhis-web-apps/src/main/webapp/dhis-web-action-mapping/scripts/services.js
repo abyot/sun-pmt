@@ -578,6 +578,42 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var den = ind.denominator.substring(2,ind.numerator.length-1);
             den = den.split('.');            
             return {numerator: num[0], numeratorOptionCombo: num[1], denominator: den[0], denominatorOptionCombo: den[1]};
+        },
+        getStakeholderCategoryFromDataSet: function(dataSet, availableCombos, existingCategories, categoryIds){
+            if( dataSet.categoryCombo && dataSet.categoryCombo.id){
+                var cc = availableCombos[dataSet.categoryCombo.id];
+                if( cc && cc.categories ){
+                    angular.forEach(cc.categories, function(c){
+                        if( c.name === 'Field Implementer' && categoryIds.indexOf( c.id )){
+                            existingCategories.push( c );
+                            categoryIds.push( c.id );
+                        }
+                    });
+                }
+            }
+            return {categories: existingCategories, categoryIds: categoryIds};
+        },
+        getRequiredCols: function(availableRoles, selectedRole){
+            var cols = [];
+            for (var k in availableRoles[selectedRole.id]){
+                if ( availableRoles[selectedRole.id].hasOwnProperty(k) ) {
+                    angular.forEach(availableRoles[selectedRole.id][k], function(c){
+                        c = c.trim();
+                        if( cols.indexOf( c ) === -1 ){
+                            c = c.trim();
+                            if( selectedRole.domain === 'CA' ){
+                                if( selectedRole.categoryOptions && selectedRole.categoryOptions.indexOf( c ) !== -1){
+                                    cols.push( c );
+                                }
+                            }
+                            else{
+                                cols.push( c );
+                            }                        
+                        }
+                    });                
+                }
+            }
+            return cols.sort();
         }
     };
 })
@@ -587,6 +623,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getReportData: function(reportParams, reportData){            
             var def = $q.defer();
             var pushedHeaders = [];
+            
             EventService.getForMultiplePrograms(reportParams.orgUnit, 'DESCENDANTS', reportParams.programs, null, reportParams.period.startDate, reportParams.period.endDate).then(function(events){            
                 angular.forEach(events, function(ev){
                     var _ev = {event: ev.event, orgUnit: ev.orgUnit};
@@ -638,6 +675,15 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                                     reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
                                     pushedHeaders.push( oco.categories[i].id );
                                 }
+                                if( !reportData.availableRoles[oco.categories[i].id] ){
+                                    reportData.availableRoles[oco.categories[i].id] = {};
+                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                }
+                                if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
+                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                }
+                                
+                                reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
                             }
 
                             if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
