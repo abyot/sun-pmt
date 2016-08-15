@@ -39,7 +39,8 @@ sunPMT.controller('GeoCoverageController',
         reportDataElements: null,
         whoDoesWhatCols: null,
         mappedValues: null,
-        childrenIds: []};
+        childrenIds: [],
+        children: []};
     
     function resetParams(){
         $scope.showReportFilters = true;
@@ -58,9 +59,10 @@ sunPMT.controller('GeoCoverageController',
         $scope.model.selectedRole = null;
         if( angular.isObject($scope.selectedOrgUnit)){            
             
-            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(ids){
-                $scope.model.childrenIds = ids;
-                console.log('the ids:  ', ids);
+            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(response){
+                $scope.model.childrenIds = response.childrenIds;
+                $scope.model.children = response.children;
+                $scope.model.childrenByIds = response.childrenByIds;
             });
             
             $scope.model.programs = [];
@@ -179,6 +181,14 @@ sunPMT.controller('GeoCoverageController',
             return;
         }
         
+        $scope.orgUnits = [];
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+            $scope.orgUnits = $scope.model.children;
+        }
+        else{
+            $scope.orgUnits = [$scope.selectedOrgUnit];
+        }
+        
         resetParams();
         $scope.reportStarted = true;
         $scope.showReportFilters = false;
@@ -250,7 +260,7 @@ sunPMT.controller('GeoCoverageController',
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
-    $scope.getValuePerRole = function( col, deId, ocId ){        
+    $scope.getValuePerRole = function( ou, col, deId, ocId ){        
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var checkedOus = {};        
         var value = 0;            
@@ -261,13 +271,33 @@ sunPMT.controller('GeoCoverageController',
                 
                 if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
                     console.log('missing orgunit:  ', val.orgUnit);
+                    return;
                 }
-                if( !checkedOus[col] ){
-                    checkedOus[col] = [];
+                
+                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+                    
+                    if( val.orgUnit === $scope.selectedOrgUnit.id || 
+                            ( $scope.model.childrenByIds[val.orgUnit] &&
+                            $scope.model.childrenByIds[val.orgUnit].path &&
+                            $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
+                            ){                    
+                        if( !checkedOus[col] ){
+                            checkedOus[col] = [];
+                        }
+                        if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus[col].indexOf( val.orgUnit ) === -1){
+                            value++;
+                            checkedOus[col].push( val.orgUnit );
+                        }
+                    }
                 }
-                if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus[col].indexOf( val.orgUnit ) === -1){
-                    value++;
-                    checkedOus[col].push( val.orgUnit );
+                else{
+                    if( !checkedOus[col] ){
+                        checkedOus[col] = [];
+                    }
+                    if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus[col].indexOf( val.orgUnit ) === -1){
+                        value++;
+                        checkedOus[col].push( val.orgUnit );
+                    }
                 }
             }            
         });

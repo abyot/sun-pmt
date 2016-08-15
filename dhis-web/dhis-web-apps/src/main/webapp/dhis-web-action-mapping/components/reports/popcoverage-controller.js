@@ -45,7 +45,8 @@ sunPMT.controller('PopCoverageController',
         whoDoesWhatCols: null,
         mappedValues: null,
         mappedTargetValues: null,
-        childrenIds: []};
+        childrenIds: [],
+        children: []};
     
     function resetParams(){
         $scope.showReportFilters = true;
@@ -65,9 +66,10 @@ sunPMT.controller('PopCoverageController',
         resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){
             
-            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(ids){
-                $scope.model.childrenIds = ids;
-                console.log('the ids:  ', ids);
+            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(response){
+                $scope.model.childrenIds = response.childrenIds;
+                $scope.model.children = response.children;
+                $scope.model.childrenByIds = response.childrenByIds;
             });
             
             $scope.model.programs = [];
@@ -202,6 +204,14 @@ sunPMT.controller('PopCoverageController',
             return;
         }
         
+        $scope.orgUnits = [];
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+            $scope.orgUnits = $scope.model.children;
+        }
+        else{
+            $scope.orgUnits = [$scope.selectedOrgUnit];
+        }
+        
         resetParams();
         $scope.reportStarted = true;
         $scope.showReportFilters = false; 
@@ -282,7 +292,7 @@ sunPMT.controller('PopCoverageController',
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
-    $scope.getValuePerRole = function( col, ind ){        
+    $scope.getValuePerRole = function( ou, col, ind ){        
         ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
         var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
         var filteredDenominators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.denominator, categoryOptionCombo: ind.denominatorOptionCombo});
@@ -297,15 +307,14 @@ sunPMT.controller('PopCoverageController',
                     console.log('missing orgunit:  ', val.orgUnit);
                     return;
                 }
-                else{
-                    if( !checkedOus[col] ){
-                        checkedOus[col] = [];
-                    }
-                    if( $scope.model.childrenIds.indexOf( val.orgUnit ) !== -1 && checkedOus[col].indexOf( val.orgUnit ) === -1){
-                        numerator = ActionMappingUtils.getSum( numerator, val.value);
-                        checkedOus[col].push( val.orgUnit );
-                    }
-                }                
+                
+                if( !checkedOus[col] ){
+                    checkedOus[col] = [];
+                }
+                if( checkedOus[col].indexOf( val.orgUnit ) === -1){
+                    numerator = ActionMappingUtils.getSum( numerator, val.value);
+                    checkedOus[col].push( val.orgUnit );
+                }                                
             }            
         });        
         numerator = numerator / filteredNumerators.length;

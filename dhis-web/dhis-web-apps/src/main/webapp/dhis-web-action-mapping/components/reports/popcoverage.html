@@ -37,14 +37,14 @@
     <input type="hidden" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName">
 
     <div ng-show="selectedOrgUnit">
-        
+
         <div class="hideInPrint">
             <!-- report heading begins -->
             <h2>
                 {{'pop_coverage_per_sh'| translate}}
             </h2>
             <!-- report heading ends -->
-        
+
             <!-- report params begin -->        
             <div class="col-sm-6 remove-left-padding">
                 <form class="form-horizontal" role="form" name="popCoverageForm" novalidate>
@@ -115,7 +115,7 @@
                                             name="selectedRole"
                                             class="form-control"
                                             ng-options="role as role.name for role in model.roleDataElements" >
-                                        <option value="">{{'please_select' | translate}}</option>
+                                        <option value="">{{'please_select'| translate}}</option>
                                     </select>                                
                                     <div ng-messages="popCoverageForm.selectedRole.$error" ng-if="interacted(popCoverageForm.selectedRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
                                     </div>
@@ -160,9 +160,9 @@
                 </div>
             </div>
             <!-- report notification ends -->
-            
+
         </div>
-        
+
         <!-- report template begins -->
         <div class="remove-left-padding">
             <div ng-if="reportReady && !noDataExists">
@@ -181,30 +181,33 @@
                     </button>
                 </div>
                 <div class="clear col-sm-12" id="exportTable">
-                    <table class="table table-bordered table-condensed">
-                        <thead>
-                            <tr>
-                                <th>
-                                    {{'action'| translate}}
-                                </th>
-                                <th ng-repeat="col in getRequiredCols()">
-                                    {{col}}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="ind in model.selectedIndicators">
-                                <td>
-                                    {{ind.displayName}}                         
-                                </td>
-                                <td ng-repeat="col in getRequiredCols()">
-                                    {{getValuePerRole(col, ind)}}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div ng-repeat="ou in orgUnits">
+                        <div class="bold small-vertical-spacing">{{ou.displayName}}</div>
+                        <table class="table table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {{'action'| translate}}
+                                    </th>
+                                    <th ng-repeat="col in getRequiredCols()">
+                                        {{col}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="ind in model.selectedIndicators">
+                                    <td>
+                                        {{ind.displayName}}                         
+                                    </td>
+                                    <td ng-repeat="col in getRequiredCols()">
+                                        {{getValuePerRole(ou, col, ind)}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                
+
             </div>
         </div>        
         <!-- report template ends -->

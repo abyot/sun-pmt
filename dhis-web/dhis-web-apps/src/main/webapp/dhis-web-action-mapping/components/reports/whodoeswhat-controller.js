@@ -38,16 +38,8 @@ sunPMT.controller('WhoDoesWhatController',
         reportDataElements: null,
         whoDoesWhatCols: null,
         mappedValues: null,
-        childrenIds: []};
-    
-    /*function populateOuLevels(){
-        $scope.model.ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: $scope.selectedOrgUnit.l}];
-        for( var i=$scope.selectedOrgUnit.l+1; i<=2; i++ ){
-            var lvl = $scope.model.ouLevels[i];
-            $scope.model.ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
-        }
-        $scope.model.selectedOuMode = $scope.model.ouModes[0];
-    }*/
+        childrenIds: [],
+        children: []};
     
     function resetParams(){
         $scope.showReportFilters = true;
@@ -65,9 +57,10 @@ sunPMT.controller('WhoDoesWhatController',
         resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){            
             
-            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(ids){
-                $scope.model.childrenIds = ids;
-                console.log('the ids:  ', ids);
+            ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(response){
+                $scope.model.childrenIds = response.childrenIds;
+                $scope.model.children = response.children;
+                $scope.model.childrenByIds = response.childrenByIds;
             });
             
             $scope.model.programs = [];
@@ -155,12 +148,12 @@ sunPMT.controller('WhoDoesWhatController',
     
     $scope.getReport = function(){
         
-        //check for form validity
+        //check for form validity        
         $scope.reportForm.submitted = true;        
         if( $scope.reportForm.$invalid ){
             return;
-        }
-                
+        }        
+        
         if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){            
             var dialogOptions = {
                 headerText: $translate.instant('error'),
@@ -168,6 +161,14 @@ sunPMT.controller('WhoDoesWhatController',
             };		
             DialogService.showDialog({}, dialogOptions);
             return;
+        }
+        
+        $scope.orgUnits = [];
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+            $scope.orgUnits = $scope.model.children;
+        }
+        else{
+            $scope.orgUnits = [$scope.selectedOrgUnit];
         }
         
         $scope.showReportFilters = false;
@@ -240,17 +241,36 @@ sunPMT.controller('WhoDoesWhatController',
         });
     };
     
-    $scope.getStakeholders = function( col, deId, ocId ){        
+    $scope.getStakeholders = function( ou, col, deId, ocId ){        
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var role = [];        
-        angular.forEach(filteredValues, function(val){
-            if( val[col.id] ){
-                angular.forEach(val[col.id], function(v){
-                    if( role.indexOf(v) === -1){
-                        role.push( v );
+        angular.forEach(filteredValues, function(val){            
+            if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+                
+                if( val.orgUnit === $scope.selectedOrgUnit.id || 
+                        ( $scope.model.childrenByIds[val.orgUnit] &&
+                        $scope.model.childrenByIds[val.orgUnit].path &&
+                        $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
+                        ){                    
+                    if( val[col.id] ){
+                        angular.forEach(val[col.id], function(v){
+                            if( role.indexOf(v) === -1){
+                                role.push( v );
+                            }
+                        });
                     }
-                });
-            }            
+                }
+            }
+            else{
+                if( val[col.id] ){
+                    angular.forEach(val[col.id], function(v){
+                        if( role.indexOf(v) === -1){
+                            role.push( v );
+                        }
+                    });
+                }
+            }
+            
         });
         var r = role.sort().join(", ");
         return r;

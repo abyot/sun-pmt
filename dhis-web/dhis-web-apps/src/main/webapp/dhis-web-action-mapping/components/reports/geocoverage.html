@@ -189,34 +189,37 @@
                     </button>
                 </div>
                 <div class="clear col-sm-12" id="exportTable">
-                    <table class="table table-bordered table-condensed">
-                        <thead>
-                            <tr>
-                                <th>
-                                    {{'action'| translate}}
-                                </th>
-                                <th>
-                                    {{'target_group'| translate}}
-                                </th>
-                                <th ng-repeat="col in getRequiredCols()">
-                                    {{col}}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody ng-repeat="de in model.reportDataElements">
-                            <tr ng-repeat="oc in model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
-                                <td rowspan="{{model.categoryCombos[de.categoryCombo.id].categoryOptionCombos.length}}" ng-if="$index === 0">
-                                    {{de.displayName}}                         
-                                </td>
-                                <td>
-                                    {{oc.displayName}}
-                                </td>
-                                <td ng-repeat="col in getRequiredCols()">
-                                    {{getValuePerRole(col, de.id, oc.id)}}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div ng-repeat="ou in orgUnits">
+                        <div class="bold small-vertical-spacing">{{ou.displayName}}</div>
+                        <table class="table table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {{'action'| translate}}
+                                    </th>
+                                    <th>
+                                        {{'target_group'| translate}}
+                                    </th>
+                                    <th ng-repeat="col in getRequiredCols()">
+                                        {{col}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody ng-repeat="de in model.reportDataElements">
+                                <tr ng-repeat="oc in model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+                                    <td rowspan="{{model.categoryCombos[de.categoryCombo.id].categoryOptionCombos.length}}" ng-if="$index === 0">
+                                        {{de.displayName}}                         
+                                    </td>
+                                    <td>
+                                        {{oc.displayName}}
+                                    </td>
+                                    <td ng-repeat="col in getRequiredCols()">
+                                        {{getValuePerRole(ou, col, de.id, oc.id)}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

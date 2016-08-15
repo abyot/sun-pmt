@@ -452,56 +452,22 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
-.service('AnalyticsService', function($http, ActionMappingUtils) {
-    
+.service('OrgUnitService', function($http){
+    var orgUnit, orgUnitPromise;
     return {
-        
-        fetchData: function(url, filterUrl, baselineDimension, progressDimension, targetDimension){
-            
-            if( filterUrl && !angular.isUndefined( filterUrl )){
-                url = url + filterUrl;
-            }
-            
-            var promise = $http.get('../api/analytics.json?' + url).then(function(response){
-                
-                response.data.report = {};
-                
-                angular.forEach(response.data.rows, function(row){
-                    
-                    if( !response.data.report[row[0]] ){
-                        response.data.report[row[0]] = {baseline: 0};
-                    }
-                    
-                    if( !response.data.report[row[0]][row[1]] ){
-                        response.data.report[row[0]][row[1]] = {};
-                    }
-                    
-                    if( row[2] === baselineDimension.id ){
-                        response.data.report[row[0]].baseline = row[3];
-                    }
-                    else{
-                        
-                        if( !response.data.report[row[0]][row[2]] ){
-                            response.data.report[row[0]][row[2]] = {annualTarget: 0};
-                        }
-                    
-                        response.data.report[row[0]][row[2]].annualTarget += parseInt( row[3] );
-                        
-                        response.data.report[row[0]][row[1]][row[2]] = row[3];
-                    }                    
+        get: function( uid ){
+            if( orgUnit !== uid ){
+                orgUnitPromise = $http.get( '../api/organisationUnits.json?filter=path:like:/' + uid + '&fields=id,displayName,path,level,parent[id]&paging=false' ).then(function(response){
+                    orgUnit = response.data.id;
+                    return response.data;
                 });
-                
-                return response.data;
-                
-            }, function(response){
-                ActionMappingUtils.errorNotifier(response);
-            });            
-            return promise;
+            }
+            return orgUnitPromise;
         }
-    };    
+    };
 })
 
-.service('ActionMappingUtils', function($q, $translate, $filter, DialogService){
+.service('ActionMappingUtils', function($q, $translate, $filter, DialogService, OrgUnitService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -627,33 +593,31 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         },
         getChildrenIds: function( orgUnit ){
             var def = $q.defer();
-            
-            var childrenIds = [];
-            if( orgUnit.l === 1 ){                
-                subtree.getChildren(orgUnit.id).then(function( json ){
-                    var children = [];
-                    for( var k in json ){
-                        if( json.hasOwnProperty( k ) ){
-                            children.push(json[k]);
-                        }
-                    }
-                    angular.forEach($filter('filter')(children, {l: 3}), function(c){
-                        childrenIds.push(c.id);
+            OrgUnitService.get( orgUnit.id ).then(function( json ){
+                var childrenIds = [];
+                var children = json.organisationUnits;
+                var childrenByIds = [];
+                
+                angular.forEach(children, function(c){
+                    c.path = c.path.substring(1, c.path.length);
+                    c.path = c.path.split("/");
+                    childrenByIds[c.id] = c;
+                });                    
+                
+                if( orgUnit.l === 1 ){
+                    angular.forEach($filter('filter')(children, {level: 3}), function(c){
+                        childrenIds.push(c.id);                        
                     });
-                    
-                    def.resolve( childrenIds );
-                });
-            }            
-            else if( orgUnit.l === 2 ){
-                childrenIds = orgUnit.c;                
-            }
-            else{
-                childrenIds = [orgUnit.id];
-            }
-            
-            setTimeout(function(){
-                def.resolve( childrenIds );
-            }, 100);           
+                }
+                else if ( orgUnit.l === 2 ){
+                    childrenIds = orgUnit.c;
+                }
+                else {
+                    childrenIds = [orgUnit.id];
+                }
+
+                def.resolve( {childrenIds: childrenIds, children: $filter('filter')(children, {parent: {id: orgUnit.id}}), descendants: $filter('filter')(children, {level: 3}), childrenByIds: childrenByIds } );
+            });
             
             return def.promise;
         }
