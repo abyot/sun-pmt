@@ -844,4 +844,9 @@ div#orgUnitTree {
 .report-table>tbody>tr>td, 
 .report-table>tfoot>tr>td {
     border: 1px solid black !important;
+    color: #000;
+}
+
+.empty-data-row {
+    color: #767676 !important;
 }

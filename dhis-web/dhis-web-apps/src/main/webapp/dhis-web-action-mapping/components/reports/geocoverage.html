@@ -184,8 +184,7 @@
                 <div class="clear col-sm-12" id="exportTable">
                     <div ng-repeat="ou in orgUnits">
                         <div class="bold small-vertical-spacing">{{ou.displayName}}</div>
-                        <!--<table class="table table-bordered table-condensed report-table">-->
-                        <table border="1" class="report-table">
+                        <table border="1" class="table table-bordered table-condensed report-table">
                             <thead>
                                 <tr>
                                     <th>
@@ -202,10 +201,10 @@
                             <tbody ng-repeat="de in model.reportDataElements">
                                 <tr ng-repeat="oc in model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
                                     <td rowspan="{{model.categoryCombos[de.categoryCombo.id].categoryOptionCombos.length}}" ng-if="$index === 0">
-                                        {{de.displayName}}                         
+                                        <span ng-class="valueExists(ou, de.id)">{{de.displayName}}</span>
                                     </td>
                                     <td>
-                                        {{oc.displayName}}
+                                        <span ng-class="valueExists(ou, de.id, oc.id)">{{oc.displayName}}</span>
                                     </td>
                                     <td ng-repeat="col in getRequiredCols()">
                                         {{getValuePerRole(ou, col, de.id, oc.id)}}

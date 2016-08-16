@@ -260,6 +260,37 @@ sunPMT.controller('GeoCoverageController',
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
+    $scope.valueExists = function(ou, de, oc){        
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: de});        
+        if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
+            return "empty-data-row";
+        }
+        
+        if( oc ){
+            filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {categoryOptionCombo: oc});
+            if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
+                return "empty-data-row";
+            }
+        }
+        
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+            var values = [];
+            angular.forEach(filteredValues, function(val){            
+                if( val.orgUnit === $scope.selectedOrgUnit.id || 
+                        ( $scope.model.childrenByIds[val.orgUnit] &&
+                        $scope.model.childrenByIds[val.orgUnit].path &&
+                        $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
+                        ){                    
+                    values.push( val );
+                }
+            });
+            
+            if( values.length === 0 ){
+                return "empty-data-row";
+            }
+        }        
+    };
+    
     $scope.getValuePerRole = function( ou, col, deId, ocId ){        
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var checkedOus = {};        
@@ -302,7 +333,7 @@ sunPMT.controller('GeoCoverageController',
             }            
         });
         
-        return value === 0 ? 0 : value + " (" + ActionMappingUtils.getPercent( value, $scope.model.childrenIds.length) + ")";
+        return value === 0 ? "" : value + " (" + ActionMappingUtils.getPercent( value, $scope.model.childrenIds.length) + ")";
     };
     
     $scope.exportData = function () {

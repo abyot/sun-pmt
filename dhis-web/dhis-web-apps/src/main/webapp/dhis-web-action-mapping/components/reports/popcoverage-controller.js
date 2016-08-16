@@ -292,6 +292,38 @@ sunPMT.controller('PopCoverageController',
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
+    $scope.valueExists = function(ou, ind){        
+        ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
+        var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
+        var filteredDenominators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.denominator, categoryOptionCombo: ind.denominatorOptionCombo});
+        
+        if( !filteredNumerators || !filteredNumerators.length || filteredNumerators.length === 0 ||
+            !filteredDenominators || !filteredDenominators.length || filteredDenominators.length === 0 ){
+            return "empty-data-row";
+        }
+                
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+            var values = [];
+            angular.forEach(filteredNumerators, function(val){            
+                if( val.orgUnit === $scope.selectedOrgUnit.id || 
+                        ( $scope.model.childrenByIds[val.orgUnit] &&
+                        $scope.model.childrenByIds[val.orgUnit].path &&
+                        $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
+                        ){                    
+                    
+                    var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
+                    if( curDen && curDen.length && curDen[0] && curDen[0].value ){
+                        values.push( val );
+                    }
+                }
+            });
+            
+            if( values.length === 0 ){
+                return "empty-data-row";
+            }
+        }        
+    };
+    
     $scope.getValuePerRole = function( ou, col, ind ){        
         ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
         var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
@@ -300,6 +332,7 @@ sunPMT.controller('PopCoverageController',
         var checkedOus = {};        
         var numerator = 0;
         var denominator = 0;
+        var valueCount = 0;
         angular.forEach(filteredNumerators, function(val){
             if( val[$scope.model.selectedRole.id] && 
                     val[$scope.model.selectedRole.id].length 
@@ -309,8 +342,7 @@ sunPMT.controller('PopCoverageController',
                     return;
                 }
                 
-                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
-                    
+                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){                    
                     if( val.orgUnit === $scope.selectedOrgUnit.id || 
                             ( $scope.model.childrenByIds[val.orgUnit] &&
                             $scope.model.childrenByIds[val.orgUnit].path &&
@@ -320,10 +352,14 @@ sunPMT.controller('PopCoverageController',
                             checkedOus[col] = [];
                         }
                         if( checkedOus[col].indexOf( val.orgUnit ) === -1){
-                            numerator = ActionMappingUtils.getSum( numerator, val.value);
 
                             var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                            denominator = ActionMappingUtils.getSum( numerator, curDen[0].value);
+                            
+                            if( curDen && curDen.length && curDen[0] && curDen[0].value ){
+                                denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
+                                numerator = ActionMappingUtils.getSum( numerator, val.value);
+                                valueCount++;
+                            }
 
                             checkedOus[col].push( val.orgUnit );
                         }
@@ -334,17 +370,21 @@ sunPMT.controller('PopCoverageController',
                         checkedOus[col] = [];
                     }
                     if( checkedOus[col].indexOf( val.orgUnit ) === -1){
-                        numerator = ActionMappingUtils.getSum( numerator, val.value);
-
+                        
                         var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                        denominator = ActionMappingUtils.getSum( numerator, curDen[0].value);
+                        
+                        if( curDen && curDen.length && curDen[0] && curDen[0].value ){
+                            denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
+                            numerator = ActionMappingUtils.getSum( numerator, val.value);
+                            valueCount++;
+                        }
 
                         checkedOus[col].push( val.orgUnit );
                     }
                 }
             }            
         });
-        return ActionMappingUtils.getPercent(numerator, denominator);
+        return valueCount > 0 ? ActionMappingUtils.getPercent(numerator, denominator) : "";
     };
     
     $scope.exportData = function () {
