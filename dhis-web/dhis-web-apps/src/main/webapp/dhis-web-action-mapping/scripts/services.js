@@ -630,103 +630,114 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var def = $q.defer();
             var pushedHeaders = [];
             
-            EventService.getForMultiplePrograms(reportParams.orgUnit, 'DESCENDANTS', reportParams.programs, null, reportParams.period.startDate, reportParams.period.endDate).then(function(events){            
-                angular.forEach(events, function(ev){
-                    var _ev = {event: ev.event, orgUnit: ev.orgUnit};
-                    if( !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] ){
-                        reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] = {};
-                        reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
-                    }
-                    else{
-                        if( reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] && !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
-                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
-                        }
-                    }                
-
-                    if( ev.dataValues ){
-                        angular.forEach(ev.dataValues, function(dv){                        
-                            if( dv.dataElement && reportData.roleDataElementsById[dv.dataElement] ){
-                                _ev[dv.dataElement] = dv.value.split(",");
-                                if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                    var rde = reportData.roleDataElementsById[dv.dataElement];
-                                    reportData.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
-                                    pushedHeaders.push( dv.dataElement );                                
-                                }
-
-                                if( !reportData.availableRoles[dv.dataElement] ){
-                                    reportData.availableRoles[dv.dataElement] = {};
-                                    reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
-                                }
-                                if( !reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] ){
-                                    reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
-                                }   
-
-                                reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo], dv.value );
-                            }
-                        });                    
-                        reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
-                    }
-                });
-
-                reportData.mappedValues = [];
-                reportData.mappedTargetValues = {};
-                DataValueService.getDataValueSet( reportParams.dataValueSetUrl ).then(function( response ){                
-                    if( response && response.dataValues ){
-                        angular.forEach(response.dataValues, function(dv){
-                            var oco = reportData.mappedOptionCombos[dv.attributeOptionCombo];
-                            oco.optionNames = oco.displayName.split(", ");
-                            for(var i=0; i<oco.categories.length; i++){                        
-                                dv[oco.categories[i].id] = [oco.optionNames[i]];
-                                if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                    reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
-                                    pushedHeaders.push( oco.categories[i].id );
-                                }
-                                if( !reportData.availableRoles[oco.categories[i].id] ){
-                                    reportData.availableRoles[oco.categories[i].id] = {};
-                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
-                                }
-                                if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
-                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
-                                }
-                                
-                                reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
-                            }
-
-                            if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
-                                reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
-                                reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
-                                var r = reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
-                                if( r && angular.isObject( r ) ){
-                                    angular.extend(dv, r);
-                                }
-                            }
-                            else{ // target values (denominators)
-                                if( !reportData.mappedTargetValues[dv.dataElement] ){
-                                    reportData.mappedTargetValues[dv.dataElement] = {};
-                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                }
-                                if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
-                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                }
-                                reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
-                            }
-
-                        });                    
-                        reportData.mappedValues = response;
-                    }
-                    else{                    
-                        reportData.showReportFilters = false;
-                        reportData.noDataExists = true;
-                    }  
-
-                    var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-name').reverse();                
-                    cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-name').reverse());
-                    reportData.whoDoesWhatCols = cols;                
+            EventService.getForMultiplePrograms(reportParams.orgUnit, 'DESCENDANTS', reportParams.programs, null, reportParams.period.startDate, reportParams.period.endDate).then(function(events){
+                if( !events || !events.length || events.length === 0 ){
+                    reportData.noDataExists = true;
                     reportData.reportReady = true;
                     reportData.reportStarted = false;
+                    reportData.showReportFilters = false;
                     
                     def.resolve(reportData);
-                });
+                }
+                else{
+                    angular.forEach(events, function(ev){
+                        var _ev = {event: ev.event, orgUnit: ev.orgUnit};
+                        if( !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] ){
+                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] = {};
+                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                        }
+                        else{
+                            if( reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] && !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
+                                reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
+                            }
+                        }                
+
+                        if( ev.dataValues ){
+                            angular.forEach(ev.dataValues, function(dv){                        
+                                if( dv.dataElement && reportData.roleDataElementsById[dv.dataElement] ){
+                                    _ev[dv.dataElement] = dv.value.split(",");
+                                    if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
+                                        var rde = reportData.roleDataElementsById[dv.dataElement];
+                                        reportData.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
+                                        pushedHeaders.push( dv.dataElement );                                
+                                    }
+
+                                    if( !reportData.availableRoles[dv.dataElement] ){
+                                        reportData.availableRoles[dv.dataElement] = {};
+                                        reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                                    }
+                                    if( !reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] ){
+                                        reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
+                                    }   
+
+                                    reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo], dv.value );
+                                }
+                            });                    
+                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
+                        }
+                    });
+                    
+                    reportData.mappedValues = [];
+                    reportData.mappedTargetValues = {};
+                    DataValueService.getDataValueSet( reportParams.dataValueSetUrl ).then(function( response ){                
+                        if( response && response.dataValues ){
+                            angular.forEach(response.dataValues, function(dv){
+                                var oco = reportData.mappedOptionCombos[dv.attributeOptionCombo];
+                                oco.optionNames = oco.displayName.split(", ");
+                                for(var i=0; i<oco.categories.length; i++){                        
+                                    dv[oco.categories[i].id] = [oco.optionNames[i]];
+                                    if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
+                                        reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
+                                        pushedHeaders.push( oco.categories[i].id );
+                                    }
+                                    if( !reportData.availableRoles[oco.categories[i].id] ){
+                                        reportData.availableRoles[oco.categories[i].id] = {};
+                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                    }
+                                    if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
+                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                    }
+
+                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
+                                }
+
+                                if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
+                                    reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
+                                    reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
+                                    var r = reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
+                                    if( r && angular.isObject( r ) ){
+                                        angular.extend(dv, r);
+                                    }
+                                }
+                                else{ // target values (denominators)
+                                    if( !reportData.mappedTargetValues[dv.dataElement] ){
+                                        reportData.mappedTargetValues[dv.dataElement] = {};
+                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                    }
+                                    if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
+                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                    }
+                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
+                                }
+
+                            });                    
+                            reportData.mappedValues = response;
+                            reportData.noDataExists = false;
+                        }
+                        else{                    
+                            reportData.showReportFilters = false;
+                            reportData.noDataExists = true;
+                        }  
+
+                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-name').reverse();                
+                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-name').reverse());
+                        reportData.whoDoesWhatCols = cols;                
+                        reportData.reportReady = true;
+                        reportData.reportStarted = false;
+
+                        def.resolve(reportData);
+                    });                    
+                }                
             });
             return def.promise;
         }

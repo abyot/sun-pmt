@@ -299,6 +299,7 @@ sunPMT.controller('PopCoverageController',
         
         var checkedOus = {};        
         var numerator = 0;
+        var denominator = 0;
         angular.forEach(filteredNumerators, function(val){
             if( val[$scope.model.selectedRole.id] && 
                     val[$scope.model.selectedRole.id].length 
@@ -308,23 +309,41 @@ sunPMT.controller('PopCoverageController',
                     return;
                 }
                 
-                if( !checkedOus[col] ){
-                    checkedOus[col] = [];
+                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+                    
+                    if( val.orgUnit === $scope.selectedOrgUnit.id || 
+                            ( $scope.model.childrenByIds[val.orgUnit] &&
+                            $scope.model.childrenByIds[val.orgUnit].path &&
+                            $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
+                            ){                    
+                        if( !checkedOus[col] ){
+                            checkedOus[col] = [];
+                        }
+                        if( checkedOus[col].indexOf( val.orgUnit ) === -1){
+                            numerator = ActionMappingUtils.getSum( numerator, val.value);
+
+                            var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
+                            denominator = ActionMappingUtils.getSum( numerator, curDen[0].value);
+
+                            checkedOus[col].push( val.orgUnit );
+                        }
+                    }
                 }
-                if( checkedOus[col].indexOf( val.orgUnit ) === -1){
-                    numerator = ActionMappingUtils.getSum( numerator, val.value);
-                    checkedOus[col].push( val.orgUnit );
-                }                                
+                else{
+                    if( !checkedOus[col] ){
+                        checkedOus[col] = [];
+                    }
+                    if( checkedOus[col].indexOf( val.orgUnit ) === -1){
+                        numerator = ActionMappingUtils.getSum( numerator, val.value);
+
+                        var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
+                        denominator = ActionMappingUtils.getSum( numerator, curDen[0].value);
+
+                        checkedOus[col].push( val.orgUnit );
+                    }
+                }
             }            
-        });        
-        numerator = numerator / filteredNumerators.length;
-        
-        var denominator = 0;
-        angular.forEach(filteredDenominators, function(val){            
-            denominator = ActionMappingUtils.getSum( denominator, val.value);
-        });        
-        denominator = denominator / filteredDenominators.length;
-        
+        });
         return ActionMappingUtils.getPercent(numerator, denominator);
     };
 });
