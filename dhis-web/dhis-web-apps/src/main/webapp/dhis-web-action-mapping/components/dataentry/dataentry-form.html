@@ -35,10 +35,8 @@
             <span class="anchor-color"><i class="fa fa-users fa-2x"></i></span>
             <span>{{'role_info_4'|translate}}</span>
             <div ng-if="model.rolesAreDifferent">
-                <div class="col-sm-12">
+                <div class="vertical-spacing">
                     {{'role_override_info'|translate}}
-                </div>
-                <div class="col-sm-12">
                     <form>                    
                         <input type="checkbox"
                             ng-model="model.overrideRoles"
@@ -48,7 +46,7 @@
                             {{'override_roles' | translate}}
                         </label>
                     </form>
-                </div>
+                </div>                
             </div>
         </div>
     </div>

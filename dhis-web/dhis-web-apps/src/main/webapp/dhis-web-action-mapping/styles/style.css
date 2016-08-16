@@ -832,3 +832,16 @@ div#orgUnitTree {
 .basic-audit-info {
     font-size: 12pt;
 }
+
+.report-table {
+    border-collapse: collapse !important;
+}
+
+.report-table>thead>tr>th, 
+.report-table>tbody>tr>th, 
+.report-table>tfoot>tr>th, 
+.report-table>thead>tr>td, 
+.report-table>tbody>tr>td, 
+.report-table>tfoot>tr>td {
+    border: 1px solid black !important;
+}

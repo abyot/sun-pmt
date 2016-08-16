@@ -346,4 +346,11 @@ sunPMT.controller('PopCoverageController',
         });
         return ActionMappingUtils.getPercent(numerator, denominator);
     };
+    
+    $scope.exportData = function () {
+        var blob = new Blob([document.getElementById('exportTable').innerHTML], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+        });
+        saveAs(blob, "Report.xls");
+    };
 });
