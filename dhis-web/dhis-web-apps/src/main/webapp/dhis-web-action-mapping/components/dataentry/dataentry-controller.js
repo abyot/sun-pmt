@@ -18,7 +18,10 @@ sunPMT.controller('dataEntryController',
                 MetaDataFactory,
                 ActionMappingUtils,
                 DataValueService,
-                EventService) {
+                EventService,
+                CompletenessService,
+                ModalService,
+                DialogService) {
     $scope.periodOffset = 0;
     $scope.saveStatus = {};
     var addNewOption = {code: 'ADD_NEW_OPTION', id: 'ADD_NEW_OPTION', displayName: '[Add New Stakeholder]'};
@@ -328,6 +331,20 @@ sunPMT.controller('dataEntryController',
                     }
                 }                
             });
+            
+            $scope.model.dataSetCompleted = false; 
+            CompletenessService.get( $scope.model.selectedDataSet.id, 
+                                    $scope.selectedOrgUnit.id,
+                                    $scope.model.selectedPeriod.startDate,
+                                    $scope.model.selectedPeriod.endDate,
+                                    $scope.model.allowMultiOrgUnitEntry).then(function(response){                
+                if( response && 
+                        response.completeDataSetRegistrations && 
+                        response.completeDataSetRegistrations.length &&
+                        response.completeDataSetRegistrations.length > 0){
+                    $scope.model.dataSetCompleted = true;
+                }
+            });
         }
     };
     
@@ -470,40 +487,7 @@ sunPMT.controller('dataEntryController',
                     }
                 });                                
             });
-        }
-        /*else{            
-            var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id][dataElementId].join()};
-            if( $scope.model.selectedEvent[$scope.selectedOrgUnit.id] && $scope.model.selectedEvent[$scope.selectedOrgUnit.id].event ){                
-                var updated = false;
-                for( var i=0; i<$scope.model.selectedEvent[$scope.selectedOrgUnit.id].dataValues.length; i++ ){
-                    if( $scope.model.selectedEvent[$scope.selectedOrgUnit.id].dataValues[i].dataElement === dataElementId ){
-                        $scope.model.selectedEvent[$scope.selectedOrgUnit.id].dataValues[i] = dataValue;
-                        updated = true;
-                        break;
-                    }
-                }
-                if( !updated ){
-                    $scope.model.selectedEvent[$scope.selectedOrgUnit.id].dataValues.push( dataValue );
-                }
-                
-                //update event
-                EventService.update( $scope.model.selectedEvent[$scope.selectedOrgUnit.id] ).then(function(response){
-                });
-            }
-            else{
-                var event = {
-                    program: $scope.model.selectedProgram.id,
-                    programStage: $scope.model.selectedProgram.programStages[0].id,
-                    status: 'ACTIVE',
-                    orgUnit: $scope.selectedOrgUnit.id,
-                    eventDate: $scope.model.selectedPeriod.endDate,
-                    dataValues: [dataValue],
-                    attributeCategoryOptions: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)
-                };
-                
-                events.events.push( event );
-            }
-        }*/
+        }        
         
         if( events.events.length > 0 ){
             //add event
@@ -669,6 +653,66 @@ sunPMT.controller('dataEntryController',
     $scope.overrideRole = function(){        
         angular.forEach($scope.model.selectedProgram.programStages[0].programStageDataElements, function(prStDe){
             $scope.saveRole( prStDe.dataElement.id );
+        });        
+    };
+    
+    $scope.saveCompletness = function(){
+        var modalOptions = {
+            closeButtonText: 'no',
+            actionButtonText: 'yes',
+            headerText: 'save_completeness',
+            bodyText: 'are_you_sure_to_save_completeness'
+        };
+
+        ModalService.showModal({}, modalOptions).then(function(result){
+            
+            CompletenessService.save($scope.model.selectedDataSet.id, 
+                $scope.model.selectedPeriod.id, 
+                $scope.selectedOrgUnit.id,
+                $scope.model.selectedAttributeCategoryCombo.id,
+                ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
+                $scope.model.allowMultiOrgUnitEntry).then(function(response){
+                    
+                var dialogOptions = {
+                    headerText: 'success',
+                    bodyText: 'marked_complete'
+                };
+                DialogService.showDialog({}, dialogOptions);
+                $scope.model.dataSetCompleted = true;
+                
+            }, function(response){
+                ActionMappingUtils.errorNotifier( response );
+            });
+        });        
+    };
+    
+    $scope.deleteCompletness = function(){
+        var modalOptions = {
+            closeButtonText: 'no',
+            actionButtonText: 'yes',
+            headerText: 'delete_completeness',
+            bodyText: 'are_you_sure_to_delete_completeness'
+        };
+
+        ModalService.showModal({}, modalOptions).then(function(result){
+            
+            CompletenessService.delete($scope.model.selectedDataSet.id, 
+                $scope.model.selectedPeriod.id, 
+                $scope.selectedOrgUnit.id,
+                $scope.model.selectedAttributeCategoryCombo.id,
+                ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
+                $scope.model.allowMultiOrgUnitEntry).then(function(response){
+                
+                var dialogOptions = {
+                    headerText: 'success',
+                    bodyText: 'marked_not_complete'
+                };
+                DialogService.showDialog({}, dialogOptions);
+                $scope.model.dataSetCompleted = false;
+                
+            }, function(response){
+                ActionMappingUtils.errorNotifier( response );
+            });
         });        
     };
 });

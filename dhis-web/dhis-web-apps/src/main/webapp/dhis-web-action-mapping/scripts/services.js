@@ -334,7 +334,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.factory('DataValueService', function($http, ActionMappingUtils) {   
+.service('DataValueService', function($http, ActionMappingUtils) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -370,7 +370,37 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };    
 })
 
-.factory('DataValueAuditService', function($http, ActionMappingUtils) {   
+.service('CompletenessService', function($http, ActionMappingUtils) {   
+    
+    return {        
+        get: function( ds, ou, startDate, endDate, children ){
+            var promise = $http.get('../api/completeDataSetRegistrations?dataSet='+ds+'&orgUnit='+ou+'&startDate='+startDate+'&endDate='+endDate+'&children='+children).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        save: function( ds, pe, ou, cc, cp, multiOu){
+            var promise = $http.post('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        },
+        delete: function( ds, pe, ou, cc, cp, multiOu){
+            var promise = $http.delete('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
+        }
+    };
+})
+
+.service('DataValueAuditService', function($http, ActionMappingUtils) {   
     
     return {        
         getDataValueAudit: function( dv ){
@@ -384,7 +414,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.factory('EventValueAuditService', function($http, ActionMappingUtils) {   
+.service('EventValueAuditService', function($http, ActionMappingUtils) {   
     
     return {        
         getEventValueAudit: function( event ){
@@ -398,7 +428,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.factory('StakeholderService', function($http, ActionMappingUtils) {   
+.service('StakeholderService', function($http, ActionMappingUtils) {   
     
     return {        
         addCategoryOption: function( categoryOption ){
