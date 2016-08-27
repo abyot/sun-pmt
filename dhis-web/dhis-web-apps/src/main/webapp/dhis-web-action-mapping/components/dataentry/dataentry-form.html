@@ -58,7 +58,7 @@
                 <div ng-repeat="dataElement in model.selectedDataSet.dataElements" ng-if="dataElement.code !== 'Catalyst' && dataElement.code !== 'Funder' && dataElement.code !== 'Responsible Ministry'">
                     <table class="table table-bordered table-condensed vertical-spacing">
                         <tr>
-                            <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 1}}">
+                            <th class="active pull-center" colspan="{{model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos.length + 2}}">
                                 {{dataElement.displayName}}
                             </th>
                         </tr>
@@ -69,16 +69,13 @@
                             <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
                                 {{oco.displayName !== 'default' ? oco.displayName : 'value' | translate }}
                             </th>
+                            <th class="active pull-center">
+                                {{'area_specific_stakeholders' | translate}}
+                            </th>
                         </tr>
                         <tr ng-repeat="ou in selectedOrgUnit.c" ng-if="model.selectedDataSet.organisationUnits[ou]">
-                            <td>
-                                <button type="button"
-                                        title="{{'edit_stakeholder_roles'| translate}}"
-                                        class="btn btn-primary horizontal-spacing"
-                                        ng-click="showEditStakeholderRoles(ou, model.selectedDataSet.organisationUnits[ou])">
-                                    <i class="fa fa-users"></i>        
-                                </button>
-                                <button type="button"
+                            <td>                                
+                                <!--<button type="button"
                                         title="{{'save_completeness'| translate}}"
                                         class="btn btn-success horizontal-spacing"
                                         ng-click="saveCompletness(ou, false)" 
@@ -91,7 +88,7 @@
                                         ng-click="deleteCompletness(ou, false)" 
                                         ng-if="model.dataSetCompletness[ou]">
                                     <i class="fa fa-times"></i>        
-                                </button>
+                                </button>-->
                                 {{model.selectedDataSet.organisationUnits[ou]}}                                
                             </td>
                             <td ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
@@ -101,6 +98,11 @@
                                        ng-model="model.dataValues[ou][dataElement.id][oco.id].value"
                                        ng-dblclick="getAuditInfo(dataElement, ou, oco, model.dataValues[ou][dataElement.id][oco.id].value, model.dataValues[ou][dataElement.id][oco.id].comment)"
                                        d2-blur="saveDataValue(ou, dataElement.id, oco.id)">
+                            </td>
+                            <td class="pull-center">
+                                <a ng-click="showEditStakeholderRoles(ou, model.selectedDataSet.organisationUnits[ou])" title="{{'edit_stakeholder_roles'| translate}}">
+                                    <span class="mouse-pointer anchor-color"><i class="fa fa-users fa-2x"></i></span>
+                                </a>
                             </td>
                         </tr>
                     </table>

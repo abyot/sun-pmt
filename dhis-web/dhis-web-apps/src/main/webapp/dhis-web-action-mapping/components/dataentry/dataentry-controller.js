@@ -344,12 +344,12 @@ sunPMT.controller('dataEntryController',
                         response.completeDataSetRegistrations.length > 0){
                     $scope.model.dataSetCompleted = true;
                     
-                    $scope.model.dataSetCompletness = {};
+                    /*$scope.model.dataSetCompletness = {};
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
                         if( cdr.attributeOptionCombo.id === $scope.model.selectedAttributeOptionCombo ){
                             $scope.model.dataSetCompletness[cdr.organisationUnit.id] = true;
                         }                        
-                    });
+                    });*/
                 }
             });
         }
@@ -663,7 +663,7 @@ sunPMT.controller('dataEntryController',
         });        
     };
     
-    function processCompletness( orgUnit, multiOrgUnit, isSave ){
+    /*function processCompletness( orgUnit, multiOrgUnit, isSave ){
         if( multiOrgUnit ){
             angular.forEach($scope.selectedOrgUnit.c, function(ou){                
                 if( isSave ){
@@ -685,7 +685,7 @@ sunPMT.controller('dataEntryController',
                 delete $scope.model.dataSetCompletness[orgUnit];
             }
         }
-    };
+    };*/
     
     $scope.saveCompletness = function(orgUnit, multiOrgUnit){
         var modalOptions = {
@@ -709,8 +709,9 @@ sunPMT.controller('dataEntryController',
                     bodyText: 'marked_complete'
                 };
                 DialogService.showDialog({}, dialogOptions);
-                processCompletness(orgUnit, multiOrgUnit, true);
-                $scope.model.dataSetCompleted = angular.equals({}, $scope.model.dataSetCompletness);
+                //processCompletness(orgUnit, multiOrgUnit, true);                
+                //$scope.model.dataSetCompleted = angular.equals({}, $scope.model.dataSetCompletness);
+                $scope.model.dataSetCompleted = true;
                 
             }, function(response){
                 ActionMappingUtils.errorNotifier( response );
@@ -740,8 +741,9 @@ sunPMT.controller('dataEntryController',
                     bodyText: 'marked_not_complete'
                 };
                 DialogService.showDialog({}, dialogOptions);
-                processCompletness(orgUnit, multiOrgUnit, false);
-                $scope.model.dataSetCompleted = !angular.equals({}, $scope.model.dataSetCompletness);
+                //processCompletness(orgUnit, multiOrgUnit, false);
+                //$scope.model.dataSetCompleted = !angular.equals({}, $scope.model.dataSetCompletness);
+                $scope.model.dataSetCompleted = false;
                 
             }, function(response){
                 ActionMappingUtils.errorNotifier( response );

@@ -132,7 +132,7 @@ div.paging a.active
 }
 
 .anchor-color {
-    color: #276696;
+    color: #276696 !important;
 }
 
 .inline-div {
@@ -606,16 +606,10 @@ div#orgUnitTree {
     cursor: pointer;
 }
 
-#multiSelectAvailable, #multiSelectSelected, .sub-program-div {
+#multiSelectAvailable, #multiSelectSelected {
     width: 100%;
     height: 250px;
-}
-
-.bordered-sub-program-div {
-    border-bottom: 1px solid #c2c2c2;
-    border-left: 1px solid #c2c2c2;
-    border-right: 1px solid #c2c2c2;
-    padding: 12px;
+    overflow: auto;
 }
 
 .top-bar {

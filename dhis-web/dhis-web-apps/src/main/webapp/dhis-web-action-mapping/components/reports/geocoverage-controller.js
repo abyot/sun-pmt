@@ -63,6 +63,7 @@ sunPMT.controller('GeoCoverageController',
                 $scope.model.childrenIds = response.childrenIds;
                 $scope.model.children = response.children;
                 $scope.model.childrenByIds = response.childrenByIds;
+                $scope.model.allChildren = response.allChildren;
             });
             
             $scope.model.programs = [];
@@ -212,7 +213,7 @@ sunPMT.controller('GeoCoverageController',
             
             dataValueSetUrl += '&children=true';
         }
-        
+                
         $scope.model.selectedPrograms = [];
         $scope.model.dataElementCodesById = [];
         $scope.model.mappedRoles = {};
@@ -333,7 +334,17 @@ sunPMT.controller('GeoCoverageController',
             }            
         });
         
-        return value === 0 ? "" : value + " (" + ActionMappingUtils.getPercent( value, $scope.model.childrenIds.length) + ")";
+        var totalChildren = 0;
+        if($scope.model.selectedOuMode.level === $scope.selectedOrgUnit.l ){
+            totalChildren = $scope.model.childrenIds.length;
+        }
+        else{
+            totalChildren = $filter('filter')($scope.model.allChildren, {parent: {id: ou.id}}).length;
+        }        
+                
+        totalChildren = totalChildren === 0 ? 1 : totalChildren;
+        
+        return value === 0 ? "0 (0%)" : value + " (" + ActionMappingUtils.getPercent( value, totalChildren) + ")";
     };
     
     $scope.exportData = function () {

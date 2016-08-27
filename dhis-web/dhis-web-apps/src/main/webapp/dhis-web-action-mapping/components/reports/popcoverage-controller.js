@@ -70,6 +70,7 @@ sunPMT.controller('PopCoverageController',
                 $scope.model.childrenIds = response.childrenIds;
                 $scope.model.children = response.children;
                 $scope.model.childrenByIds = response.childrenByIds;
+                $scope.model.allChildren = response.allChildren;
             });
             
             $scope.model.programs = [];

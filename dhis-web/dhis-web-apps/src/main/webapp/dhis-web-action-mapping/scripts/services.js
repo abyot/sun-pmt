@@ -627,11 +627,14 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 var childrenIds = [];
                 var children = json.organisationUnits;
                 var childrenByIds = [];
-                
+                var allChildren = [];
                 angular.forEach(children, function(c){
                     c.path = c.path.substring(1, c.path.length);
                     c.path = c.path.split("/");
                     childrenByIds[c.id] = c;
+                    if( c.level <= 3 ){
+                        allChildren.push( c );
+                    }
                 });                    
                 
                 if( orgUnit.l === 1 ){
@@ -646,7 +649,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     childrenIds = [orgUnit.id];
                 }
 
-                def.resolve( {childrenIds: childrenIds, children: $filter('filter')(children, {parent: {id: orgUnit.id}}), descendants: $filter('filter')(children, {level: 3}), childrenByIds: childrenByIds } );
+                def.resolve( {childrenIds: childrenIds, allChildren: allChildren, children: $filter('filter')(children, {parent: {id: orgUnit.id}}), descendants: $filter('filter')(children, {level: 3}), childrenByIds: childrenByIds } );
             });
             
             return def.promise;
