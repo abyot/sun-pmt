@@ -507,9 +507,12 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getPercent: function(op1, op2){        
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
             op2 = dhis2.validation.isNumber(op2) ? parseInt(op2) : 0;        
-            if( op2 === 0 || op1 === 0){
-                return 0;
-            }        
+            if( op1 === 0){
+                return 0 + '%';
+            }
+            if( op2 === 0 ){
+                return $translate.instant('missing_target');
+            }
             return parseFloat((op1 / op2)*100).toFixed(2) + '%';
         },
         getRoleHeaders: function(){
