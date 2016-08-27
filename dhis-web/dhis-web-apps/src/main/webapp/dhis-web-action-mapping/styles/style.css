@@ -763,6 +763,18 @@ div#orgUnitTree {
     box-shadow: 0 6px 12px rgba(0,0,0,.175);
 }
 
+.info-style {
+    text-align: left;
+    max-width: 400px; 
+    font-weight: bold;
+    font-size: 10pt;
+    color: #fff;
+    background-color: #3276b1;
+    padding: 5px !important;
+    margin: -15px !important;
+    border-radius: 5px;
+}
+
 .tooltip.custom-tooltip-class .tooltip-arrow {
     display: none;
 }
@@ -812,6 +824,14 @@ div#orgUnitTree {
 
 .white-color {
     color: #fff;
+}
+
+.report-role-info {
+    padding: 10px;
+}
+.report-heading {
+    font-size: 14px;
+    padding-bottom: 5px;
 }
 
 .report-type-container{

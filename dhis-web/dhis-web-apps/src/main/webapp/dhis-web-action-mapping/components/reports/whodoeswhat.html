@@ -44,6 +44,9 @@
             <h2>
                 {{'who_does_what'| translate}}
             </h2>
+            <div class="report-heading">
+                {{'who_does_what_heading' | translate}}
+            </div>
             <!-- report heading ends -->
 
             <!-- report params begin -->
@@ -92,6 +95,15 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     {{'reporting_level'| translate}}
+                                    <i class="fa fa-question-circle superscript" 
+                                       popover-template="'reportingLevelInfo.html'"
+                                       popover-trigger="mouseenter" tooltip-placement="bottom" tooltip-class="custom-tooltip-class"></i>
+                                        <script type="text/ng-template" id="reportingLevelInfo.html">
+                                            <div class="info-style">
+                                                <p>{{'reporting_level_info_1' | translate}}</p><br>
+                                                <p>{{'reporting_level_info_2' | translate}}</p>
+                                            </div>
+                                        </script>
                                     <span class="required">*</span>
                                 </label>
                                 <div class="col-sm-9">

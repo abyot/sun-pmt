@@ -44,6 +44,9 @@
             <h2>
                 {{'geo_coverage_per_sh'| translate}}
             </h2>
+            <div class="report-heading">
+                {{'geo_coverage_per_sh_heading' | translate}}
+            </div>
             <!-- report heading ends -->
 
             <!-- report params begin -->
@@ -92,6 +95,15 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     {{'reporting_level'| translate}}
+                                    <i class="fa fa-question-circle superscript" 
+                                       popover-template="'reportingLevelInfo.html'"
+                                       popover-trigger="mouseenter" tooltip-placement="bottom" tooltip-class="custom-tooltip-class"></i>
+                                        <script type="text/ng-template" id="reportingLevelInfo.html">
+                                            <div class="info-style">
+                                                <p>{{'reporting_level_info_1' | translate}}</p><br>
+                                                <p>{{'reporting_level_info_2' | translate}}</p>
+                                            </div>
+                                        </script>
                                     <span class="required">*</span>
                                 </label>
                                 <div class="col-sm-9">
@@ -180,6 +192,12 @@
                             onclick="javascript:window.print()">
                         <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                     </button>
+                </div>
+                <div class="clear col-sm-12 report-role-info" ng-if="model.selectedRole && model.selectedRole.domain === 'EV'">
+                    <span class="bold">{{'note'|translate}}:</span>
+                    <span>
+                        {{'report_role_info' | translate}}
+                    </span>
                 </div>
                 <div class="clear col-sm-12" id="exportTable">
                     <div ng-repeat="ou in orgUnits">
