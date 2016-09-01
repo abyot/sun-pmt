@@ -332,7 +332,7 @@ sunPMT.controller('dataEntryController',
                 }                
             });
             
-            $scope.model.dataSetCompleted = false; 
+            $scope.model.dataSetCompletness = {};
             CompletenessService.get( $scope.model.selectedDataSet.id, 
                                     $scope.selectedOrgUnit.id,
                                     $scope.model.selectedPeriod.startDate,
@@ -342,14 +342,11 @@ sunPMT.controller('dataEntryController',
                         response.completeDataSetRegistrations && 
                         response.completeDataSetRegistrations.length &&
                         response.completeDataSetRegistrations.length > 0){
-                    $scope.model.dataSetCompleted = true;
                     
-                    /*$scope.model.dataSetCompletness = {};
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        if( cdr.attributeOptionCombo.id === $scope.model.selectedAttributeOptionCombo ){
-                            $scope.model.dataSetCompletness[cdr.organisationUnit.id] = true;
-                        }                        
-                    });*/
+                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo.id] = true;                        
+                    });                    
+                    console.log('the completeness:   ', $scope.model.dataSetCompletness);
                 }
             });
         }
@@ -691,7 +688,7 @@ sunPMT.controller('dataEntryController',
         var modalOptions = {
             closeButtonText: 'no',
             actionButtonText: 'yes',
-            headerText: 'save_completeness',
+            headerText: 'mark_complete',
             bodyText: 'are_you_sure_to_save_completeness'
         };
 
@@ -711,7 +708,7 @@ sunPMT.controller('dataEntryController',
                 DialogService.showDialog({}, dialogOptions);
                 //processCompletness(orgUnit, multiOrgUnit, true);                
                 //$scope.model.dataSetCompleted = angular.equals({}, $scope.model.dataSetCompletness);
-                $scope.model.dataSetCompleted = true;
+                $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;                
                 
             }, function(response){
                 ActionMappingUtils.errorNotifier( response );
@@ -723,7 +720,7 @@ sunPMT.controller('dataEntryController',
         var modalOptions = {
             closeButtonText: 'no',
             actionButtonText: 'yes',
-            headerText: 'delete_completeness',
+            headerText: 'mark_incomplete',
             bodyText: 'are_you_sure_to_delete_completeness'
         };
 
@@ -738,12 +735,12 @@ sunPMT.controller('dataEntryController',
                 
                 var dialogOptions = {
                     headerText: 'success',
-                    bodyText: 'marked_not_complete'
+                    bodyText: 'marked_incomplete'
                 };
                 DialogService.showDialog({}, dialogOptions);
                 //processCompletness(orgUnit, multiOrgUnit, false);
                 //$scope.model.dataSetCompleted = !angular.equals({}, $scope.model.dataSetCompletness);
-                $scope.model.dataSetCompleted = false;
+                $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = false;
                 
             }, function(response){
                 ActionMappingUtils.errorNotifier( response );

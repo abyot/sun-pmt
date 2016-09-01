@@ -2,9 +2,8 @@
 
     <div class="add-default-right-padding">        
         <div class="col-sm-12 selectionArea" ng-if="model.selectedProgram">
-            <span class="bold">{{'role_info_1'| translate}}</span>
-            <i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i>
-            <span>{{'role_info_2'| translate}}</span>
+            <span class="bold small-vertical-spacing">{{'role_info_1'| translate}}</span><i class="fa fa-question-circle superscript" tooltip="{{'stakeholder_description'| translate}}" tooltip-class="custom-tooltip-class"></i><br>
+            <span class="red small-vertical-spacing">{{'role_info_2'| translate}}</span>
             <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
                 <thead>
                     <tr>
@@ -114,15 +113,15 @@
             <div class="col-sm-6 selectionArea">
                 <button type="button" 
                         class="btn btn-primary" 
-                        ng-disabled="model.dataSetCompleted" 
+                        ng-disabled="model.dataSetCompletness[model.selectedAttributeOptionCombo]" 
                         ng-click="saveCompletness(selectedOrgUnit.id, model.allowMultiOrgUnitEntry)">
-                    {{'save_completeness'| translate}}
+                    {{'mark_complete'| translate}}
                 </button>
                 <button type="button" 
                         class="btn btn-danger small-horizontal-spacing" 
-                        ng-disabled="!model.dataSetCompleted" 
+                        ng-disabled="!model.dataSetCompletness[model.selectedAttributeOptionCombo]" 
                         ng-click="deleteCompletness(selectedOrgUnit.id, model.allowMultiOrgUnitEntry)">
-                    {{'delete_completeness'| translate}}
+                    {{'mark_incomplete'| translate}}
                 </button>
                 <!--<button type="button" 
                         class="btn btn-success small-horizontal-spacing" 
