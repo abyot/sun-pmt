@@ -352,7 +352,7 @@ sunPMT.controller('PopCoverageController',
                         if( !numCheckedOus[col] ){
                             numCheckedOus[col] = [];
                         }
-                        if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
+                        //if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
 
                             var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
                             
@@ -363,14 +363,14 @@ sunPMT.controller('PopCoverageController',
                             }
 
                             numCheckedOus[col].push( val.orgUnit );
-                        }
+                        //}
                     }
                 }
                 else{
                     if( !numCheckedOus[col] ){
                         numCheckedOus[col] = [];
                     }
-                    if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
+                    //if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
                         
                         var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
                         if( curDen && curDen.length && curDen[0] && curDen[0].value ){
@@ -380,7 +380,7 @@ sunPMT.controller('PopCoverageController',
                         }
 
                         numCheckedOus[col].push( val.orgUnit );
-                    }
+                    //}
                 }
             }            
         });
