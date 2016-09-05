@@ -62,7 +62,16 @@
                                 </a>
                             </div>
                         </div>
-                        <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">                        
+                        <div ng-if="showReportFilters" class="panel panel-body selectionArea-no-radius remove-bottom-margin">
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">
+                                    {{'select_org_unit'| translate}}
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" ng-disabled="true" ng-model="selectedOrgUnit.displayName">
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     {{'mapping_year'| translate}}
@@ -119,6 +128,9 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label class="control-label col-sm-12">
+                                    {{'action_select_label'| translate}}<span class="required">*</span>
+                                </label>
                                 <div class="col-sm-12">
                                     <d2-multi-select 
                                         ng-model="model.selectedDataSets" 

@@ -81,8 +81,8 @@ sunPMT.controller('PopCoverageController',
                 angular.forEach(programs, function(program){
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
-                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.name;
+                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {name:  prStDe.dataElement.name, sortOrder: prStDe.sortOrder};
                             }                            
                         });
                     }                    
@@ -92,7 +92,7 @@ sunPMT.controller('PopCoverageController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k]} );
+                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder, domain: 'EV'} );
                     }
                 }
             });
