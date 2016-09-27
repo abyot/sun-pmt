@@ -719,43 +719,44 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         if( response && response.dataValues ){
                             angular.forEach(response.dataValues, function(dv){
                                 var oco = reportData.mappedOptionCombos[dv.attributeOptionCombo];
-                                oco.optionNames = oco.displayName.split(", ");
-                                for(var i=0; i<oco.categories.length; i++){                        
-                                    dv[oco.categories[i].id] = [oco.optionNames[i]];
-                                    if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                        reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
-                                        pushedHeaders.push( oco.categories[i].id );
-                                    }
-                                    if( !reportData.availableRoles[oco.categories[i].id] ){
-                                        reportData.availableRoles[oco.categories[i].id] = {};
-                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
-                                    }
-                                    if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
-                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                if( oco && oco.displayName ){
+                                    oco.optionNames = oco.displayName.split(", ");
+                                    for(var i=0; i<oco.categories.length; i++){                        
+                                        dv[oco.categories[i].id] = [oco.optionNames[i]];
+                                        if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
+                                            reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
+                                            pushedHeaders.push( oco.categories[i].id );
+                                        }
+                                        if( !reportData.availableRoles[oco.categories[i].id] ){
+                                            reportData.availableRoles[oco.categories[i].id] = {};
+                                            reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                        }
+                                        if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
+                                            reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
+                                        }
+
+                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
                                     }
 
-                                    reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
-                                }
-
-                                if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
-                                    reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
-                                    reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
-                                    var r = reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
-                                    if( r && angular.isObject( r ) ){
-                                        angular.extend(dv, r);
+                                    if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
+                                        reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
+                                        reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
+                                        var r = reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
+                                        if( r && angular.isObject( r ) ){
+                                            angular.extend(dv, r);
+                                        }
+                                    }
+                                    else{ // target values (denominators)
+                                        if( !reportData.mappedTargetValues[dv.dataElement] ){
+                                            reportData.mappedTargetValues[dv.dataElement] = {};
+                                            reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                        }
+                                        if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
+                                            reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
+                                        }
+                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
                                     }
                                 }
-                                else{ // target values (denominators)
-                                    if( !reportData.mappedTargetValues[dv.dataElement] ){
-                                        reportData.mappedTargetValues[dv.dataElement] = {};
-                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                    }
-                                    if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
-                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                    }
-                                    reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
-                                }
-
                             });                    
                             reportData.mappedValues = response;
                             reportData.noDataExists = false;

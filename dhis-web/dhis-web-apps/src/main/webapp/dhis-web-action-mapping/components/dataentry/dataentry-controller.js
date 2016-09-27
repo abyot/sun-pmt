@@ -10,6 +10,7 @@ sunPMT.controller('dataEntryController',
                 $filter,
                 $modal,
                 $window,
+                $translate,
                 orderByFilter,
                 SessionStorageService,
                 storage,
@@ -83,23 +84,11 @@ sunPMT.controller('dataEntryController',
                     if( optionSet.StakeholderRole === 'Funder' ){
                         $scope.stakeholderList = optionSet;
                         var o = angular.copy( optionSet );
-                        var options = [];
-                        angular.forEach(o.options, function(_o){
-                           options.push( _o.displayName ); 
-                        });
-                        options.push('[Add New Stakeholder]');
-                        
-                        o.options = options;
+                        o.options.push(addNewOption);                        
                         $scope.model.optionSets['Funder'] = o;
                     }
                     else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
-                        var o = angular.copy( optionSet );
-                        var options = [];
-                        angular.forEach(o.options, function(_o){
-                           options.push( _o.displayName ); 
-                        });
-                        o.options = options;
-                        $scope.model.optionSets['Responsible Ministry'] = o;
+                        $scope.model.optionSets['Responsible Ministry'] = optionSet;
                     }
                     else{
                         $scope.model.optionSets[optionSet.id] = optionSet;
@@ -122,8 +111,10 @@ sunPMT.controller('dataEntryController',
                 });
 
                 angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(cat){
+                    cat.placeHolder = $translate.instant('select_or_search');
                     if( cat.displayName === 'Field Implementer' ){                        
                         $scope.model.stakeholderCategory = cat;
+                        cat.placeHolder = $translate.instant('select_or_search_or_add');
                         if( cat.displayName === 'Field Implementer' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
                             cat.categoryOptions.push(addNewOption);
                         }
@@ -345,8 +336,7 @@ sunPMT.controller('dataEntryController',
                     
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
                         $scope.model.dataSetCompletness[cdr.attributeOptionCombo.id] = true;                        
-                    });                    
-                    console.log('the completeness:   ', $scope.model.dataSetCompletness);
+                    });
                 }
             });
         }

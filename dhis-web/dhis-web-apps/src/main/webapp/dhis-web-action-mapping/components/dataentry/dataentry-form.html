@@ -7,7 +7,7 @@
             <table class="table table-bordered table-condensed small-vertical-spacing table-bordered-selection-area">
                 <thead>
                     <tr>
-                        <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements| orderBy: 'sortOrder'">
+                        <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements | orderBy: 'sortOrder'">
                             <i class="fa fa-question-circle superscript" tooltip="{{prStDe.dataElement.description}}" tooltip-class="custom-tooltip-class"></i>
                             {{prStDe.dataElement.displayName}}
                         </td>
@@ -21,9 +21,9 @@
                                    on-select="saveRole(prStDe.dataElement.id)"
                                    on-remove="saveRole(prStDe.dataElement.id)"
                                    theme="bootstrap">
-                            <ui-select-match placeholder="{{'select_or_search'| translate}}">{{$item}}</ui-select-match>
-                            <ui-select-choices repeat="item in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
-                                <div ng-bind-html="item | highlight: $select.search"></div>
+                            <ui-select-match placeholder="{{'select_or_search_or_add'| translate}}">{{$item.displayName}}</ui-select-match>
+                            <ui-select-choices repeat="option.displayName as option in model.optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
+                                <div ng-bind-html="option.displayName | highlight: $select.search"></div>
                             </ui-select-choices>
                         </ui-select>                        
                     </td>

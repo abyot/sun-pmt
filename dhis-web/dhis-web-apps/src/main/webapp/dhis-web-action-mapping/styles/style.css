@@ -849,6 +849,7 @@ div#orgUnitTree {
 
 .report-table {
     border-collapse: collapse !important;
+    overflow: auto;
 }
 
 .report-table>thead>tr>th, 
@@ -859,6 +860,7 @@ div#orgUnitTree {
 .report-table>tfoot>tr>td {
     border: 1px solid black !important;
     color: #000;
+    padding: 0 10px;
 }
 
 .empty-data-row {

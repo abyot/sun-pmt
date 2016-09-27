@@ -211,10 +211,10 @@
                         {{'report_role_info' | translate}}
                     </span>
                 </div>
-                <div class="clear col-sm-12" id="exportTable">
+                <div class="clear" id="exportTable">
                     <div ng-repeat="ou in orgUnits">
                         <div class="bold small-vertical-spacing">{{ou.displayName}}</div>
-                        <table border="1" class="table table-bordered table-condensed report-table">
+                        <table border="1" class="report-table">
                             <thead>
                                 <tr>
                                     <th>
@@ -223,7 +223,7 @@
                                     <th>
                                         {{'target_group'| translate}}
                                     </th>
-                                    <th ng-repeat="col in getRequiredCols()">
+                                    <th ng-repeat="col in requiredCols">
                                         {{col}}
                                     </th>
                                 </tr>
@@ -236,7 +236,7 @@
                                     <td>
                                         <span ng-class="valueExists(ou, de.id, oc.id)">{{oc.displayName}}</span>
                                     </td>
-                                    <td ng-repeat="col in getRequiredCols()">
+                                    <td ng-repeat="col in requiredCols" class="pull-center">
                                         <span ng-class="valueExists(ou, de.id, oc.id)">{{getValuePerRole(ou, col, de.id, oc.id)}}</span>
                                     </td>
                                 </tr>

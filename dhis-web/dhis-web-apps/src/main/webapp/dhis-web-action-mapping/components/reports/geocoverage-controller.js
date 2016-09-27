@@ -253,11 +253,12 @@ sunPMT.controller('GeoCoverageController',
             $scope.reportReady = response.reportReady;
             $scope.showReportFilters = response.showReportFilters;
             $scope.noDataExists = response.noDataExists;
-            $scope.reportStarted = response.reportStarted;
+            $scope.reportStarted = response.reportStarted;            
+            $scope.requiredCols = ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);;
         });        
     };
     
-    $scope.getRequiredCols = function(){
+    $scope.getRequiredCols = function(){        
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
@@ -268,13 +269,13 @@ sunPMT.controller('GeoCoverageController',
         }
         
         if( oc ){
-            filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {categoryOptionCombo: oc});
+            filteredValues = $filter('filter')(filteredValues, {categoryOptionCombo: oc});
             if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
                 return "empty-data-row";
             }
         }
         
-        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
+        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){            
             var values = [];
             angular.forEach(filteredValues, function(val){            
                 if( val.orgUnit === $scope.selectedOrgUnit.id || 
@@ -344,7 +345,7 @@ sunPMT.controller('GeoCoverageController',
                 
         totalChildren = totalChildren === 0 ? 1 : totalChildren;
         
-        return value === 0 ? "0 (0%)" : value + " (" + ActionMappingUtils.getPercent( value, totalChildren) + ")";
+        return value === 0 ? "" : value + " (" + ActionMappingUtils.getPercent( value, totalChildren) + ")";
     };
     
     $scope.exportData = function () {
