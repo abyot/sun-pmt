@@ -431,7 +431,16 @@ sunPMT.controller('dataEntryController',
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
                 angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
                 
-                    if( $scope.model.selectedEvent[ou] && $scope.model.selectedEvent[ou][oco.id] && $scope.model.selectedEvent[ou][oco.id].event ){            
+                    if( $scope.model.selectedEvent[ou] && $scope.model.selectedEvent[ou][oco.id] && $scope.model.selectedEvent[ou][oco.id].event ){                        
+                        
+                        var _roles = dataValue.value.split(",");
+                        if( _roles && _roles.length > 0 ){
+                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = _roles;
+                        }
+                        else{
+                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = [];
+                        }
+                        
                         var updated = false;
                         for( var i=0; i<$scope.model.selectedEvent[ou][oco.id].dataValues.length; i++ ){
                             if( $scope.model.selectedEvent[ou][oco.id].dataValues[i].dataElement === dataElementId ){
@@ -502,6 +511,15 @@ sunPMT.controller('dataEntryController',
                             if( !$scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] ){
                                 $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {};
                             }
+                            
+                            var _roles = dataValue.value.split(",");
+                            if( _roles && _roles.length > 0 ){
+                                $scope.model.stakeholderRoles[ev.orgUnit][ev.categoryOptionCombo][dataElementId] = _roles;
+                            }
+                            else{
+                                $scope.model.stakeholderRoles[ev.orgUnit][ev.categoryOptionCombo][dataElementId] = [];
+                            }
+                            
                             $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {event: json.response.importSummaries[i].reference, dataValues: ev.dataValues};
                         }
                     }
@@ -603,8 +621,7 @@ sunPMT.controller('dataEntryController',
             }
         });
 
-        modalInstance.result.then(function ( result ) {            
-            console.log('rolesAreDifferent:  ', result);
+        modalInstance.result.then(function ( result ) {
             if( result ){
                 $scope.model.selectedEvent[ouId] = result.currentEvent;
                 $scope.model.stakeholderRoles[ouId] = result.stakeholderRoles;

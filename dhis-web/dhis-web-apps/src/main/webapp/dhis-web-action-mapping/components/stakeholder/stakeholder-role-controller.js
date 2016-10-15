@@ -125,7 +125,6 @@ sunPMT.controller('StakeholderRoleController',
                 break;
             }
         }        
-        
         $modalInstance.close( {currentEvent: $scope.currentEvent, stakeholderRoles: $scope.stakeholderRoles, rolesAreDifferent: rolesAreDifferent} );
     };
 });
