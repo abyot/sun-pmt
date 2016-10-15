@@ -139,7 +139,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
-            DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){ 
+            DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){
                 $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'}); //dataSets;
                 $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
@@ -215,6 +215,8 @@ sunPMT.controller('dataEntryController',
         $scope.model.basicAuditInfo.exists = false;
         $scope.model.rolesAreDifferent = false;
         $scope.saveStatus = {};
+        $scope.commonOrgUnit = null;
+        $scope.commonOptionCombo = null;
     };
     
     $scope.loadDataEntryForm = function(){
@@ -230,11 +232,19 @@ sunPMT.controller('dataEntryController',
 
             if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === 'Multiple Entry'){
                 angular.forEach($scope.selectedOrgUnit.c, function(c){
+                    
+                    if( !$scope.commonOrgUnit ){
+                        $scope.commonOrgUnit = c;
+                    }                        
+                    
                     dataValueSetUrl += '&orgUnit=' + c;                    
                     if( $scope.model.selectedProgram && $scope.model.selectedProgram.programStages ){                        
                         var dataElement = $scope.model.selectedDataSet.dataElements[0];
                         $scope.model.stakeholderRoles[c] = {};
-                        angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
+                        angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){                      
+                            if( !$scope.commonOptionCombo ){
+                                $scope.commonOptionCombo = oco.id;
+                            }                            
                             $scope.model.stakeholderRoles[c][oco.id] = {};
                             angular.forEach($scope.model.selectedProgram.programStages[0].programStageDataElements, function(prStDe){
                                 $scope.model.stakeholderRoles[c][oco.id][prStDe.dataElement.id] = [];
@@ -260,18 +270,11 @@ sunPMT.controller('dataEntryController',
             $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
 
             //fetch events containing stakholder-role mapping
-            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};            
-            $scope.commonOrgUnit = null;
-            $scope.commonOptionCombo = null;
+            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
+            
             EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){                
                 angular.forEach(events, function(ev){
-                    if( ev.event ){
-                        if( !$scope.commonOrgUnit ){
-                            $scope.commonOrgUnit = ev.orgUnit;
-                        }                        
-                        if( !$scope.commonOptionCombo ){
-                            $scope.commonOptionCombo = ev.categoryOptionCombo;
-                        }
+                    if( ev.event ){                        
                         if( !$scope.model.selectedEvent[ev.orgUnit] ){
                             $scope.model.selectedEvent[ev.orgUnit] = {};
                         }                        
@@ -552,7 +555,7 @@ sunPMT.controller('dataEntryController',
     };
     
     $scope.showEditStakeholderRoles = function( ouId, ouName ){
-        
+                
         var modalInstance = $modal.open({
             templateUrl: 'components/stakeholder/stakeholder-role.html',
             controller: 'StakeholderRoleController',
@@ -573,28 +576,40 @@ sunPMT.controller('dataEntryController',
                 currentEvent: function(){
                     return $scope.model.selectedEvent[ouId] ? $scope.model.selectedEvent[ouId] : {};
                 },
-                optionCombos: function(){
-                    var dataElement = $scope.model.selectedDataSet.dataElements[0];
-                    return $scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos;
+                optionCombos: function(){                    
+                    return $scope.model.selectedCategoryCombos[$scope.model.selectedDataSet.dataElements[0].categoryCombo.id].categoryOptionCombos;
                 },
                 attributeCategoryOptions: function(){
                     return ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
                 },
-                stakeholderRoles: function(){
-                    return $scope.model.stakeholderRoles[ouId];
+                allStakeholderRoles: function(){
+                    return $scope.model.stakeholderRoles;
                 },
                 optionSets: function(){
                     return $scope.model.optionSets;
                 },
                 stakeholderCategory: function(){
                     return $scope.model.stakeholderCategory;
+                },
+                rolesAreDifferent: function(){
+                    return $scope.model.rolesAreDifferent;
+                },
+                selectedOrgUnit: function(){
+                    return $scope.selectedOrgUnit;
+                },
+                commonOptionCombo:  function(){
+                    return $scope.commonOptionCombo;
                 }
             }
         });
 
-        modalInstance.result.then(function (currentEvent, stakeholderRoles) {
-            $scope.model.selectedEvent[ouId] = currentEvent;
-            $scope.model.stakeholderRoles[ouId] = stakeholderRoles;
+        modalInstance.result.then(function ( result ) {            
+            console.log('rolesAreDifferent:  ', result);
+            if( result ){
+                $scope.model.selectedEvent[ouId] = result.currentEvent;
+                $scope.model.stakeholderRoles[ouId] = result.stakeholderRoles;
+                $scope.model.rolesAreDifferent = result.rolesAreDifferent;
+            }            
         });        
     };
     

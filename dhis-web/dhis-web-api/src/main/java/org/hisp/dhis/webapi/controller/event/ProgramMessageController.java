@@ -30,15 +30,17 @@ package org.hisp.dhis.webapi.controller.event;
 
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.program.message.ProgramMessage;
+import org.hisp.dhis.program.message.ProgramMessageBatch;
 import org.hisp.dhis.program.message.ProgramMessageQueryParams;
 import org.hisp.dhis.program.message.ProgramMessageService;
 import org.hisp.dhis.program.message.ProgramMessageStatus;
 import org.hisp.dhis.render.RenderService;
+import org.hisp.dhis.sms.BatchResponseStatus;
 import org.hisp.dhis.webapi.controller.AbstractCrudController;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
-import org.hisp.dhis.webapi.service.WebMessageService;
 import org.hisp.dhis.webapi.utils.WebMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -69,9 +71,6 @@ public class ProgramMessageController
     private ProgramMessageService programMessageService;
 
     @Autowired
-    private WebMessageService webMessageService;
-
-    @Autowired
     private RenderService renderService;
 
     // -------------------------------------------------------------------------
@@ -86,8 +85,8 @@ public class ProgramMessageController
         @RequestParam( required = false ) ProgramMessageStatus messageStatus,
         @RequestParam( required = false ) Date afterDate, @RequestParam( required = false ) Date beforeDate,
         @RequestParam( required = false ) Integer page, @RequestParam( required = false ) Integer pageSize,
-        HttpServletRequest request, HttpServletResponse response)
-            throws IOException, WebMessageException
+        HttpServletRequest request, HttpServletResponse response )
+        throws IOException, WebMessageException
     {
         ProgramMessageQueryParams params = programMessageService.getFromUrl( ou, programInstance, programStageInstance,
             messageStatus, page, pageSize, afterDate, beforeDate );
@@ -112,19 +111,17 @@ public class ProgramMessageController
     public void saveMessages( HttpServletRequest request, HttpServletResponse response )
         throws IOException, WebMessageException
     {
-        ProgramMessage programMessage = renderService.fromJson( request.getInputStream(), ProgramMessage.class );
+        ProgramMessageBatch batch = renderService.fromJson( request.getInputStream(), ProgramMessageBatch.class );
 
-        programMessageService.validatePayload( programMessage );
-
-        String result = programMessageService.sendMessage( programMessage );
-
-        if ( "success".equals( result ) )
+        for ( ProgramMessage programMessage : batch.getProgramMessages() )
         {
-            webMessageService.send( WebMessageUtils.created( "SENT" ), response, request );
+            programMessageService.validatePayload( programMessage );
         }
-        else
-        {
-            webMessageService.send( WebMessageUtils.error( "FAILED" ), response, request );
-        }
+
+        BatchResponseStatus status = programMessageService.sendMessages( batch.getProgramMessages() );
+
+        response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        
+        renderService.toJson( response.getOutputStream(), status );
     }
 }

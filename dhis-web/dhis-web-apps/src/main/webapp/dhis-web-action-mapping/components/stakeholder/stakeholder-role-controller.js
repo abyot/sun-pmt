@@ -16,9 +16,12 @@ sunPMT.controller('StakeholderRoleController',
                 currentOrgUnitName,
                 attributeCategoryOptions,
                 optionCombos,
-                stakeholderRoles,
+                commonOptionCombo,
+                allStakeholderRoles,
                 optionSets,
                 stakeholderCategory,
+                rolesAreDifferent,
+                selectedOrgUnit,
                 EventService,
                 DialogService) {            
     
@@ -29,9 +32,18 @@ sunPMT.controller('StakeholderRoleController',
     $scope.optionCombos = optionCombos;
     $scope.currentOrgunitId = currentOrgUnitId;
     $scope.currentOrgUnitName = currentOrgUnitName;
-    $scope.stakeholderRoles = stakeholderRoles;
+    $scope.stakeholderRoles = allStakeholderRoles[currentOrgUnitId];
     $scope.optionSets = optionSets;
     $scope.stakeholderCategory = stakeholderCategory;
+    $scope.rolesAreDifferent = rolesAreDifferent;
+    
+    if( !rolesAreDifferent ){
+        for( var i=0; i<optionCombos.length; i++){
+            if(optionCombos[i].id !== commonOptionCombo){
+                $scope.stakeholderRoles[optionCombos[i].id] = $scope.stakeholderRoles[commonOptionCombo];
+            }
+        }
+    }
     
     $scope.saveRole = function( ocoId, dataElementId ){
         
@@ -101,6 +113,19 @@ sunPMT.controller('StakeholderRoleController',
     };
     
     $scope.close = function() {        
-        $modalInstance.close( $scope.currentEvent, $scope.stakeholderRoles );
+        var sampleRole = null;
+        var rolesAreDifferent = false;
+        for(var i=0; i<selectedOrgUnit.c.length; i++){
+            if( !sampleRole ){
+                sampleRole = allStakeholderRoles[selectedOrgUnit.c[i]];
+            }
+
+            if( !angular.equals(allStakeholderRoles[selectedOrgUnit.c[i]], sampleRole) ){
+                rolesAreDifferent = true;
+                break;
+            }
+        }        
+        
+        $modalInstance.close( {currentEvent: $scope.currentEvent, stakeholderRoles: $scope.stakeholderRoles, rolesAreDifferent: rolesAreDifferent} );
     };
 });

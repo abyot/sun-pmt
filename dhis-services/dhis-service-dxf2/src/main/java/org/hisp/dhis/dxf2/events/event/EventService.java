@@ -76,6 +76,10 @@ public interface EventService
 
     List<Event> getEventsJson( InputStream inputStream ) throws IOException;
 
+    int getAnonymousEventValuesCountLastUpdatedAfter( Date lastSuccessTime );
+
+    Events getAnonymousEventValuesLastUpdatedAfter( Date lastSuccessTime );
+
     // -------------------------------------------------------------------------
     // CREATE
     // -------------------------------------------------------------------------
@@ -117,4 +121,5 @@ public interface EventService
     ImportSummaries deleteEvents( List<String> uids );
 
     void validate( EventSearchParams params );
+
 }

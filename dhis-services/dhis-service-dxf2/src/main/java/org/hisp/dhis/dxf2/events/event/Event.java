@@ -325,8 +325,8 @@ public class Event
     public void setAttributeCategoryOptions( String attributeCategoryOptions )
     {
         this.attributeCategoryOptions = attributeCategoryOptions;
-    }    
-
+    }
+    
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getAttributeOptionCombo() {
@@ -347,7 +347,7 @@ public class Event
 		this.categoryOptionCombo = categoryOptionCombo;
 	}
 
-	@JsonProperty
+    @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getCompletedBy()
     {

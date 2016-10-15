@@ -72,10 +72,8 @@ import org.hisp.dhis.node.NodeUtils;
 import org.hisp.dhis.node.Preset;
 import org.hisp.dhis.node.types.RootNode;
 import org.hisp.dhis.program.Program;
-import org.hisp.dhis.program.ProgramService;
 import org.hisp.dhis.program.ProgramStageInstanceService;
 import org.hisp.dhis.program.ProgramStatus;
-import org.hisp.dhis.program.ProgramType;
 import org.hisp.dhis.query.Order;
 import org.hisp.dhis.render.RenderService;
 import org.hisp.dhis.scheduling.TaskCategory;
@@ -113,7 +111,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -172,12 +169,9 @@ public class EventController
 
     @Autowired
     private SchemaService schemaService;
-    
+
     @Autowired
     protected TrackedEntityInstanceService entityInstanceService;
-    
-    @Autowired
-    protected ProgramService programService;
     
     @Autowired
     protected DataElementCategoryService categoryService;
@@ -235,19 +229,7 @@ public class EventController
         }
 
         boolean allowNoAttrOptionCombo = trackedEntityInstance != null && entityInstanceService.getTrackedEntityInstance( trackedEntityInstance ) != null;
-        
-        if( !allowNoAttrOptionCombo && program != null )
-        {
-        	Program pr = programService.getProgram( program );
-        	
-        	if( pr == null )
-        	{
-        		throw new WebMessageException( WebMessageUtils.conflict( "Illegal program identifier: " + program ) );
-        	}
-        	
-        	allowNoAttrOptionCombo =  pr.getProgramType() == ProgramType.WITHOUT_REGISTRATION;        	
-        }
-        
+
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, allowNoAttrOptionCombo );
 
         if ( attributeOptionCombo == null && !allowNoAttrOptionCombo )
@@ -261,7 +243,7 @@ public class EventController
         {
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
         }
-        
+
         Set<String> eventIds = TextUtils.splitToArray( event, TextUtils.SEMICOLON );
 
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
@@ -326,35 +308,23 @@ public class EventController
         @RequestParam( required = false, defaultValue = "false" ) boolean skipHeader,
         IdSchemes idSchemes, HttpServletResponse response, HttpServletRequest request ) throws IOException, WebMessageException
     {
-        
+
         boolean allowNoAttrOptionCombo = trackedEntityInstance != null && entityInstanceService.getTrackedEntityInstance( trackedEntityInstance ) != null;
-        
+
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, allowNoAttrOptionCombo );
-        
-        if( !allowNoAttrOptionCombo && program != null )
-        {
-        	Program pr = programService.getProgram( program );
-        	
-        	if( pr == null )
-        	{
-        		throw new WebMessageException( WebMessageUtils.conflict( "Illegal program identifier: " + program ) );
-        	}
-        	
-        	allowNoAttrOptionCombo =  pr.getProgramType() == ProgramType.WITHOUT_REGISTRATION;        	
-        }
 
         if ( attributeOptionCombo == null && !allowNoAttrOptionCombo )
         {
             throw new WebMessageException( WebMessageUtils.conflict( "Illegal attribute option combo identifier: " + attributeCc + " " + attributeCos ) );
         }
-
+        
         DataElementCategoryOptionCombo categoryOptionCombo = null;
         
         if( coc != null )
         {
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
         }
-        	
+
         EventSearchParams params = eventService.getFromUrl( program, programStage, programStatus, followUp,
             orgUnit, ouMode, trackedEntityInstance, startDate, endDate, status, lastUpdated, attributeOptionCombo, categoryOptionCombo,
             idSchemes, page, pageSize, totalPages, skipPaging, getOrderParams( order ), false, null );
@@ -381,7 +351,7 @@ public class EventController
 
     @RequestMapping( value = "/eventRows", method = RequestMethod.GET )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_TRACKED_ENTITY_DATAVALUE_ADD')" )
-    public String getEventRows(
+    public @ResponseBody EventRows getEventRows(
         @RequestParam( required = false ) String program,
         @RequestParam( required = false ) String orgUnit,
         @RequestParam( required = false ) OrganisationUnitSelectionMode ouMode,
@@ -397,37 +367,28 @@ public class EventController
         @RequestParam( required = false ) String order,
         @RequestParam Map<String, String> parameters, Model model )
         throws WebMessageException
-
     {
-        WebOptions options = new WebOptions( parameters );
-
         DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo( attributeCc, attributeCos, true );
-
+        
         DataElementCategoryOptionCombo categoryOptionCombo = null;
         
         if( coc != null )
         {
         	categoryOptionCombo = categoryService.getDataElementCategoryOptionCombo( coc );
         }
-        
+
         EventSearchParams params = eventService.getFromUrl( program, null, programStatus, null,
-            orgUnit, ouMode, null, startDate, endDate, eventStatus, null, attributeOptionCombo, categoryOptionCombo,
+            orgUnit, ouMode, null, startDate, endDate, eventStatus, null, attributeOptionCombo, categoryOptionCombo, 
             null, null, null, totalPages, skipPaging, getOrderParams( order ), true, null );
 
-        EventRows eventRows = eventRowService.getEventRows( params );
-
-        model.addAttribute( "model", eventRows );
-        model.addAttribute( "viewClass", options.getViewClass( "detailed" ) );
-
-        return "eventRows";
+        return eventRowService.getEventRows( params );
     }
 
     @RequestMapping( value = "/{uid}", method = RequestMethod.GET )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_TRACKED_ENTITY_DATAVALUE_ADD')" )
-    public String getEvent( @PathVariable( "uid" ) String uid, @RequestParam Map<String, String> parameters,
+    public @ResponseBody Event getEvent( @PathVariable( "uid" ) String uid, @RequestParam Map<String, String> parameters,
         Model model, HttpServletRequest request ) throws Exception
     {
-        WebOptions options = new WebOptions( parameters );
         Event event = eventService.getEvent( uid );
 
         if ( event == null )
@@ -437,10 +398,7 @@ public class EventController
 
         event.setHref( ContextUtils.getRootPath( request ) + RESOURCE_PATH + "/" + uid );
 
-        model.addAttribute( "model", event );
-        model.addAttribute( "viewClass", options.getViewClass( "detailed" ) );
-
-        return "event";
+        return event;
     }
 
     private List<Order> getOrderParams( String order )
@@ -693,7 +651,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.notFound( "Event not found for ID " + uid ) );
         }
 
-        Event event = renderService.fromJson( request.getInputStream(), Event.class );
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
+        Event event = renderService.fromJson( inputStream, Event.class );
         event.setEvent( uid );
 
         eventService.updateEventForNote( event );
@@ -705,7 +664,7 @@ public class EventController
     public void postCsvEvents( @RequestParam( required = false, defaultValue = "false" ) boolean skipFirst,
         HttpServletResponse response, HttpServletRequest request, ImportOptions importOptions ) throws IOException
     {
-        InputStream inputStream = ContextUtils.isAcceptCsvGzip( request ) ? new GZIPInputStream( request.getInputStream() ) : request.getInputStream();
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
 
         Events events = csvEventService.readEvents( inputStream, skipFirst );
 
@@ -737,7 +696,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.notFound( "Event not found for ID " + uid ) );
         }
 
-        Event updatedEvent = renderService.fromXml( request.getInputStream(), Event.class );
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
+        Event updatedEvent = renderService.fromXml( inputStream, Event.class );
         updatedEvent.setEvent( uid );
 
         ImportSummary importSummary = eventService.updateEvent( updatedEvent, false, importOptions );
@@ -754,7 +714,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.notFound( "Event not found for ID " + uid ) );
         }
 
-        Event updatedEvent = renderService.fromJson( request.getInputStream(), Event.class );
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
+        Event updatedEvent = renderService.fromJson( inputStream, Event.class );
         updatedEvent.setEvent( uid );
 
         ImportSummary importSummary = eventService.updateEvent( updatedEvent, false, importOptions );
@@ -778,7 +739,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.notFound( "DataElement not found for ID " + dataElementUid ) );
         }
 
-        Event updatedEvent = renderService.fromJson( request.getInputStream(), Event.class );
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
+        Event updatedEvent = renderService.fromJson( inputStream, Event.class );
         updatedEvent.setEvent( uid );
 
         ImportSummary importSummary = eventService.updateEvent( updatedEvent, true );
@@ -795,7 +757,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.notFound( "Event not found for ID " + uid ) );
         }
 
-        Event updatedEvent = renderService.fromJson( request.getInputStream(), Event.class );
+        InputStream inputStream = StreamUtils.wrapAndCheckCompressionFormat( request.getInputStream() );
+        Event updatedEvent = renderService.fromJson( inputStream, Event.class );
         updatedEvent.setEvent( uid );
 
         eventService.updateEventForEventDate( updatedEvent );

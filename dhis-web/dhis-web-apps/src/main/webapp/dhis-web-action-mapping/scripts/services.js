@@ -137,7 +137,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* Factory to fetch programs */
-.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils) { 
+.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils, ActionMappingUtils) { 
   
     return {        
         getActionDataSets: function( ou ){            
@@ -157,6 +157,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
                             ds.entryMode = 'Single Entry';
+                            ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -166,10 +167,10 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         angular.forEach(multiDs, function(ds){  
                             
                             if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
-
                                 angular.forEach(ou.c, function(c){                                    
                                     if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.dataSetType === "action"){
-                                        ds.entryMode = 'Multiple Entry';                                            
+                                        ds.entryMode = 'Multiple Entry';
+                                        ds = ActionMappingUtils.processDataSet( ds );
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            
                                     }
@@ -177,7 +178,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             }
                         });
                     }
-                    
                     $rootScope.$apply(function(){
                         def.resolve(dataSets);
                     });
@@ -196,6 +196,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];                    
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ds.dataSetType === 'targetGroup'){                        
+                            ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -218,6 +219,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];                    
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ( ds.dataSetType === 'targetGroup' || ds.dataSetType === 'action') ){                        
+                            ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -234,7 +236,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var def = $q.defer();
             
             PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get('dataSets', uid).done(function(ds){                    
+                PMTStorageService.currentStore.get('dataSets', uid).done(function(ds){
+                    ds = ActionMappingUtils.processDataSet( ds );
                     $rootScope.$apply(function(){
                         def.resolve(ds);
                     });
@@ -252,6 +255,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(ds,'dataSets', userRoles)){
+                            ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -656,6 +660,18 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });
             
             return def.promise;
+        },
+        processDataSet: function( ds ){
+            var dataElements = [];
+            angular.forEach(ds.dataSetElements, function(dse){
+                if( dse.dataElement ){
+                    dataElements.push( dhis2.metadata.processMetaDataAttribute( dse.dataElement ) );
+                }                            
+            });
+            ds.dataElements = dataElements;
+            delete ds.dataSetElements;
+            
+            return ds;
         }
     };
 })

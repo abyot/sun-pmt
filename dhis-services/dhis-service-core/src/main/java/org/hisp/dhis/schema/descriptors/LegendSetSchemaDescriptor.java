@@ -28,9 +28,12 @@ package org.hisp.dhis.schema.descriptors;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Lists;
 import org.hisp.dhis.legend.LegendSet;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaDescriptor;
+import org.hisp.dhis.security.Authority;
+import org.hisp.dhis.security.AuthorityType;
 
 /**
  * @author Morten Olav Hansen <mortenoh@gmail.com>
@@ -48,7 +51,12 @@ public class LegendSetSchemaDescriptor implements SchemaDescriptor
     {
         Schema schema = new Schema( LegendSet.class, SINGULAR, PLURAL );
         schema.setRelativeApiEndpoint( API_ENDPOINT );
+        schema.setShareable( true );
         schema.setOrder( 1080 );
+
+        schema.getAuthorities().add( new Authority( AuthorityType.CREATE_PUBLIC, Lists.newArrayList( "F_LEGEND_SET_PUBLIC_ADD", "F_GIS_ADMIN" ) ) );
+        schema.getAuthorities().add( new Authority( AuthorityType.CREATE_PRIVATE, Lists.newArrayList( "F_LEGEND_SET_PRIVATE_ADD", "F_GIS_ADMIN" ) ) );
+        schema.getAuthorities().add( new Authority( AuthorityType.DELETE, Lists.newArrayList( "F_LEGEND_SET_DELETE", "F_GIS_ADMIN" ) ) );
 
         return schema;
     }

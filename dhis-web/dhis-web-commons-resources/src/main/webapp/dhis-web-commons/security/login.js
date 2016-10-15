@@ -8,11 +8,18 @@ $( document ).ready( function()
 
     $( '#loginForm').bind( 'submit', function() 
     {
+		if ( window.location.hash )
+		{	
+			$(this).prop('action', $(this).prop('action') + window.location.hash );
+		}
+		
         $( '#submit' ).attr( 'disabled', 'disabled' );
 
         sessionStorage.removeItem( 'ouSelected' );
         sessionStorage.removeItem( 'USER_PROFILE' );
         sessionStorage.removeItem( 'USER_ROLES' );
+		sessionStorage.removeItem( 'eventCaptureGridColumns');
+		sessionStorage.removeItem( 'trackerCaptureGridColumns');
     } );
     
     var locale = localStorage[login.localeKey];

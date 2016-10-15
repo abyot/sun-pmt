@@ -53,5 +53,5 @@ var sunPMT = angular.module('sunPMT',
 })
 
 .run(function($rootScope){    
-    $rootScope.maxOptionSize = 50;
+    $rootScope.maxOptionSize = 1000;
 });
