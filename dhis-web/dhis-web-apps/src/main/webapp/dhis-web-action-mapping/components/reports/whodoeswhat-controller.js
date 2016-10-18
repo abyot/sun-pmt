@@ -102,7 +102,8 @@ sunPMT.controller('WhoDoesWhatController',
             $scope.model.dataSets = [];
             MetaDataFactory.getAll('dataSets').then(function(dataSets){
                 $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
-                angular.forEach($scope.model.dataSets, function(ds){
+                angular.forEach($scope.model.dataSets, function(ds){                    
+                    ds = ActionMappingUtils.processDataSet( ds );                    
                     if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
                         $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
                     }
@@ -203,6 +204,7 @@ sunPMT.controller('WhoDoesWhatController',
         $scope.model.mappedRoles = {};
         $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
+            console.log('ds: ', ds);
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
                 var pr = $scope.model.programsByCode[ds.dataElements[0].code];
                 if( pr && pr.actionCode ){

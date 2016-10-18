@@ -117,6 +117,7 @@ sunPMT.controller('GeoCoverageController',
                     MetaDataFactory.getAll('dataSets').then(function(dataSets){
                         $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
                         angular.forEach($scope.model.dataSets, function(ds){
+                            ds = ActionMappingUtils.processDataSet( ds );
                             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
                                 $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
                                 var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);

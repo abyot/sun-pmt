@@ -459,7 +459,7 @@ public class JdbcEventStore
         {
             sql += hlp.whereAnd() + " psi.lastupdated > '" + DateUtils.getLongDateString( params.getLastUpdated() ) + "' ";
         }
-
+        
         if ( params.getAttributeOptionCombo() != null )
         {
             sql += hlp.whereAnd() + " psi.attributeoptioncomboid = " + params.getAttributeOptionCombo().getId() + " ";

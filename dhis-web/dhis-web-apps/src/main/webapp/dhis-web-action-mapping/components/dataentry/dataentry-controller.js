@@ -433,9 +433,8 @@ sunPMT.controller('dataEntryController',
                 
                     if( $scope.model.selectedEvent[ou] && $scope.model.selectedEvent[ou][oco.id] && $scope.model.selectedEvent[ou][oco.id].event ){                        
                         
-                        var _roles = dataValue.value.split(",");
-                        if( _roles && _roles.length > 0 ){
-                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = _roles;
+                        if( dataValue.value !== "" ){
+                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = dataValue.value.split(",");
                         }
                         else{
                             $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = [];
@@ -512,9 +511,8 @@ sunPMT.controller('dataEntryController',
                                 $scope.model.selectedEvent[ev.orgUnit][ev.categoryOptionCombo] = {};
                             }
                             
-                            var _roles = dataValue.value.split(",");
-                            if( _roles && _roles.length > 0 ){
-                                $scope.model.stakeholderRoles[ev.orgUnit][ev.categoryOptionCombo][dataElementId] = _roles;
+                            if( dataValue.value !== "" ){
+                                $scope.model.stakeholderRoles[ev.orgUnit][ev.categoryOptionCombo][dataElementId] = dataValue.value.split(",");
                             }
                             else{
                                 $scope.model.stakeholderRoles[ev.orgUnit][ev.categoryOptionCombo][dataElementId] = [];
