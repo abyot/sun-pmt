@@ -288,10 +288,11 @@ sunPMT.controller('GeoCoverageController',
                     values.push( val );
                 }
             }
-            
-            if( $scope.model.selectedRole && $scope.model.selectedRole.id && val[$scope.model.selectedRole.id] ){
-                values.push( val );
-            }            
+            else{
+                if( $scope.model.selectedRole && $scope.model.selectedRole.id && val[$scope.model.selectedRole.id] ){
+                    values.push( val );
+                }
+            }                        
         });
         
         if( values.length === 0 ){                

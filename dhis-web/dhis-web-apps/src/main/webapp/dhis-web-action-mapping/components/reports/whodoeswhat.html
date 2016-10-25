@@ -177,21 +177,23 @@
             <div ng-if="reportReady && !noDataExists">
                 <div class="clear col-sm-12 hideInPrint pull-left">
                     <button type="button" 
-                            class="btn btn-default"
+                            class="btn btn-primary"
                             title="{{'export_excel'| translate}}"
                             ng-click="exportData()">
-                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                        <i class="fa fa-file-excel-o fa-2x" aria-hidden="true"></i>
                     </button>
-                    <button type="button" 
+                    <!--<button type="button" 
                             class="btn btn-default horizontal-spacing" 
                             title="{{'export_pdf'| translate}}"
                             onclick="javascript:window.print()">
                         <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
-                    </button>
+                    </button>-->
                 </div>
-                <div class="clear" id="exportTable">
+                <div class="clear add-default-padding vertical-spacing" id="exportTable">
                     <div ng-repeat="ou in orgUnits">
-                        <h3>{{ou.displayName}}</h3>
+                        <div class="row col-sm-12">
+                            <h3>{{ou.displayName}}</h3>
+                        </div>                       
                         <table border="1" class="report-table">
                             <thead>
                                 <tr>
