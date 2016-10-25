@@ -512,7 +512,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
             op2 = dhis2.validation.isNumber(op2) ? parseInt(op2) : 0;        
             if( op1 === 0){
-                return 0 + '%';
+                return "";
             }
             if( op2 === 0 ){
                 return $translate.instant('missing_target');
@@ -672,6 +672,21 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             delete ds.dataSetElements;
             
             return ds;
+        },
+        getReportName: function(reportType, reportRole, ouName, ouLevel, peName){
+            var reportName = ouName;
+            if( ouLevel && ouLevel.value && ouLevel.value !== 'SELECTED' ){
+                reportName += ' (' + ouLevel.name + ') ';
+            }
+            
+            reportName += ' - ' + reportType;
+            
+            if( reportRole && reportRole.name ){
+                reportName += ' (' + reportRole.name + ')'; 
+            }
+            
+            reportName += ' - ' + peName + '.xls';
+            return reportName;
         }
     };
 })

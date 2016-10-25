@@ -301,28 +301,33 @@ sunPMT.controller('PopCoverageController',
         if( !filteredNumerators || !filteredNumerators.length || filteredNumerators.length === 0 ||
             !filteredDenominators || !filteredDenominators.length || filteredDenominators.length === 0 ){
             return "empty-data-row";
-        }
-                
-        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
-            var values = [];
-            angular.forEach(filteredNumerators, function(val){            
+        }        
+        var values = [];
+        angular.forEach(filteredNumerators, function(val){            
+            
+            if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){                
                 if( val.orgUnit === $scope.selectedOrgUnit.id || 
                         ( $scope.model.childrenByIds[val.orgUnit] &&
                         $scope.model.childrenByIds[val.orgUnit].path &&
                         $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
                         ){                    
-                    
+
                     var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
                     if( curDen && curDen.length && curDen[0] && curDen[0].value ){
                         values.push( val );
                     }
                 }
-            });
-            
-            if( values.length === 0 ){
-                return "empty-data-row";
             }
-        }        
+            
+            if( $scope.model.selectedRole && $scope.model.selectedRole.id && val[$scope.model.selectedRole.id] ){
+                values.push( val );
+            }
+            
+        });
+
+        if( values.length === 0 ){
+            return "empty-data-row";
+        }
     };
     
     $scope.getValuePerRole = function( ou, col, ind ){        
@@ -443,6 +448,13 @@ sunPMT.controller('PopCoverageController',
         var blob = new Blob([document.getElementById('exportTable').innerHTML], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
         });
-        saveAs(blob, "Report.xls");
+        
+        var reportName = ActionMappingUtils.getReportName($translate.instant('pop_coverage_per_sh'), 
+                                        $scope.model.selectedRole,
+                                        $scope.selectedOrgUnit.n,
+                                        $scope.model.selectedOuMode,
+                                        $scope.model.selectedPeriod.name);
+        
+        saveAs(blob, reportName);
     };
 });

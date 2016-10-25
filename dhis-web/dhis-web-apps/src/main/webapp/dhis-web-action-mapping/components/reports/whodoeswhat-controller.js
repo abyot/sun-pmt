@@ -204,7 +204,6 @@ sunPMT.controller('WhoDoesWhatController',
         $scope.model.mappedRoles = {};
         $scope.optionCombos = [];
         angular.forEach($scope.model.selectedDataSets, function(ds){
-            console.log('ds: ', ds);
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
                 var pr = $scope.model.programsByCode[ds.dataElements[0].code];
                 if( pr && pr.actionCode ){
@@ -254,7 +253,7 @@ sunPMT.controller('WhoDoesWhatController',
             if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
                 return "empty-data-row";
             }
-        }
+        }        
         
         if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
             var values = [];
@@ -312,6 +311,13 @@ sunPMT.controller('WhoDoesWhatController',
         var blob = new Blob([document.getElementById('exportTable').innerHTML], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
         });
-        saveAs(blob, "Report.xls");
+        
+        var reportName = ActionMappingUtils.getReportName($translate.instant('who_does_what'), 
+                                        $scope.model.selectedRole,
+                                        $scope.selectedOrgUnit.n,
+                                        $scope.model.selectedOuMode,
+                                        $scope.model.selectedPeriod.name);
+        
+        saveAs(blob, reportName);
     };
 });

@@ -255,7 +255,7 @@ sunPMT.controller('GeoCoverageController',
             $scope.showReportFilters = response.showReportFilters;
             $scope.noDataExists = response.noDataExists;
             $scope.reportStarted = response.reportStarted;            
-            $scope.requiredCols = ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);;
+            $scope.requiredCols = ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
         });        
     };
     
@@ -263,35 +263,41 @@ sunPMT.controller('GeoCoverageController',
         return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
-    $scope.valueExists = function(ou, de, oc){        
-        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: de});        
+    $scope.valueExists = function(ou, de, oc){
+        var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: de});
         if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
             return "empty-data-row";
         }
         
         if( oc ){
             filteredValues = $filter('filter')(filteredValues, {categoryOptionCombo: oc});
-            if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){
+            if( !filteredValues || !filteredValues.length || filteredValues.length === 0 ){                
                 return "empty-data-row";
             }
         }
         
-        if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){            
-            var values = [];
-            angular.forEach(filteredValues, function(val){            
+        var values = [];
+        angular.forEach(filteredValues, function(val){
+            
+            if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){
                 if( val.orgUnit === $scope.selectedOrgUnit.id || 
                         ( $scope.model.childrenByIds[val.orgUnit] &&
                         $scope.model.childrenByIds[val.orgUnit].path &&
                         $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
-                        ){                    
+                        ){
                     values.push( val );
                 }
-            });
-            
-            if( values.length === 0 ){
-                return "empty-data-row";
             }
-        }        
+            
+            if( $scope.model.selectedRole && $scope.model.selectedRole.id && val[$scope.model.selectedRole.id] ){
+                values.push( val );
+            }            
+        });
+        
+        if( values.length === 0 ){                
+            return "empty-data-row";
+        }
+        
     };
     
     $scope.getValuePerRole = function( ou, col, deId, ocId ){        
@@ -353,6 +359,13 @@ sunPMT.controller('GeoCoverageController',
         var blob = new Blob([document.getElementById('exportTable').innerHTML], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
         });
-        saveAs(blob, "Report.xls");
+        
+        var reportName = ActionMappingUtils.getReportName($translate.instant('geo_coverage_per_sh'), 
+                                        $scope.model.selectedRole,
+                                        $scope.selectedOrgUnit.n,
+                                        $scope.model.selectedOuMode,
+                                        $scope.model.selectedPeriod.name);
+        
+        saveAs(blob, reportName);
     };
 });
