@@ -12,7 +12,8 @@ sunPMT.controller('StakeholderController',
                 category,
                 optionSet,
                 MetaDataFactory,
-                StakeholderService) {            
+                StakeholderService,
+                MaintenanceService) {            
     
     $scope.stakeholderAdded = false;
     $scope.stakeholderAddStarted = false;
@@ -44,7 +45,7 @@ sunPMT.controller('StakeholderController',
         $scope.model.newStakeholder.code = $scope.model.newStakeholder.shortName;
         StakeholderService.addCategoryOption( $scope.model.newStakeholder ).then(function( json ){
             
-            if( json && json.response && json.response.lastImported ){
+            if( json && json.response && json.response.uid ){
                 var cat = angular.copy($scope.category);
                 cat.categoryOptions = [];
                 delete cat.selectedOption;
@@ -54,50 +55,64 @@ sunPMT.controller('StakeholderController',
                         cat.categoryOptions.push( o );
                     }
                 });
-                cat.categoryOptions.push( {id: json.response.lastImported, name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code} );
+                cat.categoryOptions.push( {id: json.response.uid, name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code} );
                                 
                 //update category
                 StakeholderService.updateCategory( cat ).then(function(){
                     
-                    angular.forEach($scope.categoryCombo.categorories, function(c){
+                    angular.forEach($scope.categoryCombo.categories, function(c){
                         if( c.id === category.id ){
                             c = cat;
                         }
                     });
                     
-                    StakeholderService.getCategoryCombo( $scope.categoryCombo.id ).then(function( response ){
-                        
-                        if( response && response.id ){
-                            MetaDataFactory.set('categoryCombos', response).then(function(){
-                                //add option
-                                var opt = {name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code};
-                                StakeholderService.addOption( opt ).then(function( jsn ){
+                    //add option
+                    var opt = {name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code};
+                    StakeholderService.addOption( opt ).then(function( jsn ){
 
-                                    if( jsn && jsn.response && jsn.response.lastImported ){
-                                        //update option set
-                                        var os = angular.copy($scope.optionSet);
+                        if( jsn && jsn.response && jsn.response.uid ){
+                            //update option set
+                            var os = angular.copy($scope.optionSet);
+
+                            if( os && os.organisationUnits ){
+                                delete os.organisationUnits;
+                            }                                        
+                            os.options.push( {id: jsn.response.uid, name: $scope.model.newStakeholder.name} );
+                            StakeholderService.updateOptionSet( os ).then(function(){
+                                
+                                StakeholderService.getOptionSet( os.id ).then(function( response ){
+
+                                    if( response && response.id ){
                                         
-                                        if( os && os.organisationUnits ){
-                                            delete os.organisationUnits;
-                                        }                                        
-                                        os.options.push( {id: jsn.response.lastImported, name: $scope.model.newStakeholder.name} );
-                                        StakeholderService.updateOptionSet( os ).then(function(){                                            
-                                            StakeholderService.getOptionSet( os.id ).then(function( response ){
-                                                
-                                                if( response && response.id ){        
-                                                    var oss = dhis2.metadata.processMetaDataAttribute( response );
-                                                    MetaDataFactory.set('optionSets', oss).then(function(){
-                                                        $scope.stakeholderAdded = true;
-                                                        $scope.close(true);
-                                                    });
-                                                }
-                                            });                            
+                                        var oss = dhis2.metadata.processMetaDataAttribute( response );
+                                        
+                                        MetaDataFactory.set('optionSets', oss).then(function(){
+                                        
+                                            $scope.stakeholderAdded = true;
+                                            
+                                            MaintenanceService.updateOptionCombo().then(function(updateResponse){
+                        
+                                                console.log('updateResponse:  ', updateResponse );
+
+                                                StakeholderService.getCategoryCombo( $scope.categoryCombo.id ).then(function( response ){
+
+                                                    console.log('response-category:  ', response);
+
+                                                    if( response && response.id ){
+                                                        MetaDataFactory.set('categoryCombos', response).then(function(){                                                            
+                                            
+                                                            $scope.close(true);
+                                                            
+                                                        });
+                                                    }
+                                                });
+                                            });
                                         });
                                     }
-                                });
+                                });                            
                             });
-                        }                        
-                    });                                        
+                        }
+                    });                    
                 });
             }            
         });

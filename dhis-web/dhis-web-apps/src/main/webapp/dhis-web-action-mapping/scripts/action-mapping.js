@@ -235,7 +235,7 @@ function filterMissingOptionSets( objs ){
 }
 
 function getOptionSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,name,displayName,version,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]', 'idb', dhis2.sunpmt.store, dhis2.metadata.processObject);
+    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,name,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]', 'idb', dhis2.sunpmt.store, dhis2.metadata.processObject);
 }
 
 function getMetaPrograms(){

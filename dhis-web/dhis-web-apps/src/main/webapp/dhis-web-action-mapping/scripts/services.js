@@ -476,7 +476,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         getOptionSet: function( uid ){
-            var promise = $http.get('../api/optionSets/' + uid + '.json?paging=false&fields=id,name,displayName,version,attributeValues[value,attribute[id,name,code]],options[id,name,displayName,code]').then(function(response){
+            var promise = $http.get('../api/optionSets/' + uid + '.json?paging=false&fields=id,name,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]').then(function(response){
                 return response.data;
             }, function(response){
                 ActionMappingUtils.errorNotifier(response);
@@ -497,6 +497,19 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             }
             return orgUnitPromise;
+        }
+    };
+})
+
+.service('MaintenanceService', function($http, ActionMappingUtils){
+    return {
+        updateOptionCombo: function(){
+            var promise = $http.post('../api/maintenance/categoryOptionComboUpdate' , true ).then(function(response){
+                return response.data;
+            }, function(response){
+                ActionMappingUtils.errorNotifier(response);
+            });
+            return promise;
         }
     };
 })
