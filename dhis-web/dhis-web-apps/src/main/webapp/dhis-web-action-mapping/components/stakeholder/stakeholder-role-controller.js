@@ -40,7 +40,7 @@ sunPMT.controller('StakeholderRoleController',
     if( !rolesAreDifferent ){
         for( var i=0; i<optionCombos.length; i++){
             if(optionCombos[i].id !== commonOptionCombo){
-                $scope.stakeholderRoles[optionCombos[i].id] = $scope.stakeholderRoles[commonOptionCombo];
+                $scope.stakeholderRoles[optionCombos[i].id] = angular.copy( $scope.stakeholderRoles[commonOptionCombo] );
             }
         }
     }

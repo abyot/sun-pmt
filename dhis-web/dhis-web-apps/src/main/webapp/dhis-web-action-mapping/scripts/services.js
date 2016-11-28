@@ -548,7 +548,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });
             
             var selectedAttributeOcboName = optionNames.toString();
-            selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
+            selectedAttributeOcboName = selectedAttributeOcboName.replace(/\,/g, ', ');
             var selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
             
             if( !selectedAttributeOcobo || angular.isUndefined( selectedAttributeOcobo ) ){
