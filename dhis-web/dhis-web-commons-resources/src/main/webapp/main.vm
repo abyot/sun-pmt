@@ -47,11 +47,19 @@
     <script type="text/javascript" src="../dhis-web-core-resource/lodash-functional/lodash-functional.js"></script>
     <!-- Menu script is up here due to perceived loading time increase -->
     <script type="text/javascript" src="../dhis-web-commons/javascripts/header-bar/babel-polyfill.js?_rev=$!{buildRevision}"></script>
-    <script type="text/javascript" src="../dhis-web-commons/javascripts/header-bar/header-bar.js?_rev=$!{buildRevision}"></script>
+    <script type="text/javascript" src="../dhis-web-commons/javascripts/header-bar/header-bar.js?_rev=$!{buildRevision}"></script>    
     <script>
         // Needs to be wrapped in jQuery to be sure the DOM is parsed as the script is not at the bottom.
         jQuery(function () {
-            Dhis2HeaderBar.initHeaderBar(document.querySelector('#header'), undefined, { noLoadingIndicator: true });
+            try {
+                if ('Dhis2HeaderBar' in window) {
+                    Dhis2HeaderBar.initHeaderBar(document.querySelector('#header'), undefined, {noLoadingIndicator: true});
+                }
+            } catch (e) {
+                if ('console' in window ) {
+                    console.error(e);
+                }
+            }
         });
     </script>
     <!-- // End menu -->

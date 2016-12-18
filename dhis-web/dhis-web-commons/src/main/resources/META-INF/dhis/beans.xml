@@ -42,7 +42,6 @@
         <value>dhis-web-validationrule</value>
         <value>dhis-web-light</value>
         <value>dhis-web-mobile</value>
-        <value>dhis-web-reporting</value>
         <value>dhis-web-sms</value>
       </list>
     </property>

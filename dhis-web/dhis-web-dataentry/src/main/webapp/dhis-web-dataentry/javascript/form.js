@@ -1133,21 +1133,24 @@ function getSortedDataSetListForOrgUnits( orgUnits )
 
     $.safeEach( dataSetList, function( idx, item ) 
     {
-        var formType = dhis2.de.dataSets[item.id].type;
-        var found = false;
+        if( item && item.id ){
+            var formType = dhis2.de.dataSets[item.id].type;
+            var found = false;
 
-        $.safeEach( filteredDataSetList, function( i, el ) 
-        {
-            if( item.name == el.name )
+            $.safeEach( filteredDataSetList, function( i, el ) 
             {
-                found = true;
-            }
-        } );
+                if( item.name == el.name )
+                {
+                    found = true;
+                }
+            } );
 
-        if ( !found && ( formType == dhis2.de.cst.formTypeSection || formType == dhis2.de.cst.formTypeDefault ) )
-        {
-            filteredDataSetList.push(item);
+            if ( !found && ( formType == dhis2.de.cst.formTypeSection || formType == dhis2.de.cst.formTypeDefault ) )
+            {
+                filteredDataSetList.push(item);
+            }
         }
+        
     } );
 
     return filteredDataSetList;
@@ -2973,11 +2976,10 @@ dhis2.de.setOptionNameInField = function( fieldId, value )
 		if ( obj && obj.optionSet && obj.optionSet.options ) {			
 			$.each( obj.optionSet.options, function( inx, option ) {
 				if ( option && option.code == value.val ) {
-          option.id = option.code;
-          option.text = option.name;
-          $( fieldId ).select2("val", option.text );
-					return false;
-				}
+                    option.id = option.code;
+                    option.text = option.name;
+                    $(fieldId).val(option.id).change();
+                }
 			} );
 		}		
 	} );

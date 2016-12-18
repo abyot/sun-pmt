@@ -293,9 +293,10 @@ public class GetMetaDataAction
             
             for( AttributeValue av : dataSet.getAttributeValues() )
             {                
-                if( av.getAttribute().getCode().equalsIgnoreCase( "isAction" ) && av.getValue().equalsIgnoreCase( "true" ) )
-                {
+                if( av.getAttribute().getCode().equalsIgnoreCase( "dataSetType" ) && av.getValue().equalsIgnoreCase( "action" ) )
+                {                    
                     dataSetIsAction = true;
+                    break;
                 }
             }
 
