@@ -636,7 +636,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var limit = orgUnit.l === 1 ? 2 : 3;
             for( var i=orgUnit.l+1; i<=limit; i++ ){
                 var lvl = ouLevels[i];
-                ouModes.push({value: lvl, displayName: lvl + ' ' + $translate.instant('level'), level: i});
+                ouModes.push({value: lvl, displayName: lvl, level: i});
             }
             var selectedOuMode = ouModes[0];            
             return {ouModes: ouModes, selectedOuMode: selectedOuMode};
@@ -814,8 +814,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             reportData.noDataExists = true;
                         }  
 
-                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-displayName').reverse();                
-                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-displayName').reverse());
+                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-sortOrder').reverse();                
+                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-sortOrder').reverse());
                         reportData.whoDoesWhatCols = cols;                
                         reportData.reportReady = true;
                         reportData.reportStarted = false;
