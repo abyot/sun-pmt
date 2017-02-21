@@ -82,7 +82,7 @@ sunPMT.controller('reportsController',
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
                             if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.name;
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = prStDe.dataElement.displayName;
                             }                            
                         });
                     }                    
@@ -238,7 +238,7 @@ sunPMT.controller('reportsController',
                         for(var i=0; i<oco.categories.length; i++){                        
                             dv[oco.categories[i].id] = [oco.optionNames[i]];
                             if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name});
+                                $scope.model.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].displayName});
                                 pushedHeaders.push( oco.categories[i].id );
                             }
                         }

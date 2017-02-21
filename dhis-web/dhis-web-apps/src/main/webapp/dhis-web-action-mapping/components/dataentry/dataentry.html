@@ -110,7 +110,7 @@
                 <div ng-repeat="category in model.selectedAttributeCategoryCombo.categories" ng-if="model.selectedDataSet && model.selectedPeriod && !model.selectedAttributeCategoryCombo.isDefault && !model.invalidDimensions">                
                     <div class="row small-vertical-spacing">
                         <div class="col-sm-4">                            
-                            <i class="fa fa-question-circle superscript" tooltip="{{category.displayName === 'Field Implementer' ? 'field_implementer_info' : 'delivery_mechanism_info'| translate}}" tooltip-class="custom-tooltip-class"></i>
+                            <i class="fa fa-question-circle superscript" tooltip="{{category.code === 'FI' ? 'field_implementer_info' : 'delivery_mechanism_info'| translate}}" tooltip-class="custom-tooltip-class"></i>
                             {{category.displayName}}
                         </div>
                         <div class="col-sm-8">

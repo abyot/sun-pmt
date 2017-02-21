@@ -22,7 +22,7 @@ sunPMT.controller('PopCoverageController',
     $scope.reportReady = false;
     $scope.noDataExists = false;
     $scope.orgUnitLevels = null;
-    $scope.model = {stakeholderRoles: [{id: 'CA_ID', name: $translate.instant('catalyst')},{id: 'FU_ID', name: $translate.instant('funder')},{id: 'RM_ID', name: $translate.instant('responsible_ministry')}],
+    $scope.model = {
         ouModes: [],
         periods: [],
         indicators: [],
@@ -47,6 +47,8 @@ sunPMT.controller('PopCoverageController',
         mappedTargetValues: null,
         childrenIds: [],
         children: []};
+    
+    $scope.model.stakeholderRoles = ActionMappingUtils.getStakeholderNames();
     
     function resetParams(){
         $scope.showReportFilters = true;
@@ -82,7 +84,7 @@ sunPMT.controller('PopCoverageController',
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
                             if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {name:  prStDe.dataElement.name, sortOrder: prStDe.sortOrder};
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {displayName:  prStDe.dataElement.displayName, sortOrder: prStDe.sortOrder};
                             }                            
                         });
                     }                    
@@ -92,7 +94,7 @@ sunPMT.controller('PopCoverageController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder, domain: 'EV'} );
+                        $scope.model.roleDataElements.push( {id: k, displayName: $scope.model.roleDataElementsById[k].displayName, sortOrder: $scope.model.roleDataElementsById[k].sortOrder, domain: 'EV'} );
                     }
                 }
             });
@@ -155,7 +157,7 @@ sunPMT.controller('PopCoverageController',
                             angular.forEach(c.categoryOptions, function(o){
                                 ops.push( o.displayName );
                             });
-                            $scope.model.roleDataElements.push( {id: c.id, name: c.name, sortOrder: len + count, domain: 'CA', categoryOptions: ops});
+                            $scope.model.roleDataElements.push( {id: c.id, displayName: c.displayName, sortOrder: len + count, domain: 'CA', categoryOptions: ops});
                         });
                     });
                 });

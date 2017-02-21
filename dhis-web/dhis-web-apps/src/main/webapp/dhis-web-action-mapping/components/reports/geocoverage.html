@@ -120,7 +120,7 @@
                                             ng-required="true"
                                             name="reportingLevel"
                                             class="form-control"
-                                            ng-options="ouMode as ouMode.name for ouMode in model.ouModes">
+                                            ng-options="ouMode as ouMode.displayName for ouMode in model.ouModes">
                                         <option value="">{{'please_select'| translate}}</option>
                                     </select>
                                     <div ng-messages="geoCoverageForm.reportingLevel.$error" ng-if="interacted(geoCoverageForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
@@ -136,7 +136,7 @@
                                             ng-required="true"
                                             name="selectedRole"
                                             class="form-control"
-                                            ng-options="role as role.name for role in model.roleDataElements" >
+                                            ng-options="role as role.displayName for role in model.roleDataElements" >
                                         <option value="">{{'please_select' | translate}}</option>
                                     </select>                                
                                     <div ng-messages="geoCoverageForm.selectedRole.$error" ng-if="interacted(geoCoverageForm.selectedRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        

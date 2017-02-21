@@ -201,6 +201,38 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                 obj = dhis2.metadata.processMetaDataAttribute( obj );
                 if( func ) {
                     obj = func(obj, 'organisationUnits');
+                }                
+                if( store === 'categoryCombos' && obj.categoryOptionCombos ){                     
+                    if( obj.categoryOptionCombos && obj.categories ){
+                        
+                        var cats =JSON.parse( JSON.stringify( obj.categories ) );
+                        
+                        _.each( _.values( cats ), function( c ){
+                            if( c.categoryOptions ){
+                                c.categoryOptions = $.map(c.categoryOptions, function(o){return o.displayName;});
+                            }
+                        });
+                        
+                        _.each( _.values( obj.categoryOptionCombos ), function ( coc ) {                            
+                            if( coc.categoryOptions ){
+                                var opts = [];
+                                var _opts = $.map(coc.categoryOptions, function(o){return o.displayName;});
+                                for( var i=0; i<cats.length; i++ ){                                    
+                                    if( cats[i].categoryOptions && cats[i].categoryOptions.length ){                                        
+                                        for(var j=0; j<cats[i].categoryOptions.length; j++){
+                                            if( _opts.indexOf( cats[i].categoryOptions[j] ) !== -1 ){                                                
+                                                opts.push( cats[i].categoryOptions[j] );
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                coc.displayName = opts && opts.length && opts.length > 0 ? opts.join() : coc.displayName.replace(", ", ",");
+                            }
+                            //delete coc.categoryOptions;
+                        });
+                    }
                 }
             });            
             

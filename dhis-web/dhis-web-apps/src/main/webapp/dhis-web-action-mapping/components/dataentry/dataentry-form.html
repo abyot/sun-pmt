@@ -8,7 +8,7 @@
                 <thead>
                     <tr>
                         <td ng-repeat="prStDe in model.selectedProgram.programStages[0].programStageDataElements | orderBy: 'sortOrder'">
-                            <i class="fa fa-question-circle superscript" tooltip="{{prStDe.dataElement.description}}" tooltip-class="custom-tooltip-class"></i>
+                            <i class="fa fa-question-circle superscript" tooltip="{{prStDe.dataElement.displayDescription}}" tooltip-class="custom-tooltip-class"></i>
                             {{prStDe.dataElement.displayName}}
                         </td>
                     </tr>

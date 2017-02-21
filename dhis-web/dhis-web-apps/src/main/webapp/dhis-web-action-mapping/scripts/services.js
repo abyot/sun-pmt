@@ -120,7 +120,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         angular.forEach(cc.categoryOptionCombos, function(oco){
                             oco.categories = [];
                             angular.forEach(cc.categories, function(c){
-                                oco.categories.push({id: c.id, name: c.name});
+                                oco.categories.push({id: c.id, displayName: c.displayName});
                             });
                             optionCombos[oco.id] = oco;
                         });
@@ -327,7 +327,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var def = $q.defer();
             PMTStorageService.currentStore.open().done(function(){
                 PMTStorageService.currentStore.getAll(store).done(function(objs){                    
-                    objs = orderByFilter(objs, '-name').reverse();                    
+                    objs = orderByFilter(objs, '-displayName').reverse();                    
                     $rootScope.$apply(function(){
                         def.resolve(objs);
                     });
@@ -534,9 +534,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         },
         getRoleHeaders: function(){
             var headers = [];            
-            headers.push({id: 'catalyst', name: $translate.instant('catalyst')});
-            headers.push({id: 'funder', name: $translate.instant('funder')});
-            headers.push({id: 'responsibleMinistry', name: $translate.instant('responsible_ministry')});
+            headers.push({id: 'catalyst', displayName: $translate.instant('catalyst')});
+            headers.push({id: 'funder', displayName: $translate.instant('funder')});
+            headers.push({id: 'responsibleMinistry', displayName: $translate.instant('responsible_ministry')});
             
             return headers;
         },
@@ -548,12 +548,12 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });
             
             var selectedAttributeOcboName = optionNames.toString();
-            selectedAttributeOcboName = selectedAttributeOcboName.replace(/\,/g, ', ');
+            //selectedAttributeOcboName = selectedAttributeOcboName.replace(/\,/g, ', ');
             var selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
             
             if( !selectedAttributeOcobo || angular.isUndefined( selectedAttributeOcobo ) ){
                 selectedAttributeOcboName = optionNames.reverse().toString();
-                selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
+                //selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
                 selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
             }
             
@@ -600,7 +600,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 var cc = availableCombos[dataSet.categoryCombo.id];
                 if( cc && cc.categories ){
                     angular.forEach(cc.categories, function(c){
-                        if( c.name === 'Field Implementer' && categoryIds.indexOf( c.id )){
+                        if( c.code === 'FI' && categoryIds.indexOf( c.id )){
                             existingCategories.push( c );
                             categoryIds.push( c.id );
                         }
@@ -632,11 +632,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return cols.sort();
         },
         populateOuLevels: function( orgUnit, ouLevels ){
-            var ouModes = [{name: $translate.instant('selected_level') , value: 'SELECTED', level: orgUnit.l}];
+            var ouModes = [{displayName: $translate.instant('selected_level') , value: 'SELECTED', level: orgUnit.l}];
             var limit = orgUnit.l === 1 ? 2 : 3;
             for( var i=orgUnit.l+1; i<=limit; i++ ){
                 var lvl = ouLevels[i];
-                ouModes.push({value: lvl, name: lvl + ' ' + $translate.instant('level'), level: i});
+                ouModes.push({value: lvl, displayName: lvl + ' ' + $translate.instant('level'), level: i});
             }
             var selectedOuMode = ouModes[0];            
             return {ouModes: ouModes, selectedOuMode: selectedOuMode};
@@ -689,17 +689,21 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getReportName: function(reportType, reportRole, ouName, ouLevel, peName){
             var reportName = ouName;
             if( ouLevel && ouLevel.value && ouLevel.value !== 'SELECTED' ){
-                reportName += ' (' + ouLevel.name + ') ';
+                reportName += ' (' + ouLevel.displayName + ') ';
             }
             
             reportName += ' - ' + reportType;
             
-            if( reportRole && reportRole.name ){
-                reportName += ' (' + reportRole.name + ')'; 
+            if( reportRole && reportRole.displayNme ){
+                reportName += ' (' + reportRole.displayName + ')'; 
             }
             
             reportName += ' - ' + peName + '.xls';
             return reportName;
+        },
+        getStakeholderNames: function(){
+            var stakeholders = [{id: 'CA_ID', displayName: $translate.instant('catalyst')},{id: 'FU_ID', displayName: $translate.instant('funder')},{id: 'RM_ID', displayName: $translate.instant('responsible_ministry')}];
+            return stakeholders;
         }
     };
 })
@@ -738,7 +742,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                                     _ev[dv.dataElement] = dv.value.split(",");
                                     if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
                                         var rde = reportData.roleDataElementsById[dv.dataElement];
-                                        reportData.whoDoesWhatCols.push({id: dv.dataElement, name: rde.name, sortOrder: rde.sortOrder, domain: 'DE'});
+                                        reportData.whoDoesWhatCols.push({id: dv.dataElement, displayName: rde.displayName, sortOrder: rde.sortOrder, domain: 'DE'});
                                         pushedHeaders.push( dv.dataElement );                                
                                     }
 
@@ -764,11 +768,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             angular.forEach(response.dataValues, function(dv){
                                 var oco = reportData.mappedOptionCombos[dv.attributeOptionCombo];
                                 if( oco && oco.displayName ){
-                                    oco.optionNames = oco.displayName.split(", ");
+                                    oco.optionNames = oco.displayName.split(",");
                                     for(var i=0; i<oco.categories.length; i++){                        
                                         dv[oco.categories[i].id] = [oco.optionNames[i]];
                                         if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                            reportData.whoDoesWhatCols.push({id: oco.categories[i].id, name: oco.categories[i].name, sortOrder: i, domain: 'CA'});
+                                            reportData.whoDoesWhatCols.push({id: oco.categories[i].id, displayName: oco.categories[i].displayName, sortOrder: i, domain: 'CA'});
                                             pushedHeaders.push( oco.categories[i].id );
                                         }
                                         if( !reportData.availableRoles[oco.categories[i].id] ){
@@ -810,8 +814,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             reportData.noDataExists = true;
                         }  
 
-                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-name').reverse();                
-                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-name').reverse());
+                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-displayName').reverse();                
+                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-displayName').reverse());
                         reportData.whoDoesWhatCols = cols;                
                         reportData.reportReady = true;
                         reportData.reportStarted = false;

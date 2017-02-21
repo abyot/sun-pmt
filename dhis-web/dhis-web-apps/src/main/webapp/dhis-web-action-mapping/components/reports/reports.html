@@ -80,7 +80,7 @@
                                         ng-required="true"
                                         name="selectedStakeholderRole"
                                         class="form-control"
-                                        ng-options="stakeholderRole as stakeholderRole.name for stakeholderRole in model.stakeholderRoles" >
+                                        ng-options="stakeholderRole as stakeholderRole.displayName for stakeholderRole in model.stakeholderRoles" >
                                     <option value="">{{'please_select' | translate}}</option>
                                 </select>
                                 <div ng-messages="reportForm.selectedStakeholderRole.$error" ng-if="interacted(reportForm.selectedStakeholderRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        

@@ -55,7 +55,7 @@ sunPMT.controller('StakeholderController',
                         cat.categoryOptions.push( o );
                     }
                 });
-                cat.categoryOptions.push( {id: json.response.uid, name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code} );
+                cat.categoryOptions.push( {id: json.response.uid, name: $scope.model.newStakeholder.displayName, code: $scope.model.newStakeholder.code} );
                                 
                 //update category
                 StakeholderService.updateCategory( cat ).then(function(){
@@ -67,7 +67,7 @@ sunPMT.controller('StakeholderController',
                     });
                     
                     //add option
-                    var opt = {name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code};
+                    var opt = {name: $scope.model.newStakeholder.displayName, code: $scope.model.newStakeholder.code};
                     StakeholderService.addOption( opt ).then(function( jsn ){
 
                         if( jsn && jsn.response && jsn.response.uid ){
@@ -77,7 +77,7 @@ sunPMT.controller('StakeholderController',
                             if( os && os.organisationUnits ){
                                 delete os.organisationUnits;
                             }                                        
-                            os.options.push( {id: jsn.response.uid, name: $scope.model.newStakeholder.name} );
+                            os.options.push( {id: jsn.response.uid, name: $scope.model.newStakeholder.displayName} );
                             StakeholderService.updateOptionSet( os ).then(function(){
                                 
                                 StakeholderService.getOptionSet( os.id ).then(function( response ){
@@ -91,12 +91,8 @@ sunPMT.controller('StakeholderController',
                                             $scope.stakeholderAdded = true;
                                             
                                             MaintenanceService.updateOptionCombo().then(function(updateResponse){
-                        
-                                                console.log('updateResponse:  ', updateResponse );
 
                                                 StakeholderService.getCategoryCombo( $scope.categoryCombo.id ).then(function( response ){
-
-                                                    console.log('response-category:  ', response);
 
                                                     if( response && response.id ){
                                                         MetaDataFactory.set('categoryCombos', response).then(function(){                                                            

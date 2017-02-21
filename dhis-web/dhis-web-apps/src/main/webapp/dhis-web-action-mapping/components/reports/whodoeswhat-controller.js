@@ -20,8 +20,8 @@ sunPMT.controller('WhoDoesWhatController',
     $scope.showReportFilters = true;
     $scope.reportReady = false;
     $scope.noDataExists = false;
-    $scope.orgUnitLevels = null;
-    $scope.model = {stakeholderRoles: [{id: 'CA_ID', name: $translate.instant('catalyst')},{id: 'FU_ID', name: $translate.instant('funder')},{id: 'RM_ID', name: $translate.instant('responsible_ministry')}],
+    $scope.orgUnitLevels = null;    
+    $scope.model = {
         ouModes: [],
         periods: [],
         dataSets: null,
@@ -40,6 +40,8 @@ sunPMT.controller('WhoDoesWhatController',
         mappedValues: null,
         childrenIds: [],
         children: []};
+    
+    $scope.model.stakeholderRoles = ActionMappingUtils.getStakeholderNames();
     
     function resetParams(){
         $scope.showReportFilters = true;
@@ -72,7 +74,7 @@ sunPMT.controller('WhoDoesWhatController',
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
                             if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
-                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {name:  prStDe.dataElement.name, sortOrder: prStDe.sortOrder};
+                                $scope.model.roleDataElementsById[prStDe.dataElement.id] = {displayName:  prStDe.dataElement.displayName, sortOrder: prStDe.sortOrder};
                             }                            
                         });
                     }                    
@@ -82,7 +84,7 @@ sunPMT.controller('WhoDoesWhatController',
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, name: $scope.model.roleDataElementsById[k].name, sortOrder: $scope.model.roleDataElementsById[k].sortOrder} );
+                        $scope.model.roleDataElements.push( {id: k, displayName: $scope.model.roleDataElementsById[k].displayName, sortOrder: $scope.model.roleDataElementsById[k].sortOrder} );
                     }
                 }
             });
@@ -273,7 +275,7 @@ sunPMT.controller('WhoDoesWhatController',
         }        
     };
     
-    $scope.getStakeholders = function( ou, col, deId, ocId ){        
+    $scope.getStakeholders = function( ou, col, deId, ocId ){
         var filteredValues = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: deId, categoryOptionCombo: ocId});
         var role = [];        
         angular.forEach(filteredValues, function(val){            

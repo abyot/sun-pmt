@@ -8,7 +8,7 @@
                             {{'action' | translate}}
                         </th>
                         <th ng-repeat="col in model.whoDoesWhatCols">
-                            {{col.name}}
+                            {{col.displayName}}
                         </th>
                     </tr>
                 </thead>
@@ -38,7 +38,7 @@
                                     ng-required="true"
                                     name="selectedRole"
                                     class="form-control"
-                                    ng-options="role as role.name for role in model.roleDataElements" >
+                                    ng-options="role as role.displayName for role in model.roleDataElements" >
                                 <option value="">{{'please_select' | translate}}</option>
                             </select>
                             <div ng-messages="geoCoverageForm.selectedRole.$error" ng-if="interacted(geoCoverageForm.selectedRole)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        

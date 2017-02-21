@@ -120,7 +120,7 @@
                                             ng-required="true"
                                             name="reportingLevel"
                                             class="form-control"
-                                            ng-options="ouMode as ouMode.name for ouMode in model.ouModes">
+                                            ng-options="ouMode as ouMode.displayName for ouMode in model.ouModes">
                                         <option value="">{{'please_select'| translate}}</option>
                                     </select>
                                     <div ng-messages="reportForm.reportingLevel.$error" ng-if="interacted(reportForm.reportingLevel)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                        
@@ -204,7 +204,7 @@
                                         {{'target_group'| translate}}
                                     </th>
                                     <th ng-repeat="col in model.whoDoesWhatCols">
-                                        {{col.name}}
+                                        {{col.displayName}}
                                     </th>
                                 </tr>
                             </thead>

@@ -112,10 +112,10 @@ sunPMT.controller('dataEntryController',
 
                 angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(cat){
                     cat.placeHolder = $translate.instant('select_or_search');
-                    if( cat.displayName === 'Field Implementer' ){                        
+                    if( cat.code === 'FI' ){                        
                         $scope.model.stakeholderCategory = cat;
                         cat.placeHolder = $translate.instant('select_or_search_or_add');
-                        if( cat.displayName === 'Field Implementer' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
+                        if( cat.code === 'FI' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
                             cat.categoryOptions.push(addNewOption);
                         }
                     }
