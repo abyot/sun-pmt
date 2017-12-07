@@ -1,7 +1,7 @@
 package org.hisp.dhis.document.impl;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,21 @@ package org.hisp.dhis.document.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.List;
-
-import org.hisp.dhis.common.GenericIdentifiableObjectStore;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.document.Document;
 import org.hisp.dhis.document.DocumentService;
+import org.hisp.dhis.document.DocumentStore;
+import org.hisp.dhis.external.location.LocationManager;
+import org.hisp.dhis.external.location.LocationManagerException;
+import org.hisp.dhis.fileresource.FileResource;
+import org.hisp.dhis.fileresource.FileResourceService;
+import org.hisp.dhis.user.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * @author Lars Helge Overland
@@ -47,12 +56,16 @@ public class DefaultDocumentService
     // Dependencies
     // -------------------------------------------------------------------------
 
-    private GenericIdentifiableObjectStore<Document> documentStore;
+    @Autowired
+    private FileResourceService fileResourceService;
 
-    public void setDocumentStore( GenericIdentifiableObjectStore<Document> documentStore )
-    {
-        this.documentStore = documentStore;
-    }
+    @Autowired
+    private LocationManager locationManager;
+
+    @Autowired
+    private DocumentStore documentStore;
+
+    private static final Log log = LogFactory.getLog( DefaultDocumentService.class );
 
     // -------------------------------------------------------------------------
     // DocumentService implementation
@@ -61,7 +74,9 @@ public class DefaultDocumentService
     @Override
     public int saveDocument( Document document )
     {
-        return documentStore.save( document );
+        documentStore.save( document );
+
+        return document.getId();
     }
 
     @Override
@@ -79,7 +94,51 @@ public class DefaultDocumentService
     @Override
     public void deleteDocument( Document document )
     {
+
+        // Remove files is !external
+        if ( !document.isExternal() )
+        {
+            if ( document.getFileResource() != null )
+            {
+                deleteFileFromDocument( document );
+                log.info( "Document " + document.getUrl() + " successfully deleted" );
+            }
+            else
+            {
+                try
+                {
+                    File file = locationManager.getFileForReading( document.getUrl(), DocumentService.DIR );
+
+                    if ( file.delete() )
+                    {
+                        log.info( "Document " + document.getUrl() + " successfully deleted" );
+                    }
+                    else
+                    {
+                        log.warn( "Document " + document.getUrl() + " could not be deleted" );
+                    }
+                }
+                catch ( LocationManagerException ex )
+                {
+                    log.warn( "An error occured while deleting " + document.getUrl() );
+                }
+            }
+        }
+
         documentStore.delete( document );
+    }
+
+    @Override
+    public void deleteFileFromDocument( Document document )
+    {
+        FileResource fileResource = document.getFileResource();
+
+        // Remove reference to fileResource from document to avoid db constraint exception
+        document.setFileResource( null );
+        documentStore.save( document );
+
+        // Delete file
+        fileResourceService.deleteFileResource( fileResource.getUid() );
     }
 
     @Override
@@ -122,5 +181,11 @@ public class DefaultDocumentService
     public List<Document> getDocumentsByUid( List<String> uids )
     {
         return documentStore.getByUid( uids );
+    }
+
+    @Override
+    public int getCountDocumentByUser( User user )
+    {
+        return documentStore.getCountByUser( user ) ;
     }
 }

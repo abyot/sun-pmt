@@ -1,7 +1,7 @@
 package org.hisp.dhis.sms.outbound;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,8 @@ public enum GatewayResponse
     NO_GATEWAY_CONFIGURATION( "no gateway configuration found", "" ),
     NO_DEFAULT_GATEWAY( "no gateway is set to default", "" ),
     AUTHENTICATION_FAILED( "authentication failed", "" ),
+    NO_RECIPIENT( "no recipient", "No recipient found" ),
+    SMS_DISABLED( "sms notifications are disabled", "sms notifications are disabled" ),
     
     // -------------------------------------------------------------------------
     // BulkSms response codes
@@ -76,7 +78,8 @@ public enum GatewayResponse
     RESULT_CODE_405( "method not allowed", "Http method is not support on the resource" ),
     RESULT_CODE_410( "gone", "Mobile number is blocked" ),
     RESULT_CODE_429( "too many requests", "Generic rate limiting error" ),
-    RESULT_CODE_503( "service unavailable", "A temporary error has occurred on our platform, please retry" );
+    RESULT_CODE_503( "service unavailable", "A temporary error has occurred on our platform, please retry" ),
+    RESULT_CODE_504( "Internal server exception", "Internal server exception" );
 
     private final String responseMessage;
 

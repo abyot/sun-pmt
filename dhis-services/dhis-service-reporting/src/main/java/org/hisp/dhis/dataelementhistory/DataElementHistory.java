@@ -1,7 +1,7 @@
 package org.hisp.dhis.dataelementhistory;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,8 @@ public class DataElementHistory
     private DataElement dataElement;
     
     private DataElementCategoryOptionCombo optionCombo;
+    
+    private DataElementCategoryOptionCombo attributeOptionCombo;
 
     private OrganisationUnit organisationUnit;
     
@@ -122,6 +124,16 @@ public class DataElementHistory
     public void setOptionCombo( DataElementCategoryOptionCombo optionCombo )
     {
     	this.optionCombo = optionCombo;
+    }
+    
+    public DataElementCategoryOptionCombo getAttributeOptionCombo()
+    {
+    	return attributeOptionCombo;
+    }
+    
+    public void setAttributeOptionComboOptionCombo( DataElementCategoryOptionCombo attributeOptionCombo )
+    {
+    	this.attributeOptionCombo = attributeOptionCombo;
     }
 
     public int getHistoryLength()

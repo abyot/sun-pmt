@@ -33,7 +33,7 @@ dhis2.de.updateDataElementTotals = function( dataElementId )
 		{		
 			var total = dhis2.de.getDataElementTotalValue( de );
 			
-			$( this ).attr( 'value', total );
+			$( this ).val( total );
 		}
 	} );
 }
@@ -49,18 +49,18 @@ dhis2.de.updateIndicators = function()
         var indicatorId = $( this ).attr( 'indicatorid' );
 
         var formula = dhis2.de.indicatorFormulas[indicatorId];
-        
+
         if ( isDefined( formula ) )
         {        
 	        var expression = dhis2.de.generateExpression( formula );
-	
+
 	        if ( expression )
 	        {
 		        var value = eval( expression );
-		        
+
 		        value = isNaN( value ) ? '-' : roundTo( value, 1 );
 		
-		        $( this ).attr( 'value', value );
+		        $( this ).val( value );
 	        }
         }
         else
@@ -76,15 +76,15 @@ dhis2.de.updateIndicators = function()
  */
 dhis2.de.getDataElementTotalValue = function( de )
 {
-	var sum = new Number();
+    var sum = new Number();
 		
 	$( '[id^="' + de + '"]' ).each( function( index )
 	{
-		var val = $( this ).attr( 'value' );
+	    var val = $( this ).val();
 		
 		if ( val && dhis2.validation.isNumber( val ) )
 		{
-			sum += new Number( $( this ).attr( 'value' ) );
+			sum += new Number( $( this ).val() );
 		}
 	} );
 	
@@ -98,12 +98,13 @@ dhis2.de.getDataElementTotalValue = function( de )
 dhis2.de.getFieldValue = function( de, coc )
 {
     var fieldId = '#' + de + '-' + coc + '-val';
-	
+
     var value = '0';
     
     if ( $( fieldId ).length )
     {
         value = $( fieldId ).val() ? $( fieldId ).val() : '0';
+
     }
     
     return value;
@@ -176,7 +177,7 @@ function saveVal( dataElementId, optionComboId, fieldId, feedbackId )
     if ( value )
     {
         if ( type == 'TEXT' || type == 'NUMBER' || type == 'INTEGER' || type == 'INTEGER_POSITIVE' || type == 'INTEGER_NEGATIVE'
-          || type == 'INTEGER_ZERO_OR_POSITIVE' || type == 'UNIT_INTERVAL' || type == 'PERCENTAGE' || type == 'COORDINATE')
+          || type == 'INTEGER_ZERO_OR_POSITIVE' || type == 'UNIT_INTERVAL' || type == 'PERCENTAGE' || type == 'COORDINATE' || type == 'URL' )
         {
             if ( value.length > dhis2.de.cst.valueMaxLength )
             {
@@ -214,12 +215,16 @@ function saveVal( dataElementId, optionComboId, fieldId, feedbackId )
             {
             	return dhis2.de.alertField( fieldId, i18n_value_must_percentage + '\n\n' + dataElementName );
             }
+            if ( type == 'URL' && !dhis2.validation.isValidUrl( value ) )
+            {
+                return dhis2.de.alertField( fieldId, i18n_value_must_valid_url + '\n\n' + dataElementName );
+            }
             if ( !existing && dhis2.validation.isValidZeroNumber( value ) )
             {
                 // If value = 0 and zero not significant for data element, skip
             	// If existing value, let through and delete on server
 
-                if ( dhis2.de.significantZeros.indexOf( dataElementId ) == -1 )
+                if ( dhis2.de.significantZeros.indexOf( dataElementId ) == -1 && dhis2.validation.isNumericType(type) )
                 {
                     $( fieldId ).css( 'background-color', dhis2.de.cst.colorGreen );
                     return false;
@@ -253,6 +258,8 @@ function saveVal( dataElementId, optionComboId, fieldId, feedbackId )
     var valueSaver = new ValueSaver( dataElementId,	periodId, optionComboId, value, feedbackId, color );
     valueSaver.save();
 
+    dhis2.de.populateRowTotals();
+    dhis2.de.populateColumnTotals();
     dhis2.de.updateIndicators(); // Update indicators for custom form
     dhis2.de.updateDataElementTotals( dataElementId ); // Update data element totals for custom forms
     
@@ -360,7 +367,6 @@ function ValueSaver( de, pe, co, value, fieldId, resultColor )
         $.ajax( {
             url: '../api/dataValues',
             data: dataValue,
-            dataType: 'json',
             type: 'post',
             success: handleSuccess,
             error: handleError
@@ -391,6 +397,7 @@ function ValueSaver( de, pe, co, value, fieldId, resultColor )
     	}
     	else // Offline, keep local value
     	{
+            $( document ).trigger( dhis2.de.event.dataValueSaved, [ dhis2.de.currentDataSetId, dataValue ] );
     		markValue( fieldId, resultColor );
     		setHeaderDelayMessage( i18n_offline_notification );
     	}

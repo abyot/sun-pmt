@@ -1,7 +1,7 @@
 package org.hisp.dhis.dxf2.common;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,15 @@ package org.hisp.dhis.dxf2.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.google.common.base.MoreObjects;
+import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.MergeMode;
+import org.hisp.dhis.dxf2.metadata.feedback.ImportReportMode;
 import org.hisp.dhis.importexport.ImportStrategy;
+import org.hisp.dhis.system.notification.NotificationLevel;
 
 /**
  * The idScheme is a general setting which will apply to all objects. The idSchemes
@@ -56,6 +61,8 @@ public class ImportOptions
 
     private MergeMode mergeMode = MergeMode.REPLACE;
 
+    private ImportReportMode reportMode = ImportReportMode.FULL;
+
     private boolean skipExistingCheck;
 
     private boolean sharing;
@@ -76,6 +83,10 @@ public class ImportOptions
 
     private boolean requireAttributeOptionCombo;
 
+    private String filename;
+
+    private NotificationLevel notificationLevel;
+
     //--------------------------------------------------------------------------
     // Constructors
     //--------------------------------------------------------------------------
@@ -87,6 +98,32 @@ public class ImportOptions
     //--------------------------------------------------------------------------
     // Logic
     //--------------------------------------------------------------------------
+
+    public ImportOptions instance()
+    {
+        ImportOptions options = new ImportOptions();
+
+        options.idSchemes = this.idSchemes;
+        options.dryRun = this.dryRun;
+        options.preheatCache = this.preheatCache;
+        options.async = this.async;
+        options.importStrategy = this.importStrategy;
+        options.mergeMode = this.mergeMode;
+        options.skipExistingCheck = this.skipExistingCheck;
+        options.sharing = this.sharing;
+        options.skipNotifications = this.skipNotifications;
+        options.datasetAllowsPeriods = this.datasetAllowsPeriods;
+        options.strictPeriods = this.strictPeriods;
+        options.strictCategoryOptionCombos = this.strictCategoryOptionCombos;
+        options.strictAttributeOptionCombos = this.strictAttributeOptionCombos;
+        options.strictOrganisationUnits = this.strictOrganisationUnits;
+        options.requireCategoryOptionCombo = this.requireCategoryOptionCombo;
+        options.requireAttributeOptionCombo = this.requireAttributeOptionCombo;
+        options.filename = this.filename;
+        options.notificationLevel = this.notificationLevel;
+
+        return options;
+    }
 
     public static ImportOptions getDefaultImportOptions()
     {
@@ -109,40 +146,66 @@ public class ImportOptions
         return preheatCache == null ? false : preheatCache;
     }
 
+    /**
+     * Returns the notification level, or if not specified, returns the given
+     * default notification level.
+     *
+     * @param defaultLevel the default notification level.
+     * @return the nofication level.
+     */
+    public NotificationLevel getNotificationLevel( NotificationLevel defaultLevel )
+    {
+        return notificationLevel != null ? notificationLevel : defaultLevel;
+    }
+
     //--------------------------------------------------------------------------
     // Get methods
     //--------------------------------------------------------------------------
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public IdSchemes getIdSchemes()
     {
         return idSchemes;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isDryRun()
     {
         return dryRun;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public Boolean getPreheatCache()
     {
         return preheatCache;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isAsync()
     {
         return async;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isDatasetAllowsPeriods()
     {
         return datasetAllowsPeriods;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public ImportStrategy getImportStrategy()
     {
         return importStrategy != null ? importStrategy : ImportStrategy.NEW_AND_UPDATES;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public MergeMode getMergeMode()
     {
         return mergeMode;
@@ -153,49 +216,93 @@ public class ImportOptions
         this.mergeMode = mergeMode;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public ImportReportMode getReportMode()
+    {
+        return reportMode;
+    }
+
+    public void setReportMode( ImportReportMode reportMode )
+    {
+        this.reportMode = reportMode;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isSkipExistingCheck()
     {
         return skipExistingCheck;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isSharing()
     {
         return sharing;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isSkipNotifications()
     {
         return skipNotifications;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isStrictPeriods()
     {
         return strictPeriods;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isStrictCategoryOptionCombos()
     {
         return strictCategoryOptionCombos;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isStrictAttributeOptionCombos()
     {
         return strictAttributeOptionCombos;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isStrictOrganisationUnits()
     {
         return strictOrganisationUnits;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isRequireCategoryOptionCombo()
     {
         return requireCategoryOptionCombo;
     }
 
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public boolean isRequireAttributeOptionCombo()
     {
         return requireAttributeOptionCombo;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public String getFilename()
+    {
+        return filename;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public NotificationLevel getNotificationLevel()
+    {
+        return notificationLevel;
     }
 
     //--------------------------------------------------------------------------
@@ -265,6 +372,12 @@ public class ImportOptions
     public ImportOptions setTrackedEntityAttributeIdScheme( String idScheme )
     {
         idSchemes.setTrackedEntityAttributeIdScheme( idScheme );
+        return this;
+    }
+
+    public ImportOptions setEventIdScheme( String idScheme )
+    {
+        idSchemes.setProgramStageInstanceIdScheme( idScheme );
         return this;
     }
 
@@ -352,7 +465,20 @@ public class ImportOptions
         return this;
     }
 
-    @Override public String toString()
+    public ImportOptions setFilename( String filename )
+    {
+        this.filename = filename;
+        return this;
+    }
+
+    public ImportOptions setNotificationLevel( NotificationLevel notificationLevel )
+    {
+        this.notificationLevel = notificationLevel;
+        return this;
+    }
+
+    @Override
+    public String toString()
     {
         return MoreObjects.toStringHelper( this )
             .add( "idSchemes", idSchemes )

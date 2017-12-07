@@ -1,7 +1,7 @@
 package org.hisp.dhis.sms.config;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,10 +33,9 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.h2.util.IOUtils;
-import org.hisp.dhis.sms.MessageResponseStatus;
-import org.hisp.dhis.sms.OutBoundMessage;
+import org.hisp.dhis.outboundmessage.OutboundMessageResponse;
 import org.hisp.dhis.sms.outbound.GatewayResponse;
-import org.hisp.dhis.sms.outbound.MessageBatch;
+import org.hisp.dhis.outboundmessage.OutboundMessageBatch;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.BufferedReader;
@@ -45,9 +44,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Simplistic http gateway sending smses through a get to a url constructed from
@@ -60,9 +59,9 @@ import java.util.Set;
  * <p>
  * The gateway adds the following keys to the parameters:
  * <ul>
- * <li>recipient
- * <li>message
- * <li>sender - if available in the message
+ * <li>recipient</li>
+ * <li>message</li>
+ * <li>sender - if available in the message</li>
  * </ul>
  * 
  * An example usage with bulksms.com would be this template:<br/>
@@ -71,12 +70,12 @@ import java.util.Set;
  * }&amp;password={password}&amp;message={message}&amp;msisdn={recipient}<br/>
  * With the following parameters provided:
  * <ul>
- * <li>username
- * <li>password
+ * <li>username</li>
+ * <li>password</li>
  * </ul>
  */
 public class SimplisticHttpGetGateWay
-    implements SmsGateway
+    extends SmsGateway
 {
     private static final Log log = LogFactory.getLog( SimplisticHttpGetGateWay.class );
 
@@ -86,21 +85,21 @@ public class SimplisticHttpGetGateWay
         .put( HttpURLConnection.HTTP_ACCEPTED, GatewayResponse.RESULT_CODE_0 )
         .put( HttpURLConnection.HTTP_CONFLICT, GatewayResponse.FAILED ).build();
 
-    private static final Set<Integer> OK_CODES = ImmutableSet.of( HttpURLConnection.HTTP_OK,
+    private static final ImmutableSet<Integer> OK_CODES = ImmutableSet.of( HttpURLConnection.HTTP_OK,
         HttpURLConnection.HTTP_ACCEPTED, HttpURLConnection.HTTP_CREATED );
 
+    // -------------------------------------------------------------------------
+    // Implementation
+    // -------------------------------------------------------------------------
+
     @Override
-    public List<MessageResponseStatus> sendBatch( MessageBatch batch, SmsGatewayConfig gatewayConfig )
+    public List<OutboundMessageResponse> sendBatch( OutboundMessageBatch batch, SmsGatewayConfig gatewayConfig )
     {
-        List<MessageResponseStatus> statuses = new ArrayList<>();
-
-        for ( OutBoundMessage message : batch.getBatch() )
-        {
-            statuses.add( send( message.getSubject(), message.getText(), message.getRecipients(), gatewayConfig ) );
-        }
-
-        return statuses;
-    }
+        return batch.getMessages()
+          .stream()
+          .map( m -> send( m.getSubject(), m.getText(), m.getRecipients(), gatewayConfig ) )
+          .collect( Collectors.toList() );
+     }
 
     @Override
     public boolean accept( SmsGatewayConfig gatewayConfig )
@@ -109,11 +108,11 @@ public class SimplisticHttpGetGateWay
     }
 
     @Override
-    public MessageResponseStatus send( String subject, String text, Set<String> recipients, SmsGatewayConfig config )
+    public OutboundMessageResponse send( String subject, String text, Set<String> recipients, SmsGatewayConfig config )
     {
         GenericHttpGatewayConfig genericHttpConfiguraiton = (GenericHttpGatewayConfig) config;
 
-        MessageResponseStatus status = new MessageResponseStatus();
+        OutboundMessageResponse status = new OutboundMessageResponse();
 
         UriComponentsBuilder uri = buildUrl( genericHttpConfiguraiton, text, recipients );
 
@@ -121,9 +120,11 @@ public class SimplisticHttpGetGateWay
 
         try
         {
-            URL requestURL = new URL( uri.build().encode( "ISO-8859-1" ).toUriString() );
+            URL requestURL = new URL( uri.build().encode().toUriString() );
 
             URLConnection conn = requestURL.openConnection();
+
+            conn = getRequestHeaderParameters( conn, genericHttpConfiguraiton.getParameters() );
 
             reader = new BufferedReader( new InputStreamReader( conn.getInputStream() ) );
 
@@ -131,27 +132,22 @@ public class SimplisticHttpGetGateWay
 
             reader.close();
 
-            if ( OK_CODES.contains( httpConnection.getResponseCode() ) )
+            Integer responseCode = httpConnection.getResponseCode();
+
+            if ( OK_CODES.contains( responseCode ) )
             {
-
-                GatewayResponse gatewayResponse = SIMPLISTIC_GATEWAY_RESPONSE_MAP
-                    .get( httpConnection.getResponseCode() );
-
-                status.setResponseObject( gatewayResponse );
-                status.setDescription( gatewayResponse.getResponseMessage() );
                 status.setOk( true );
-
-                return status;
-
             }
             else
             {
-                status.setResponseObject( GatewayResponse.FAILED );
-                status.setDescription( GatewayResponse.FAILED.getResponseMessage() );
                 status.setOk( false );
-
-                return status;
             }
+
+            GatewayResponse response = SIMPLISTIC_GATEWAY_RESPONSE_MAP.getOrDefault( responseCode, GatewayResponse.FAILED );
+
+            status.setResponseObject( response );
+            status.setDescription( response.getResponseMessage() );
+            return status;
         }
         catch ( IOException e )
         {
@@ -173,14 +169,9 @@ public class SimplisticHttpGetGateWay
 
     private UriComponentsBuilder buildUrl( GenericHttpGatewayConfig config, String text, Set<String> recipients )
     {
-        UriComponentsBuilder uriBuilder = null;
-
-        uriBuilder = UriComponentsBuilder.fromHttpUrl( config.getUrlTemplate() );
-
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl( config.getUrlTemplate() );
         uriBuilder = getUrlParameters( config.getParameters(), uriBuilder );
-
         uriBuilder.queryParam( config.getMessageParameter(), text );
-
         uriBuilder.queryParam( config.getRecipientParameter(),
             !recipients.isEmpty() ? recipients.iterator().next() : "" );
 
@@ -190,11 +181,15 @@ public class SimplisticHttpGetGateWay
     private UriComponentsBuilder getUrlParameters( List<GenericGatewayParameter> parameters,
         UriComponentsBuilder uriBuilder )
     {
-        for ( GenericGatewayParameter parameter : parameters )
-        {
-            uriBuilder.queryParam( parameter.getKey(), parameter.getValue() );
-        }
+        parameters.stream().filter( p -> !p.isHeader() ).forEach( p -> uriBuilder.queryParam( p.getKey(), p.getValue() ) );
 
         return uriBuilder;
+    }
+
+    private URLConnection getRequestHeaderParameters( URLConnection urlConnection, List<GenericGatewayParameter> parameters )
+    {
+        parameters.stream().filter( p -> p.isHeader() ).forEach( p -> urlConnection.setRequestProperty( p.getKey(), p.getValue() ) );
+
+        return urlConnection;
     }
 }

@@ -1,7 +1,7 @@
 package org.hisp.dhis.dxf2.events.event;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package org.hisp.dhis.dxf2.events.event;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.common.Grid;
+
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
@@ -43,7 +45,6 @@ import org.hisp.dhis.scheduling.TaskId;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -59,22 +60,21 @@ public interface EventService
 
     Events getEvents( EventSearchParams params );
 
-    Events getEvents( Collection<String> uids );
-
     EventRows getEventRows( EventSearchParams params );
 
     EventSearchParams getFromUrl( String program, String programStage, ProgramStatus programStatus, Boolean followUp, String orgUnit,
-        OrganisationUnitSelectionMode orgUnitSelectionMode, String trackedEntityInstance, Date startDate, Date endDate,
-        EventStatus status, Date lastUpdated, DataElementCategoryOptionCombo attributeCoc, DataElementCategoryOptionCombo coc, IdSchemes idSchemes, Integer page,
-        Integer pageSize, boolean totalPages, boolean skipPaging, List<Order> orders, boolean includeAttributes, Set<String> events );
-
-    Event getEvent( String uid );
+        OrganisationUnitSelectionMode orgUnitSelectionMode, String trackedEntityInstance, Date startDate, Date endDate, Date dueDateStart, Date dueDateEnd,
+        Date lastUpdatedStartDate, Date lastUpdatedEndDate, EventStatus status, DataElementCategoryOptionCombo aoc, DataElementCategoryOptionCombo coc, IdSchemes idSchemes, Integer page,
+        Integer pageSize, boolean totalPages, boolean skipPaging, List<Order> orders, List<String> gridOrders, boolean includeAttributes, Set<String> events,
+        Set<String> filters, Set<String> dataElements, boolean includeDeleted );
 
     Event getEvent( ProgramStageInstance programStageInstance );
 
     List<Event> getEventsXml( InputStream inputStream ) throws IOException;
 
     List<Event> getEventsJson( InputStream inputStream ) throws IOException;
+    
+    Grid getEventsGrid( EventSearchParams params );
 
     int getAnonymousEventValuesCountLastUpdatedAfter( Date lastSuccessTime );
 

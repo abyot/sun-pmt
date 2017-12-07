@@ -1,7 +1,7 @@
 package org.hisp.dhis.dxf2.metadata.objectbundle.hooks;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,12 @@ package org.hisp.dhis.dxf2.metadata.objectbundle.hooks;
 import org.hibernate.Session;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dxf2.metadata.objectbundle.ObjectBundle;
+import org.hisp.dhis.feedback.ErrorCode;
+import org.hisp.dhis.feedback.ErrorReport;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.comparator.OrganisationUnitParentCountComparator;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +46,7 @@ import java.util.Map;
 public class OrganisationUnitObjectBundleHook extends AbstractObjectBundleHook
 {
     @Override
-    public void preImport( ObjectBundle objectBundle )
+    public void preCommit( ObjectBundle objectBundle )
     {
         sortOrganisationUnits( objectBundle );
     }
@@ -54,12 +56,12 @@ public class OrganisationUnitObjectBundleHook extends AbstractObjectBundleHook
         List<IdentifiableObject> nonPersistedObjects = bundle.getObjects( OrganisationUnit.class, false );
         List<IdentifiableObject> persistedObjects = bundle.getObjects( OrganisationUnit.class, true );
 
-        Collections.sort( nonPersistedObjects, new OrganisationUnitParentCountComparator() );
-        Collections.sort( persistedObjects, new OrganisationUnitParentCountComparator() );
+        nonPersistedObjects.sort( new OrganisationUnitParentCountComparator() );
+        persistedObjects.sort( new OrganisationUnitParentCountComparator() );
     }
 
     @Override
-    public void postImport( ObjectBundle bundle )
+    public void postCommit( ObjectBundle bundle )
     {
         if ( !bundle.getObjectMap().containsKey( OrganisationUnit.class ) ) return;
 
@@ -85,5 +87,23 @@ public class OrganisationUnitObjectBundleHook extends AbstractObjectBundleHook
             organisationUnit.setParent( parent );
             session.update( organisationUnit );
         }
+    }
+
+    @Override
+    public <T extends IdentifiableObject> List<ErrorReport> validate( T object, ObjectBundle bundle )
+    {
+        if ( object == null || !object.getClass().isAssignableFrom( OrganisationUnit.class ) ) return new ArrayList<>();
+
+        OrganisationUnit organisationUnit = ( OrganisationUnit ) object;
+
+        List<ErrorReport> errors = new ArrayList<>();
+
+        if ( organisationUnit.getClosedDate() != null && organisationUnit.getClosedDate().before( organisationUnit.getOpeningDate() ) )
+        {
+            errors.add( new ErrorReport( OrganisationUnit.class, ErrorCode.E4013 , organisationUnit.getClosedDate(), organisationUnit
+                .getOpeningDate()) );
+        }
+
+        return errors;
     }
 }

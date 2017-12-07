@@ -1,7 +1,7 @@
 package org.hisp.dhis.servlet.filter;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,21 @@ import org.apache.commons.lang3.StringUtils;
  * <code>find</code> function of the {@link Matcher}. This implies 
  * that the regular expression only need to match a subsequence of the 
  * request URI, not the entire URI.
+ * 
+ * <p>Example configuration:
+ * 
+ * <pre>
+ * {@code
+ * <filter>
+ *     <filter-name>yourRegexFilter</filter-name>
+ *     <filter-class>org.hisp.dhis.servlet.filter.YourRegexFilter</filter-class>
+ *     <init-param>
+ *         <param-name>urlPattern</param-name>
+ *         <param-value>index\.action|index\.html</param-value>
+ *     </init-param>
+ * </filter>
+ * }
+ * </pre>
  * 
  * @author Lars Helge Overland
  */

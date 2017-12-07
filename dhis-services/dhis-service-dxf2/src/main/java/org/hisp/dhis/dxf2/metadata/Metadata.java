@@ -1,7 +1,7 @@
 package org.hisp.dhis.dxf2.metadata;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,6 @@ import org.hisp.dhis.indicator.IndicatorGroup;
 import org.hisp.dhis.indicator.IndicatorGroupSet;
 import org.hisp.dhis.indicator.IndicatorType;
 import org.hisp.dhis.interpretation.Interpretation;
-import org.hisp.dhis.legend.Legend;
 import org.hisp.dhis.legend.LegendSet;
 import org.hisp.dhis.mapping.ExternalMapLayer;
 import org.hisp.dhis.mapping.Map;
@@ -79,13 +78,11 @@ import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroup;
 import org.hisp.dhis.organisationunit.OrganisationUnitGroupSet;
 import org.hisp.dhis.organisationunit.OrganisationUnitLevel;
+import org.hisp.dhis.predictor.Predictor;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramIndicator;
 import org.hisp.dhis.program.ProgramStage;
-import org.hisp.dhis.program.ProgramStageDataElement;
 import org.hisp.dhis.program.ProgramStageSection;
-import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
-import org.hisp.dhis.program.ProgramValidation;
 import org.hisp.dhis.programrule.ProgramRule;
 import org.hisp.dhis.programrule.ProgramRuleAction;
 import org.hisp.dhis.programrule.ProgramRuleVariable;
@@ -96,7 +93,6 @@ import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.sqlview.SqlView;
 import org.hisp.dhis.trackedentity.TrackedEntity;
 import org.hisp.dhis.trackedentity.TrackedEntityAttribute;
-import org.hisp.dhis.trackedentity.TrackedEntityAttributeGroup;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.user.UserAuthorityGroup;
 import org.hisp.dhis.user.UserGroup;
@@ -204,8 +200,6 @@ public class Metadata
 
     private List<MapView> mapViews = new ArrayList<>();
 
-    private List<Legend> legends = new ArrayList<>();
-
     private List<LegendSet> legendSets = new ArrayList<>();
 
     private List<ExternalMapLayer> externalMapLayers = new ArrayList<>();
@@ -226,15 +220,9 @@ public class Metadata
 
     private List<ProgramStage> programStages = new ArrayList<>();
 
-    private List<ProgramStageDataElement> programStageDataElements = new ArrayList<>();
-
     private List<ProgramIndicator> programIndicators = new ArrayList<>();
 
-    private List<ProgramValidation> programValidations = new ArrayList<>();
-
     private List<ProgramStageSection> programStageSections = new ArrayList<>();
-
-    private List<ProgramTrackedEntityAttribute> programTrackedEntityAttributes = new ArrayList<>();
 
     private List<RelationshipType> relationshipTypes = new ArrayList<>();
 
@@ -250,11 +238,11 @@ public class Metadata
 
     private List<TrackedEntityAttribute> trackedEntityAttributes = new ArrayList<>();
 
-    private List<TrackedEntityAttributeGroup> trackedEntityAttributeGroups = new ArrayList<>();
-
     private List<Color> colors = new ArrayList<>();
 
     private List<ColorSet> colorSets = new ArrayList<>();
+
+    private List<Predictor> predictors = new ArrayList<>();
 
     public Metadata()
     {
@@ -871,19 +859,6 @@ public class Metadata
     }
 
     @JsonProperty
-    @JacksonXmlElementWrapper( localName = "legends", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "legend", namespace = DxfNamespaces.DXF_2_0 )
-    public List<Legend> getLegends()
-    {
-        return legends;
-    }
-
-    public void setLegends( List<Legend> legends )
-    {
-        this.legends = legends;
-    }
-
-    @JsonProperty
     @JacksonXmlElementWrapper( localName = "legendSets", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "legendSet", namespace = DxfNamespaces.DXF_2_0 )
     public List<LegendSet> getLegendSets()
@@ -936,19 +911,6 @@ public class Metadata
     }
 
     @JsonProperty
-    @JacksonXmlElementWrapper( localName = "programStageDataElements", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "programStageDataElement", namespace = DxfNamespaces.DXF_2_0 )
-    public List<ProgramStageDataElement> getProgramStageDataElements()
-    {
-        return programStageDataElements;
-    }
-
-    public void setProgramStageDataElements( List<ProgramStageDataElement> programStageDataElements )
-    {
-        this.programStageDataElements = programStageDataElements;
-    }
-
-    @JsonProperty
     @JacksonXmlElementWrapper( localName = "programIndicators", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "programIndicator", namespace = DxfNamespaces.DXF_2_0 )
     public List<ProgramIndicator> getProgramIndicators()
@@ -962,19 +924,6 @@ public class Metadata
     }
 
     @JsonProperty
-    @JacksonXmlElementWrapper( localName = "programValidations", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "programValidation", namespace = DxfNamespaces.DXF_2_0 )
-    public List<ProgramValidation> getProgramValidations()
-    {
-        return programValidations;
-    }
-
-    public void setProgramValidations( List<ProgramValidation> programValidations )
-    {
-        this.programValidations = programValidations;
-    }
-
-    @JsonProperty
     @JacksonXmlElementWrapper( localName = "programStageSections", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "programStageSection", namespace = DxfNamespaces.DXF_2_0 )
     public List<ProgramStageSection> getProgramStageSections()
@@ -985,19 +934,6 @@ public class Metadata
     public void setProgramStageSections( List<ProgramStageSection> programStageSections )
     {
         this.programStageSections = programStageSections;
-    }
-
-    @JsonProperty
-    @JacksonXmlElementWrapper( localName = "programTrackedEntityAttributes", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "programTrackedEntityAttribute", namespace = DxfNamespaces.DXF_2_0 )
-    public List<ProgramTrackedEntityAttribute> getProgramTrackedEntityAttributes()
-    {
-        return programTrackedEntityAttributes;
-    }
-
-    public void setProgramTrackedEntityAttributes( List<ProgramTrackedEntityAttribute> programTrackedEntityAttributes )
-    {
-        this.programTrackedEntityAttributes = programTrackedEntityAttributes;
     }
 
     @JsonProperty
@@ -1131,19 +1067,6 @@ public class Metadata
     }
 
     @JsonProperty
-    @JacksonXmlElementWrapper( localName = "trackedEntityAttributeGroups", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "trackedEntityAttributeGroup", namespace = DxfNamespaces.DXF_2_0 )
-    public List<TrackedEntityAttributeGroup> getTrackedEntityAttributeGroups()
-    {
-        return trackedEntityAttributeGroups;
-    }
-
-    public void setTrackedEntityAttributeGroups( List<TrackedEntityAttributeGroup> trackedEntityAttributeGroups )
-    {
-        this.trackedEntityAttributeGroups = trackedEntityAttributeGroups;
-    }
-
-    @JsonProperty
     @JacksonXmlElementWrapper( localName = "dimensions", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "dimension", namespace = DxfNamespaces.DXF_2_0 )
     public List<DimensionalObject> getDimensions()
@@ -1154,6 +1077,19 @@ public class Metadata
     public void setDimensions( List<DimensionalObject> dimensions )
     {
         this.dimensions = dimensions;
+    }
+
+    @JsonProperty
+    @JacksonXmlElementWrapper( localName = "colorSets", namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "colorSet", namespace = DxfNamespaces.DXF_2_0 )
+    public List<ColorSet> getColorSets()
+    {
+        return colorSets;
+    }
+
+    public void setColorSets( List<ColorSet> colorSets )
+    {
+        this.colorSets = colorSets;
     }
 
     @JsonProperty
@@ -1170,16 +1106,16 @@ public class Metadata
     }
 
     @JsonProperty
-    @JacksonXmlElementWrapper( localName = "colorSets", namespace = DxfNamespaces.DXF_2_0 )
-    @JacksonXmlProperty( localName = "colorSet", namespace = DxfNamespaces.DXF_2_0 )
-    public List<ColorSet> getColorSets()
+    @JacksonXmlElementWrapper( localName = "predictors", namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "predictor", namespace = DxfNamespaces.DXF_2_0 )
+    public List<Predictor> getPredictors()
     {
-        return colorSets;
+        return predictors;
     }
 
-    public void setColorSets( List<ColorSet> colorSets )
+    public void setPredictors( List<Predictor> predictors )
     {
-        this.colorSets = colorSets;
+        this.predictors = predictors;
     }
 
     @Override
@@ -1226,7 +1162,6 @@ public class Metadata
             ", reportTables=" + reportTables +
             ", maps=" + maps +
             ", mapViews=" + mapViews +
-            ", legends=" + legends +
             ", legendSets=" + legendSets +
             ", externalMapLayers=" + externalMapLayers +
             ", sections=" + sections +
@@ -1236,7 +1171,6 @@ public class Metadata
             ", relationshipTypes=" + relationshipTypes +
             ", trackedEntities=" + trackedEntities +
             ", trackedEntityAttributes=" + trackedEntityAttributes +
-            ", trackedEntityAttributeGroups=" + trackedEntityAttributeGroups +
             ", colors=" + colors +
             ", colorSets=" + colorSets +
             '}';

@@ -1,7 +1,7 @@
 package org.hisp.dhis.sms.listener;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,17 +28,12 @@ package org.hisp.dhis.sms.listener;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.hisp.dhis.message.MessageSender;
 import org.hisp.dhis.message.MessageService;
-
+import org.hisp.dhis.message.MessageType;
+import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.sms.command.SMSCommand;
 import org.hisp.dhis.sms.command.SMSCommandService;
 import org.hisp.dhis.sms.incoming.IncomingSms;
@@ -54,6 +49,9 @@ import org.hisp.dhis.user.UserGroup;
 import org.hisp.dhis.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.*;
 
 public class UnregisteredSMSListener
     implements IncomingSmsListener
@@ -104,65 +102,59 @@ public class UnregisteredSMSListener
         UserGroup userGroup = smsCommand.getUserGroup();
 
         String senderPhoneNumber = StringUtils.replace( sms.getOriginator(), "+", "" );
+        String userName = sms.getOriginator();
 
         if ( userGroup != null )
         {
-            Collection<User> users = userService.getUsersByPhoneNumber( senderPhoneNumber );
+            Set<User> receivers = new HashSet<>( userGroup.getMembers() );
 
-            if ( users != null && users.size() >= 1 )
+            UserCredentials anonymousUser = userService.getUserCredentialsByUsername( userName );
+
+            if ( anonymousUser == null )
             {
-                String messageError = "This number is already registered for user: ";
-                for ( Iterator<User> iterator = users.iterator(); iterator.hasNext(); )
-                {
-                    User user = iterator.next();
-                    messageError += user.getName();
+                User user = new User();
+                UserCredentials usercredential = new UserCredentials();
+                usercredential.setUsername( userName );
+                usercredential.setPassword( USER_NAME );
+                usercredential.setUserInfo( user );
+                user.setSurname( userName );
+                user.setFirstName( "" );
+                user.setUserCredentials( usercredential );
+                user.setAutoFields();
 
-                    if ( iterator.hasNext() )
-                    {
-                        messageError += ", ";
-                    }
-                }
-
-                throw new SMSParserException( messageError );
+                userService.addUserCredentials( usercredential );
+                userService.addUser( user );
+                anonymousUser = userService.getUserCredentialsByUsername( userName );
             }
-            else
-            {
-                Set<User> receivers = new HashSet<>( userGroup.getMembers() );
 
-                UserCredentials anonymousUser = userService.getUserCredentialsByUsername( "anonymous" );
+            // forward to user group by SMS, E-mail, DHIS conversation
+            messageService.sendMessage( smsCommand.getName(), message, null, receivers, anonymousUser.getUserInfo(),
+                MessageType.SYSTEM, false );
 
-                if ( anonymousUser == null )
-                {
-                    User user = new User();
-                    UserCredentials usercredential = new UserCredentials();
-                    usercredential.setUsername( USER_NAME );
-                    usercredential.setPassword( USER_NAME );
-                    usercredential.setUserInfo( user );
-                    user.setSurname( USER_NAME );
-                    user.setFirstName( USER_NAME );
-                    user.setUserCredentials( usercredential );
+            // confirm SMS was received and forwarded completely
+            Set<User> feedbackList = new HashSet<>();
+            User sender = new User();
+            sender.setPhoneNumber( senderPhoneNumber );
+            feedbackList.add( sender );
 
-                    userService.addUserCredentials( usercredential );
-                    userService.addUser( user );
-                    anonymousUser = userService.getUserCredentialsByUsername( "anonymous" );
-                }
+            smsSender.sendMessage( smsCommand.getName(), smsCommand.getReceivedMessage() != null ? smsCommand.getReceivedMessage() : SMSCommand.RECEIVED_MESSAGE, null, null, feedbackList, true );
 
-                // forward to user group by SMS, E-mail, DHIS conversation
-                messageService.sendMessage( smsCommand.getName(), message, null, receivers, anonymousUser.getUserInfo(),
-                    false, false );
-
-                // confirm SMS was received and forwarded completely
-                Set<User> feedbackList = new HashSet<>();
-                User sender = new User();
-                sender.setPhoneNumber( senderPhoneNumber );
-                feedbackList.add( sender );
-                
-                smsSender.sendMessage( smsCommand.getName(), smsCommand.getReceivedMessage(), null, null, feedbackList, true );
-                
-                sms.setStatus( SmsMessageStatus.PROCESSED );
-                sms.setParsed( true );
-                incomingSmsService.update( sms );
-            }
+            sms.setStatus( SmsMessageStatus.PROCESSED );
+            sms.setParsed( true );
+            incomingSmsService.update( sms );
         }
+    }
+
+    private User getUser( IncomingSms sms )
+    {
+        return userService.getUser( sms.getUser().getUid() );
+    }
+
+    private Set<OrganisationUnit> getOrganisationUnits(IncomingSms sms )
+    {
+        Collection<OrganisationUnit> orgUnits = SmsUtils.getOrganisationUnitsByPhoneNumber( sms.getOriginator(),
+            Collections.singleton( getUser( sms ) ) );
+
+        return  Sets.newHashSet( orgUnits );
     }
 }

@@ -1,7 +1,7 @@
 package org.hisp.dhis.validation.hibernate;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,13 +65,13 @@ public class HibernateValidationRuleStore
     // -------------------------------------------------------------------------
 
     @Override
-    public int save( ValidationRule validationRule )
+    public void save( ValidationRule validationRule )
     {
         PeriodType periodType = periodService.reloadPeriodType( validationRule.getPeriodType() );
 
         validationRule.setPeriodType( periodType );
 
-        return super.save( validationRule );
+        super.save( validationRule );
     }
 
     @Override
@@ -86,20 +86,10 @@ public class HibernateValidationRuleStore
 
     @Override
     @SuppressWarnings( "unchecked" )
-    public List<ValidationRule> getValidationRulesByDataElements( Collection<DataElement> dataElements )
+    public List<ValidationRule> getValidationRulesWithNotificationTemplates()
     {
-        List<ValidationRule> validationRules = new ArrayList<>();
+        String hql = "select distinct v from ValidationRule v where v.notificationTemplates is not empty";
 
-        Collection<Integer> ids = IdentifiableObjectUtils.getIdentifiers( dataElements );
-
-        String hql = "select distinct v from ValidationRule v join v.leftSide ls join ls.dataElementsInExpression lsd where lsd.id in (:ids)";
-
-        validationRules.addAll( getSession().createQuery( hql ).setParameterList( "ids", ids ).list() );
-
-        hql = "select distinct v from ValidationRule v join v.rightSide rs join rs.dataElementsInExpression rsd where rsd.id in (:ids)";
-
-        validationRules.addAll( getQuery( hql ).setParameterList( "ids", ids ).list() );
-
-        return validationRules;
+        return getQuery( hql ).list();
     }
 }

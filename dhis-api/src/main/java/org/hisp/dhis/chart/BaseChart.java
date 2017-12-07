@@ -1,7 +1,7 @@
 package org.hisp.dhis.chart;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,13 +40,13 @@ import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.common.DimensionalObjectUtils;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.common.IdentifiableObject;
+import org.hisp.dhis.common.HideEmptyItemStrategy;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
-import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.common.RegressionType;
 import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.Period;
+import org.hisp.dhis.schema.annotation.PropertyRange;
 import org.hisp.dhis.user.User;
 
 import java.util.ArrayList;
@@ -69,9 +69,7 @@ public abstract class BaseChart
 
     protected boolean hideLegend;
 
-    protected boolean hideTitle;
-
-    protected boolean hideSubtitle;
+    protected boolean noSpaceBetweenColumns;
 
     protected RegressionType regressionType;
 
@@ -85,7 +83,11 @@ public abstract class BaseChart
 
     protected boolean showData;
 
-    protected boolean hideEmptyRows;
+    protected HideEmptyItemStrategy hideEmptyRowItems;
+
+    protected boolean percentStackedValues;
+
+    protected boolean cumulativeValues;
 
     protected Double rangeAxisMaxValue;
 
@@ -183,12 +185,6 @@ public abstract class BaseChart
     }
 
     @Override
-    public boolean haveUniqueNames()
-    {
-        return false;
-    }
-
-    @Override
     protected void clearTransientStateProperties()
     {
         format = null;
@@ -200,7 +196,7 @@ public abstract class BaseChart
 
         clearTransientChartStateProperties();
     }
-    
+
     public boolean isRegression()
     {
         return regressionType == null || RegressionType.NONE != regressionType;
@@ -300,30 +296,6 @@ public abstract class BaseChart
 
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isHideTitle()
-    {
-        return hideTitle;
-    }
-
-    public void setHideTitle( boolean hideTitle )
-    {
-        this.hideTitle = hideTitle;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isHideSubtitle()
-    {
-        return hideSubtitle;
-    }
-
-    public void setHideSubtitle( Boolean hideSubtitle )
-    {
-        this.hideSubtitle = hideSubtitle;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public RegressionType getRegressionType()
     {
         return regressionType;
@@ -396,14 +368,38 @@ public abstract class BaseChart
 
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isHideEmptyRows()
+    public HideEmptyItemStrategy getHideEmptyRowItems()
     {
-        return hideEmptyRows;
+        return hideEmptyRowItems;
     }
 
-    public void setHideEmptyRows( boolean hideEmptyRows )
+    public void setHideEmptyRowItems( HideEmptyItemStrategy hideEmptyRowItems )
     {
-        this.hideEmptyRows = hideEmptyRows;
+        this.hideEmptyRowItems = hideEmptyRowItems;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isPercentStackedValues()
+    {
+        return percentStackedValues;
+    }
+
+    public void setPercentStackedValues( boolean percentStackedValues )
+    {
+        this.percentStackedValues = percentStackedValues;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isCumulativeValues()
+    {
+        return cumulativeValues;
+    }
+
+    public void setCumulativeValues( boolean cumulativeValues )
+    {
+        this.cumulativeValues = cumulativeValues;
     }
 
     @JsonProperty
@@ -420,6 +416,7 @@ public abstract class BaseChart
 
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    @PropertyRange( min = Integer.MIN_VALUE )
     public Double getRangeAxisMinValue()
     {
         return rangeAxisMinValue;
@@ -455,6 +452,18 @@ public abstract class BaseChart
     }
 
     @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isNoSpaceBetweenColumns()
+    {
+        return noSpaceBetweenColumns;
+    }
+
+    public void setNoSpaceBetweenColumns( boolean noSpaceBetweenColumns )
+    {
+        this.noSpaceBetweenColumns = noSpaceBetweenColumns;
+    }
+
+    @JsonProperty
     @JacksonXmlElementWrapper( localName = "filterDimensions", namespace = DxfNamespaces.DXF_2_0 )
     @JacksonXmlProperty( localName = "filterDimension", namespace = DxfNamespaces.DXF_2_0 )
     public List<String> getFilterDimensions()
@@ -465,60 +474,5 @@ public abstract class BaseChart
     public void setFilterDimensions( List<String> filterDimensions )
     {
         this.filterDimensions = filterDimensions;
-    }
-
-    // -------------------------------------------------------------------------
-    // Merge with
-    // -------------------------------------------------------------------------
-
-    @Override
-    public void mergeWith( IdentifiableObject other, MergeMode mergeMode )
-    {
-        super.mergeWith( other, mergeMode );
-
-        if ( other.getClass().isInstance( this ) )
-        {
-            BaseChart chart = (BaseChart) other;
-
-            hideLegend = chart.isHideLegend();
-            hideTitle = chart.isHideTitle();
-            hideSubtitle = chart.isHideSubtitle();
-            showData = chart.isShowData();
-            hideEmptyRows = chart.isHideEmptyRows();
-
-            if ( mergeMode.isReplace() )
-            {
-                domainAxisLabel = chart.getDomainAxisLabel();
-                rangeAxisLabel = chart.getRangeAxisLabel();
-                type = chart.getType();
-                regressionType = chart.getRegressionType();
-                targetLineValue = chart.getTargetLineValue();
-                targetLineLabel = chart.getTargetLineLabel();
-                baseLineValue = chart.getBaseLineValue();
-                baseLineLabel = chart.getBaseLineLabel();
-                rangeAxisMaxValue = chart.getRangeAxisMaxValue();
-                rangeAxisMinValue = chart.getRangeAxisMinValue();
-                rangeAxisSteps = chart.getRangeAxisSteps();
-                rangeAxisDecimals = chart.getRangeAxisDecimals();
-            }
-            else if ( mergeMode.isMerge() )
-            {
-                domainAxisLabel = chart.getDomainAxisLabel() == null ? domainAxisLabel : chart.getDomainAxisLabel();
-                rangeAxisLabel = chart.getRangeAxisLabel() == null ? rangeAxisLabel : chart.getRangeAxisLabel();
-                type = chart.getType() == null ? type : chart.getType();
-                regressionType = chart.getRegressionType() == null ? regressionType : chart.getRegressionType();
-                targetLineValue = chart.getTargetLineValue() == null ? targetLineValue : chart.getTargetLineValue();
-                targetLineLabel = chart.getTargetLineLabel() == null ? targetLineLabel : chart.getTargetLineLabel();
-                baseLineValue = chart.getBaseLineValue() == null ? baseLineValue : chart.getBaseLineValue();
-                baseLineLabel = chart.getBaseLineLabel() == null ? baseLineLabel : chart.getBaseLineLabel();
-                rangeAxisMaxValue = chart.getRangeAxisMaxValue() == null ? rangeAxisMaxValue : chart.getRangeAxisMaxValue();
-                rangeAxisMinValue = chart.getRangeAxisMinValue() == null ? rangeAxisMinValue : chart.getRangeAxisMinValue();
-                rangeAxisSteps = chart.getRangeAxisSteps() == null ? rangeAxisSteps : chart.getRangeAxisSteps();
-                rangeAxisDecimals = chart.getRangeAxisDecimals() == null ? rangeAxisDecimals : chart.getRangeAxisDecimals();
-            }
-
-            filterDimensions.clear();
-            filterDimensions.addAll( chart.getFilterDimensions() );
-        }
     }
 }

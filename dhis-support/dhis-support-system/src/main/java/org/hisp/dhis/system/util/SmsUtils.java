@@ -1,7 +1,7 @@
 package org.hisp.dhis.system.util;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,14 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.text.SimpleDateFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
-import org.hisp.dhis.program.message.DeliveryChannel;
-import org.hisp.dhis.program.message.ProgramMessage;
-import org.hisp.dhis.program.message.ProgramMessageRecipients;
 import org.hisp.dhis.sms.parse.SMSParserException;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.sms.command.SMSCommand;
@@ -56,26 +55,30 @@ import org.hisp.dhis.sms.incoming.IncomingSms;
  */
 public class SmsUtils
 {
-    private static int MAX_CHAR = 160;
+    private static final int MAX_CHAR = 160;
+
+    private static final String COMMAND_PATTERN = "([A-Za-z])\\w+";
 
     public static String getCommandString( IncomingSms sms )
     {
-        String message = sms.getText();
+        return getCommandString( sms.getText() );
+    }
+
+    public static String getCommandString( String text )
+    {
         String commandString = null;
 
-        for ( int i = 0; i < message.length(); i++ )
-        {
-            String c = String.valueOf( message.charAt( i ) );
+        Pattern pattern = Pattern.compile( COMMAND_PATTERN );
 
-            if ( c.matches( "\\W" ) )
-            {
-                commandString = message.substring( 0, i );
-                message = message.substring( commandString.length() + 1 );
-                break;
-            }
+        Matcher matcher = pattern.matcher( text );
+
+        if ( matcher.find() )
+        {
+            commandString = matcher.group();
+            commandString.trim();
         }
 
-        return commandString.trim();
+        return commandString;
     }
 
     public static Collection<OrganisationUnit> getOrganisationUnitsByPhoneNumber( String sender,
@@ -93,22 +96,6 @@ public class SmsUtils
         return orgUnits;
     }
 
-    public static ProgramMessage createProgramMessage( String subject, String text, String footer, User sender,
-        Set<User> users, boolean forceSend, Set<DeliveryChannel> channels )
-    {
-        ProgramMessageRecipients recipients = new ProgramMessageRecipients();
-        recipients.setPhoneNumbers( SmsUtils.getRecipientsPhoneNumber( users ) );
-
-        ProgramMessage message = new ProgramMessage();
-
-        message.setText( text );
-        message.setSubject( subject );
-        message.setDeliveryChannels( channels );
-        message.setRecipients( recipients );
-
-        return message;
-    }
-
     public static Date lookForDate( String message )
     {
         if ( !message.contains( " " ) )
@@ -117,7 +104,14 @@ public class SmsUtils
         }
 
         Date date = null;
-        String dateString = message.trim().split( " " )[0];
+        String[] messageSplit = message.trim().split( " " );
+        // The first element in the split is the sms command. If there are only two elements
+        // in the split assume the 2nd is data values, not date.
+        if ( messageSplit.length <= 2 )
+        {
+            return null;
+        }
+        String dateString = messageSplit[1];
         SimpleDateFormat format = new SimpleDateFormat( "ddMM" );
 
         try
@@ -128,7 +122,7 @@ public class SmsUtils
             int year = Calendar.getInstance().get( Calendar.YEAR );
             int month = Calendar.getInstance().get( Calendar.MONTH );
 
-            if ( cal.get( Calendar.MONTH ) < month )
+            if ( cal.get( Calendar.MONTH ) <= month )
             {
                 cal.set( Calendar.YEAR, year );
             }
@@ -216,61 +210,6 @@ public class SmsUtils
         }
     }
 
-    public static ProgramMessage createProgramMessage( String text, String recipient, String subject,
-        Set<DeliveryChannel> channels, boolean storeCopy )
-    {
-        ProgramMessage programMessage = new ProgramMessage();
-        programMessage.setText( text );
-        programMessage.setSubject( subject );
-        programMessage.setDeliveryChannels( channels );
-        programMessage.setRecipients( getRecipients( recipient, channels ) );
-        programMessage.setStoreCopy( storeCopy );
-
-        return programMessage;
-    }
-
-    public static ProgramMessageRecipients getRecipients( Set<User> users, Set<DeliveryChannel> channels )
-    {
-        ProgramMessageRecipients to = new ProgramMessageRecipients();
-
-        if ( channels.contains( DeliveryChannel.SMS ) )
-        {
-            to.setPhoneNumbers( getRecipientsPhoneNumber( users ) );
-        }
-
-        if ( channels.contains( DeliveryChannel.EMAIL ) )
-        {
-            to.setEmailAddresses( getRecipientsEmail( users ) );
-        }
-
-        return to;
-    }
-
-    public static String createMessage( String subject, String text, User sender )
-    {
-        String name = "DHIS";
-
-        if ( sender != null )
-        {
-            name = sender.getUsername();
-        }
-
-        if ( subject == null || subject.isEmpty() )
-        {
-            subject = "";
-        }
-        else
-        {
-            subject = " - " + subject;
-        }
-
-        text = name + subject + ": " + text;
-
-        int length = text.length(); // Simplistic cut off 160 characters
-
-        return (length > 160) ? text.substring( 0, 157 ) + "..." : text;
-    }
-
     public static Set<String> getRecipientsPhoneNumber( Collection<User> users )
     {
         Set<String> recipients = new HashSet<>();
@@ -279,7 +218,7 @@ public class SmsUtils
         {
             String phoneNumber = user.getPhoneNumber();
 
-            if ( StringUtils.trimToNull( phoneNumber ) != null )
+            if ( phoneNumber != null && !phoneNumber.isEmpty() )
             {
                 recipients.add( phoneNumber );
             }
@@ -342,23 +281,22 @@ public class SmsUtils
         return orgUnit;
     }
 
-    public static ProgramMessageRecipients getRecipients( String recipient, Set<DeliveryChannel> channels )
+    public static String removePhoneNumberPrefix( String number )
     {
-        ProgramMessageRecipients to = new ProgramMessageRecipients();
-
-        Set<String> recipientsList = new HashSet<>();
-        recipientsList.add( recipient );
-
-        if ( channels.contains( DeliveryChannel.SMS ) )
+        if ( number == null )
         {
-            to.setPhoneNumbers( recipientsList );
+            return null;
         }
 
-        if ( channels.contains( DeliveryChannel.EMAIL ) )
+        if ( number.startsWith( "00" ) )
         {
-            to.setEmailAddresses( recipientsList );
+            number = number.substring( 2, number.length() );
+        }
+        else if ( number.startsWith( "+" ) )
+        {
+            number = number.substring( 1, number.length() );
         }
 
-        return to;
+        return number;
     }
 }

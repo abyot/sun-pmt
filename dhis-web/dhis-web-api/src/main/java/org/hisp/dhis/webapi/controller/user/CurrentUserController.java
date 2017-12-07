@@ -1,7 +1,7 @@
 package org.hisp.dhis.webapi.controller.user;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@ import org.hisp.dhis.user.UserSettingService;
 import org.hisp.dhis.webapi.controller.exception.FilterTooShortException;
 import org.hisp.dhis.webapi.controller.exception.NotAuthenticatedException;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
+import org.hisp.dhis.common.DhisApiVersion;
 import org.hisp.dhis.webapi.service.ContextService;
 import org.hisp.dhis.webapi.utils.ContextUtils;
 import org.hisp.dhis.webapi.utils.FormUtils;
@@ -76,6 +77,8 @@ import org.hisp.dhis.webapi.webdomain.user.Inbox;
 import org.hisp.dhis.webapi.webdomain.user.Recipients;
 import org.hisp.dhis.webapi.webdomain.user.UserAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,7 +103,7 @@ import java.util.Set;
  */
 @Controller
 @RequestMapping( value = { CurrentUserController.RESOURCE_PATH, "/me" }, method = RequestMethod.GET )
-@ApiVersion( { ApiVersion.Version.DEFAULT, ApiVersion.Version.V23 } )
+@ApiVersion( { DhisApiVersion.DEFAULT, DhisApiVersion.V23 } )
 public class CurrentUserController
 {
     public static final String RESOURCE_PATH = "/currentUser";
@@ -178,6 +181,8 @@ public class CurrentUserController
         rootNode.setDefaultNamespace( DxfNamespaces.DXF_2_0 );
         rootNode.setNamespace( DxfNamespaces.DXF_2_0 );
 
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
+        
         return rootNode;
     }
 
@@ -204,6 +209,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), dashboards );
     }
 
@@ -232,6 +238,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), inbox );
     }
 
@@ -246,6 +253,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
 
         List<MessageConversation> messageConversations = new ArrayList<>( messageService.getMessageConversations( 0, MAX_OBJECTS ) );
 
@@ -268,6 +276,8 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
+        
         List<Interpretation> interpretations = new ArrayList<>( interpretationService.getInterpretations( 0, MAX_OBJECTS ) );
 
         for ( Interpretation interpretation : interpretations )
@@ -289,10 +299,11 @@ public class CurrentUserController
         }
 
         Dashboard dashboard = new Dashboard();
-        dashboard.setUnreadMessageConversation( messageService.getUnreadMessageConversationCount() );
+        dashboard.setUnreadMessageConversations( messageService.getUnreadMessageConversationCount() );
         dashboard.setUnreadInterpretations( interpretationService.getNewInterpretationCount() );
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), dashboard );
     }
 
@@ -302,6 +313,7 @@ public class CurrentUserController
         UserAccount userAccount = getUserAccount();
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), userAccount );
     }
 
@@ -399,6 +411,7 @@ public class CurrentUserController
         User currentUser = currentUserService.getCurrentUser();
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), currentUser.getUserCredentials().getAllAuthorities() );
     }
 
@@ -410,6 +423,7 @@ public class CurrentUserController
         boolean hasAuth = currentUser != null && currentUser.getUserCredentials().isAuthorized( auth );
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), hasAuth );
     }
 
@@ -438,6 +452,7 @@ public class CurrentUserController
         recipients.setUserGroups( new HashSet<>( userGroupService.getUserGroupsBetweenByName( filter, 0, MAX_OBJECTS ) ) );
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), recipients );
     }
 
@@ -478,6 +493,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), userOrganisationUnits );
     }
 
@@ -592,6 +608,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), forms );
     }
 
@@ -681,10 +698,11 @@ public class CurrentUserController
                 formDataSet.setId( uid );
                 formDataSet.setLabel( dataSet.getDisplayName() );
 
-                dataSet.getCategoryCombo().getCategories().forEach( cat -> {
+                dataSet.getCategoryCombo().getCategories().forEach( cat ->
+                {
                     cat.setAccess( aclService.getAccess( cat, currentUser ) );
                     cat.getCategoryOptions().forEach( catOpts -> catOpts.setAccess( aclService.getAccess( catOpts, currentUser ) ) );
-                });
+                } );
 
                 forms.getForms().put( uid, FormUtils.fromDataSet( dataSet, false, userOrganisationUnits ) );
                 formOrganisationUnit.getDataSets().add( formDataSet );
@@ -712,6 +730,7 @@ public class CurrentUserController
         }
 
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), forms );
     }
 
@@ -720,6 +739,7 @@ public class CurrentUserController
     {
         List<DataApprovalLevel> approvalLevels = approvalLevelService.getUserDataApprovalLevels();
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), approvalLevels );
     }
 
@@ -728,6 +748,7 @@ public class CurrentUserController
     {
         Map<OrganisationUnit, Integer> orgUnitApprovalLevelMap = approvalLevelService.getUserReadApprovalLevels();
         response.setContentType( MediaType.APPLICATION_JSON_VALUE );
+        response.setHeader( HttpHeaders.CACHE_CONTROL, CacheControl.noCache().getHeaderValue() );
         renderService.toJson( response.getOutputStream(), orgUnitApprovalLevelMap );
     }
 }

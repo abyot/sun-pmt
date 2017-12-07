@@ -1,7 +1,7 @@
 package org.hisp.dhis.period;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ package org.hisp.dhis.period;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.collect.ImmutableMap;
 import org.hisp.dhis.calendar.CalendarService;
 import org.hisp.dhis.calendar.DateInterval;
 import org.hisp.dhis.calendar.DateTimeUnit;
@@ -41,6 +42,7 @@ import org.hisp.dhis.calendar.impl.Iso8601Calendar;
 import org.hisp.dhis.common.DxfNamespaces;
 
 import java.io.Serializable;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -110,13 +112,17 @@ public abstract class PeriodType
     // -------------------------------------------------------------------------
 
     /**
-     * All period types in descending order according to frequency.
+     * All period types enumerated in descending order according to frequency.
      */
     public static final List<PeriodType> PERIOD_TYPES = new ArrayList<PeriodType>()
     {
         {
             add( new DailyPeriodType() );
             add( new WeeklyPeriodType() );
+            add( new WeeklyWednesdayPeriodType() );
+            add( new WeeklyThursdayPeriodType() );
+            add( new WeeklySaturdayPeriodType() );
+            add( new WeeklySundayPeriodType() );
             add( new MonthlyPeriodType() );
             add( new BiMonthlyPeriodType() );
             add( new QuarterlyPeriodType() );
@@ -128,6 +134,14 @@ public abstract class PeriodType
             add( new FinancialOctoberPeriodType() );
         }
     };
+
+    public static final Map<String, DayOfWeek> MAP_WEEK_TYPE = ImmutableMap.of(
+        WeeklySundayPeriodType.NAME, DayOfWeek.SUNDAY,
+        WeeklyWednesdayPeriodType.NAME, DayOfWeek.WEDNESDAY,
+        WeeklyThursdayPeriodType.NAME, DayOfWeek.THURSDAY,
+        WeeklySaturdayPeriodType.NAME, DayOfWeek.SATURDAY,
+        WeeklyPeriodType.NAME, DayOfWeek.MONDAY );
+
 
     private static final Map<String, PeriodType> PERIOD_TYPE_MAP = new HashMap<String, PeriodType>()
     {
@@ -383,7 +397,7 @@ public abstract class PeriodType
     public static PeriodType getPeriodTypeFromIsoString( String isoPeriod )
     {
         DateUnitType dateUnitType = DateUnitType.find( isoPeriod );
-        return dateUnitType != null ? PERIOD_TYPE_MAP.get( dateUnitType.getType() ) : null;
+        return dateUnitType != null ? PERIOD_TYPE_MAP.get( dateUnitType.getName() ) : null;
     }
 
     /**
@@ -541,35 +555,35 @@ public abstract class PeriodType
 
     /**
      * Returns the next period determined by the given number of periods.
-     * 
-     * @param period the Period to base the next Period on.
+     *
+     * @param period  the Period to base the next Period on.
      * @param periods the number of periods into the future.
      * @return the next period.
      */
     public Period getNextPeriod( Period period, int periods )
     {
         Period nextPeriod = period;
-        
+
         if ( periods > 0 )
         {
             org.hisp.dhis.calendar.Calendar calendar = getCalendar();
-                    
+
             for ( int i = 0; i < periods; i++ )
             {
                 nextPeriod = getNextPeriod( nextPeriod, calendar );
             }
         }
-        
+
         return nextPeriod;
     }
-    
+
     /**
      * Returns a Period which is the next of the given Period. Only valid
      * Periods are returned. If the given Period is of different PeriodType than
      * the executing PeriodType, or the given Period is invalid, the returned
      * Period might overlap the given Period.
      *
-     * @param period the Period to base the next Period on.
+     * @param period   the Period to base the next Period on.
      * @param calendar the Calendar to use.
      * @return a Period which is the next of the given Period.
      */
@@ -590,6 +604,30 @@ public abstract class PeriodType
     }
 
     /**
+     * Returns the previous period determined by the given number of periods.
+     *
+     * @param period  the Period to base the previous Period on.
+     * @param periods the number of periods into the past.
+     * @return the previous period.
+     */
+    public Period getPreviousPeriod( Period period, int periods )
+    {
+        Period previousPeriod = period;
+
+        if ( periods > 0 )
+        {
+            org.hisp.dhis.calendar.Calendar calendar = getCalendar();
+
+            for ( int i = 0; i < periods; i++ )
+            {
+                previousPeriod = getPreviousPeriod( previousPeriod, calendar );
+            }
+        }
+
+        return previousPeriod;
+    }
+
+    /**
      * Returns a Period which is the previous of the given Period. Only valid
      * Periods are returned. If the given Period is of different PeriodType than
      * the executing PeriodType, or the given Period is invalid, the returned
@@ -599,6 +637,22 @@ public abstract class PeriodType
      * @return a Period which is the previous of the given Period.
      */
     public abstract Period getPreviousPeriod( Period period, org.hisp.dhis.calendar.Calendar calendar );
+
+    /**
+     * Returns the period at the same time of year going back a number of years.
+     *
+     * @param period    the Period to base the previous Period on.
+     * @param yearCount how many years to go back.
+     * @return the past year period.
+     */
+    public Period getPreviousYearsPeriod( Period period, int yearCount )
+    {
+        Calendar calendar = PeriodType.createCalendarInstance( period.getStartDate() );
+
+        calendar.set( Calendar.YEAR, calendar.get( Calendar.YEAR ) - yearCount );
+
+        return createPeriod( calendar );
+    }
 
     // -------------------------------------------------------------------------
     // hashCode and equals

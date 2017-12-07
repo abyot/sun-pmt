@@ -1,7 +1,7 @@
 package org.hisp.dhis.document;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@ package org.hisp.dhis.document;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import org.hisp.dhis.user.User;
 
 import java.util.List;
 
@@ -71,6 +73,12 @@ public interface DocumentService
     void deleteDocument( Document document );
 
     /**
+     * Used when removing a file reference from a Document.
+     * @param document
+     */
+    void deleteFileFromDocument( Document document );
+
+    /**
      * Retrieves all Documents.
      *
      * @return a Collection of Documents.
@@ -94,4 +102,6 @@ public interface DocumentService
     int getDocumentCountByName( String name );
     
     List<Document> getDocumentsByUid( List<String> uids );
+
+    int getCountDocumentByUser( User user );
 }

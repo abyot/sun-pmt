@@ -365,7 +365,6 @@ public class CriteriaQueryEngineTest
     }
 
     @Test
-    @Ignore
     public void testDoubleEqConjunction()
     {
         Query query = Query.from( schemaService.getDynamicSchema( DataElement.class ) );
@@ -381,7 +380,6 @@ public class CriteriaQueryEngineTest
     }
 
     @Test
-    @Ignore
     public void testDoubleEqDisjunction()
     {
         Query query = Query.from( schemaService.getDynamicSchema( DataElement.class ) );
@@ -400,7 +398,6 @@ public class CriteriaQueryEngineTest
     }
 
     @Test
-    @Ignore
     public void testDateRangeWithConjunction()
     {
         Query query = Query.from( schemaService.getDynamicSchema( DataElement.class ) );
@@ -424,6 +421,17 @@ public class CriteriaQueryEngineTest
     {
         Query query = Query.from( schemaService.getDynamicSchema( DataElement.class ) );
         query.add( Restrictions.isNull( "categoryCombo" ) );
+
+        List<? extends IdentifiableObject> objects = queryEngine.query( query );
+
+        assertEquals( 0, objects.size() );
+    }
+
+    @Test
+    public void testIsNotNull()
+    {
+        Query query = Query.from( schemaService.getDynamicSchema( DataElement.class ) );
+        query.add( Restrictions.isNotNull( "categoryCombo" ) );
 
         List<? extends IdentifiableObject> objects = queryEngine.query( query );
 
@@ -459,5 +467,34 @@ public class CriteriaQueryEngineTest
 
         assertEquals( 1, objects.size() );
         assertEquals( "abcdefghijB", objects.get( 0 ).getUid() );
+    }
+
+    @Test
+    public void testIdentifiableSearch1()
+    {
+        Query query = Query.from( schemaService.getDynamicSchema( DataElementGroup.class ), Junction.Type.OR );
+        query.add( Restrictions.eq( "name", "DataElementGroupA" ) );
+        query.add( Restrictions.eq( "name", "DataElementGroupB" ) );
+
+        List<? extends IdentifiableObject> objects = queryEngine.query( query );
+
+        assertEquals( 2, objects.size() );
+    }
+
+    @Test
+    public void testIdentifiableSearch2()
+    {
+        Query query = Query.from( schemaService.getDynamicSchema( DataElementGroup.class ), Junction.Type.OR );
+
+        Junction junction = query.getRootJunction();
+
+        Junction disjunction = new Disjunction( schemaService.getDynamicSchema( DataElementGroup.class ) );
+        disjunction.add( Restrictions.eq( "name", "DataElementGroupA" ) );
+        disjunction.add( Restrictions.eq( "name", "DataElementGroupB" ) );
+        junction.add( disjunction );
+
+        List<? extends IdentifiableObject> objects = queryEngine.query( query );
+
+        assertEquals( 2, objects.size() );
     }
 }

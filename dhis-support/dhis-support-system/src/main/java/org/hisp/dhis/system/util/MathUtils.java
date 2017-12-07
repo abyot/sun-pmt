@@ -1,7 +1,7 @@
 package org.hisp.dhis.system.util;
 
 /*
- * Copyright (c) 2004-2016, University of Oslo
+ * Copyright (c) 2004-2017, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,21 +28,20 @@ package org.hisp.dhis.system.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.math3.util.Precision;
 import org.apache.commons.validator.routines.DoubleValidator;
 import org.apache.commons.validator.routines.IntegerValidator;
 import org.hisp.dhis.expression.Operator;
 import org.hisp.dhis.system.jep.CustomFunctions;
 import org.nfunk.jep.JEP;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * @author Lars Helge Overland
@@ -207,20 +206,6 @@ public class MathUtils
     }
 
     /**
-     * Returns a number rounded off to the given number of decimals.
-     *
-     * @param value    the value to round off.
-     * @param decimals the number of decimals.
-     * @return a number rounded off to the given number of decimals.
-     */
-    public static double getRounded( double value, int decimals )
-    {
-        final double factor = Math.pow( 10, decimals );
-
-        return Math.round( value * factor ) / factor;
-    }
-
-    /**
      * Returns a rounded off number.
      * <p>
      * <ul>
@@ -233,14 +218,9 @@ public class MathUtils
      */
     public static double getRounded( double value )
     {
-        if ( value < 1d && value > -1d )
-        {
-            return getRounded( value, 2 );
-        }
-        else
-        {
-            return getRounded( value, 1 );
-        }
+        int scale = ( value < 1d && value > -1d ) ? 2 : 1;
+        
+        return Precision.round( value, scale );
     }
 
     /**
@@ -269,7 +249,7 @@ public class MathUtils
     {
         if ( value >= 10.0 || value <= -10.0 )
         {
-            return getRounded( value, 1 );
+            return Precision.round( value, 1 );
         }
         else
         {
@@ -303,18 +283,30 @@ public class MathUtils
     }
 
     /**
-     * Returns a string representation of number rounded to given number of
-     * significant figures
+     * Rounds the fractional part of a number to a given number of significant
+     * decimal digits. Digits to the left of the decimal point will not
+     * be rounded. For example, rounding 12345 to 3 digits will be 12345,
+     * whereas 12.345 will be 12.3, and 0.12345 will be 0.123.
      *
-     * @param value
-     * @param significantFigures
-     * @return
+     * @param value the value to round off.
+     * @param n     the number of significant fraction decimal digits desired.
+     * @return a rounded off number.
      */
-    public static String roundToString( double value, int significantFigures )
+    public static double roundFraction( double value, int n )
     {
-        MathContext mc = new MathContext( significantFigures );
-        BigDecimal num = new BigDecimal( value );
-        return num.round( mc ).toPlainString();
+        if ( isEqual( value, 0.0 ) )
+        {
+            return 0.0;
+        }
+
+        final double d = Math.ceil( Math.log10( value < 0.0 ? -value : value ) );
+
+        if ( d >= n )
+        {
+            return (double) Math.round( value );
+        }
+
+        return roundToSignificantDigits( value ,n );
     }
 
     /**
@@ -466,10 +458,21 @@ public class MathUtils
      * coordinate.
      */
     public static boolean isCoordinate( String value )
-    {
+    {        
+        if( value == null )
+        {
+            return false;
+        }
+        
+        value = value.replaceAll( "\\s+", "" );
+        if ( value.length() < 5 || value.indexOf( "[" ) != 0 || value.indexOf( "]" ) != value.length() - 1 )
+        {
+            return false;
+        }
+        
         try
         {
-            String[] lnglat = value.trim().split( "," );
+            String[] lnglat = value.substring( 1, value.length() - 1 ).split( "," );
             float lng = Float.parseFloat( lnglat[0] );
             float lat = Float.parseFloat( lnglat[1] );
             return (lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90);
