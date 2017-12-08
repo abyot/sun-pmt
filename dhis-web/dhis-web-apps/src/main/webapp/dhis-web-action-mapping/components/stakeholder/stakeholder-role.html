@@ -16,14 +16,14 @@
                 </tr>
             </thead>                            
             <tr>
-                <td ng-repeat="prStDe in program.programStages[0].programStageDataElements| orderBy: 'sortOrder'" ng-init="optionId = prStDe.dataElement.code === 'Responsible Ministry' ? prStDe.dataElement.code : 'Funder'">
+                <td ng-repeat="prStDe in program.programStages[0].programStageDataElements| orderBy: 'sortOrder'">                    
                     <ui-select multiple 
                                ng-model="stakeholderRoles[oco.id][prStDe.dataElement.id]" 
                                on-select="saveRole(oco.id, prStDe.dataElement.id)"
                                on-remove="saveRole(oco.id, prStDe.dataElement.id)"
                                theme="bootstrap">
                         <ui-select-match placeholder="{{'select_or_search_or_add'| translate}}">{{$item.displayName}}</ui-select-match>
-                        <ui-select-choices repeat="option.displayName as option in optionSets[optionId].options | filter: $select.search | limitTo:maxOptionSize">
+                        <ui-select-choices repeat="option.displayName as option in optionSets[prStDe.dataElement.optionSet.id].options | filter: $select.search | limitTo:maxOptionSize">
                             <div ng-bind-html="option.displayName | highlight: $select.search"></div>
                         </ui-select-choices>
                     </ui-select>

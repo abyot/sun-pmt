@@ -84,15 +84,12 @@ sunPMT.controller('dataEntryController',
                     if( optionSet.StakeholderRole === 'Funder' ){
                         $scope.stakeholderList = optionSet;
                         var o = angular.copy( optionSet );
-                        o.options.push(addNewOption);                        
-                        $scope.model.optionSets['Funder'] = o;
-                    }
-                    else if( optionSet.StakeholderRole === 'ResponsibleMinistry' ){
-                        $scope.model.optionSets['Responsible Ministry'] = optionSet;
+                        o.options.push(addNewOption);
+                        $scope.model.optionSets[optionSet.id] = o;
                     }
                     else{
                         $scope.model.optionSets[optionSet.id] = optionSet;
-                    }
+                    }                    
                 });
             });
         }
