@@ -328,6 +328,8 @@ public class EventController
             throw new WebMessageException( WebMessageUtils.conflict( "Illegal attribute option combo identifier: " + attributeCc + " " + attributeCos ) );
         }
         
+        attributeOptionCombo = attributeOptionCombo.isDefault() ? null : attributeOptionCombo;
+        
         DataElementCategoryOptionCombo categoryOptionCombo = null;
         
         if( coc != null )
@@ -421,6 +423,8 @@ public class EventController
         {
             throw new WebMessageException( WebMessageUtils.conflict( "Illegal attribute option combo identifier: " + attributeCc + " " + attributeCos ) );
         }
+        
+        attributeOptionCombo = attributeOptionCombo.isDefault() ? null : attributeOptionCombo;
         
         DataElementCategoryOptionCombo categoryOptionCombo = null;
         
