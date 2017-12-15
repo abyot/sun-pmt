@@ -156,7 +156,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
-                            ds.entryMode = 'Single Entry';
+                            ds.entryMode = 'single';
                             ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
@@ -169,7 +169,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
                                 angular.forEach(ou.c, function(c){                                    
                                     if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.dataSetType === "action"){
-                                        ds.entryMode = 'Multiple Entry';
+                                        ds.entryMode = 'multiple';
                                         ds = ActionMappingUtils.processDataSet( ds );
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            

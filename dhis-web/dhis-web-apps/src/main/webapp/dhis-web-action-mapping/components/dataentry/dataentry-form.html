@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'Multiple Entry'">
+    <div ng-if="model.allowMultiOrgUnitEntry && model.selectedDataSet.entryMode === 'multiple'">
         
         <div class="remove-left-padding">
             <div class="col-sm-6 ">
@@ -133,7 +133,7 @@
 
     </div>
 
-    <div class="row" ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'Single Entry'">
+    <div class="row" ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'single'">
         <div class="col-sm-6 ">
             <div ng-repeat="dataElement in model.selectedDataSet.dataElements" ng-if="dataElement.code !== 'Catalyst' && dataElement.code !== 'Funder' && dataElement.code !== 'RM'">
                 <table class="table table-bordered table-condensed">

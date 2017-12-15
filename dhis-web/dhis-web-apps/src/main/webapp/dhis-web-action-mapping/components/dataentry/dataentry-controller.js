@@ -137,7 +137,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){
-                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'Multiple Entry'}); //dataSets;
+                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'multiple'}); //dataSets;
                 $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
@@ -227,7 +227,7 @@ sunPMT.controller('dataEntryController',
             
             var dataValueSetUrl = 'dataSet=' + $scope.model.selectedDataSet.id + '&period=' + $scope.model.selectedPeriod.id;
 
-            if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === 'Multiple Entry'){
+            if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === 'multiple'){
                 angular.forEach($scope.selectedOrgUnit.c, function(c){
                     
                     if( !$scope.commonOrgUnit ){
@@ -421,7 +421,7 @@ sunPMT.controller('dataEntryController',
         
         var newEvents = {};
         var events = {events: []};
-        if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === "Multiple Entry" ){
+        if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === "multiple" ){
             
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
             
