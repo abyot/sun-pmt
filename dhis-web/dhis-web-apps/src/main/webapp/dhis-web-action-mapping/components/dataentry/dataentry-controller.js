@@ -137,7 +137,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){
-                $scope.model.dataSets = $filter('filter')(dataSets, {entryMode: 'multiple'}); //dataSets;
+                $scope.model.dataSets = dataSets;
                 $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
                     $scope.model.programs = [];
