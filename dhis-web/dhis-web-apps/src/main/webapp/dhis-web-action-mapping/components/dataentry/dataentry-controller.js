@@ -251,11 +251,15 @@ sunPMT.controller('dataEntryController',
                 });
             }
             else{
+                $scope.commonOrgUnit = $scope.selectedOrgUnit.id;                
                 dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
                 if( $scope.model.selectedProgram && $scope.model.selectedProgram.programStages ){
                     var dataElement = $scope.model.selectedDataSet.dataElements[0];
                     $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id] = {};
                     angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
+                        if( !$scope.commonOptionCombo ){
+                            $scope.commonOptionCombo = oco.id;
+                        }
                         $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id][oco.id] = {};
                         angular.forEach($scope.model.selectedProgram.programStages[0].programStageDataElements, function(prStDe){                            
                             $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id][oco.id][prStDe.dataElement.id] = [];
@@ -410,6 +414,64 @@ sunPMT.controller('dataEntryController',
         }
     };
     
+    
+    var handleRole = function(ou, dataElement, dataElementId, dataValue, newEvents){
+        angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
+                
+            if( $scope.model.selectedEvent[ou] && $scope.model.selectedEvent[ou][oco.id] && $scope.model.selectedEvent[ou][oco.id].event ){                        
+
+                if( dataValue.value !== "" ){
+                    $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = dataValue.value.split(",");
+                }
+                else{
+                    $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = [];
+                }
+
+                var updated = false;
+                for( var i=0; i<$scope.model.selectedEvent[ou][oco.id].dataValues.length; i++ ){
+                    if( $scope.model.selectedEvent[ou][oco.id].dataValues[i].dataElement === dataElementId ){
+                        $scope.model.selectedEvent[ou][oco.id].dataValues[i] = dataValue;
+                        updated = true;
+                        break;
+                    }
+                }
+                if( !updated ){
+                    $scope.model.selectedEvent[ou][oco.id].dataValues.push( dataValue );
+                }
+
+                //update event
+                EventService.update( $scope.model.selectedEvent[ou][oco.id] ).then(function(){                        
+                });
+
+            }
+            else{                        
+                if( newEvents[ou] && newEvents[ou][oco.id]){
+                    event = newEvents[ou][oco.id].dataValues.push( dataValue );
+                }
+                else{
+                    var event = {
+                        program: $scope.model.selectedProgram.id,
+                        programStage: $scope.model.selectedProgram.programStages[0].id,
+                        status: 'ACTIVE',
+                        orgUnit: ou,
+                        eventDate: $scope.model.selectedPeriod.endDate,
+                        dataValues: [dataValue],
+                        attributeCategoryOptions: ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
+                        categoryOptionCombo: oco.id
+                    };
+                    if( !newEvents[ou] ){
+                        newEvents[ou] = {};
+                        newEvents[ou][oco.id] = {};
+                    }
+                    if( newEvents[ou] ){
+                        newEvents[ou][oco.id] = {};
+                    }
+                    newEvents[ou][oco.id] = event;
+                }                    
+            }
+        });
+    };
+    
     $scope.saveRole = function( dataElementId ){
         
         var dataElement = $scope.model.selectedDataSet.dataElements[0];
@@ -426,60 +488,7 @@ sunPMT.controller('dataEntryController',
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
             
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
-                angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
-                
-                    if( $scope.model.selectedEvent[ou] && $scope.model.selectedEvent[ou][oco.id] && $scope.model.selectedEvent[ou][oco.id].event ){                        
-                        
-                        if( dataValue.value !== "" ){
-                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = dataValue.value.split(",");
-                        }
-                        else{
-                            $scope.model.stakeholderRoles[ou][oco.id][dataElementId] = [];
-                        }
-                        
-                        var updated = false;
-                        for( var i=0; i<$scope.model.selectedEvent[ou][oco.id].dataValues.length; i++ ){
-                            if( $scope.model.selectedEvent[ou][oco.id].dataValues[i].dataElement === dataElementId ){
-                                $scope.model.selectedEvent[ou][oco.id].dataValues[i] = dataValue;
-                                updated = true;
-                                break;
-                            }
-                        }
-                        if( !updated ){
-                            $scope.model.selectedEvent[ou][oco.id].dataValues.push( dataValue );
-                        }
-
-                        //update event
-                        EventService.update( $scope.model.selectedEvent[ou][oco.id] ).then(function(){                        
-                        });
-
-                    }
-                    else{                        
-                        if( newEvents[ou] && newEvents[ou][oco.id]){
-                            event = newEvents[ou][oco.id].dataValues.push( dataValue );
-                        }
-                        else{
-                            var event = {
-                                program: $scope.model.selectedProgram.id,
-                                programStage: $scope.model.selectedProgram.programStages[0].id,
-                                status: 'ACTIVE',
-                                orgUnit: ou,
-                                eventDate: $scope.model.selectedPeriod.endDate,
-                                dataValues: [dataValue],
-                                attributeCategoryOptions: ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
-                                categoryOptionCombo: oco.id
-                            };
-                            if( !newEvents[ou] ){
-                                newEvents[ou] = {};
-                                newEvents[ou][oco.id] = {};
-                            }
-                            if( newEvents[ou] ){
-                                newEvents[ou][oco.id] = {};
-                            }
-                            newEvents[ou][oco.id] = event;
-                        }                    
-                    }
-                });                
+                handleRole(ou, dataElement, dataElementId, dataValue, newEvents);
             });            
             
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
@@ -490,6 +499,12 @@ sunPMT.controller('dataEntryController',
                 });                                
             });
         }        
+        else if( !$scope.model.allowMultiOrgUnitEntry || $scope.model.selectedDataSet.entryMode === "single" ){
+            
+            var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
+            
+            handleRole($scope.selectedOrgUnit.id, dataElement, dataElementId, dataValue, newEvents);            
+        }
         
         if( events.events.length > 0 ){
             //add event
