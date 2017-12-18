@@ -123,17 +123,13 @@
                         ng-click="deleteCompletness(selectedOrgUnit.id, model.allowMultiOrgUnitEntry)">
                     {{'mark_incomplete'| translate}}
                 </button>
-                <!--<button type="button" 
-                        class="btn btn-success small-horizontal-spacing" 
-                        ng-click="runValidation()">
-                    {{'run_validation'| translate}}
-                </button>-->
             </div>
         </div>
 
     </div>
 
     <div class="row" ng-if="!model.allowMultiOrgUnitEntry || model.selectedDataSet.entryMode === 'single'">
+        
         <div class="col-sm-6 ">
             <div ng-repeat="dataElement in model.selectedDataSet.dataElements" ng-if="dataElement.code !== 'Catalyst' && dataElement.code !== 'Funder' && dataElement.code !== 'RM'">
                 <table class="table table-bordered table-condensed">
@@ -142,6 +138,9 @@
                             <th></th>
                             <th class="active pull-center" ng-repeat="oco in model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos">
                                 {{oco.displayName}}
+                            </th>
+                            <th class="active pull-center">
+                                {{'area_specific_stakeholders' | translate}}
                             </th>
                         </tr>
                     </thead>
@@ -156,11 +155,17 @@
                                        ng-model="model.dataValues[selectedOrgUnit.id][de.id][oco.id].value"
                                        d2-blur="saveDataValue(selectedOrgUnit.id, dataElement.id, oco.id)">
                             </td>
+                            <td class="pull-center">
+                                <a ng-click="showEditStakeholderRoles(selectedOrgUnit.id, model.selectedDataSet.organisationUnits[selectedOrgUnit.id])" title="{{'edit_stakeholder_roles'| translate}}">
+                                    <span class="mouse-pointer anchor-color"><i class="fa fa-users fa-2x"></i></span>
+                                </a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+        
     </div>
 
 </div>

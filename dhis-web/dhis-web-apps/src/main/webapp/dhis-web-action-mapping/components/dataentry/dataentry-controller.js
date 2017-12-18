@@ -136,7 +136,7 @@ sunPMT.controller('dataEntryController',
         $scope.model.dataValues = {};
         $scope.model.valueExists = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
-            DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){
+            DataSetFactory.getActionDataSets( $scope.selectedOrgUnit ).then(function(dataSets){                
                 $scope.model.dataSets = dataSets;
                 $scope.model.dataSets = orderByFilter($scope.model.dataSets, '-displayName').reverse();
                 if(!$scope.model.programs){
@@ -250,7 +250,7 @@ sunPMT.controller('dataEntryController',
                     }
                 });
             }
-            else{
+            else if( !$scope.model.allowMultiOrgUnitEntry || $scope.model.selectedDataSet.entryMode === "single" ){
                 $scope.commonOrgUnit = $scope.selectedOrgUnit.id;                
                 dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
                 if( $scope.model.selectedProgram && $scope.model.selectedProgram.programStages ){
@@ -273,7 +273,9 @@ sunPMT.controller('dataEntryController',
             //fetch events containing stakholder-role mapping
             $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
             
-            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){                
+            EventService.getByOrgUnitAndProgram($scope.selectedOrgUnit.id, 'CHILDREN', $scope.model.selectedProgram.id, $scope.model.attributeCategoryUrl, null, $scope.model.selectedPeriod.startDate, $scope.model.selectedPeriod.endDate).then(function(events){
+                
+                var sampleRole = null;
                 angular.forEach(events, function(ev){
                     if( ev.event ){                        
                         if( !$scope.model.selectedEvent[ev.orgUnit] ){
@@ -286,16 +288,43 @@ sunPMT.controller('dataEntryController',
                         });
                     }
                 });
-
-                var sampleRole = null;
-                for(var i=0; i<$scope.selectedOrgUnit.c.length; i++){
-                    if( !sampleRole ){
-                        sampleRole = $scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]];
-                    }
-                    
-                    if( !angular.equals($scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]], sampleRole) ){
-                        $scope.model.rolesAreDifferent = true;
-                        break;
+                
+                
+                if( $scope.model.allowMultiOrgUnitEntry && $scope.model.selectedDataSet.entryMode === "multiple" ){
+                    var sampleRole = null;
+                    for(var i=0; i<$scope.selectedOrgUnit.c.length; i++){
+                        if( !sampleRole ){
+                            sampleRole = $scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]];
+                        }
+                        if( !angular.equals($scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]], sampleRole) ){
+                            $scope.model.rolesAreDifferent = true;
+                            break;
+                        }
+                        
+                        var _sampleRole = null;
+                        var _roles = $scope.model.stakeholderRoles[$scope.selectedOrgUnit.c[i]];                    
+                        for( var key in _roles ){
+                            if( !_sampleRole ){
+                                _sampleRole = _roles[key];
+                            }
+                            if( !angular.equals(_roles[key], _sampleRole) ){
+                                $scope.model.rolesAreDifferent = true;
+                                break;
+                            }
+                        }
+                    }                    
+                }        
+                else if( !$scope.model.allowMultiOrgUnitEntry || $scope.model.selectedDataSet.entryMode === "single" ){
+                    var sampleRole = null;                    
+                    var _roles = $scope.model.stakeholderRoles[$scope.selectedOrgUnit.id];                    
+                    for( var key in _roles ){
+                        if( !sampleRole ){
+                            sampleRole = _roles[key];
+                        }
+                        if( !angular.equals(_roles[key], sampleRole) ){
+                            $scope.model.rolesAreDifferent = true;
+                            break;
+                        }
                     }
                 }
             });

@@ -155,7 +155,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var pushedDss = [];
                     
                     angular.forEach(dss, function(ds){
-                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
+                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) && ds.dataSetType === "action" ){
                             ds.entryMode = 'single';
                             ds = ActionMappingUtils.processDataSet( ds );
                             dataSets.push(ds);
