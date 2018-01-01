@@ -715,6 +715,54 @@ public class DefaultDataElementCategoryService
     {
         categoryOptionComboStore.updateNames();
     }
+    
+    @Override
+    public void updateAllCategoryOptionComboNames()
+    {
+        List<DataElementCategoryCombo> categoryCombos = getAllDataElementCategoryCombos();
+
+        for ( DataElementCategoryCombo categoryCombo : categoryCombos )
+        {
+        	updateCategoryOptionComboNames( categoryCombo );
+        }
+    }
+    
+    @Override
+    public void updateCategoryOptionComboNames( DataElementCategoryCombo categoryCombo )
+    {
+    	List<DataElementCategoryOptionCombo> generatedOptionCombos = categoryCombo.generateOptionCombosList();
+        Set<DataElementCategoryOptionCombo> persistedOptionCombos = Sets.newHashSet( categoryCombo.getOptionCombos() );
+        
+        log.info( "Checking for option combo name consistency:  " + categoryCombo.getName() );
+        
+        for ( DataElementCategoryOptionCombo optionCombo : generatedOptionCombos )
+        {
+            if ( persistedOptionCombos.contains( optionCombo ) )
+            {
+            	Iterator<DataElementCategoryOptionCombo> iterator = persistedOptionCombos.iterator();
+
+                while ( iterator.hasNext() )
+                {
+                    DataElementCategoryOptionCombo oco = iterator.next();
+
+                    if ( oco.equals( optionCombo ) )
+                    {
+                        if( !oco.getName().equals( optionCombo.getName() ) )
+                        {
+                        	String oldName = oco.getName();
+                        	oco.setName( optionCombo.getName() );
+                        	updateDataElementCategoryOptionCombo( oco );
+                        	
+                        	log.info( "Updated option combo name from (" + oldName + ") to (" + optionCombo.getName() + ")");
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+    	
+    }
 
     // -------------------------------------------------------------------------
     // DataElementOperand
