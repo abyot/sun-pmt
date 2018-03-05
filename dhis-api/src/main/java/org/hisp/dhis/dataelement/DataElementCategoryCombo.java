@@ -183,6 +183,30 @@ public class DataElementCategoryCombo
 
         return list;
     }
+    
+    public List<DataElementCategoryOptionCombo> generateOptionComboList()
+    {
+    	List<DataElementCategoryOptionCombo> list = new ArrayList<>();
+
+    	List<Set<DataElementCategoryOption>> sets = new ArrayList<Set<DataElementCategoryOption>>();
+    	
+    	for ( DataElementCategory category : categories )
+        {
+            sets.add( new HashSet<>( category.getCategoryOptions() ) );
+        }
+    	
+    	Set<List<DataElementCategoryOption>> cartesianSet = com.google.common.collect.Sets.cartesianProduct(sets);    	
+    	
+    	for( List<DataElementCategoryOption> ocbo : cartesianSet )
+    	{
+    		DataElementCategoryOptionCombo optionCombo = new DataElementCategoryOptionCombo();
+    		optionCombo.setCategoryOptions( new HashSet<>( ocbo ) );
+            optionCombo.setCategoryCombo( this );
+            list.add( optionCombo );
+    	}
+    	
+        return list;
+    } 
 
     public List<DataElementCategoryOptionCombo> getSortedOptionCombos()
     {
