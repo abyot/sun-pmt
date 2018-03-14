@@ -42,10 +42,9 @@ sunPMT.controller('StakeholderController',
         
         //form is valid
         //add category option
-        $scope.model.newStakeholder.code = $scope.model.newStakeholder.shortName;
-        StakeholderService.addCategoryOption( $scope.model.newStakeholder ).then(function( json ){
-            
-            if( json && json.response && json.response.uid ){
+        $scope.model.newStakeholder.code = $scope.model.newStakeholder.shortName;        
+        StakeholderService.addCategoryOption( $scope.model.newStakeholder ).then(function( jsonCo ){
+            if( jsonCo && jsonCo.response && jsonCo.response.uid ){
                 var cat = angular.copy($scope.category);
                 cat.name = cat.displayName;
                 cat.categoryOptions = [];
@@ -57,30 +56,28 @@ sunPMT.controller('StakeholderController',
                         cat.categoryOptions.push( o );
                     }
                 });
-                cat.categoryOptions.push( {id: json.response.uid, name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code} );                 
+                cat.categoryOptions.push( {id: jsonCo.response.uid, name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code} );
                 
                 //update category
-                StakeholderService.updateCategory( cat ).then(function(){
-                    
+                StakeholderService.updateCategory( cat ).then(function(jsonCa){
                     angular.forEach($scope.categoryCombo.categories, function(c){
-                        if( c.id === category.id ){
+                        if( c.id === cat.id ){
                             c = cat;
                         }
                     });
                     
                     //add option
                     var opt = {name: $scope.model.newStakeholder.name, code: $scope.model.newStakeholder.code};
-                    StakeholderService.addOption( opt ).then(function( jsn ){
-
-                        if( jsn && jsn.response && jsn.response.uid ){
+                    StakeholderService.addOption( opt ).then(function( jsonOp ){            
+                        if( jsonOp && jsonOp.response && jsonOp.response.uid ){
                             //update option set
                             var os = angular.copy($scope.optionSet);
 
                             if( os && os.organisationUnits ){
                                 delete os.organisationUnits;
                             }                                        
-                            os.options.push( {id: jsn.response.uid, name: $scope.model.newStakeholder.name} );
-                            StakeholderService.updateOptionSet( os ).then(function(){
+                            os.options.push( {id: jsonOp.response.uid, name: $scope.model.newStakeholder.name} );
+                            StakeholderService.updateOptionSet( os ).then(function(jsonOs){
                                 
                                 StakeholderService.getOptionSet( os.id ).then(function( response ){
 
@@ -97,7 +94,7 @@ sunPMT.controller('StakeholderController',
                                                 StakeholderService.getCategoryCombo( $scope.categoryCombo.id ).then(function( response ){
 
                                                     if( response && response.id ){
-                                                        MetaDataFactory.set('categoryCombos', response).then(function(){                                                            
+                                                        MetaDataFactory.set('categoryCombos', response).then(function(){
                                             
                                                             $scope.close(true);
                                                             
