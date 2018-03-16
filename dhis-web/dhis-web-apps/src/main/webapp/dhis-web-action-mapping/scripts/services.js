@@ -588,10 +588,19 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 DialogService.showDialog({}, dialogOptions);
             }
         },
-        getNumeratorAndDenominatorIds: function( ind ){            
-            var num = ind.numerator.substring(2,ind.numerator.length-1);
-            num = num.split('.');            
-            var den = ind.denominator.substring(2,ind.numerator.length-1);
+        getNumeratorAndDenominatorIds: function( ind ){
+            var expressionRegx = /[#\{\}]/g;
+            var num = ind.numerator.replace(expressionRegx, '');
+            var den = ind.denominator.replace(expressionRegx, '');
+            
+            if( num.indexOf('.') === -1 ){
+                num = num + '.HllvX50cXC0';                
+            }
+            num = num.split('.');
+            
+            if( den.indexOf('.') === -1 ){
+                den = den + '.HllvX50cXC0';                
+            }
             den = den.split('.');            
             return {numerator: num[0], numeratorOptionCombo: num[1], denominator: den[0], denominatorOptionCombo: den[1]};
         },
