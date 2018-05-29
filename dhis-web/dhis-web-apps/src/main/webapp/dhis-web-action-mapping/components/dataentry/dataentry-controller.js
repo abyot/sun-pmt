@@ -368,7 +368,7 @@ sunPMT.controller('dataEntryController',
                         response.completeDataSetRegistrations.length > 0){
                     
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo.id] = true;                        
+                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
                     });
                 }
             });
@@ -754,8 +754,17 @@ sunPMT.controller('dataEntryController',
         };
 
         ModalService.showModal({}, modalOptions).then(function(result){
-            
-            CompletenessService.save($scope.model.selectedDataSet.id, 
+        	var dsr = {completeDataSetRegistrations: []};
+        	if( multiOrgUnit ){
+                angular.forEach($scope.selectedOrgUnit.c, function(ou){                
+                    dsr.completeDataSetRegistrations.push( {dataSet: $scope.model.selectedDataSet.id, organisationUnit: ou, period: $scope.model.selectedPeriod.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombo} );
+                });
+            }
+            else{
+            	dsr.completeDataSetRegistrations.push( {dataSet: $scope.model.selectedDataSet.id, organisationUnit: $scope.selectedOrgUnit.id, period: $scope.model.selectedPeriod.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombo} );
+            }
+        	
+            /*CompletenessService.save($scope.model.selectedDataSet.id, 
                 $scope.model.selectedPeriod.id, 
                 orgUnit,
                 $scope.model.selectedAttributeCategoryCombo.id,
@@ -769,6 +778,18 @@ sunPMT.controller('dataEntryController',
                 DialogService.showDialog({}, dialogOptions);
                 //processCompletness(orgUnit, multiOrgUnit, true);                
                 //$scope.model.dataSetCompleted = angular.equals({}, $scope.model.dataSetCompletness);
+                $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;                
+                
+            }, function(response){
+                ActionMappingUtils.errorNotifier( response );
+            });*/
+        	
+        	CompletenessService.saveDsr(dsr).then(function(response){                        
+                var dialogOptions = {
+                    headerText: 'success',
+                    bodyText: 'marked_complete'
+                };
+                DialogService.showDialog({}, dialogOptions);
                 $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;                
                 
             }, function(response){

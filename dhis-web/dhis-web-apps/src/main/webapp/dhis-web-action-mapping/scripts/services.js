@@ -385,6 +385,15 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             });
             return promise;
         },
+        saveDsr: function( dsr ){
+            var promise = $http.post('../api/completeDataSetRegistrations.json', dsr ).then(function(response){
+                return response.data;
+            }, function(response){                
+                DataEntryUtils.errorNotifier(response);
+                return response.data;
+            });
+            return promise;
+        },
         save: function( ds, pe, ou, cc, cp, multiOu){
             var promise = $http.post('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
                 return response.data;
