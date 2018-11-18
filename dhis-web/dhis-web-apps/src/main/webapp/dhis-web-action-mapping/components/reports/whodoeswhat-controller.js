@@ -123,7 +123,7 @@ sunPMT.controller('WhoDoesWhatController',
             });
                 
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit);
-            $scope.model.periods = PeriodService.getPeriods('Yearly', $scope.model.periodOffset);
+            $scope.model.periods = PeriodService.getPeriods('Yearly', $scope.periodOffset);
         }
     });
 
