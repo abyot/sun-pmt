@@ -109,13 +109,13 @@ sunPMT.controller('dataEntryController',
 
                 angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(cat){
                     cat.placeHolder = $translate.instant('select_or_search');
-                    if( cat.code === 'FI' ){                        
+                    /*if( cat.code === 'FI' ){                        
                         $scope.model.stakeholderCategory = cat;
                         cat.placeHolder = $translate.instant('select_or_search_or_add');
                         if( cat.code === 'FI' && cat.categoryOptions.indexOf( addNewOption) === -1 ){
                             cat.categoryOptions.push(addNewOption);
                         }
-                    }
+                    }*/
                 });
             });
         }
@@ -176,7 +176,7 @@ sunPMT.controller('dataEntryController',
     $scope.loadDataSetDetails = function(){
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){ 
             
-            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.model.periodOffset);
+            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset, $scope.model.selectedDataSet.openFuturePeriods);
             
             if(!$scope.model.selectedDataSet.dataElements || $scope.model.selectedDataSet.dataElements.length < 1){                
                 $scope.invalidCategoryDimensionConfiguration('error', 'missing_data_elements_indicators');
@@ -434,12 +434,12 @@ sunPMT.controller('dataEntryController',
         if( mode === 'NXT'){
             $scope.periodOffset = $scope.periodOffset + 1;
             $scope.model.selectedPeriod = null;
-            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset);
+            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset, $scope.model.selectedDataSet.openFuturePeriods);
         }
         else{
             $scope.periodOffset = $scope.periodOffset - 1;
             $scope.model.selectedPeriod = null;
-            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset);
+            $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset, $scope.model.selectedDataSet.openFuturePeriods);
         }
     };
     
