@@ -34,14 +34,17 @@ var sunPMT = angular.module('sunPMT',
         templateUrl:'components/reports/report-types.html',
         controller: 'reportTypesController'
     }).when('/report-whodoeswhat',{
-        templateUrl:'components/reports/whodoeswhat.html',
+        templateUrl:'components/reports/wdw/whodoeswhat.html',
         controller: 'WhoDoesWhatController'
     }).when('/report-popcoverage',{
-        templateUrl:'components/reports/popcoverage.html',
+        templateUrl:'components/reports/poc/popcoverage.html',
         controller: 'PopCoverageController'
     }).when('/report-geocoverage',{
-        templateUrl:'components/reports/geocoverage.html',
+        templateUrl:'components/reports/gec/geocoverage.html',
         controller: 'GeoCoverageController'
+    }).when('/report-dataexport',{
+        templateUrl:'components/reports/dex/dataexport.html',
+        controller: 'DataExportController'
     }).otherwise({
         redirectTo : '/dataentry'
     });  

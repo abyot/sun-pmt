@@ -5,10 +5,11 @@
 var sunPMT = angular.module('sunPMT');
 
 //Controller for reports page
-sunPMT.controller('PopCoverageController',
+sunPMT.controller('DataExportController',
         function($scope,
                 $filter,
                 $translate,
+                orderByFilter,
                 SessionStorageService,
                 DialogService,
                 PeriodService,
@@ -18,19 +19,21 @@ sunPMT.controller('PopCoverageController',
                 OptionComboService,
                 ReportService) {
     $scope.periodOffset = 0;
+    $scope.dataEntryOuLevel = 3;
     $scope.showReportFilters = true;
     $scope.reportReady = false;
-    $scope.noDataExists = false;
-    $scope.orgUnitLevels = null;
+    $scope.noDataExists = false;    
     $scope.model = {
         ouModes: [],
         periods: [],
         indicators: [],
+        indicatorsMappedByNumerator: [],
         selectedIndicators: [],
         dataSets: null,
         selectedDataSets: [],
         targetDataSets: null,
         ouLevels: [],
+        dataEntryLevel: null,
         programs: null,
         programsByCode: [],
         programCodesById: [],
@@ -43,6 +46,7 @@ sunPMT.controller('PopCoverageController',
         roleDataElementsById: null,
         reportDataElements: null,
         whoDoesWhatCols: null,
+        dataExportCols: null,
         mappedValues: null,
         mappedTargetValues: null,
         childrenIds: [],
@@ -57,6 +61,7 @@ sunPMT.controller('PopCoverageController',
         $scope.noDataExists = false;
         $scope.model.reportDataElements = [];
         $scope.model.whoDoesWhatCols = [];
+        $scope.model.dataExportCols = [];
     }
     
     //watch for selection of org unit from tree
@@ -67,7 +72,6 @@ sunPMT.controller('PopCoverageController',
         $scope.model.selectedRole = null;
         resetParams();
         if( angular.isObject($scope.selectedOrgUnit)){
-            
             ActionMappingUtils.getChildrenIds($scope.selectedOrgUnit).then(function(response){
                 $scope.model.childrenIds = response.childrenIds;
                 $scope.model.children = response.children;
@@ -81,29 +85,33 @@ sunPMT.controller('PopCoverageController',
             MetaDataFactory.getAll('programs').then(function(programs){
                 $scope.model.programs = programs;
                 angular.forEach(programs, function(program){
-                    if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
+                    if( program.actionCode && program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
                         angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
                             if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
                                 $scope.model.roleDataElementsById[prStDe.dataElement.id] = {displayName:  prStDe.dataElement.displayName, sortOrder: prStDe.sortOrder};
                             }                            
                         });
+                        $scope.model.programsByCode[program.actionCode] = program;
+                        $scope.model.programCodesById[program.id] = program.actionCode;
                     }                    
-                    $scope.model.programsByCode[program.actionCode] = program;
-                    $scope.model.programCodesById[program.id] = program.actionCode;
                 });
                 
                 for( var k in $scope.model.roleDataElementsById ){
                     if( $scope.model.roleDataElementsById.hasOwnProperty( k ) ){
-                        $scope.model.roleDataElements.push( {id: k, displayName: $scope.model.roleDataElementsById[k].displayName, sortOrder: $scope.model.roleDataElementsById[k].sortOrder, domain: 'EV'} );
+                        var de = $scope.model.roleDataElementsById[k];
+                        $scope.model.roleDataElements.push( {id: k, displayName: de.displayName, sortOrder: de.sortOrder, domain: 'EV', code: de.code} );
                     }
                 }
             });
-            
-            $scope.orgUnitLevels = [];
+                        
             MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
                 angular.forEach(ouLevels, function(ol){
                     $scope.model.ouLevels[ol.level] = ol.displayName;
-                });                    
+                    if( ol.level === $scope.dataEntryOuLevel ){
+                        $scope.model.dataEntryLevel = ol;
+                    }
+                });
+                
                 var res = ActionMappingUtils.populateOuLevels($scope.selectedOrgUnit, $scope.model.ouLevels);
                 $scope.model.ouModes = res.ouModes;
                 $scope.model.selectedOuMode = res.selectedOuMode;
@@ -117,6 +125,7 @@ sunPMT.controller('PopCoverageController',
             $scope.model.categoryCombos = {};
             $scope.model.stakeholderCategories = [];
             $scope.model.pushedCategoryIds = [];
+            $scope.model.dmCategoryId = null;
             MetaDataFactory.getAll('categoryCombos').then(function(ccs){
                 angular.forEach(ccs, function(cc){
                     $scope.model.categoryCombos[cc.id] = cc;
@@ -125,6 +134,7 @@ sunPMT.controller('PopCoverageController',
                 $scope.model.indicators = [];
                 $scope.model.dataSets = [];
                 $scope.model.targetDataSets = [];
+                $scope.model.indicatorsMappedByNumerator = [];
                 MetaDataFactory.getAll('indicatorGroups').then(function(idgs){                
                     idgs = $filter('filter')(idgs, {isAction: true});
                     angular.forEach(idgs, function(idg){                    
@@ -132,33 +142,35 @@ sunPMT.controller('PopCoverageController',
                             $scope.model.indicators = $scope.model.indicators.concat( idg.indicators );
                         }
                     });
+                    
+                    angular.forEach($scope.model.indicators, function(ind){
+                        ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
+                        if( ind.numerator ){
+                            $scope.model.indicatorsMappedByNumerator[ind.numerator] = ind;
+                        }
+                    });
 
                     DataSetFactory.getActionAndTargetDataSets().then(function(dataSets){
-                        $scope.model.dataSets = dataSets;                
-                        angular.forEach($scope.model.dataSets, function(ds){
-                            if( ds.dataSetType === 'action'){
-                                if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
-                                    $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
-                                    $scope.model.dataSetsByDataElementId[ds.dataElements[0].id] = ds;
-                                    var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);
-                                    $scope.model.stakeholderCategories = res.categories;
-                                    $scope.model.pushedCategoryIds = res.categoryIds;
-                                }
+                        $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
+                        $scope.model.targetDataSets = $filter('filter')(dataSets, {dataSetType: 'targetGroup'});
+                        var dmCategories = [];
+                        angular.forEach(dataSets, function(ds){
+                            if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
+                                $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
+                                $scope.model.dataSetsByDataElementId[ds.dataElements[0].id] = ds;
+                                var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);
+                                $scope.model.stakeholderCategories = res.categories;
+                                $scope.model.pushedCategoryIds = res.categoryIds;
+                                
+                                var res = ActionMappingUtils.getDMCategoryFromDataSet(ds, $scope.model.categoryCombos, dmCategories, $scope.model.pushedCategoryIds);
+                                dmCategories = res.categories;
+                                $scope.model.pushedCategoryIds = res.categoryIds;
                             }
-                            else{
-                                $scope.model.targetDataSets.push( ds );
-                            }                        
                         });
                         
-                        var len = angular.copy( $scope.model.roleDataElements.length );
-                        var count = 1;
-                        angular.forEach($scope.model.stakeholderCategories, function(c){
-                            var ops = [];
-                            angular.forEach(c.categoryOptions, function(o){
-                                ops.push( o.displayName );
-                            });
-                            $scope.model.roleDataElements.push( {id: c.id, displayName: c.displayName, sortOrder: len + count, domain: 'CA', categoryOptions: ops});
-                        });
+                        if( dmCategories.length > 0 ){
+                            $scope.model.dmCategoryId = dmCategories[0].id;
+                        }
                     });
                 });
             });
@@ -185,7 +197,7 @@ sunPMT.controller('PopCoverageController',
     $scope.interacted = function(field) {        
         var status = false;
         if(field){            
-            status = $scope.popCoverageForm.submitted || field.$dirty;
+            status = $scope.reportForm.submitted || field.$dirty;
         }
         return status;        
     };
@@ -193,12 +205,12 @@ sunPMT.controller('PopCoverageController',
     $scope.getReport = function(){
         
         //check for form validity
-        $scope.popCoverageForm.submitted = true;        
-        if( $scope.popCoverageForm.$invalid ){
+        $scope.reportForm.submitted = true;        
+        if( $scope.reportForm.$invalid ){
             return false;
         }
         
-        if( !$scope.model.selectedIndicators.length || $scope.model.selectedIndicators.length < 1 ){            
+        if( !$scope.model.selectedDataSets.length || $scope.model.selectedDataSets.length < 1 ){            
             var dialogOptions = {
                 headerText: $translate.instant('error'),
                 bodyText: $translate.instant('please_select_actions')
@@ -215,24 +227,14 @@ sunPMT.controller('PopCoverageController',
             $scope.orgUnits = [$scope.selectedOrgUnit];
         }
         
-        resetParams();
-        $scope.reportStarted = true;
-        $scope.showReportFilters = false; 
-        $scope.model.selectedDataSets = [];
-        $scope.model.selectedDataSets = $scope.model.selectedDataSets.concat( $scope.model.targetDataSets );
-        angular.forEach($scope.model.selectedIndicators, function(ind){
-            ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
-            if( $scope.model.dataSetsByDataElementId[ind.numerator] ){
-                $scope.model.selectedDataSets.push( $scope.model.dataSetsByDataElementId[ind.numerator] );
-            }
-        });
+        $scope.model.selectedDataSets = $scope.model.selectedDataSets.concat( $scope.model.targetDataSets );       
         
         var dataValueSetUrl = 'period=' + $scope.model.selectedPeriod.id;
         angular.forEach($scope.model.selectedDataSets, function(ds){
             dataValueSetUrl += '&dataSet=' + ds.id;
         });
         
-        if( $scope.selectedOrgUnit.l === 3 ){
+        if( $scope.selectedOrgUnit.l === $scope.dataEntryOuLevel ){
             dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
         }        
         else{            
@@ -248,11 +250,15 @@ sunPMT.controller('PopCoverageController',
             dataValueSetUrl += '&children=true';
         }
         
+        resetParams();
+        $scope.reportStarted = true;
+        $scope.showReportFilters = false;
+        
         $scope.model.selectedPrograms = [];
         $scope.model.dataElementCodesById = [];
         $scope.model.mappedRoles = {};
         $scope.optionCombos = [];
-        angular.forEach($scope.model.selectedDataSets, function(ds){
+        angular.forEach($scope.model.selectedDataSets, function(ds){            
             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code && $scope.model.programsByCode[ds.dataElements[0].code] ){                
                 var pr = $scope.model.programsByCode[ds.dataElements[0].code]; 
                 if( pr && pr.actionCode ){
@@ -277,8 +283,22 @@ sunPMT.controller('PopCoverageController',
                         availableRoles: $scope.model.availableRoles,
                         mappedOptionCombos: $scope.model.mappedOptionCombos,
                         dataElementCodesById: $scope.model.dataElementCodesById};
+        $scope.model.dataHeaders = [
+            {id: 'action', displayName: $translate.instant('action'), domain:'HD'},
+            {id: 'actionCategory', displayName: $translate.instant('action_category') ,domain:'HD'},
+            {id: 'parentOrgUnit', displayName: $translate.instant('parent_org_unit') ,domain:'HD'},
+            {id: 'orgUnit', displayName: $translate.instant('org_unit') ,domain:'HD'},
+            {id: 'targetGroup', displayName: $translate.instant('target_group') ,domain:'HD'},
+            {id: 'targetPopulation', displayName: $translate.instant('target_population') ,domain:'HD'},
+            {id: 'beneficiaries', displayName: $translate.instant('beneficiaries') ,domain:'HD'},
+            {id: $scope.model.dmCategoryId === null ? 'primaryDM' : $scope.model.dmCategoryId, displayName: $translate.instant('primary_delivery_mechanism') ,domain:'EV'}
+        ];
         
-        ReportService.getReportData( reportParams, reportData ).then(function(response){            
+        $scope.model.dataHeaders = $scope.model.dataHeaders.concat( $scope.model.roleDataElements );
+        $scope.model.dataHeaders.push( {id: 'mappingYear', displayName: $translate.instant('mapping_year') ,domain:'HD'} );
+        
+        $scope.model.dataRows = [];
+        ReportService.getReportData( reportParams, reportData ).then(function(response){
             $scope.model.mappedRoles = response.mappedRoles;
             $scope.model.whoDoesWhatCols = response.whoDoesWhatCols;
             $scope.model.availableRoles = response.availableRoles;
@@ -288,11 +308,74 @@ sunPMT.controller('PopCoverageController',
             $scope.showReportFilters = response.showReportFilters;
             $scope.noDataExists = response.noDataExists;
             $scope.reportStarted = response.reportStarted;
+            $scope.noDataExists = false;
+            
+            var pushDataRows = function( de, oc, ou ){
+                
+                var targetPopulation = '', beneficiaries = 0, roles = {};
+                var values = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: de.id, categoryOptionCombo: oc.id, orgUnit: ou.id});                
+                
+                angular.forEach(values, function(value){
+                    beneficiaries = ActionMappingUtils.getSum(beneficiaries, value.value);
+                    
+                    if($scope.model.dmCategoryId !== null && value[$scope.model.dmCategoryId]){
+                        if(!roles[$scope.model.dmCategoryId]){
+                            roles[$scope.model.dmCategoryId]=[];
+                        }
+                        roles[$scope.model.dmCategoryId].push(value[$scope.model.dmCategoryId]);
+                    }
+                    
+                    angular.forEach($scope.model.roleDataElements, function(rde){
+                        if(value[rde.id]){
+                            if(!roles[rde.id]){
+                                roles[rde.id] = [];
+                            }
+                            roles[rde.id].push(value[rde.id]);
+                        }
+                    });
+                });
+                
+                var ind = $scope.model.indicatorsMappedByNumerator[de.id];            
+                if( ind && ind.denominator && ind.denominatorOptionCombo && $scope.model.mappedTargetValues[ind.denominator] && $scope.model.mappedTargetValues[ind.denominator][ou.id] ){
+                    targetPopulation = $scope.model.mappedTargetValues[ind.denominator][ou.id][ind.denominatorOptionCombo]; 
+                }
+                
+                $scope.model.dataRows.push({
+                    action:  de.displayName,
+                    actionCategory: de.displayName,
+                    parentOrgUnit: ou.parent.displayName,
+                    orgUnit: ou.displayName,
+                    targetGroup: oc.displayName,
+                    targetPopulation: targetPopulation,
+                    beneficiaries: beneficiaries,
+                    mappingYear: $scope.model.selectedPeriod.id,
+                    roles: roles
+                });
+            };
+            
+            angular.forEach($scope.model.reportDataElements, function(de){
+                angular.forEach($scope.model.categoryCombos[de.categoryCombo.id].categoryOptionCombos, function(oc){
+                    if( $scope.selectedOrgUnit.l === 1 ){
+                        var ous = orderByFilter($filter('filter')($scope.model.allChildren, {level: 2}), '-displayName').reverse();                        
+                        angular.forEach(ous, function(ou){
+                            var _ous = orderByFilter($filter('filter')($scope.model.allChildren, {parent: {id: ou.id}}), '-displayName').reverse();                            
+                            angular.forEach(_ous, function(ou){
+                               pushDataRows(de, oc, ou);
+                            });
+                        });
+                    }
+                    else if( $scope.selectedOrgUnit.l === 2 ){
+                        angular.forEach($scope.model.children, function(ou){
+                            pushDataRows(de, oc, ou);
+                        });
+                    }
+                    else if( $scope.selectedOrgUnit.l === 3 ){
+                        var ou = $scope.model.allChildren[0];
+                        pushDataRows(de, oc, ou);
+                    }
+                });
+            });
         });
-    };
-    
-    $scope.getRequiredCols = function(){
-        return ActionMappingUtils.getRequiredCols($scope.model.availableRoles, $scope.model.selectedRole);
     };
     
     $scope.valueExists = function(ou, ind){        
@@ -331,120 +414,6 @@ sunPMT.controller('PopCoverageController',
         if( values.length === 0 ){
             return "empty-data-row";
         }
-    };
-    
-    $scope.getValuePerRole = function( ou, col, ind ){        
-        ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
-        var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
-        var filteredDenominators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.denominator, categoryOptionCombo: ind.denominatorOptionCombo});
-        
-        var numCheckedOus = {}, denCheckedOus = {};        
-        var numerator = 0;
-        var denominator = 0;
-        var numValueCount = 0, denValueCount = 0;
-        angular.forEach(filteredNumerators, function(val){
-            if( val[$scope.model.selectedRole.id] && 
-                    val[$scope.model.selectedRole.id].length 
-                    && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){                
-                if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
-                    console.log('missing orgunit:  ', val.orgUnit);
-                    return;
-                }
-                
-                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){                    
-                    if( val.orgUnit === $scope.selectedOrgUnit.id || 
-                            ( $scope.model.childrenByIds[val.orgUnit] &&
-                            $scope.model.childrenByIds[val.orgUnit].path &&
-                            $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
-                            ){                    
-                        if( !numCheckedOus[col] ){
-                            numCheckedOus[col] = [];
-                        }
-                        //if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
-
-                            var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                            
-                            if( curDen && curDen.length && curDen[0] && curDen[0].value ){
-                                //denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
-                                numerator = ActionMappingUtils.getSum( numerator, val.value);
-                                numValueCount++;
-                            }
-
-                            numCheckedOus[col].push( val.orgUnit );
-                        //}
-                    }
-                }
-                else{
-                    if( !numCheckedOus[col] ){
-                        numCheckedOus[col] = [];
-                    }
-                    //if( numCheckedOus[col].indexOf( val.orgUnit ) === -1){
-                        
-                        var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                        if( curDen && curDen.length && curDen[0] && curDen[0].value ){
-                            //denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
-                            numerator = ActionMappingUtils.getSum( numerator, val.value);
-                            numValueCount++;
-                        }
-
-                        numCheckedOus[col].push( val.orgUnit );
-                    //}
-                }
-            }            
-        });
-        
-        angular.forEach(filteredDenominators, function(val){
-            //if( val[$scope.model.selectedRole.id] && val[$scope.model.selectedRole.id].length && val[$scope.model.selectedRole.id].indexOf( col ) !== -1){                
-                if( $scope.model.childrenIds.indexOf( val.orgUnit ) === -1 ){
-                    console.log('missing orgunit:  ', val.orgUnit);
-                    return;
-                }
-                
-                if($scope.model.selectedOuMode.level !== $scope.selectedOrgUnit.l ){                    
-                    if( val.orgUnit === $scope.selectedOrgUnit.id || 
-                            ( $scope.model.childrenByIds[val.orgUnit] &&
-                            $scope.model.childrenByIds[val.orgUnit].path &&
-                            $scope.model.childrenByIds[val.orgUnit].path.indexOf(ou.id) !== -1)
-                            ){                    
-                        if( !denCheckedOus[col] ){
-                            denCheckedOus[col] = [];
-                        }
-                        if( denCheckedOus[col].indexOf( val.orgUnit ) === -1){
-
-                            var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                            
-                            if( curDen && curDen.length && curDen[0] && curDen[0].value ){
-                                denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
-                                //numerator = ActionMappingUtils.getSum( numerator, val.value);
-                                denValueCount++;
-                            }
-
-                            denCheckedOus[col].push( val.orgUnit );
-                        }
-                    }
-                }
-                else{
-                    if( !denCheckedOus[col] ){
-                        denCheckedOus[col] = [];
-                    }
-                    if( denCheckedOus[col].indexOf( val.orgUnit ) === -1){
-                        
-                        var curDen = $filter('filter')(filteredDenominators, {orgUnit: val.orgUnit});
-                        if( curDen && curDen.length && curDen[0] && curDen[0].value ){
-                            denominator = ActionMappingUtils.getSum( denominator, curDen[0].value);
-                            //numerator = ActionMappingUtils.getSum( numerator, val.value);
-                            denValueCount++;
-                        }
-
-                        denCheckedOus[col].push( val.orgUnit );
-                    }
-                }
-            //}            
-        });
-        
-        //return numerator + " / " + denominator;
-        //return valueCount > 0 ? ActionMappingUtils.getPercent(numerator, denominator) : "";
-        return ActionMappingUtils.getPercent(numerator, denominator);
     };
     
     $scope.exportData = function () {

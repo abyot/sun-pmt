@@ -508,7 +508,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     return {
         get: function( uid ){
             if( orgUnit !== uid ){
-                orgUnitPromise = $http.get( '../api/organisationUnits.json?filter=path:like:/' + uid + '&fields=id,displayName,path,level,parent[id]&paging=false' ).then(function(response){
+                orgUnitPromise = $http.get( '../api/organisationUnits.json?filter=path:like:/' + uid + '&fields=id,displayName,path,level,parent[id,displayName]&paging=false' ).then(function(response){
                     orgUnit = response.data.id;
                     return response.data;
                 });
@@ -531,7 +531,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.service('ActionMappingUtils', function($q, $translate, $filter, DialogService, OrgUnitService){
+.service('ActionMappingUtils', function($q, $translate, $filter, orderByFilter, DialogService, OrgUnitService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -627,6 +627,20 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 if( cc && cc.categories ){
                     angular.forEach(cc.categories, function(c){
                         if( c.code === 'FI' && categoryIds.indexOf( c.id )){
+                            existingCategories.push( c );
+                            categoryIds.push( c.id );
+                        }
+                    });
+                }
+            }
+            return {categories: existingCategories, categoryIds: categoryIds};
+        },
+        getDMCategoryFromDataSet: function(dataSet, availableCombos, existingCategories, categoryIds){
+            if( dataSet.categoryCombo && dataSet.categoryCombo.id){
+                var cc = availableCombos[dataSet.categoryCombo.id];
+                if( cc && cc.categories ){
+                    angular.forEach(cc.categories, function(c){
+                        if( c.code === 'DM' && categoryIds.indexOf( c.id )){
                             existingCategories.push( c );
                             categoryIds.push( c.id );
                         }

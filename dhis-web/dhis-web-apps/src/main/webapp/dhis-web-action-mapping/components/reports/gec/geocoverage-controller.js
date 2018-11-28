@@ -20,7 +20,6 @@ sunPMT.controller('GeoCoverageController',
     $scope.showReportFilters = true;
     $scope.reportReady = false;
     $scope.noDataExists = false;
-    $scope.orgUnitLevels = null;
     $scope.model = {
         ouModes: [],
         periods: [],
@@ -92,7 +91,6 @@ sunPMT.controller('GeoCoverageController',
                     }
                 }
                 
-                $scope.orgUnitLevels = [];
                 MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
                     angular.forEach(ouLevels, function(ol){
                         $scope.model.ouLevels[ol.level] = ol.displayName;

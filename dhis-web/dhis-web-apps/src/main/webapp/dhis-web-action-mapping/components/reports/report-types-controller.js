@@ -22,4 +22,9 @@ sunPMT.controller('reportTypesController',
         selection.load();
         $location.path('/report-popcoverage').search();
     };
+    
+    $scope.dataExport = function(){   
+        selection.load();
+        $location.path('/report-dataexport').search();
+    };
 });

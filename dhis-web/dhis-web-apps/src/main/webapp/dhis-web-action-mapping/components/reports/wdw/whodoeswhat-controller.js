@@ -19,8 +19,7 @@ sunPMT.controller('WhoDoesWhatController',
     $scope.periodOffset = 0;
     $scope.showReportFilters = true;
     $scope.reportReady = false;
-    $scope.noDataExists = false;
-    $scope.orgUnitLevels = null;    
+    $scope.noDataExists = false;    
     $scope.model = {
         ouModes: [],
         periods: [],
@@ -72,8 +71,8 @@ sunPMT.controller('WhoDoesWhatController',
                 $scope.model.programs = programs;
                 angular.forEach(programs, function(program){
                     if( program.programStages && program.programStages[0] && program.programStages[0].programStageDataElements ){
-                        angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){
-                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){                                
+                        angular.forEach(program.programStages[0].programStageDataElements, function(prStDe){                            
+                            if( prStDe.dataElement && prStDe.dataElement.id && !$scope.model.roleDataElementsById[prStDe.dataElement.id]){
                                 $scope.model.roleDataElementsById[prStDe.dataElement.id] = {displayName:  prStDe.dataElement.displayName, sortOrder: prStDe.sortOrder};
                             }                            
                         });
@@ -111,8 +110,7 @@ sunPMT.controller('WhoDoesWhatController',
                     }
                 });
             });
-
-            $scope.orgUnitLevels = [];
+            
             MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
                 angular.forEach(ouLevels, function(ol){
                     $scope.model.ouLevels[ol.level] = ol.displayName;

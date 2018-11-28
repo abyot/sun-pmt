@@ -20,8 +20,7 @@ sunPMT.controller('reportsController',
     $scope.periodOffset = 0;
     $scope.showReportFilters = true;
     $scope.reportReady = false;
-    $scope.noDataExists = false;
-    $scope.orgUnitLevels = null;
+    $scope.noDataExists = false;    
     $scope.model = {stakeholderRoles: [{id: 'CA_ID', name: $translate.instant('catalyst')},{id: 'FU_ID', name: $translate.instant('funder')},{id: 'RM_ID', name: $translate.instant('responsible_ministry')}],
         ouModes: [],
         periods: [],
@@ -111,8 +110,7 @@ sunPMT.controller('reportsController',
                     }
                 });
             });
-
-            $scope.orgUnitLevels = [];
+            
             MetaDataFactory.getAll('ouLevels').then(function(ouLevels){
                 angular.forEach(ouLevels, function(ol){
                     $scope.model.ouLevels[ol.level] = ol.displayName;
