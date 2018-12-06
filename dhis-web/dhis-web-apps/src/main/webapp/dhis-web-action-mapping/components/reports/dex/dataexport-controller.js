@@ -345,7 +345,11 @@ sunPMT.controller('DataExportController',
                             if(!roles[cat.id]){
                                 roles[cat.id]=[];
                             }
-                            roles[cat.id].push(value[cat.id]);
+                            angular.forEach(value[cat.id], function(v){
+                                if(v && roles[cat.id].indexOf(v) === -1){
+                                    roles[cat.id].push(v);
+                                }
+                            });                            
                         }
                     });                    
                     
@@ -354,7 +358,11 @@ sunPMT.controller('DataExportController',
                             if(!roles[rde.id]){
                                 roles[rde.id] = [];
                             }
-                            roles[rde.id].push(value[rde.id]);
+                            angular.forEach(value[rde.id], function(v){
+                                if(v && roles[rde.id].indexOf(v) === -1){
+                                    roles[rde.id].push(v);
+                                }
+                            });
                         }
                     });
                 });
@@ -401,7 +409,7 @@ sunPMT.controller('DataExportController',
             });
         });
     };
-    
+
     $scope.valueExists = function(ou, ind){        
         ind = ActionMappingUtils.getNumeratorAndDenominatorIds( ind );
         var filteredNumerators = $filter('filter')($scope.model.mappedValues.dataValues, {dataElement: ind.numerator, categoryOptionCombo: ind.numeratorOptionCombo});
