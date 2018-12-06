@@ -332,8 +332,6 @@ sunPMT.controller('DataExportController',
             $scope.reportStarted = response.reportStarted;
             $scope.noDataExists = false;
             
-            console.log('response:  ', response);
-            
             var pushDataRows = function( de, oc, ou ){
                 
                 var targetPopulation = '', beneficiaries = 0, roles = {};
