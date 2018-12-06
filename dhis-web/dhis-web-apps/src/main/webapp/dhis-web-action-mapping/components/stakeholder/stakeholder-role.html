@@ -22,7 +22,7 @@
                                on-select="saveRole(oco.id, prStDe.dataElement.id)"
                                on-remove="saveRole(oco.id, prStDe.dataElement.id)"
                                theme="bootstrap">                        
-                        <ui-select-match placeholder="{{model.optionSets[prStDe.dataElement.optionSet.id].StakeholderRole === 'Funder' ? 'select_or_search_or_add' : 'select_or_search' | translate}}">{{$item.displayName}}</ui-select-match>
+                        <ui-select-match placeholder="{{'select_or_search' | translate}}">{{$item.displayName}}</ui-select-match>
                         <ui-select-choices repeat="option.displayName as option in optionSets[prStDe.dataElement.optionSet.id].options | filter: $select.search | limitTo:maxOptionSize">
                             <div ng-bind-html="option.displayName | highlight: $select.search"></div>
                         </ui-select-choices>

@@ -81,7 +81,8 @@ sunPMT.controller('dataEntryController',
             $scope.model.optionSets = [];
             MetaDataFactory.getAll('optionSets').then(function(optionSets){
                 angular.forEach(optionSets, function(optionSet){
-                    if( optionSet.StakeholderRole === 'Funder' ){
+                    $scope.model.optionSets[optionSet.id] = optionSet;
+                    /*if( optionSet.StakeholderRole === 'Funder' ){
                         $scope.stakeholderList = optionSet;
                         var o = angular.copy( optionSet );
                         o.options.push(addNewOption);
@@ -89,7 +90,7 @@ sunPMT.controller('dataEntryController',
                     }
                     else{
                         $scope.model.optionSets[optionSet.id] = optionSet;
-                    }                    
+                    }*/                    
                 });
             });
         }

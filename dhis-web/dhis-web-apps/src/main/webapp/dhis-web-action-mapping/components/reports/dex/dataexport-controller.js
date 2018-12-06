@@ -126,8 +126,27 @@ sunPMT.controller('DataExportController',
             $scope.model.stakeholderCategories = [];
             $scope.model.pushedCategoryIds = [];
             $scope.model.dmCategoryId = null;
-            MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+            $scope.model.orgCategory = null;
+            $scope.model.dmCategory = null;
+            $scope.model.fiCategory = null;
+            $scope.model.keyCategories = [];
+            MetaDataFactory.getAll('categoryCombos').then(function(ccs){                
                 angular.forEach(ccs, function(cc){
+                    if( cc.code === 'DM-FI' && cc.categories && cc.categories.length > 0 ){
+                        $scope.model.keyCategories = cc.categories;
+                        angular.forEach(cc.categories, function(ca){
+                            ca.domain = 'EV';
+                            if( ca.code === 'ORG' ){                                
+                                $scope.model.orgCategory = ca;
+                            }
+                            else if( ca.code === 'FI') {
+                                $scope.model.fiCategory = ca;
+                            }
+                            else if( ca.code === 'DM') {
+                                $scope.model.dmCategory = ca;
+                            }
+                        });
+                    }
                     $scope.model.categoryCombos[cc.id] = cc;
                 });
                 
@@ -153,7 +172,7 @@ sunPMT.controller('DataExportController',
                     DataSetFactory.getActionAndTargetDataSets().then(function(dataSets){
                         $scope.model.dataSets = $filter('filter')(dataSets, {dataSetType: 'action'});
                         $scope.model.targetDataSets = $filter('filter')(dataSets, {dataSetType: 'targetGroup'});
-                        var dmCategories = [];
+                        
                         angular.forEach(dataSets, function(ds){
                             if( ds.dataElements && ds.dataElements[0] && ds.dataElements[0].code ){
                                 $scope.model.dataElementsByCode[ds.dataElements[0].code] = ds.dataElements[0];
@@ -161,16 +180,8 @@ sunPMT.controller('DataExportController',
                                 var res = ActionMappingUtils.getStakeholderCategoryFromDataSet(ds, $scope.model.categoryCombos, $scope.model.stakeholderCategories, $scope.model.pushedCategoryIds);
                                 $scope.model.stakeholderCategories = res.categories;
                                 $scope.model.pushedCategoryIds = res.categoryIds;
-                                
-                                var res = ActionMappingUtils.getDMCategoryFromDataSet(ds, $scope.model.categoryCombos, dmCategories, $scope.model.pushedCategoryIds);
-                                dmCategories = res.categories;
-                                $scope.model.pushedCategoryIds = res.categoryIds;
                             }
                         });
-                        
-                        if( dmCategories.length > 0 ){
-                            $scope.model.dmCategoryId = dmCategories[0].id;
-                        }
                     });
                 });
             });
@@ -286,13 +297,24 @@ sunPMT.controller('DataExportController',
         $scope.model.dataHeaders = [
             {id: 'action', displayName: $translate.instant('action'), domain:'HD'},
             {id: 'actionCategory', displayName: $translate.instant('action_category') ,domain:'HD'},
-            {id: 'parentOrgUnit', displayName: $translate.instant('parent_org_unit') ,domain:'HD'},
-            {id: 'orgUnit', displayName: $translate.instant('org_unit') ,domain:'HD'},
+            {id: 'parentOrgUnit', displayName: $translate.instant('sub_national_1') ,domain:'HD'},
+            {id: 'orgUnit', displayName: $translate.instant('sub_national_2') ,domain:'HD'},
             {id: 'targetGroup', displayName: $translate.instant('target_group') ,domain:'HD'},
             {id: 'targetPopulation', displayName: $translate.instant('target_population') ,domain:'HD'},
-            {id: 'beneficiaries', displayName: $translate.instant('beneficiaries') ,domain:'HD'},
-            {id: $scope.model.dmCategoryId === null ? 'primaryDM' : $scope.model.dmCategoryId, displayName: $translate.instant('primary_delivery_mechanism') ,domain:'EV'}
+            {id: 'beneficiaries', displayName: $translate.instant('beneficiaries') ,domain:'HD'}
         ];
+        
+        if( $scope.model.orgCategory !== null ){
+            $scope.model.dataHeaders.splice(0, 0, $scope.model.orgCategory);
+        }
+        
+        if( $scope.model.dmCategory !== null){
+            $scope.model.dataHeaders.push( $scope.model.dmCategory );
+        }
+        
+        if( $scope.model.fiCategory !== null){
+            $scope.model.dataHeaders.push( $scope.model.fiCategory );
+        }
         
         $scope.model.dataHeaders = $scope.model.dataHeaders.concat( $scope.model.roleDataElements );
         $scope.model.dataHeaders.push( {id: 'mappingYear', displayName: $translate.instant('mapping_year') ,domain:'HD'} );
@@ -310,6 +332,8 @@ sunPMT.controller('DataExportController',
             $scope.reportStarted = response.reportStarted;
             $scope.noDataExists = false;
             
+            console.log('response:  ', response);
+            
             var pushDataRows = function( de, oc, ou ){
                 
                 var targetPopulation = '', beneficiaries = 0, roles = {};
@@ -318,12 +342,14 @@ sunPMT.controller('DataExportController',
                 angular.forEach(values, function(value){
                     beneficiaries = ActionMappingUtils.getSum(beneficiaries, value.value);
                     
-                    if($scope.model.dmCategoryId !== null && value[$scope.model.dmCategoryId]){
-                        if(!roles[$scope.model.dmCategoryId]){
-                            roles[$scope.model.dmCategoryId]=[];
+                    angular.forEach($scope.model.keyCategories, function(cat){
+                        if(value[cat.id]){
+                            if(!roles[cat.id]){
+                                roles[cat.id]=[];
+                            }
+                            roles[cat.id].push(value[cat.id]);
                         }
-                        roles[$scope.model.dmCategoryId].push(value[$scope.model.dmCategoryId]);
-                    }
+                    });                    
                     
                     angular.forEach($scope.model.roleDataElements, function(rde){
                         if(value[rde.id]){
