@@ -7,7 +7,7 @@
 var d2Directives = angular.module('d2Directives', [])
 
 
-.directive('selectedOrgUnit', function ($timeout, IndexDBService) {
+.directive('selectedOrgUnit', function ($timeout, IndexDBService, DialogService, OrgUnitFactory) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -38,17 +38,22 @@ var d2Directives = angular.module('d2Directives', [])
                 if( ids[0] && names[0] ){
                     var ou = {id: ids[0], displayName: names[0]};
                     
-                    IndexDBService.open('dhis2ou').then(function(){
-                        IndexDBService.get('ou', ou.id).then(function(ou){
-                            if( ou ){
-                                ou.id = ids[0];
-                                ou.displayName = ou.n;
-                                $timeout(function () {
-                                    scope.selectedOrgUnit = ou;
-                                    scope.$apply();
-                                });
-                            }                            
-                        });
+                    OrgUnitFactory.getFromLocal(ou.id).then(function(ou){
+                        if( ou ){
+                            ou.id = ids[0];
+                            ou.displayName = ou.n;
+                            $timeout(function () {
+                                scope.selectedOrgUnit = ou;
+                                scope.$apply();
+                            });
+                        }
+                        else{
+                            var dialogOptions = {
+                                headerText: 'error',
+                                bodyText: 'missing_org_unit_cache'
+                            };
+                            DialogService.showDialog({}, dialogOptions);
+                        }
                     });
                 }
             }
