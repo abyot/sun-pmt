@@ -504,7 +504,7 @@ sunPMT.controller('dataEntryController',
     $scope.saveRole = function( dataElementId ){
         
         var dataElement = $scope.model.selectedDataSet.dataElements[0];
-        if( $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].indexOf( "[Add New Stakeholder]") !== -1 ){
+        if( !dataElement || $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].indexOf( "[Add New Stakeholder]") !== -1 ){
             $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId] = $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].slice(0,-1);
             showAddStakeholder( $scope.model.stakeholderCategory );
             return;
@@ -517,7 +517,9 @@ sunPMT.controller('dataEntryController',
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
             
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
-                handleRole(ou, dataElement, dataElementId, dataValue, newEvents);
+                //if($scope.model.dataValues && $scope.model.dataValues[ou] && $scope.model.dataValues[ou][dataElement.id]){
+                    handleRole(ou, dataElement, dataElementId, dataValue, newEvents);
+                //}
             });            
             
             angular.forEach($scope.selectedOrgUnit.c, function(ou){
@@ -532,7 +534,9 @@ sunPMT.controller('dataEntryController',
             
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
             
-            handleRole($scope.selectedOrgUnit.id, dataElement, dataElementId, dataValue, newEvents);
+            //if($scope.model.dataValues && $scope.model.dataValues[$scope.selectedOrgUnit.id] && $scope.model.dataValues[$scope.selectedOrgUnit.id][dataElement.id]){
+                handleRole($scope.selectedOrgUnit.id, dataElement, dataElementId, dataValue, newEvents);
+            //}
 
             angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
                 if( newEvents[$scope.selectedOrgUnit.id] && newEvents[$scope.selectedOrgUnit.id][oco.id] ){
