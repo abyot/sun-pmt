@@ -491,9 +491,8 @@ sunPMT.controller('dataEntryController',
                     };
                     if( !newEvents[ou] ){
                         newEvents[ou] = {};
-                        newEvents[ou][oco.id] = {};
                     }
-                    if( newEvents[ou] ){
+                    if( !newEvents[ou][oco.id] ){
                         newEvents[ou][oco.id] = {};
                     }
                     newEvents[ou][oco.id] = event;
@@ -533,7 +532,13 @@ sunPMT.controller('dataEntryController',
             
             var dataValue = {dataElement: dataElementId, value: $scope.model.stakeholderRoles[$scope.commonOrgUnit][$scope.commonOptionCombo][dataElementId].join()};
             
-            handleRole($scope.selectedOrgUnit.id, dataElement, dataElementId, dataValue, newEvents);            
+            handleRole($scope.selectedOrgUnit.id, dataElement, dataElementId, dataValue, newEvents);
+
+            angular.forEach($scope.model.selectedCategoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
+                if( newEvents[$scope.selectedOrgUnit.id] && newEvents[$scope.selectedOrgUnit.id][oco.id] ){
+                    events.events.push( newEvents[$scope.selectedOrgUnit.id][oco.id] );
+                }
+            });
         }
         
         if( events.events.length > 0 ){
